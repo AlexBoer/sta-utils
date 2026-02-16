@@ -1,0 +1,739 @@
+/* -------------------------------------------- */
+/*  STA Utilities — Module Styles               */
+/* -------------------------------------------- */
+
+/* ---- Trait Visibility Toggle ---- */
+
+.sta-utils-visibility-toggle {
+  cursor: pointer;
+  opacity: 0.7;
+  margin-right: 4px;
+  transition: opacity 0.15s ease;
+}
+
+.sta-utils-visibility-toggle:hover {
+  opacity: 1;
+}
+
+/* Dim hidden traits on the sheet */
+li.row.entry.sta-utils-trait-hidden {
+  opacity: 0.45;
+}
+
+li.row.entry.sta-utils-trait-hidden .item-name {
+  text-decoration: line-through;
+}
+
+/* =============================================================================
+ * DICE POOL MONITOR (GM view of players' dice pool dialog settings)
+ * ============================================================================= */
+
+.sta-dice-pool-monitor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 100px;
+}
+
+.sta-dice-pool-monitor-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+}
+
+.sta-dice-pool-monitor-empty i {
+  font-size: 1.5rem;
+  opacity: 0.5;
+}
+
+.sta-dice-pool-monitor-players {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.sta-dice-pool-monitor-player {
+  flex: 1 1 180px;
+  max-width: 220px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.sta-dice-pool-monitor-player-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.4rem 0.5rem;
+  background: rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.sta-dice-pool-monitor-edit-btn {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  padding: 0;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.sta-dice-pool-monitor-edit-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.sta-dice-pool-monitor-edit-btn i {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.sta-dice-pool-monitor-editing .sta-dice-pool-monitor-edit-btn {
+  opacity: 1;
+  background: var(--color-warm-1, #ee9b3a);
+}
+
+.sta-dice-pool-monitor-editing .sta-dice-pool-monitor-edit-btn i {
+  color: #000;
+}
+
+.sta-dice-pool-monitor-editing {
+  outline: 2px solid var(--color-warm-1, #ee9b3a);
+  outline-offset: -2px;
+}
+
+.sta-dice-pool-monitor-player-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.sta-dice-pool-monitor-actor-name {
+  font-size: 0.7rem;
+  font-weight: 400;
+  opacity: 0.7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.sta-dice-pool-monitor-status-container {
+  margin-top: 0.2rem;
+}
+
+.sta-dice-pool-monitor-status {
+  font-size: 0.68rem;
+  font-weight: 500;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.sta-dice-pool-monitor-status[data-status="waiting"] {
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.sta-dice-pool-monitor-status[data-status="open"] {
+  color: var(--color-warm-1, #ee9b3a);
+  background: rgba(238, 155, 58, 0.15);
+}
+
+.sta-dice-pool-monitor-status[data-status="rolled"] {
+  color: var(--color-level-success, #26b231);
+  background: rgba(38, 178, 49, 0.15);
+}
+
+.sta-dice-pool-monitor-status[data-status="closed"] {
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sta-dice-pool-monitor-status-removable {
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.sta-dice-pool-monitor-status-removable:hover {
+  opacity: 0.8;
+  transform: scale(1.05);
+}
+
+.sta-dice-pool-monitor-options {
+  display: flex;
+  flex-direction: column;
+  padding: 0.4rem;
+  gap: 0.3rem;
+}
+
+.sta-dice-pool-monitor-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.2rem 0.3rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 3px;
+}
+
+.sta-dice-pool-monitor-option-label {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.8);
+  flex: 1;
+}
+
+.sta-dice-pool-monitor-option-value {
+  font-size: 0.78rem;
+  font-weight: 600;
+  min-width: 2rem;
+  text-align: center;
+}
+
+.sta-dice-pool-monitor-icon-yes {
+  color: var(--color-level-success, #26b231);
+}
+
+.sta-dice-pool-monitor-icon-no {
+  color: var(--color-level-error, #ce0707);
+}
+
+.sta-dice-pool-monitor-icon-none {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* Edit mode inputs */
+.sta-dice-pool-monitor-edit-checkbox {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+  accent-color: var(--color-warm-1, #ee9b3a);
+}
+
+.sta-dice-pool-monitor-edit-number {
+  width: 2.5rem;
+  height: 1.4rem;
+  padding: 0 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.3);
+  color: inherit;
+}
+
+.sta-dice-pool-monitor-edit-number:focus {
+  outline: none;
+  border-color: var(--color-warm-1, #ee9b3a);
+}
+
+/* =============================================================================
+ * SECTION INFO BUTTONS
+ * ============================================================================= */
+
+.sta-tracktitle-with-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.sta-stress-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.7;
+  font-size: 0.9em;
+}
+
+.sta-stress-info-btn:hover {
+  opacity: 1;
+}
+
+.sta-determination-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.7;
+  font-size: 0.9em;
+}
+
+.sta-determination-info-btn:hover {
+  opacity: 1;
+}
+
+.sta-values-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.7;
+  font-size: 0.9em;
+}
+
+.sta-values-info-btn:hover {
+  opacity: 1;
+}
+
+.sta-directive-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.7;
+  font-size: 0.9em;
+  margin-left: 0.35rem;
+  margin-right: 0.35rem;
+}
+
+.sta-directive-info-btn:hover {
+  opacity: 1;
+}
+
+/* Generic left container for title text + info button */
+.sta-title-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Generic section info button styling */
+.sta-talents-info-btn,
+.sta-focuses-info-btn,
+.sta-traits-info-btn,
+.sta-injuries-info-btn,
+.sta-logs-info-btn,
+.sta-milestones-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.7;
+  font-size: 0.9em;
+  margin-left: 0.35rem;
+}
+
+.sta-talents-info-btn:hover,
+.sta-focuses-info-btn:hover,
+.sta-traits-info-btn:hover,
+.sta-injuries-info-btn:hover,
+.sta-logs-info-btn:hover,
+.sta-milestones-info-btn:hover {
+  opacity: 1;
+}
+
+/* Info dialog content formatting */
+.sta-stress-recovery-info p,
+.sta-determination-info p,
+.sta-values-info p,
+.sta-info-dialog p {
+  margin: 0.5em 0;
+}
+
+.sta-info-dialog ul {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+.sta-info-dialog li {
+  margin: 0.25em 0;
+}
+
+/* =============================================================================
+ * FATIGUED ATTRIBUTE STYLING
+ * ============================================================================= */
+
+/* Disable fatigued attribute checkbox */
+input.selector.attribute.sta-fatigued-attribute {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Cross out fatigued attribute label */
+.sta-fatigued-attribute-label {
+  text-decoration: line-through;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =============================================================================
+ * WARP SPEED CALCULATOR
+ * ============================================================================= */
+
+.sta-warp-calculator-dialog {
+  min-width: 360px;
+}
+
+.sta-warp-calculator {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sta-warp-calculator-instructions {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+
+/* Formula selector */
+.sta-warp-calculator-formula-selector {
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  background: rgba(100, 150, 200, 0.1);
+  border: 1px solid rgba(100, 150, 200, 0.3);
+  border-radius: 4px;
+}
+
+.sta-warp-formula-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.sta-warp-formula-radios {
+  display: flex;
+  gap: 1rem;
+}
+
+.sta-warp-formula-option {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.sta-warp-formula-option input[type="radio"] {
+  cursor: pointer;
+  accent-color: rgba(100, 200, 255, 0.8);
+}
+
+.sta-warp-calculator-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sta-warp-calculator-inputs .form-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sta-warp-calculator-inputs .form-group label {
+  flex: 0 0 100px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.sta-warp-calculator-inputs .form-fields {
+  flex: 1;
+}
+
+.sta-warp-calculator-inputs input[type="number"] {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid rgba(100, 150, 200, 0.4);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  color: inherit;
+  font-size: 1rem;
+}
+
+.sta-warp-calculator-inputs input[type="number"]:focus {
+  border-color: rgba(100, 200, 255, 0.7);
+  outline: none;
+  box-shadow: 0 0 4px rgba(100, 200, 255, 0.3);
+}
+
+/* Results panel */
+.sta-warp-calculator-results {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(100, 150, 200, 0.15);
+  border: 1px solid rgba(100, 150, 200, 0.3);
+  border-radius: 6px;
+  min-height: 120px;
+}
+
+.sta-warp-result-placeholder {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+  padding: 1.5rem 0;
+}
+
+.sta-warp-result-error {
+  text-align: center;
+  color: rgba(255, 100, 100, 0.9);
+  padding: 1.5rem 0;
+}
+
+.sta-warp-results-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.sta-warp-result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+}
+
+.sta-warp-result-label {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.sta-warp-result-value {
+  font-family: monospace;
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* Highlight calculated value */
+.sta-warp-calculated {
+  background: rgba(100, 200, 255, 0.2);
+  border-left: 3px solid rgba(100, 200, 255, 0.7);
+}
+
+.sta-warp-calculated .sta-warp-result-value {
+  color: rgba(100, 220, 255, 1);
+  font-weight: 700;
+}
+
+.sta-warp-divider {
+  border: none;
+  border-top: 1px solid rgba(100, 150, 200, 0.3);
+  margin: 0.5rem 0;
+}
+
+.sta-warp-derived {
+  opacity: 0.8;
+  font-size: 0.9rem;
+}
+
+.sta-warp-derived .sta-warp-result-label {
+  font-weight: 500;
+}
+
+/* Chat message styling - designed for both light and dark modes */
+.sta-warp-calculator-chat {
+  padding: 0.5rem;
+  color: inherit;
+}
+
+.sta-warp-calculator-chat h3 {
+  margin: 0 0 0.75rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #3d85c6;
+  font-size: 1.1rem;
+  color: #1a5a8a;
+}
+
+.sta-warp-calculator-chat h3 i {
+  margin-right: 0.5rem;
+}
+
+.sta-warp-calculator-chat .sta-warp-results-grid {
+  gap: 0.3rem;
+}
+
+.sta-warp-calculator-chat .sta-warp-result-row {
+  padding: 0.2rem 0.4rem;
+}
+
+.sta-warp-calculator-chat .sta-warp-result-label {
+  color: #444;
+  font-weight: 600;
+}
+
+.sta-warp-calculator-chat .sta-warp-result-value {
+  color: #222;
+}
+
+.sta-warp-calculator-chat .sta-warp-calculated {
+  background: rgba(61, 133, 198, 0.15);
+  border-left: 3px solid #3d85c6;
+}
+
+.sta-warp-calculator-chat .sta-warp-calculated .sta-warp-result-value {
+  color: #1a5a8a;
+  font-weight: 700;
+}
+
+.sta-warp-calculator-chat .sta-warp-divider {
+  border-top-color: #aaa;
+}
+
+.sta-warp-calculator-chat .sta-warp-derived .sta-warp-result-label {
+  color: #666;
+}
+
+.sta-warp-calculator-chat .sta-warp-derived .sta-warp-result-value {
+  color: #444;
+}
+
+/* Footer buttons */
+.sta-warp-calculator-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(100, 150, 200, 0.3);
+}
+
+.sta-warp-calculator-footer .dialog-button {
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(100, 150, 200, 0.4);
+  border-radius: 4px;
+  background: rgba(100, 150, 200, 0.2);
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.sta-warp-calculator-footer .dialog-button:hover:not(:disabled) {
+  background: rgba(100, 150, 200, 0.35);
+  border-color: rgba(100, 200, 255, 0.6);
+}
+
+.sta-warp-calculator-footer .dialog-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sta-warp-calculator-footer .dialog-button i {
+  margin-right: 0.4rem;
+}
+
+/* =============================================================================
+ * NOTE STYLER DIALOG
+ * ============================================================================= */
+
+.note-styler-dialog .note-styler-form {
+  padding: 0.5rem;
+}
+
+.note-styler-dialog .note-styler-form .notes-info {
+  font-style: italic;
+  color: var(--color-text-dark-secondary);
+  margin-bottom: 1rem;
+}
+
+.note-styler-dialog .note-styler-form h3 {
+  margin: 0.5rem 0;
+  border-bottom: 1px solid var(--color-border-light-tertiary);
+}
+
+.note-styler-dialog .note-styler-form .form-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.note-styler-dialog .note-styler-form .form-group label {
+  flex: 0 0 140px;
+  font-weight: 500;
+}
+
+.note-styler-dialog .note-styler-form .form-group input[type="text"],
+.note-styler-dialog .note-styler-form .form-group input[type="number"],
+.note-styler-dialog .note-styler-form .form-group select {
+  flex: 1;
+}
+
+.note-styler-dialog .note-styler-form .form-group input[type="checkbox"] {
+  width: auto;
+}
+
+.note-styler-dialog .note-styler-form .form-fields {
+  display: flex;
+  gap: 0.5rem;
+  flex: 1;
+  align-items: center;
+}
+
+.note-styler-dialog .note-styler-form .form-fields input[type="color"] {
+  flex: 0 0 40px;
+  height: 28px;
+  padding: 2px;
+}
+
+.note-styler-dialog .note-styler-form .form-fields label.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 0 0 auto;
+  font-weight: normal;
+}
+
+.note-styler-dialog .note-styler-form .form-fields input[type="range"] {
+  flex: 1;
+}
+
+.note-styler-dialog .note-styler-form .form-fields .range-value {
+  flex: 0 0 40px;
+  text-align: right;
+  font-family: monospace;
+}
+
+.note-styler-dialog .note-styler-form .style-group-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0.5rem 0;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--color-border-light-tertiary);
+}
+
+.note-styler-dialog .note-styler-form .style-group-header:first-of-type {
+  margin-top: 0;
+}
+
+.note-styler-dialog .note-styler-form .style-group-header input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+.note-styler-dialog .note-styler-form .form-group .apply-checkbox {
+  flex: 0 0 auto;
+  width: auto;
+  margin-right: 0.5rem;
+}

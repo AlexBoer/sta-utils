@@ -1,0 +1,143 @@
+{
+  "sta-utils": {
+    "title": "STA Utilities",
+    "settings": {
+      "enableTraitTokens": {
+        "name": "Enable Trait Tokens",
+        "hint": "Drag trait items onto the canvas to create post-it note tokens. Requires a world reload when changed."
+      },
+      "showInfoButtons": {
+        "name": "Show Info Buttons",
+        "hint": "Show info buttons next to Stress Track, Determination, and Values headers that display quick reference popups."
+      },
+      "playerAmbientAudioSelectionOnly": {
+        "name": "Player Ambient Audio Uses Selected Tokens",
+        "hint": "If enabled, non-GM users only hear ambient audio near tokens they currently have selected/controlled (matching GM behavior). If disabled, Foundry's default behavior applies (players hear audio near all owned tokens)."
+      }
+    },
+    "traits": {
+      "fatiguedLabel": "Fatigued",
+      "fatiguedTooltip": "Mark this Trait as a Fatigue trait (auto-created when stress is maxed).",
+      "chooseAttribute": "Choose Attribute",
+      "chooseAttributeTooltip": "Choose which attribute your character is fatigued in."
+    },
+    "stress": {
+      "infoTooltip": "Stress Recovery Info",
+      "recoveryTitle": "Stress Recovery",
+      "breatherTitle": "Breather:",
+      "breatherDesc": "Rest for a few minutes. Recover 4 stress.",
+      "breakTitle": "Break:",
+      "breakDesc": "Rest for 30 minutes to a couple hours. Recover 8 Stress.",
+      "sleepTitle": "Sleep:",
+      "sleepDesc": "A full night's rest or similar amount of time. Recover all stress.",
+      "momentumTitle": "Momentum:",
+      "momentumDesc": "Recover 1 stress per 2 Momentum spent after a successful task, max 3.",
+      "ok": "OK"
+    },
+    "determination": {
+      "infoTooltip": "Determination Info",
+      "infoTitle": "Determination",
+      "gainSpend": "Gain or Spend Determination by using values.",
+      "spendCrit": "Spend determination before rolling for a guaranteed crit.",
+      "spendReroll": "Spend determination after rolling to reroll any failed dice.",
+      "ok": "OK"
+    },
+    "valuesInfo": {
+      "infoTooltip": "Values Info",
+      "infoTitle": "Values",
+      "intro": "Use Values to gain or spend determination:",
+      "positiveTitle": "Positive use:",
+      "positiveDesc": "Spend determination when your value is motivating you.",
+      "negativeTitle": "Negative use:",
+      "negativeDesc": "Gain determination when your value causes a complication.",
+      "challengedTitle": "Challenged use:",
+      "challengedDesc": "Gain determination when you act against your values and change them.",
+      "ok": "OK"
+    },
+    "talentsInfo": {
+      "infoTooltip": "Talents Info",
+      "infoTitle": "Talents",
+      "desc": "Talents give you special abilities that let you do things outside the normal rules.",
+      "ok": "OK"
+    },
+    "focusesInfo": {
+      "infoTooltip": "Focuses Info",
+      "infoTitle": "Focuses",
+      "desc": "If a focus applies, dice will crit when they are equal to or less than your discipline used in the task.",
+      "ok": "OK"
+    },
+    "traitsInfo": {
+      "infoTooltip": "Traits Info",
+      "infoTitle": "Traits",
+      "intro": "If a trait is both TRUE and IMPORTANT, it can:",
+      "possible": "Make something possible",
+      "easier": "Make something easier",
+      "harder": "Make something harder",
+      "impossible": "Make something impossible",
+      "ok": "OK"
+    },
+    "injuriesInfo": {
+      "infoTooltip": "Injuries Info",
+      "infoTitle": "Injuries",
+      "desc": "Injuries are negative traits. Removing them requires a task roll with a difficulty equal to the severity of the attack that caused them.",
+      "ok": "OK"
+    },
+    "logsInfo": {
+      "infoTooltip": "Character Logs Info",
+      "infoTitle": "Character Logs",
+      "desc1": "Character logs track your journey.",
+      "desc2": "Logs track which values you used in a mission.",
+      "desc3": "String together multiple missions using the same value by making a callback during play to earn milestone advancements.",
+      "ok": "OK"
+    },
+    "milestonesInfo": {
+      "infoTooltip": "Milestones Info",
+      "infoTitle": "Milestones",
+      "desc1": "Milestones are improvements to your character.",
+      "desc2": "Earn them by making a callback to another mission using the same value as the current task roll.",
+      "ok": "OK"
+    },
+    "directiveInfo": {
+      "infoTooltip": "Directives Info",
+      "infoTitle": "Directives",
+      "desc": "Directives are group values, and can be used in all the same ways as a value. Ask the GM what your Mission Directives are.",
+      "ok": "OK"
+    },
+    "dicePoolMonitor": {
+      "title": "Dice Pool Monitor",
+      "close": "Close",
+      "waiting": "Waiting…",
+      "open": "Open",
+      "rolled": "Rolled!",
+      "closed": "Closed",
+      "clickToRemove": "Click to remove",
+      "editValues": "Edit values",
+      "gmOnly": "Only the GM can use the dice pool monitor.",
+      "waitingForPlayers": "Waiting for players to open dice pool dialogs…",
+      "usingFocus": "Focus",
+      "usingDedicatedFocus": "Dedicated Focus",
+      "usingDetermination": "Determination",
+      "complicationRange": "Complication",
+      "diceInPool": "Dice"
+    },
+    "warpCalculator": {
+      "title": "Warp Speed Calculator",
+      "instructions": "Enter any two values and leave the third blank to calculate it.",
+      "formulaTng": "TNG Formula",
+      "formulaTos": "TOS Formula",
+      "warpFactor": "Warp Factor",
+      "distance": "Distance",
+      "time": "Time",
+      "lightYears": "light-years",
+      "days": "days",
+      "ly": "ly",
+      "lyDay": "ly/day",
+      "velocity": "Velocity",
+      "lyPerDay": "Travel Rate",
+      "enterTwoValues": "Enter any two values above to calculate the third.",
+      "cannotCalculate": "Cannot calculate with the given values.",
+      "sendToChat": "Send to Chat",
+      "close": "Close"
+    }
+  }
+}

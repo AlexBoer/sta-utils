@@ -1,0 +1,73 @@
+{
+  "id": "sta-utils",
+  "title": "STA Utilities",
+  "description": "<p>Utilities and enhancements for the Star Trek Adventures system for Foundry VTT.</p>",
+  "authors": [
+    {
+      "name": "Alex Boer",
+      "flags": {}
+    }
+  ],
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13"
+  },
+  "esmodules": [
+    "scripts/sta-utils.mjs"
+  ],
+  "styles": [
+    {
+      "src": "styles/sta-utils.css"
+    }
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json",
+      "flags": {}
+    }
+  ],
+  "url": "https://github.com/mkscho63/sta",
+  "socket": true,
+  "relationships": {
+    "requires": [
+      {
+        "id": "lib-wrapper",
+        "type": "module",
+        "compatibility": {
+          "minimum": "1.12.0.0"
+        }
+      },
+      {
+        "id": "socketlib",
+        "type": "module",
+        "compatibility": {
+          "minimum": "1.0.0"
+        }
+      }
+    ],
+    "systems": [
+      {
+        "id": "sta",
+        "type": "system",
+        "compatibility": {}
+      }
+    ]
+  },
+  "packs": [
+    {
+      "name": "sta-utils",
+      "label": "STA - Utilities Macros",
+      "path": "packs/sta-utils",
+      "type": "Macro",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "system": "sta"
+    }
+  ],
+  "flags": {}
+}
