@@ -1,14 +1,16 @@
 {
   "id": "sta-utils",
   "title": "STA Utilities",
+  "version": "0.1.0",
   "description": "<p>Utilities and enhancements for the Star Trek Adventures system for Foundry VTT.</p>",
+  "manifest": "https://github.com/AlexBoer/sta-utils/releases/latest/download/module.json",
+  "download": "https://github.com/AlexBoer/sta-utils/releases/download/0.1.0/module.zip",
   "authors": [
     {
       "name": "Alex Boer",
       "flags": {}
     }
   ],
-  "version": "0.1.0",
   "compatibility": {
     "minimum": "13",
     "verified": "13"
@@ -29,7 +31,7 @@
       "flags": {}
     }
   ],
-  "url": "https://github.com/mkscho63/sta",
+  "url": "https://github.com/AlexBoer/sta-utils",
   "socket": true,
   "relationships": {
     "requires": [
