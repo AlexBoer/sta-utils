@@ -1,4 +1,4 @@
-import { MODULE_ID } from "./core/constants.mjs";
+import { MODULE_ID } from "../core/constants.mjs";
 
 /**
  * Note Styler - Allows customizing the text styling of selected map note placeables

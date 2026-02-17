@@ -1,18 +1,45 @@
-import { initTraitTokens } from "./trait-tokens.mjs";
-import { initTraitTokenClick } from "./trait-token-click.mjs";
-import { initTraitVisibility } from "./trait-visibility.mjs";
-import { getOrCreateProxyActor } from "./proxy-actor.mjs";
-import { registerSettings } from "./settings.mjs";
-import { installRenderApplicationV2Hook } from "./hooks/renderAppV2/hook.mjs";
-import { installStressMonitoringHook } from "./hooks/stressHook.mjs";
-import { installMacroActorImageHook } from "./hooks/macroActorImage.mjs";
-import { installAmbientAudioSelectionListenerPatch } from "./hooks/ambientAudioPatch.mjs";
-import { registerNoteStylerHooks, noteStyler } from "./noteStyler.mjs";
-import { initSocket } from "./core/socket.mjs";
-import { installCreateChatMessageHook } from "./hooks/chatMessage.mjs";
-import { runMigrations, registerMigrationSetting } from "./migration.mjs";
-import { warpCalculator } from "./warpCalculator.mjs";
-import { openDicePoolMonitor } from "./hooks/renderAppV2/dicePoolMonitor.mjs";
+// Core
+import {
+  registerSettings,
+  registerMigrationSetting,
+  runMigrations,
+  initSocket,
+} from "./core/index.mjs";
+
+// Features
+import {
+  initTraitTokens,
+  initTraitTokenClick,
+  initTraitVisibility,
+  initSceneConfig,
+  getOrCreateProxyActor,
+} from "./trait-tokens/index.mjs";
+
+import {
+  installStressMonitoringHook,
+  installCreateChatMessageHook,
+} from "./fatigue/index.mjs";
+
+import { isFatigueEnabled } from "./core/settings.mjs";
+
+import { openDicePoolMonitor } from "./dice-pool-monitor/index.mjs";
+
+import { installRenderApplicationV2Hook } from "./character-sheet/index.mjs";
+
+import { registerNoteStylerHooks, noteStyler } from "./note-styler/index.mjs";
+
+import { warpCalculator } from "./warp-calculator/index.mjs";
+
+import { stardateCalculator } from "./stardate/index.mjs";
+
+import {
+  installMacroActorImageHook,
+  installAmbientAudioSelectionListenerPatch,
+} from "./misc/index.mjs";
+
+import { JournalBacklinks } from "./journal-backlinks/index.mjs";
+
+import { isBacklinksEnabled } from "./core/settings.mjs";
 
 const MODULE_ID = "sta-utils";
 const SETTING_TRAIT_TOKENS = "enableTraitTokens";
@@ -23,6 +50,11 @@ const SETTING_TRAIT_TOKENS = "enableTraitTokens";
 
 Hooks.once("init", () => {
   console.log(`${MODULE_ID} | Initializing STA Utilities`);
+
+  // --- Preload templates ---
+  foundry.applications.handlebars.loadTemplates([
+    `modules/${MODULE_ID}/templates/dice-pool-monitor-player.hbs`,
+  ]);
 
   // --- Register settings ---
   registerSettings();
@@ -43,15 +75,30 @@ Hooks.once("init", () => {
     initTraitTokens();
     initTraitTokenClick();
     initTraitVisibility();
+    initSceneConfig();
     console.log(`${MODULE_ID} | Trait Tokens feature enabled`);
   }
 
   // --- Hook installers (init-time) ---
   installRenderApplicationV2Hook();
-  installStressMonitoringHook();
+  if (isFatigueEnabled()) {
+    installStressMonitoringHook();
+    console.log(`${MODULE_ID} | Fatigue Management feature enabled`);
+  }
   installMacroActorImageHook();
   installAmbientAudioSelectionListenerPatch();
   registerNoteStylerHooks();
+
+  // --- Journal Backlinks ---
+  // Always register settings so the hidden sync-version key exists.
+  const backlinks = new JournalBacklinks();
+  game.journalBacklinks = backlinks;
+  backlinks.registerSettings();
+
+  if (isBacklinksEnabled()) {
+    backlinks.registerHooks();
+    console.log(`${MODULE_ID} | Journal Backlinks feature enabled`);
+  }
 });
 
 /* -------------------------------------------- */
@@ -91,14 +138,26 @@ Hooks.once("ready", async () => {
   initSocket();
 
   // --- Chat message hook ---
-  installCreateChatMessageHook();
+  if (isFatigueEnabled()) {
+    installCreateChatMessageHook();
+  }
 
   // --- Flag migration (GM only) ---
   if (game.user.isGM) {
     await runMigrations();
   }
 
+  // --- Journal Backlinks initial sync ---
+  if (isBacklinksEnabled() && game.journalBacklinks && game.user.isGM) {
+    game.journalBacklinks.checkInitialSync();
+  }
+
   // --- Public API ---
-  game.staUtils = { warpCalculator, noteStyler, openDicePoolMonitor };
+  game.staUtils = {
+    warpCalculator,
+    stardateCalculator,
+    noteStyler,
+    openDicePoolMonitor,
+  };
   console.log(`${MODULE_ID} | Public API exposed at game.staUtils`);
 });

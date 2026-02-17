@@ -86,9 +86,7 @@ async function _onDropCanvasData(canvas, data) {
       await sock.executeAsGM("createTraitToken", msg);
     } catch (err) {
       // socketlib throws if no GM is connected — silently ignore
-      console.log(
-        `${MODULE_ID} | Cannot create trait token: no GM connected`,
-      );
+      console.log(`${MODULE_ID} | Cannot create trait token: no GM connected`);
     }
   }
 }
@@ -117,7 +115,15 @@ export async function handleCreateTraitTokenRPC(msg) {
 /**
  * Core creation logic — always runs on the GM's client.
  */
-async function _createTraitToken({ uuid, name, quantity, x, y, tintColor, sceneId }) {
+async function _createTraitToken({
+  uuid,
+  name,
+  quantity,
+  x,
+  y,
+  tintColor,
+  sceneId,
+}) {
   const displayName = traitDisplayName(name, quantity);
   const imageDataUri = generatePostItImage(displayName);
 
@@ -170,7 +176,9 @@ async function _createTraitToken({ uuid, name, quantity, x, y, tintColor, sceneI
     width: 3,
     height: 1,
     lockRotation: true,
+    disposition: CONST.TOKEN_DISPOSITIONS.NEUTRAL,
     displayName: CONST.TOKEN_DISPLAY_MODES.NONE,
+    movementAction: "displace",
     flags: {
       [MODULE_ID]: {
         isTraitToken: true,

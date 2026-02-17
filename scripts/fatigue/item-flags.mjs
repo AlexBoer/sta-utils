@@ -5,7 +5,7 @@
  * The scar/trauma flag utilities remain in sta-officers-log.
  */
 
-import { MODULE_ID } from "../../core/constants.mjs";
+import { MODULE_ID } from "../core/constants.mjs";
 
 const TRAIT_FATIGUE_FLAG = "isFatigue";
 

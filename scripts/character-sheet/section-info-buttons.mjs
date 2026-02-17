@@ -5,8 +5,8 @@
  * displaying rules reference information when clicked.
  */
 
-import { t } from "../../core/i18n.mjs";
-import { shouldShowInfoButtons } from "../../settings.mjs";
+import { t } from "../core/i18n.mjs";
+import { shouldShowInfoButtons } from "../core/settings.mjs";
 
 /**
  * Install the stress info button next to the Stress Track title.

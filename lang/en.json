@@ -10,9 +10,17 @@
         "name": "Show Info Buttons",
         "hint": "Show info buttons next to Stress Track, Determination, and Values headers that display quick reference popups."
       },
+      "enableFatigue": {
+        "name": "Enable Fatigue Management",
+        "hint": "Enable automatic fatigue trait creation when stress is maxed, fatigue notices in chat and dice pool dialogs, and fatigued attribute display on character sheets. Requires a world reload when changed."
+      },
       "playerAmbientAudioSelectionOnly": {
         "name": "Player Ambient Audio Uses Selected Tokens",
         "hint": "If enabled, non-GM users only hear ambient audio near tokens they currently have selected/controlled (matching GM behavior). If disabled, Foundry's default behavior applies (players hear audio near all owned tokens)."
+      },
+      "enableBacklinks": {
+        "name": "Enable Journal Backlinks",
+        "hint": "Add wiki-style 'referenced by' links to journals, actors, and items that reference each other. Requires a world reload when changed."
       }
     },
     "traits": {
@@ -138,6 +146,49 @@
       "cannotCalculate": "Cannot calculate with the given values.",
       "sendToChat": "Send to Chat",
       "close": "Close"
+    },
+    "stardateCalculator": {
+      "title": "Stardate Calculator",
+      "instructions": "Convert between TNG stardates and calendar dates.",
+      "modeToStardate": "Date → Stardate",
+      "modeToCalendar": "Stardate → Date",
+      "stardate": "Stardate",
+      "calendarDate": "Calendar Date",
+      "time": "Time",
+      "enterDate": "Enter a calendar date above to calculate the stardate.",
+      "enterStardate": "Enter a stardate above to calculate the calendar date.",
+      "invalidDate": "Invalid date.",
+      "sendToChat": "Send to Chat",
+      "close": "Close"
+    },
+    "sceneConfig": {
+      "sceneTraitsActor": {
+        "name": "Scene Traits Actor",
+        "hint": "Choose an existing Scene Traits actor for this scene, or leave as auto-create to generate one when first needed.",
+        "autoCreate": "— Auto-create when needed —"
+      }
+    },
+    "journalBacklinks": {
+      "rebuildOnSave": {
+        "name": "Rebuild links on save",
+        "hint": "Automatically rebuild reference links whenever a journal page, actor, or item is saved."
+      },
+      "headingTag": {
+        "name": "Backlinks heading tag",
+        "hint": "HTML heading element for the backlinks section (e.g. h1, h2, h3)."
+      },
+      "minPermission": {
+        "name": "Backlinks minimum permission",
+        "hint": "A user needs at least this permission level on the target document for a backlink to be visible."
+      },
+      "debug": {
+        "name": "Backlinks debug logging"
+      },
+      "syncButton": {
+        "name": "Sync backlinks",
+        "label": "Sync now"
+      },
+      "linkedFrom": "Linked from"
     }
   }
 }

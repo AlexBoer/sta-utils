@@ -1,0 +1,14 @@
+<div class="sta-dice-pool-monitor">
+  {{#if hasPlayers}}
+    <div class="sta-dice-pool-monitor-players">
+      {{#each players}}
+      {{> "modules/sta-utils/templates/dice-pool-monitor-player"}}
+      {{/each}}
+    </div>
+  {{else}}
+    <div class="sta-dice-pool-monitor-empty">
+      <i class="fa-solid fa-hourglass-half"></i>
+      {{labels.waitingForPlayers}}
+    </div>
+  {{/if}}
+</div>

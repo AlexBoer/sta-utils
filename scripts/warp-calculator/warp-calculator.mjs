@@ -9,8 +9,8 @@
  * - 1 day = 86,400 seconds
  */
 
-import { MODULE_ID } from "./core/constants.mjs";
-import { t } from "./core/i18n.mjs";
+import { MODULE_ID } from "../core/constants.mjs";
+import { t } from "../core/i18n.mjs";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONSTANTS

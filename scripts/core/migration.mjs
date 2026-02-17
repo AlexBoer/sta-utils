@@ -7,7 +7,7 @@
  * @module migration
  */
 
-import { MODULE_ID } from "./core/constants.mjs";
+import { MODULE_ID } from "./constants.mjs";
 
 const OLD_MODULE_ID = "sta-officers-log";
 const MIGRATION_SETTING = "migrationVersion";

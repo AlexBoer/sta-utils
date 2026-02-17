@@ -5,13 +5,13 @@
  * Extracted from sta-officers-log traitButtons.js — only the fatigue portion.
  */
 
-import { MODULE_ID } from "../../core/constants.mjs";
-import { t } from "../../core/i18n.mjs";
-import { isTraitFatigue } from "./itemFlags.mjs";
+import { MODULE_ID } from "../core/constants.mjs";
+import { t } from "../core/i18n.mjs";
+import { isTraitFatigue } from "./item-flags.mjs";
 import {
   showAttributeSelectionDialog,
   hasFatiguedAttributeChosen,
-} from "../stressHook.mjs";
+} from "./stress-hook.mjs";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Debounced Render Helper

@@ -1,0 +1,55 @@
+<form class="sta-stardate-calculator" autocomplete="off">
+  <p class="sta-stardate-calculator-instructions">{{labels.instructions}}</p>
+
+  <div class="sta-stardate-calculator-mode-selector">
+    <label class="sta-stardate-mode-label">Mode:</label>
+    <div class="sta-stardate-mode-radios">
+      <label class="sta-stardate-mode-option">
+        <input type="radio" name="mode" value="toStardate" {{checked (eq mode "toStardate")}} />
+        {{labels.modeToStardate}}
+      </label>
+      <label class="sta-stardate-mode-option">
+        <input type="radio" name="mode" value="toCalendar" {{checked (eq mode "toCalendar")}} />
+        {{labels.modeToCalendar}}
+      </label>
+    </div>
+  </div>
+
+  <div class="sta-stardate-calculator-inputs">
+    {{! Stardate input (visible in toCalendar mode) }}
+    <div class="form-group" data-group="stardate">
+      <label>{{labels.stardate}}</label>
+      <div class="form-fields">
+        <input type="number" name="stardate" step="0.1" placeholder="e.g. 41153.7" value="{{values.stardate}}" />
+      </div>
+    </div>
+
+    {{! Calendar date input (visible in toStardate mode) }}
+    <div class="form-group" data-group="calendar">
+      <label>{{labels.calendarDate}}</label>
+      <div class="form-fields">
+        <input type="date" name="date" value="{{values.date}}" />
+      </div>
+    </div>
+
+    <div class="form-group" data-group="calendar">
+      <label>{{labels.time}}</label>
+      <div class="form-fields">
+        <input type="time" name="time" value="{{values.time}}" />
+      </div>
+    </div>
+  </div>
+
+  <div class="sta-stardate-calculator-results" data-hook="results">
+    <div class="sta-stardate-result-placeholder">{{labels.enterDate}}</div>
+  </div>
+
+  <footer class="sta-stardate-calculator-footer">
+    <button type="button" class="dialog-button" data-action="send" disabled>
+      <i class="fas fa-comment"></i> {{labels.sendToChat}}
+    </button>
+    <button type="button" class="dialog-button" data-action="close">
+      <i class="fas fa-times"></i> {{labels.close}}
+    </button>
+  </footer>
+</form>

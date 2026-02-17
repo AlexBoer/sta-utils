@@ -6,7 +6,7 @@
  */
 
 import { MODULE_ID } from "../core/constants.mjs";
-import { isTraitFatigue } from "./renderAppV2/itemFlags.mjs";
+import { isTraitFatigue } from "./item-flags.mjs";
 
 /**
  * Installs a createChatMessage hook that appends a fatigue notice

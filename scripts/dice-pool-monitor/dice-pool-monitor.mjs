@@ -7,7 +7,11 @@
  * @module hooks/renderAppV2/dicePoolMonitor
  */
 
-import { t } from "../../core/i18n.mjs";
+import { t } from "../core/i18n.mjs";
+import { MODULE_ID } from "../core/constants.mjs";
+
+const TEMPLATE_MONITOR = `modules/${MODULE_ID}/templates/dice-pool-monitor.hbs`;
+const TEMPLATE_PLAYER = `modules/${MODULE_ID}/templates/dice-pool-monitor-player.hbs`;
 
 /* ------------------------------------------------------------------ */
 /*  Module-level state                                                 */
@@ -67,85 +71,64 @@ function _statusBadge(status) {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Build HTML                                                         */
+/*  Template helpers                                                   */
 /* ------------------------------------------------------------------ */
 
 /**
- * Build a single player column.
- * @param {object} player
- * @param {string} player.dialogId - Unique dialog instance ID.
- * @param {string} player.userId - User ID.
- * @param {string} player.playerName - Player display name.
- * @param {string} player.actorName - Actor/character name.
- * @param {string} [player.status] - Status: "open", "rolled", "closed", "waiting".
+ * Build the shared labels object passed to the Handlebars templates.
+ * @returns {object}
  * @private
  */
-function _buildPlayerColumn(player) {
-  return `
-    <div class="sta-dice-pool-monitor-player" data-dialog-id="${player.dialogId}" data-user-id="${player.userId}">
-      <div class="sta-dice-pool-monitor-player-header">
-        <button type="button" class="sta-dice-pool-monitor-edit-btn" title="${t("sta-utils.dicePoolMonitor.editValues")}">
-          <i class="fa-solid fa-pencil"></i>
-        </button>
-        <div class="sta-dice-pool-monitor-player-name">
-          ${foundry.utils.escapeHTML(player.playerName)}
-        </div>
-        <div class="sta-dice-pool-monitor-actor-name" title="${foundry.utils.escapeHTML(player.actorName)}">
-          (${foundry.utils.escapeHTML(player.actorName)})
-        </div>
-        <div class="sta-dice-pool-monitor-status-container">
-          ${_statusBadge(player.status || "waiting")}
-        </div>
-      </div>
-      <div class="sta-dice-pool-monitor-options">
-        <div class="sta-dice-pool-monitor-option" data-option="usingFocus" data-value="">
-          <span class="sta-dice-pool-monitor-option-label">${t("sta-utils.dicePoolMonitor.usingFocus")}</span>
-          <span class="sta-dice-pool-monitor-option-value">${_boolIcon(null)}</span>
-        </div>
-        <div class="sta-dice-pool-monitor-option" data-option="usingDedicatedFocus" data-value="">
-          <span class="sta-dice-pool-monitor-option-label">${t("sta-utils.dicePoolMonitor.usingDedicatedFocus")}</span>
-          <span class="sta-dice-pool-monitor-option-value">${_boolIcon(null)}</span>
-        </div>
-        <div class="sta-dice-pool-monitor-option" data-option="usingDetermination" data-value="">
-          <span class="sta-dice-pool-monitor-option-label">${t("sta-utils.dicePoolMonitor.usingDetermination")}</span>
-          <span class="sta-dice-pool-monitor-option-value">${_boolIcon(null)}</span>
-        </div>
-        <div class="sta-dice-pool-monitor-option" data-option="complicationRange" data-value="">
-          <span class="sta-dice-pool-monitor-option-label">${t("sta-utils.dicePoolMonitor.complicationRange")}</span>
-          <span class="sta-dice-pool-monitor-option-value">—</span>
-        </div>
-        <div class="sta-dice-pool-monitor-option" data-option="dicePoolSlider" data-value="">
-          <span class="sta-dice-pool-monitor-option-label">${t("sta-utils.dicePoolMonitor.diceInPool")}</span>
-          <span class="sta-dice-pool-monitor-option-value">—</span>
-        </div>
-      </div>
-    </div>`;
+function _getLabels() {
+  return {
+    waitingForPlayers: t("sta-utils.dicePoolMonitor.waitingForPlayers"),
+    editValues: t("sta-utils.dicePoolMonitor.editValues"),
+    open: t("sta-utils.dicePoolMonitor.open"),
+    rolled: t("sta-utils.dicePoolMonitor.rolled"),
+    closed: t("sta-utils.dicePoolMonitor.closed"),
+    waiting: t("sta-utils.dicePoolMonitor.waiting"),
+    clickToRemove: t("sta-utils.dicePoolMonitor.clickToRemove"),
+    usingFocus: t("sta-utils.dicePoolMonitor.usingFocus"),
+    usingDedicatedFocus: t("sta-utils.dicePoolMonitor.usingDedicatedFocus"),
+    usingDetermination: t("sta-utils.dicePoolMonitor.usingDetermination"),
+    complicationRange: t("sta-utils.dicePoolMonitor.complicationRange"),
+    diceInPool: t("sta-utils.dicePoolMonitor.diceInPool"),
+  };
 }
 
 /**
- * Build the full content HTML for the dice pool monitor dialog.
+ * Render the full content HTML for the dice pool monitor dialog.
  *
  * @param {{ userId: string, playerName: string, actorName: string }[]} players
- * @returns {string}
+ * @returns {Promise<string>}
+ * @private
  */
-function _buildMonitorContent(players) {
-  let html = '<div class="sta-dice-pool-monitor">';
+async function _renderMonitorContent(players) {
+  return renderTemplate(TEMPLATE_MONITOR, {
+    hasPlayers: players.length > 0,
+    players,
+    labels: _getLabels(),
+  });
+}
 
-  if (players.length === 0) {
-    html += `<div class="sta-dice-pool-monitor-empty">
-      <i class="fa-solid fa-hourglass-half"></i>
-      ${t("sta-utils.dicePoolMonitor.waitingForPlayers")}
-    </div>`;
-  } else {
-    html += '<div class="sta-dice-pool-monitor-players">';
-    for (const player of players) {
-      html += _buildPlayerColumn(player);
-    }
-    html += "</div>";
-  }
-
-  html += "</div>";
-  return html;
+/**
+ * Render a single player column via the Handlebars template.
+ *
+ * @param {object} player
+ * @param {string} player.dialogId
+ * @param {string} player.userId
+ * @param {string} player.playerName
+ * @param {string} player.actorName
+ * @param {string} [player.status]
+ * @returns {Promise<string>}
+ * @private
+ */
+async function _renderPlayerColumn(player) {
+  return renderTemplate(TEMPLATE_PLAYER, {
+    ...player,
+    status: player.status || "waiting",
+    labels: _getLabels(),
+  });
 }
 
 /* ------------------------------------------------------------------ */
@@ -163,7 +146,7 @@ function _buildMonitorContent(players) {
  * @param {string} [player.status] - Status.
  * @private
  */
-function _addPlayerColumn(player) {
+async function _addPlayerColumn(player) {
   if (!_monitorEl) return;
 
   // Remove empty message if present
@@ -183,8 +166,9 @@ function _addPlayerColumn(player) {
     ".sta-dice-pool-monitor-players",
   );
   if (playersContainer) {
+    const html = await _renderPlayerColumn(player);
     const tpl = document.createElement("template");
-    tpl.innerHTML = _buildPlayerColumn(player).trim();
+    tpl.innerHTML = html.trim();
     const newCol = tpl.content.firstElementChild;
     playersContainer.appendChild(newCol);
 
@@ -380,7 +364,7 @@ async function _sendGMUpdate(dialogId, userId, updates) {
  * @param {boolean} [data.rolled] - True when the player has rolled.
  * @param {boolean} [data.closed] - True when the player closed the dialog.
  */
-export function updateDicePoolMonitor(data) {
+export async function updateDicePoolMonitor(data) {
   if (!_monitorEl) return;
 
   // Each dialog gets its own column, keyed by dialogId
@@ -389,7 +373,7 @@ export function updateDicePoolMonitor(data) {
     `.sta-dice-pool-monitor-player[data-dialog-id="${data.dialogId}"]`,
   );
   if (!playerCol) {
-    _addPlayerColumn({
+    await _addPlayerColumn({
       dialogId: data.dialogId,
       userId: data.userId,
       playerName: data.playerName ?? "Unknown",
@@ -555,7 +539,7 @@ function _removeDialogColumn(dialogId) {
  * @param {{ userId: string, playerName: string, actorName: string }[]} players
  */
 export async function showDicePoolMonitor(players) {
-  const content = _buildMonitorContent(players);
+  const content = await _renderMonitorContent(players);
 
   await foundry.applications.api.DialogV2.wait({
     window: {

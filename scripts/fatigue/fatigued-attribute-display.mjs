@@ -1,5 +1,5 @@
-import { MODULE_ID } from "../../core/constants.mjs";
-import { findFatiguedTrait } from "../stressHook.mjs";
+import { MODULE_ID } from "../core/constants.mjs";
+import { findFatiguedTrait } from "./stress-hook.mjs";
 
 const cleanedUpFatigueActors = new Set();
 

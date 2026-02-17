@@ -7,9 +7,10 @@
  * @module hooks/renderAppV2/hook
  */
 
-import { installDicePoolFatigueNotice } from "./dicePoolFatigueNotice.mjs";
-import { installDicePoolBroadcast } from "./dicePoolBroadcast.mjs";
-import { installFatiguedAttributeDisplay } from "./fatiguedAttributeDisplay.mjs";
+import { installDicePoolFatigueNotice } from "../fatigue/dice-pool-fatigue-notice.mjs";
+import { installDicePoolBroadcast } from "../dice-pool-monitor/dice-pool-broadcast.mjs";
+import { installFatiguedAttributeDisplay } from "../fatigue/fatigued-attribute-display.mjs";
+import { isFatigueEnabled } from "../core/settings.mjs";
 import {
   installStressInfoButton,
   installDeterminationInfoButton,
@@ -21,9 +22,9 @@ import {
   installLogsInfoButton,
   installMilestonesInfoButton,
   installDirectiveInfoButton,
-} from "./sectionInfoButtons.mjs";
-import { installChooseAttributeButtons } from "./traitFatigueButtons.mjs";
-import { installTraitFatigueCheckbox } from "./traitFatigueCheckbox.mjs";
+} from "./section-info-buttons.mjs";
+import { installChooseAttributeButtons } from "../fatigue/trait-fatigue-buttons.mjs";
+import { installTraitFatigueCheckbox } from "../fatigue/trait-fatigue-checkbox.mjs";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Handler: Dialogs
@@ -37,10 +38,12 @@ import { installTraitFatigueCheckbox } from "./traitFatigueCheckbox.mjs";
  * @param {object} context - The render context.
  */
 function handleDialogRender(app, root, context) {
-  try {
-    installDicePoolFatigueNotice(app, root, context);
-  } catch (_) {
-    // ignore
+  if (isFatigueEnabled()) {
+    try {
+      installDicePoolFatigueNotice(app, root, context);
+    } catch (_) {
+      // ignore
+    }
   }
 
   try {
@@ -71,10 +74,12 @@ function handleCharacterSheetRender(app, root) {
   const actor = app.actor;
   if (!actor || actor.type !== "character") return;
 
-  try {
-    installFatiguedAttributeDisplay(root, actor);
-  } catch (_) {
-    // ignore
+  if (isFatigueEnabled()) {
+    try {
+      installFatiguedAttributeDisplay(root, actor);
+    } catch (_) {
+      // ignore
+    }
   }
 
   try {
@@ -137,10 +142,12 @@ function handleCharacterSheetRender(app, root) {
     // ignore
   }
 
-  try {
-    installChooseAttributeButtons(root, actor, app);
-  } catch (_) {
-    // ignore
+  if (isFatigueEnabled()) {
+    try {
+      installChooseAttributeButtons(root, actor, app);
+    } catch (_) {
+      // ignore
+    }
   }
 }
 
@@ -156,6 +163,8 @@ function handleCharacterSheetRender(app, root) {
  * @param {HTMLElement} root - The root element.
  */
 function handleItemSheetRender(app, root) {
+  if (!isFatigueEnabled()) return;
+
   const item = app?.item ?? null;
   if (!item || item.type !== "trait") return;
 

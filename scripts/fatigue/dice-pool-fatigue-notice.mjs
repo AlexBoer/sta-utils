@@ -5,7 +5,7 @@
  * fatigue trait, informing the player that they have +1 Difficulty.
  */
 
-import { isTraitFatigue } from "./itemFlags.mjs";
+import { isTraitFatigue } from "./item-flags.mjs";
 
 /**
  * Install a fatigue notice in dice pool dialogs when the character is fatigued.

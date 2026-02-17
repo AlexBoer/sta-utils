@@ -33,14 +33,24 @@ async function getOrCreateFolder() {
  * @returns {Promise<Actor>}
  */
 export async function getOrCreateProxyActor(sceneId) {
-  // Look for an existing proxy actor for this scene
+  // 1. Check for a manually-assigned actor via scene flag
+  const scene = game.scenes.get(sceneId);
+  const manualActorId = scene?.getFlag(MODULE_ID, "sceneTraitsActorId");
+  if (manualActorId) {
+    const manual = game.actors.get(manualActorId);
+    if (manual) return manual;
+    console.warn(
+      `${MODULE_ID} | Manually-assigned scene traits actor ${manualActorId} not found, falling back`,
+    );
+  }
+
+  // 2. Look for an existing proxy actor for this scene
   let actor = game.actors.find(
     (a) => a.getFlag(MODULE_ID, "proxyForSceneId") === sceneId,
   );
   if (actor) return actor;
 
   // Build a human-readable name from the scene
-  const scene = game.scenes.get(sceneId);
   const sceneName = scene?.name ?? sceneId;
   const actorName = `Scene Traits – ${sceneName}`;
 

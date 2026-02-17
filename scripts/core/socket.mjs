@@ -26,22 +26,23 @@ export function initSocket() {
   moduleSocket.register("dicePoolUpdate", async (msg) => {
     if (!game.user.isGM) return;
     const { updateDicePoolMonitor } =
-      await import("../hooks/renderAppV2/dicePoolMonitor.mjs");
-    updateDicePoolMonitor(msg);
+      await import("../dice-pool-monitor/dice-pool-monitor.mjs");
+    await updateDicePoolMonitor(msg);
   });
 
   // --- RPC: GM -> Player (dice pool dialog value overrides) ---
   moduleSocket.register("dicePoolGMUpdate", async (msg) => {
     // This runs on the target player's client
     const { applyGMUpdate } =
-      await import("../hooks/renderAppV2/dicePoolBroadcast.mjs");
+      await import("../dice-pool-monitor/dice-pool-broadcast.mjs");
     applyGMUpdate(msg);
   });
 
   // --- RPC: Player -> GM (create trait token on canvas) ---
   moduleSocket.register("createTraitToken", async (msg) => {
     if (!game.user.isGM) return;
-    const { handleCreateTraitTokenRPC } = await import("../trait-tokens.mjs");
+    const { handleCreateTraitTokenRPC } =
+      await import("../trait-tokens/trait-tokens.mjs");
     await handleCreateTraitTokenRPC(msg);
   });
 

@@ -1,9 +1,11 @@
-import { MODULE_ID } from "./core/constants.mjs";
-import { t } from "./core/i18n.mjs";
-import { setPlayerAmbientAudioSelectionOnlyEnabled } from "./hooks/ambientAudioPatch.mjs";
+import { MODULE_ID } from "./constants.mjs";
+import { t } from "./i18n.mjs";
+import { setPlayerAmbientAudioSelectionOnlyEnabled } from "../misc/ambient-audio-patch.mjs";
 
 const SHOW_INFO_BUTTONS_SETTING = "showInfoButtons";
 const AMBIENT_AUDIO_SELECTION_ONLY_SETTING = "playerAmbientAudioSelectionOnly";
+const ENABLE_FATIGUE_SETTING = "enableFatigue";
+const ENABLE_BACKLINKS_SETTING = "enableBacklinks";
 
 /**
  * Register all sta-utils game settings.
@@ -35,6 +37,17 @@ export function registerSettings() {
     },
   });
 
+  // --- World: Enable Fatigue Management ---
+  game.settings.register(MODULE_ID, ENABLE_FATIGUE_SETTING, {
+    name: t("sta-utils.settings.enableFatigue.name"),
+    hint: t("sta-utils.settings.enableFatigue.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+  });
+
   // --- World: Ambient Audio Selection Only ---
   game.settings.register(MODULE_ID, AMBIENT_AUDIO_SELECTION_ONLY_SETTING, {
     name: t("sta-utils.settings.playerAmbientAudioSelectionOnly.name"),
@@ -54,6 +67,17 @@ export function registerSettings() {
       }
     },
   });
+
+  // --- World: Enable Journal Backlinks ---
+  game.settings.register(MODULE_ID, ENABLE_BACKLINKS_SETTING, {
+    name: t("sta-utils.settings.enableBacklinks.name"),
+    hint: t("sta-utils.settings.enableBacklinks.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+  });
 }
 
 /**
@@ -65,5 +89,29 @@ export function shouldShowInfoButtons() {
     return Boolean(game.settings.get(MODULE_ID, SHOW_INFO_BUTTONS_SETTING));
   } catch (_) {
     return true; // default to true
+  }
+}
+
+/**
+ * Check whether the "Enable Fatigue Management" world setting is enabled.
+ * @returns {boolean}
+ */
+export function isFatigueEnabled() {
+  try {
+    return Boolean(game.settings.get(MODULE_ID, ENABLE_FATIGUE_SETTING));
+  } catch (_) {
+    return false; // default to false
+  }
+}
+
+/**
+ * Check whether the "Enable Journal Backlinks" world setting is enabled.
+ * @returns {boolean}
+ */
+export function isBacklinksEnabled() {
+  try {
+    return Boolean(game.settings.get(MODULE_ID, ENABLE_BACKLINKS_SETTING));
+  } catch (_) {
+    return false; // default to false
   }
 }

@@ -737,3 +737,273 @@ input.selector.attribute.sta-fatigued-attribute {
   width: auto;
   margin-right: 0.5rem;
 }
+
+/* =============================================================================
+ * STARDATE CALCULATOR
+ * ============================================================================= */
+
+.sta-stardate-calculator-dialog {
+  min-width: 360px;
+}
+
+.sta-stardate-calculator {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sta-stardate-calculator-instructions {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+
+/* Mode selector */
+.sta-stardate-calculator-mode-selector {
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  background: rgba(100, 150, 200, 0.1);
+  border: 1px solid rgba(100, 150, 200, 0.3);
+  border-radius: 4px;
+}
+
+.sta-stardate-mode-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.sta-stardate-mode-radios {
+  display: flex;
+  gap: 1rem;
+}
+
+.sta-stardate-mode-option {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.sta-stardate-mode-option input[type="radio"] {
+  cursor: pointer;
+  accent-color: rgba(100, 200, 255, 0.8);
+}
+
+/* Inputs */
+.sta-stardate-calculator-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sta-stardate-calculator-inputs .form-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sta-stardate-calculator-inputs .form-group label {
+  flex: 0 0 110px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.sta-stardate-calculator-inputs .form-fields {
+  flex: 1;
+}
+
+.sta-stardate-calculator-inputs input {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid rgba(100, 150, 200, 0.4);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  color: inherit;
+  font-size: 1rem;
+}
+
+.sta-stardate-calculator-inputs input:focus {
+  border-color: rgba(100, 200, 255, 0.7);
+  outline: none;
+  box-shadow: 0 0 4px rgba(100, 200, 255, 0.3);
+}
+
+/* Hidden group toggle */
+.sta-stardate-hidden {
+  display: none !important;
+}
+
+/* Results panel */
+.sta-stardate-calculator-results {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(100, 150, 200, 0.15);
+  border: 1px solid rgba(100, 150, 200, 0.3);
+  border-radius: 6px;
+  min-height: 80px;
+}
+
+.sta-stardate-result-placeholder {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+  padding: 1rem 0;
+}
+
+.sta-stardate-result-error {
+  text-align: center;
+  color: rgba(255, 100, 100, 0.9);
+  padding: 1rem 0;
+}
+
+.sta-stardate-results-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.sta-stardate-result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+}
+
+.sta-stardate-result-label {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.sta-stardate-result-value {
+  font-family: monospace;
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* Highlight calculated value */
+.sta-stardate-calculated {
+  background: rgba(100, 200, 255, 0.2);
+  border-left: 3px solid rgba(100, 200, 255, 0.7);
+}
+
+.sta-stardate-calculated .sta-stardate-result-value {
+  color: rgba(100, 220, 255, 1);
+  font-weight: 700;
+}
+
+/* Chat message styling */
+.sta-stardate-calculator-chat {
+  padding: 0.5rem;
+  color: inherit;
+}
+
+.sta-stardate-calculator-chat h3 {
+  margin: 0 0 0.75rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #3d85c6;
+  font-size: 1.1rem;
+  color: #1a5a8a;
+}
+
+.sta-stardate-calculator-chat h3 i {
+  margin-right: 0.5rem;
+}
+
+.sta-stardate-calculator-chat .sta-stardate-results-grid {
+  gap: 0.3rem;
+}
+
+.sta-stardate-calculator-chat .sta-stardate-result-row {
+  padding: 0.2rem 0.4rem;
+}
+
+.sta-stardate-calculator-chat .sta-stardate-result-label {
+  color: #444;
+  font-weight: 600;
+}
+
+.sta-stardate-calculator-chat .sta-stardate-result-value {
+  color: #222;
+}
+
+.sta-stardate-calculator-chat .sta-stardate-calculated {
+  background: rgba(61, 133, 198, 0.15);
+  border-left: 3px solid #3d85c6;
+}
+
+.sta-stardate-calculator-chat .sta-stardate-calculated .sta-stardate-result-value {
+  color: #1a5a8a;
+  font-weight: 700;
+}
+
+/* Footer buttons */
+.sta-stardate-calculator-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(100, 150, 200, 0.3);
+}
+
+.sta-stardate-calculator-footer .dialog-button {
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(100, 150, 200, 0.4);
+  border-radius: 4px;
+  background: rgba(100, 150, 200, 0.2);
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.sta-stardate-calculator-footer .dialog-button:hover:not(:disabled) {
+  background: rgba(100, 150, 200, 0.35);
+  border-color: rgba(100, 200, 255, 0.6);
+}
+
+.sta-stardate-calculator-footer .dialog-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sta-stardate-calculator-footer .dialog-button i {
+  margin-right: 0.4rem;
+}
+
+/* =============================================================================
+ * JOURNAL BACKLINKS (wiki-style "referenced by" links)
+ * ============================================================================= */
+
+.journal-backlinks {
+  border-top: 1px solid var(--color-border-light-tertiary, #ccc);
+  margin-top: 1em;
+  padding-top: 0.5em;
+  opacity: 0.85;
+}
+
+.journal-backlinks ul {
+  list-style: none;
+  padding-left: 0.5em;
+  margin: 0.25em 0 0;
+}
+
+.journal-backlinks li {
+  margin-bottom: 0.25em;
+}
+
+.journal-backlinks .content-link {
+  cursor: pointer;
+}
+
+@media print {
+  .journal-backlinks {
+    display: none;
+  }
+}

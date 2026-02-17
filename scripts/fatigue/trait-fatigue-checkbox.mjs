@@ -5,9 +5,9 @@
  * Extracted from sta-officers-log installTraitScarCheckbox — only the fatigued portion.
  */
 
-import { MODULE_ID } from "../../core/constants.mjs";
-import { t } from "../../core/i18n.mjs";
-import { isTraitFatigue, setTraitFatigueFlag } from "./itemFlags.mjs";
+import { MODULE_ID } from "../core/constants.mjs";
+import { t } from "../core/i18n.mjs";
+import { isTraitFatigue, setTraitFatigueFlag } from "./item-flags.mjs";
 
 /**
  * Installs a standalone Fatigued checkbox on trait item sheets.

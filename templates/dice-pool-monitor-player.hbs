@@ -1,0 +1,60 @@
+<div class="sta-dice-pool-monitor-player" data-dialog-id="{{dialogId}}" data-user-id="{{userId}}">
+  <div class="sta-dice-pool-monitor-player-header">
+    <button type="button" class="sta-dice-pool-monitor-edit-btn" title="{{@root.labels.editValues}}">
+      <i class="fa-solid fa-pencil"></i>
+    </button>
+    <div class="sta-dice-pool-monitor-player-name">
+      {{playerName}}
+    </div>
+    <div class="sta-dice-pool-monitor-actor-name" title="{{actorName}}">
+      ({{actorName}})
+    </div>
+    <div class="sta-dice-pool-monitor-status-container">
+      {{#if (eq status "open")}}
+        <span class="sta-dice-pool-monitor-status" data-status="open">
+          <i class="fa-solid fa-dice"></i> {{@root.labels.open}}
+        </span>
+      {{else if (eq status "rolled")}}
+        <span class="sta-dice-pool-monitor-status sta-dice-pool-monitor-status-removable" data-status="rolled" title="{{@root.labels.clickToRemove}}">
+          <i class="fa-solid fa-dice-d20"></i> {{@root.labels.rolled}}
+        </span>
+      {{else if (eq status "closed")}}
+        <span class="sta-dice-pool-monitor-status sta-dice-pool-monitor-status-removable" data-status="closed" title="{{@root.labels.clickToRemove}}">
+          <i class="fa-solid fa-times"></i> {{@root.labels.closed}}
+        </span>
+      {{else}}
+        <span class="sta-dice-pool-monitor-status" data-status="waiting">
+          <i class="fa-solid fa-hourglass-half"></i> {{@root.labels.waiting}}
+        </span>
+      {{/if}}
+    </div>
+  </div>
+  <div class="sta-dice-pool-monitor-options">
+    <div class="sta-dice-pool-monitor-option" data-option="usingFocus" data-value="">
+      <span class="sta-dice-pool-monitor-option-label">{{@root.labels.usingFocus}}</span>
+      <span class="sta-dice-pool-monitor-option-value">
+        <span class="sta-dice-pool-monitor-icon-none">—</span>
+      </span>
+    </div>
+    <div class="sta-dice-pool-monitor-option" data-option="usingDedicatedFocus" data-value="">
+      <span class="sta-dice-pool-monitor-option-label">{{@root.labels.usingDedicatedFocus}}</span>
+      <span class="sta-dice-pool-monitor-option-value">
+        <span class="sta-dice-pool-monitor-icon-none">—</span>
+      </span>
+    </div>
+    <div class="sta-dice-pool-monitor-option" data-option="usingDetermination" data-value="">
+      <span class="sta-dice-pool-monitor-option-label">{{@root.labels.usingDetermination}}</span>
+      <span class="sta-dice-pool-monitor-option-value">
+        <span class="sta-dice-pool-monitor-icon-none">—</span>
+      </span>
+    </div>
+    <div class="sta-dice-pool-monitor-option" data-option="complicationRange" data-value="">
+      <span class="sta-dice-pool-monitor-option-label">{{@root.labels.complicationRange}}</span>
+      <span class="sta-dice-pool-monitor-option-value">—</span>
+    </div>
+    <div class="sta-dice-pool-monitor-option" data-option="dicePoolSlider" data-value="">
+      <span class="sta-dice-pool-monitor-option-label">{{@root.labels.diceInPool}}</span>
+      <span class="sta-dice-pool-monitor-option-value">—</span>
+    </div>
+  </div>
+</div>
