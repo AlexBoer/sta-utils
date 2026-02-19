@@ -93,6 +93,10 @@ function _getLabels() {
     usingDetermination: t("sta-utils.dicePoolMonitor.usingDetermination"),
     complicationRange: t("sta-utils.dicePoolMonitor.complicationRange"),
     diceInPool: t("sta-utils.dicePoolMonitor.diceInPool"),
+    shipAssisting: t("sta-utils.dicePoolMonitor.shipAssisting"),
+    starship: t("sta-utils.dicePoolMonitor.starship"),
+    system: t("sta-utils.dicePoolMonitor.system"),
+    department: t("sta-utils.dicePoolMonitor.department"),
   };
 }
 
@@ -104,7 +108,7 @@ function _getLabels() {
  * @private
  */
 async function _renderMonitorContent(players) {
-  return renderTemplate(TEMPLATE_MONITOR, {
+  return foundry.applications.handlebars.renderTemplate(TEMPLATE_MONITOR, {
     hasPlayers: players.length > 0,
     players,
     labels: _getLabels(),
@@ -124,7 +128,7 @@ async function _renderMonitorContent(players) {
  * @private
  */
 async function _renderPlayerColumn(player) {
-  return renderTemplate(TEMPLATE_PLAYER, {
+  return foundry.applications.handlebars.renderTemplate(TEMPLATE_PLAYER, {
     ...player,
     status: player.status || "waiting",
     labels: _getLabels(),
@@ -245,12 +249,16 @@ function _renderEditInputs(playerCol, dialogId, userId) {
     if (!valueEl) continue;
 
     const currentValue = optionEl.dataset.value === "true";
-    valueEl.innerHTML = `<input type="checkbox" class="sta-dice-pool-monitor-edit-checkbox" ${currentValue ? "checked" : ""} />`;
+    valueEl.innerHTML = `<span class="sta-dice-pool-monitor-edit-toggle" data-checked="${currentValue}"><i class="fa-solid ${currentValue ? "fa-square-check" : "fa-square"}"></i></span>`;
 
-    const checkbox = valueEl.querySelector("input");
-    checkbox?.addEventListener("change", () => {
-      optionEl.dataset.value = String(checkbox.checked);
-      _sendGMUpdate(dialogId, userId, { [key]: checkbox.checked });
+    const toggle = valueEl.querySelector(".sta-dice-pool-monitor-edit-toggle");
+    toggle?.addEventListener("click", () => {
+      const newVal = toggle.dataset.checked !== "true";
+      toggle.dataset.checked = String(newVal);
+      toggle.querySelector("i").className =
+        `fa-solid ${newVal ? "fa-square-check" : "fa-square"}`;
+      optionEl.dataset.value = String(newVal);
+      _sendGMUpdate(dialogId, userId, { [key]: newVal });
     });
   }
 
@@ -278,6 +286,9 @@ function _renderEditInputs(playerCol, dialogId, userId) {
       _sendGMUpdate(dialogId, userId, { [key]: newValue });
     });
   }
+
+  // Ship-assist edit controls
+  _renderShipAssistEditInputs(playerCol, dialogId, userId);
 }
 
 /**
@@ -320,6 +331,264 @@ function _renderDisplayValues(playerCol) {
     const value = optionEl.dataset.value || "—";
     valueEl.textContent = value;
   }
+
+  // Restore ship-assist display values
+  _renderShipAssistDisplayValues(playerCol);
+}
+
+/**
+ * Render editable inputs for the ship-assist section.
+ * @param {HTMLElement} playerCol
+ * @param {string} dialogId
+ * @param {string} userId
+ * @private
+ */
+function _renderShipAssistEditInputs(playerCol, dialogId, userId) {
+  const shipSection = playerCol.querySelector(
+    ".sta-dice-pool-monitor-ship-section",
+  );
+  if (!shipSection) return;
+
+  // Toggle checkbox for starshipAssisting
+  const toggleValue = shipSection.querySelector(
+    ".sta-dice-pool-monitor-ship-toggle-value",
+  );
+  if (toggleValue) {
+    const isActive = shipSection.dataset.active === "true";
+    toggleValue.innerHTML = `<span class="sta-dice-pool-monitor-edit-toggle" data-checked="${isActive}"><i class="fa-solid ${isActive ? "fa-square-check" : "fa-square"}"></i></span>`;
+    const toggle = toggleValue.querySelector(
+      ".sta-dice-pool-monitor-edit-toggle",
+    );
+    toggle?.addEventListener("click", () => {
+      const newVal = toggle.dataset.checked !== "true";
+      toggle.dataset.checked = String(newVal);
+      toggle.querySelector("i").className =
+        `fa-solid ${newVal ? "fa-square-check" : "fa-square"}`;
+      shipSection.dataset.active = String(newVal);
+      const details = shipSection.querySelector(
+        ".sta-dice-pool-monitor-ship-details",
+      );
+      if (details) details.style.display = newVal ? "" : "none";
+      _sendGMUpdate(dialogId, userId, {
+        starshipAssisting: newVal,
+      });
+    });
+  }
+
+  // Dropdowns for ship, system, department
+  const selectFields = [
+    { key: "selectedStarship", optionsKey: "starshipOptions" },
+    { key: "selectedSystem", optionsKey: "systemOptions" },
+    { key: "selectedDepartment", optionsKey: "departmentOptions" },
+  ];
+
+  for (const { key, optionsKey } of selectFields) {
+    const optionEl = shipSection.querySelector(
+      `.sta-dice-pool-monitor-option[data-option="${key}"]`,
+    );
+    if (!optionEl) continue;
+    const valueEl = optionEl.querySelector(
+      ".sta-dice-pool-monitor-option-value",
+    );
+    if (!valueEl) continue;
+
+    // Parse stored options from the player column
+    let options = [];
+    try {
+      options = JSON.parse(playerCol.dataset[optionsKey] || "[]");
+    } catch (_) {
+      // ignore
+    }
+
+    if (options.length === 0) continue;
+
+    const currentValue = optionEl.dataset.value || "";
+    const optionsHtml = options
+      .map(
+        (o) =>
+          `<option value="${o.value}" ${o.value === currentValue ? "selected" : ""}>${o.label}</option>`,
+      )
+      .join("");
+    valueEl.innerHTML = `<select class="sta-dice-pool-monitor-edit-select">${optionsHtml}</select>`;
+
+    const select = valueEl.querySelector("select");
+    select?.addEventListener("change", () => {
+      optionEl.dataset.value = select.value;
+      _sendGMUpdate(dialogId, userId, { [key]: select.value });
+    });
+  }
+}
+
+/**
+ * Restore display values for ship-assist section after exiting edit mode.
+ * @param {HTMLElement} playerCol
+ * @private
+ */
+function _renderShipAssistDisplayValues(playerCol) {
+  const shipSection = playerCol.querySelector(
+    ".sta-dice-pool-monitor-ship-section",
+  );
+  if (!shipSection) return;
+
+  // Restore toggle display
+  const toggleValue = shipSection.querySelector(
+    ".sta-dice-pool-monitor-ship-toggle-value",
+  );
+  if (toggleValue) {
+    const isActive = shipSection.dataset.active === "true";
+    toggleValue.innerHTML = _boolIcon(isActive);
+  }
+
+  // Restore select display values
+  const selectFields = [
+    { key: "selectedStarship", optionsKey: "starshipOptions" },
+    { key: "selectedSystem", optionsKey: "systemOptions" },
+    { key: "selectedDepartment", optionsKey: "departmentOptions" },
+  ];
+
+  for (const { key, optionsKey } of selectFields) {
+    const optionEl = shipSection.querySelector(
+      `.sta-dice-pool-monitor-option[data-option="${key}"]`,
+    );
+    if (!optionEl) continue;
+    const valueEl = optionEl.querySelector(
+      ".sta-dice-pool-monitor-option-value",
+    );
+    if (!valueEl) continue;
+
+    const currentValue = optionEl.dataset.value || "";
+    let options = [];
+    try {
+      options = JSON.parse(playerCol.dataset[optionsKey] || "[]");
+    } catch (_) {
+      // ignore
+    }
+    const selectedOpt = options.find((o) => o.value === currentValue);
+    valueEl.textContent = selectedOpt?.label ?? currentValue ?? "—";
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Ship-assist section                                                */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Update the ship-assist section in a player column.
+ * Creates the section if it doesn't exist yet.
+ *
+ * @param {HTMLElement} playerCol
+ * @param {object} data - The dice pool update data.
+ * @param {boolean} isEditing - Whether the column is in edit mode.
+ * @private
+ */
+function _updateShipAssistSection(playerCol, data, isEditing) {
+  if (data.starshipAssisting === undefined) return;
+
+  let shipSection = playerCol.querySelector(
+    ".sta-dice-pool-monitor-ship-section",
+  );
+
+  // Store dropdown options on the player column element for edit mode
+  if (data.starshipOptions?.length) {
+    playerCol.dataset.starshipOptions = JSON.stringify(data.starshipOptions);
+  }
+  if (data.systemOptions?.length) {
+    playerCol.dataset.systemOptions = JSON.stringify(data.systemOptions);
+  }
+  if (data.departmentOptions?.length) {
+    playerCol.dataset.departmentOptions = JSON.stringify(
+      data.departmentOptions,
+    );
+  }
+
+  // Create ship section if it doesn't exist
+  if (!shipSection) {
+    shipSection = document.createElement("div");
+    shipSection.className = "sta-dice-pool-monitor-ship-section";
+    const labels = _getLabels();
+    shipSection.innerHTML = `
+      <div class="sta-dice-pool-monitor-ship-header">
+        <i class="fa-solid fa-rocket"></i>
+        <span>${labels.shipAssisting}</span>
+        <span class="sta-dice-pool-monitor-ship-toggle-value"></span>
+      </div>
+      <div class="sta-dice-pool-monitor-ship-details">
+        <div class="sta-dice-pool-monitor-option" data-option="selectedStarship" data-value="">
+          <span class="sta-dice-pool-monitor-option-label">${labels.starship}</span>
+          <span class="sta-dice-pool-monitor-option-value">—</span>
+        </div>
+        <div class="sta-dice-pool-monitor-option" data-option="selectedSystem" data-value="">
+          <span class="sta-dice-pool-monitor-option-label">${labels.system}</span>
+          <span class="sta-dice-pool-monitor-option-value">—</span>
+        </div>
+        <div class="sta-dice-pool-monitor-option" data-option="selectedDepartment" data-value="">
+          <span class="sta-dice-pool-monitor-option-label">${labels.department}</span>
+          <span class="sta-dice-pool-monitor-option-value">—</span>
+        </div>
+      </div>
+    `;
+    // Insert after the options section
+    const optionsSection = playerCol.querySelector(
+      ".sta-dice-pool-monitor-options",
+    );
+    if (optionsSection) {
+      optionsSection.after(shipSection);
+    } else {
+      playerCol.appendChild(shipSection);
+    }
+  }
+
+  // Update toggle value display
+  const toggleValue = shipSection.querySelector(
+    ".sta-dice-pool-monitor-ship-toggle-value",
+  );
+  if (toggleValue && !isEditing) {
+    toggleValue.innerHTML = _boolIcon(data.starshipAssisting);
+  }
+
+  // Store toggle state
+  shipSection.dataset.active = String(data.starshipAssisting);
+
+  // Show/hide details based on whether ship is assisting
+  const details = shipSection.querySelector(
+    ".sta-dice-pool-monitor-ship-details",
+  );
+  if (details) {
+    details.style.display = data.starshipAssisting ? "" : "none";
+  }
+
+  // Update ship-assist select values
+  if (!isEditing) {
+    const selectOptions = {
+      selectedStarship: data.selectedStarship,
+      selectedSystem: data.selectedSystem,
+      selectedDepartment: data.selectedDepartment,
+    };
+    const optionSources = {
+      selectedStarship: data.starshipOptions,
+      selectedSystem: data.systemOptions,
+      selectedDepartment: data.departmentOptions,
+    };
+
+    for (const [key, value] of Object.entries(selectOptions)) {
+      if (value === undefined) continue;
+      const optionEl = shipSection.querySelector(
+        `.sta-dice-pool-monitor-option[data-option="${key}"]`,
+      );
+      if (!optionEl) continue;
+
+      optionEl.dataset.value = value;
+      const valueEl = optionEl.querySelector(
+        ".sta-dice-pool-monitor-option-value",
+      );
+      if (!valueEl) continue;
+
+      // Show the label of the selected option, not the raw value
+      const options = optionSources[key] ?? [];
+      const selectedOpt = options.find((o) => o.value === value);
+      valueEl.textContent = selectedOpt?.label ?? value ?? "—";
+    }
+  }
 }
 
 /**
@@ -331,7 +600,7 @@ function _renderDisplayValues(playerCol) {
  */
 async function _sendGMUpdate(dialogId, userId, updates) {
   try {
-    const { getModuleSocket } = await import("../../core/socket.mjs");
+    const { getModuleSocket } = await import("../core/socket.mjs");
     const sock = getModuleSocket();
     if (!sock) return;
 
@@ -425,6 +694,9 @@ export async function updateDicePoolMonitor(data) {
       valueEl.textContent = String(value);
     }
   }
+
+  // Update ship-assist section
+  _updateShipAssistSection(playerCol, data, isEditing);
 
   // Update status
   const statusContainer = playerCol.querySelector(

@@ -58,7 +58,47 @@ async function _onDropCanvasData(canvas, data) {
   } catch {
     return; // Not a valid UUID — let default handling continue
   }
-  if (!sourceItem || sourceItem.type !== "trait") return;
+  if (!sourceItem) return;
+
+  // If the dropped item is not a trait, offer to create a scene trait from it
+  if (sourceItem.type !== "trait") {
+    const confirmed = await foundry.applications.api.DialogV2.confirm({
+      window: { title: "Create Scene Trait" },
+      content: `<p>"${sourceItem.name}" is not a trait. Create a new scene trait with this name?</p>`,
+      yes: { default: true },
+    });
+    if (!confirmed) return;
+
+    // Build a message that will create the trait directly on the proxy actor
+    const tintColor = await pickTraitColor();
+    if (!tintColor) return;
+
+    const msg = {
+      uuid: null,
+      name: sourceItem.name,
+      quantity: 1,
+      x: data.x,
+      y: data.y,
+      tintColor,
+      sceneId: canvas.scene.id,
+    };
+
+    if (game.user.isGM) {
+      await _createTraitToken(msg);
+    } else {
+      try {
+        const { getModuleSocket } = await import("./core/socket.mjs");
+        const sock = getModuleSocket();
+        if (!sock) return;
+        await sock.executeAsGM("createTraitToken", msg);
+      } catch (err) {
+        console.log(
+          `${MODULE_ID} | Cannot create trait token: no GM connected`,
+        );
+      }
+    }
+    return;
+  }
 
   // 1. Ask for a tint color (local UI — runs on every client)
   const tintColor = await pickTraitColor();
@@ -142,25 +182,63 @@ async function _createTraitToken({
     return;
   }
 
-  // Resolve the source item to check for reuse
-  let sourceItem;
-  try {
-    sourceItem = await fromUuid(uuid);
-  } catch {
-    console.warn(`${MODULE_ID} | Could not resolve source item ${uuid}`);
-    return;
-  }
-
-  // Reuse the item if already embedded on this proxy, otherwise copy it
   let embeddedItem;
-  if (sourceItem?.parent?.id === proxyActor.id) {
-    embeddedItem = sourceItem;
-  } else {
+  let ownerActor;
+  let isOwnedByRealActor = false;
+
+  if (!uuid) {
+    // No source item — create a brand-new trait directly on the proxy actor
     try {
-      embeddedItem = await addTraitToProxy(proxyActor, sourceItem);
+      const [created] = await proxyActor.createEmbeddedDocuments("Item", [
+        { name, type: "trait", system: { quantity, description: "" } },
+      ]);
+      embeddedItem = created;
+      ownerActor = proxyActor;
     } catch (err) {
-      console.error(`${MODULE_ID} | Failed to add trait to proxy actor`, err);
+      console.error(
+        `${MODULE_ID} | Failed to create trait on proxy actor`,
+        err,
+      );
       return;
+    }
+  } else {
+    // Resolve the source item to check for reuse
+    let sourceItem;
+    try {
+      sourceItem = await fromUuid(uuid);
+    } catch {
+      console.warn(`${MODULE_ID} | Could not resolve source item ${uuid}`);
+      return;
+    }
+
+    // Determine whether the source item lives on a "real" actor (character,
+    // starship, etc.) vs. a proxy Scene Traits actor.  Items on real actors
+    // are referenced directly — never duplicated, never deleted on cleanup.
+    const sourceActor = sourceItem?.parent;
+    const isOnProxyActor =
+      sourceActor?.documentName === "Actor" &&
+      (sourceActor.getFlag(MODULE_ID, "isProxyActor") === true ||
+        sourceActor.type === "scenetraits");
+    isOwnedByRealActor =
+      sourceActor?.documentName === "Actor" && !isOnProxyActor;
+
+    if (isOwnedByRealActor) {
+      // Real actor (character, starship, etc.) — reference directly
+      embeddedItem = sourceItem;
+      ownerActor = sourceActor;
+    } else if (sourceActor?.id === proxyActor.id) {
+      // Already on this scene's proxy actor — reuse
+      embeddedItem = sourceItem;
+      ownerActor = proxyActor;
+    } else {
+      // World item, compendium item, or from a different proxy actor — copy
+      try {
+        embeddedItem = await addTraitToProxy(proxyActor, sourceItem);
+        ownerActor = proxyActor;
+      } catch (err) {
+        console.error(`${MODULE_ID} | Failed to add trait to proxy actor`, err);
+        return;
+      }
     }
   }
 
@@ -168,7 +246,7 @@ async function _createTraitToken({
   const tokenData = {
     name: displayName,
     texture: { src: imageDataUri, tint: tintColor },
-    actorId: proxyActor.id,
+    actorId: ownerActor.id,
     actorLink: false,
     hidden: !isTraitVisible(embeddedItem),
     x,
@@ -182,9 +260,10 @@ async function _createTraitToken({
     flags: {
       [MODULE_ID]: {
         isTraitToken: true,
-        proxyActorId: proxyActor.id,
+        proxyActorId: ownerActor.id,
         embeddedItemId: embeddedItem.id,
         sourceUuid: uuid,
+        ownedByRealActor: isOwnedByRealActor,
       },
     },
   };
@@ -210,6 +289,15 @@ async function _onDeleteToken(tokenDoc, _options, _userId) {
   if (!flags?.isTraitToken) return;
 
   if (flags.proxyActorId && flags.embeddedItemId) {
+    const actor = game.actors.get(flags.proxyActorId);
+    if (!actor) return;
+
+    // Only clean up items from proxy actors, never from real actors
+    const isProxy =
+      actor.getFlag(MODULE_ID, "isProxyActor") === true ||
+      actor.type === "scenetraits";
+    if (!isProxy) return;
+
     // Check whether any remaining tokens on this scene reference the same item
     const scene = tokenDoc.parent;
     const stillUsed = scene?.tokens.some((t) => {
@@ -225,11 +313,8 @@ async function _onDeleteToken(tokenDoc, _options, _userId) {
     if (stillUsed) return;
 
     try {
-      const proxyActor = game.actors.get(flags.proxyActorId);
-      if (proxyActor?.items.has(flags.embeddedItemId)) {
-        await proxyActor.deleteEmbeddedDocuments("Item", [
-          flags.embeddedItemId,
-        ]);
+      if (actor.items.has(flags.embeddedItemId)) {
+        await actor.deleteEmbeddedDocuments("Item", [flags.embeddedItemId]);
         console.log(
           `${MODULE_ID} | Removed embedded trait "${flags.embeddedItemId}" from proxy actor`,
         );

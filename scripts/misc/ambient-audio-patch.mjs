@@ -106,7 +106,18 @@ function _patchSoundsLayerListenerPositions() {
 
     // Match the GM default: only controlled tokens act as listeners.
     const controlled = canvas?.tokens?.controlled ?? [];
-    const listeners = controlled.filter(_userCanObserveToken);
+    let listeners = controlled.filter(_userCanObserveToken);
+
+    // When nothing is selected, fall back to tokens belonging to the
+    // player's configured character (User Configuration → Character).
+    if (!listeners.length) {
+      const character = game.user?.character;
+      if (character) {
+        listeners = (canvas.tokens?.placeables ?? []).filter(
+          (t) => t.actor?.id === character.id,
+        );
+      }
+    }
 
     if (!listeners.length) return [];
 

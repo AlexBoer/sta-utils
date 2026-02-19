@@ -154,13 +154,50 @@ function _gatherDicePoolState(root) {
     ? parseInt(dicePoolSliderInput.value, 10) || 2
     : 2;
 
+  // Ship-assist fields
+  const starshipAssisting =
+    form.querySelector?.('input[name="starshipAssisting"]')?.checked ?? false;
+
+  const starshipSelect = form.querySelector?.('select[name="starship"]');
+  const selectedStarship = starshipSelect?.value ?? "";
+  const starshipOptions = _gatherSelectOptions(starshipSelect);
+
+  const systemSelect = form.querySelector?.('select[name="system"]');
+  const selectedSystem = systemSelect?.value ?? "";
+  const systemOptions = _gatherSelectOptions(systemSelect);
+
+  const departmentSelect = form.querySelector?.('select[name="department"]');
+  const selectedDepartment = departmentSelect?.value ?? "";
+  const departmentOptions = _gatherSelectOptions(departmentSelect);
+
   return {
     usingFocus,
     usingDedicatedFocus,
     usingDetermination,
     complicationRange,
     dicePoolSlider,
+    starshipAssisting,
+    selectedStarship,
+    starshipOptions,
+    selectedSystem,
+    systemOptions,
+    selectedDepartment,
+    departmentOptions,
   };
+}
+
+/**
+ * Extract option values and labels from a <select> element.
+ * @param {HTMLSelectElement|null} select
+ * @returns {{ value: string, label: string }[]}
+ * @private
+ */
+function _gatherSelectOptions(select) {
+  if (!select) return [];
+  return Array.from(select.options).map((opt) => ({
+    value: opt.value,
+    label: opt.textContent?.trim() ?? opt.value,
+  }));
 }
 
 /* ------------------------------------------------------------------ */
@@ -181,7 +218,7 @@ async function _broadcastDicePoolState(root, actor, dialogId, extra = {}) {
   if (game.user.isGM) return;
 
   try {
-    const { getModuleSocket } = await import("../../core/socket.mjs");
+    const { getModuleSocket } = await import("../core/socket.mjs");
     const sock = getModuleSocket();
     if (!sock) return;
 
@@ -232,6 +269,12 @@ function _attachBroadcastListeners(root, actor, dialogId) {
   for (const input of rangeInputs) {
     input.addEventListener("input", broadcast);
     input.addEventListener("change", broadcast);
+  }
+
+  // Select dropdown changes (ship, system, department)
+  const selects = form.querySelectorAll?.("select") ?? [];
+  for (const select of selects) {
+    select.addEventListener("change", broadcast);
   }
 
   // Also attach to form submit to catch the roll
@@ -359,5 +402,32 @@ export function applyGMUpdate(data) {
   if (data.dicePoolSlider !== undefined) {
     const input = form.querySelector?.('input[name="dicePoolSlider"]');
     if (input) input.value = String(data.dicePoolSlider);
+  }
+
+  // Apply ship-assist updates
+  if (data.starshipAssisting !== undefined) {
+    const input = form.querySelector?.('input[name="starshipAssisting"]');
+    if (input) {
+      input.checked = data.starshipAssisting;
+      // Toggle the visibility of the ship-assist section (it's a .starshipAssisting div inside #dice-pool-form)
+      const section =
+        form.querySelector?.(".starshipAssisting") ??
+        root?.querySelector?.(".starshipAssisting");
+      if (section) {
+        section.classList.toggle("hidden", !data.starshipAssisting);
+      }
+    }
+  }
+  if (data.selectedStarship !== undefined) {
+    const select = form.querySelector?.('select[name="starship"]');
+    if (select) select.value = data.selectedStarship;
+  }
+  if (data.selectedSystem !== undefined) {
+    const select = form.querySelector?.('select[name="system"]');
+    if (select) select.value = data.selectedSystem;
+  }
+  if (data.selectedDepartment !== undefined) {
+    const select = form.querySelector?.('select[name="department"]');
+    if (select) select.value = data.selectedDepartment;
   }
 }

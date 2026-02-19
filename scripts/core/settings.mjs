@@ -6,6 +6,7 @@ const SHOW_INFO_BUTTONS_SETTING = "showInfoButtons";
 const AMBIENT_AUDIO_SELECTION_ONLY_SETTING = "playerAmbientAudioSelectionOnly";
 const ENABLE_FATIGUE_SETTING = "enableFatigue";
 const ENABLE_BACKLINKS_SETTING = "enableBacklinks";
+const ENABLE_STYLE_ENHANCE_SETTING = "enableStyleEnhance";
 
 /**
  * Register all sta-utils game settings.
@@ -78,6 +79,23 @@ export function registerSettings() {
     default: false,
     requiresReload: true,
   });
+
+  // --- World: Enable Style Enhancements ---
+  game.settings.register(MODULE_ID, ENABLE_STYLE_ENHANCE_SETTING, {
+    name: t("sta-utils.settings.enableStyleEnhance.name"),
+    hint: t("sta-utils.settings.enableStyleEnhance.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    onChange: (value) => {
+      try {
+        _toggleStyleEnhance(Boolean(value));
+      } catch (err) {
+        console.error(`${MODULE_ID} | style enhance onChange failed`, err);
+      }
+    },
+  });
 }
 
 /**
@@ -113,5 +131,36 @@ export function isBacklinksEnabled() {
     return Boolean(game.settings.get(MODULE_ID, ENABLE_BACKLINKS_SETTING));
   } catch (_) {
     return false; // default to false
+  }
+}
+
+/**
+ * Check whether the "Enable Style Enhancements" world setting is enabled.
+ * @returns {boolean}
+ */
+export function isStyleEnhanceEnabled() {
+  try {
+    return Boolean(game.settings.get(MODULE_ID, ENABLE_STYLE_ENHANCE_SETTING));
+  } catch (_) {
+    return true; // default to true
+  }
+}
+
+const STYLE_ENHANCE_LINK_ID = "sta-utils-style-enhance";
+
+/**
+ * Inject or remove the sta-style-enhance.css stylesheet.
+ * @param {boolean} enabled
+ */
+export function _toggleStyleEnhance(enabled) {
+  const existing = document.getElementById(STYLE_ENHANCE_LINK_ID);
+  if (enabled && !existing) {
+    const link = document.createElement("link");
+    link.id = STYLE_ENHANCE_LINK_ID;
+    link.rel = "stylesheet";
+    link.href = `modules/${MODULE_ID}/styles/sta-style-enhance.css`;
+    document.head.appendChild(link);
+  } else if (!enabled && existing) {
+    existing.remove();
   }
 }

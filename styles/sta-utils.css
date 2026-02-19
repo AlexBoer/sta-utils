@@ -227,12 +227,30 @@ li.row.entry.sta-utils-trait-hidden .item-name {
   color: rgba(255, 255, 255, 0.3);
 }
 
-/* Edit mode inputs */
-.sta-dice-pool-monitor-edit-checkbox {
-  width: 1rem;
-  height: 1rem;
+/* Edit mode inputs — FA icon toggle (replaces native checkbox) */
+.sta-dice-pool-monitor-edit-toggle {
   cursor: pointer;
-  accent-color: var(--color-warm-1, #ee9b3a);
+  font-size: 1rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sta-dice-pool-monitor-edit-toggle[data-checked="false"] {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.sta-dice-pool-monitor-edit-toggle[data-checked="false"]:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.sta-dice-pool-monitor-edit-toggle[data-checked="true"] {
+  color: var(--color-warm-1, #ee9b3a);
+}
+
+.sta-dice-pool-monitor-edit-toggle[data-checked="true"]:hover {
+  color: var(--color-warm-2, #d4882e);
 }
 
 .sta-dice-pool-monitor-edit-number {
@@ -249,6 +267,63 @@ li.row.entry.sta-utils-trait-hidden .item-name {
 }
 
 .sta-dice-pool-monitor-edit-number:focus {
+  outline: none;
+  border-color: var(--color-warm-1, #ee9b3a);
+}
+
+/* Ship-assist section */
+.sta-dice-pool-monitor-ship-section {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.3rem 0.4rem 0.4rem;
+}
+
+.sta-dice-pool-monitor-ship-header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  padding-bottom: 0.25rem;
+}
+
+.sta-dice-pool-monitor-ship-header i {
+  font-size: 0.65rem;
+  opacity: 0.7;
+}
+
+.sta-dice-pool-monitor-ship-toggle-value {
+  margin-left: auto;
+}
+
+.sta-dice-pool-monitor-ship-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.sta-dice-pool-monitor-edit-select {
+  width: 100%;
+  max-width: 7rem;
+  height: 1.4rem;
+  padding: 0 0.2rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.3);
+  color: inherit;
+  cursor: pointer;
+  /* Force dark dropdown panel so light text stays readable */
+  color-scheme: dark;
+}
+
+.sta-dice-pool-monitor-edit-select option {
+  background: #1e1e1e;
+  color: #e0e0e0;
+}
+
+.sta-dice-pool-monitor-edit-select:focus {
   outline: none;
   border-color: var(--color-warm-1, #ee9b3a);
 }
@@ -552,18 +627,18 @@ input.selector.attribute.sta-fatigued-attribute {
   font-weight: 500;
 }
 
-/* Chat message styling - designed for both light and dark modes */
+/* Chat message styling - designed for STA system's dark chat backgrounds */
 .sta-warp-calculator-chat {
   padding: 0.5rem;
-  color: inherit;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .sta-warp-calculator-chat h3 {
   margin: 0 0 0.75rem 0;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #3d85c6;
+  border-bottom: 1px solid #89CFF0;
   font-size: 1.1rem;
-  color: #1a5a8a;
+  color: #89CFF0;
 }
 
 .sta-warp-calculator-chat h3 i {
@@ -579,34 +654,34 @@ input.selector.attribute.sta-fatigued-attribute {
 }
 
 .sta-warp-calculator-chat .sta-warp-result-label {
-  color: #444;
+  color: rgba(255, 255, 255, 0.8);
   font-weight: 600;
 }
 
 .sta-warp-calculator-chat .sta-warp-result-value {
-  color: #222;
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .sta-warp-calculator-chat .sta-warp-calculated {
-  background: rgba(61, 133, 198, 0.15);
-  border-left: 3px solid #3d85c6;
+  background: rgba(100, 200, 255, 0.15);
+  border-left: 3px solid #89CFF0;
 }
 
 .sta-warp-calculator-chat .sta-warp-calculated .sta-warp-result-value {
-  color: #1a5a8a;
+  color: rgba(100, 220, 255, 1);
   font-weight: 700;
 }
 
 .sta-warp-calculator-chat .sta-warp-divider {
-  border-top-color: #aaa;
+  border-top-color: rgba(255, 255, 255, 0.2);
 }
 
 .sta-warp-calculator-chat .sta-warp-derived .sta-warp-result-label {
-  color: #666;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .sta-warp-calculator-chat .sta-warp-derived .sta-warp-result-value {
-  color: #444;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 /* Footer buttons */
@@ -898,18 +973,18 @@ input.selector.attribute.sta-fatigued-attribute {
   font-weight: 700;
 }
 
-/* Chat message styling */
+/* Chat message styling - designed for STA system's dark chat backgrounds */
 .sta-stardate-calculator-chat {
   padding: 0.5rem;
-  color: inherit;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .sta-stardate-calculator-chat h3 {
   margin: 0 0 0.75rem 0;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #3d85c6;
+  border-bottom: 1px solid #89CFF0;
   font-size: 1.1rem;
-  color: #1a5a8a;
+  color: #89CFF0;
 }
 
 .sta-stardate-calculator-chat h3 i {
@@ -925,21 +1000,21 @@ input.selector.attribute.sta-fatigued-attribute {
 }
 
 .sta-stardate-calculator-chat .sta-stardate-result-label {
-  color: #444;
+  color: rgba(255, 255, 255, 0.8);
   font-weight: 600;
 }
 
 .sta-stardate-calculator-chat .sta-stardate-result-value {
-  color: #222;
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .sta-stardate-calculator-chat .sta-stardate-calculated {
-  background: rgba(61, 133, 198, 0.15);
-  border-left: 3px solid #3d85c6;
+  background: rgba(100, 200, 255, 0.15);
+  border-left: 3px solid #89CFF0;
 }
 
 .sta-stardate-calculator-chat .sta-stardate-calculated .sta-stardate-result-value {
-  color: #1a5a8a;
+  color: rgba(100, 220, 255, 1);
   font-weight: 700;
 }
 
@@ -1006,4 +1081,428 @@ input.selector.attribute.sta-fatigued-attribute {
   .journal-backlinks {
     display: none;
   }
+}
+
+/* =============================================================================
+ * CREW MANIFEST — Journal Entry crew roster
+ * ============================================================================= */
+
+.sta-crew-manifest {
+  --default-section-color: #4b6584;
+  --default-section-color-dark: #3b5069;
+  --default-section-bg: #f0f3f6;
+
+  font-family: var(--font-primary, "Signika", sans-serif);
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* ---- Header ---- */
+
+.sta-crew-manifest-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem 0 0.5rem;
+}
+
+.sta-crew-manifest-header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0;
+  border: none;
+  text-align: center;
+}
+
+
+
+.sta-crew-manifest-subtitle {
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  margin: 0;
+  opacity: 0.55;
+}
+
+.sta-crew-manifest-divider {
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, currentColor 30%, currentColor 70%, transparent 100%);
+  opacity: 0.15;
+  margin: 0.75rem 0 1.25rem;
+}
+
+.sta-crew-manifest-divider p {
+  display: none;
+}
+
+/* ---- Section (one per subfolder) ---- */
+
+.sta-crew-manifest-section {
+  margin-bottom: 1.5rem;
+}
+
+.sta-crew-manifest-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.6rem;
+  padding-bottom: 0.35rem;
+  border: none;
+  border-bottom: 2px solid var(--section-color, var(--default-section-color));
+  color: var(--section-color-dark, var(--default-section-color-dark));
+}
+
+.sta-crew-manifest-section-title::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 1.15em;
+  border-radius: 3px;
+  background: var(--section-color, var(--default-section-color));
+  flex-shrink: 0;
+}
+
+/* ---- Crew Grid ---- */
+
+.sta-crew-manifest-crew-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* ---- Crew Card ---- */
+
+.sta-crew-manifest-crew-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  background: var(--section-bg, var(--default-section-bg));
+  border-left: 4px solid var(--section-color, var(--default-section-color));
+  color: #0f0f0f;
+  transition: background 0.15s ease;
+}
+
+.sta-crew-manifest-crew-card:hover {
+  filter: brightness(0.97);
+}
+
+/* ---- Portrait ---- */
+
+.sta-crew-manifest-portrait-wrapper {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+  border-radius: 50%;
+  border: 2px solid var(--section-color, var(--default-section-color));
+  background: color-mix(in srgb, var(--section-color, var(--default-section-color)) 25%, rgba(255, 255, 255, 0));
+}
+
+.sta-crew-manifest-portrait-wrapper.sta-crew-manifest-token-mode {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.sta-crew-manifest-portrait {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  image-rendering: auto;
+}
+
+.sta-crew-manifest-portrait-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  opacity: 0.3;
+}
+
+.sta-crew-manifest-portrait-placeholder p {
+  display: none;
+}
+
+/* ---- Crew Info ---- */
+
+.sta-crew-manifest-crew-info {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.4;
+}
+
+.sta-crew-manifest-crew-info > * {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.sta-crew-manifest-crew-role {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.15rem;
+}
+
+.sta-crew-manifest-crew-role p {
+  margin: 0;
+}
+
+.sta-crew-manifest-name-line {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+
+.sta-crew-manifest-name-line p {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0;
+}
+
+.sta-crew-manifest-rank {
+  font-weight: 400;
+  opacity: 0.8;
+  font-size: 0.85rem;
+}
+
+.sta-crew-manifest-name-line strong {
+  font-weight: 700;
+}
+
+.sta-crew-manifest-name-line a.content-link {
+  text-decoration: none;
+}
+
+.sta-crew-manifest-pronouns {
+  font-size: 0.78rem;
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.sta-crew-manifest-role {
+  font-size: 0.82rem;
+  font-weight: 500;
+  margin-top: 0.1rem;
+  color: var(--section-color-dark, var(--default-section-color-dark));
+}
+
+.sta-crew-manifest-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  margin-top: 0.2rem !important;
+}
+
+.sta-crew-manifest-meta p {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.sta-crew-manifest-species {
+  opacity: 0.7;
+}
+
+.sta-crew-manifest-type {
+  display: inline-block;
+  padding: 0.05rem 0.4rem;
+  border-radius: 3px;
+  border: 1px solid;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+
+/* ---- Vessel (Starship / Small Craft) ---- */
+
+.sta-crew-manifest-designation {
+  font-size: 0.82rem;
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.sta-crew-manifest-scale {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.sta-crew-manifest-notes {
+  font-size: 0.78rem;
+  font-style: italic;
+  opacity: 0.65;
+  margin: 0.1rem 0 0 !important;
+  min-height: 0.5em;
+  line-height: 1.2;
+}
+
+/* ---- Crew Manifest: Actor Selection / Customization Dialog ---- */
+
+.sta-manifest-pick-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.sta-manifest-pick-form > .notes {
+  margin: 0 0 0.25rem;
+  font-size: 0.82rem;
+}
+
+.sta-manifest-pick-image-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.sta-manifest-pick-image-toggle label {
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.sta-manifest-pick-image-toggle select {
+  flex: 1;
+}
+
+.sta-manifest-pick-section {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  padding: 0.5rem 0.6rem 0.4rem;
+  margin: 0;
+}
+
+.sta-manifest-pick-section legend {
+  padding: 0 0.4rem;
+  font-size: 0.9rem;
+}
+
+.sta-manifest-pick-section-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+}
+
+.sta-manifest-pick-section-toggle input[type="checkbox"] {
+  margin: 0;
+}
+
+.sta-manifest-pick-count {
+  font-weight: 400;
+  opacity: 0.55;
+  font-size: 0.8rem;
+}
+
+.sta-manifest-pick-actors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-top: 0.3rem;
+}
+
+.sta-manifest-pick-actor {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.2rem 0.3rem;
+  border-radius: 3px;
+  cursor: default;
+  user-select: none;
+  transition: background 0.12s;
+}
+
+.sta-manifest-pick-actor:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.sta-manifest-pick-actor input[type="checkbox"] {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.sta-manifest-pick-portrait {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top center;
+  flex-shrink: 0;
+}
+
+.sta-manifest-pick-portrait-placeholder {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  opacity: 0.35;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.sta-manifest-pick-actor-name {
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Drag handle ── */
+.sta-manifest-pick-drag-handle {
+  cursor: grab;
+  opacity: 0.35;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+  transition: opacity 0.12s;
+}
+
+.sta-manifest-pick-actor:hover .sta-manifest-pick-drag-handle {
+  opacity: 0.7;
+}
+
+/* ── Drag-and-drop visual feedback ── */
+.sta-manifest-dragging {
+  opacity: 0.35;
+}
+
+.sta-manifest-drag-above {
+  border-top: 2px solid var(--color-border-highlight, #7a7971);
+}
+
+.sta-manifest-drag-below {
+  border-bottom: 2px solid var(--color-border-highlight, #7a7971);
+}
+
+.sta-manifest-pick-section.sta-manifest-drag-over {
+  background: rgba(255, 255, 255, 0.04);
 }

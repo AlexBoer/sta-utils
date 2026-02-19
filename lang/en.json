@@ -21,6 +21,10 @@
       "enableBacklinks": {
         "name": "Enable Journal Backlinks",
         "hint": "Add wiki-style 'referenced by' links to journals, actors, and items that reference each other. Requires a world reload when changed."
+      },
+      "enableStyleEnhance": {
+        "name": "Enable Style Enhancements",
+        "hint": "Apply additional CSS styling tweaks to STA sheets and chat cards. Takes effect immediately."
       }
     },
     "traits": {
@@ -126,7 +130,11 @@
       "usingDedicatedFocus": "Dedicated Focus",
       "usingDetermination": "Determination",
       "complicationRange": "Complication",
-      "diceInPool": "Dice"
+      "diceInPool": "Dice",
+      "shipAssisting": "Ship Assisting",
+      "starship": "Ship",
+      "system": "System",
+      "department": "Department"
     },
     "warpCalculator": {
       "title": "Warp Speed Calculator",
@@ -189,6 +197,34 @@
         "label": "Sync now"
       },
       "linkedFrom": "Linked from"
+    },
+    "crewManifest": {
+      "dialogTitle": "Crew Manifest Generator",
+      "selectFolder": "Select an Actor folder:",
+      "folderHint": "The manifest will include all actors in this folder and its subfolders, grouped and color-coded by subfolder.",
+      "generate": "Generate Manifest",
+      "next": "Next",
+      "back": "Back",
+      "cancel": "Cancel",
+      "customizeTitle": "Select Crew",
+      "customizeHint": "Check or uncheck categories and individual crew members to include in the manifest.",
+      "subtitle": "Crew Manifest",
+      "journalSuffix": "Crew Manifest",
+      "pageTitle": "Crew Manifest",
+      "playerCharacter": "Player Character",
+      "supportingCharacter": "Supporting Character",
+      "npc": "NPC",
+      "starship": "Starship",
+      "smallCraft": "Small Craft",
+      "scale": "Scale",
+      "noFolders": "No Actor folders found. Create a folder of actors first.",
+      "noActors": "No actors found in the selected folder.",
+      "folderNotFound": "The selected folder could not be found.",
+      "created": "Crew Manifest created",
+      "updated": "Crew Manifest updated",
+      "imageMode": "Image source:",
+      "portraits": "Portraits",
+      "tokens": "Tokens"
     }
   }
 }

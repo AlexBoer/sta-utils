@@ -20,7 +20,11 @@ import {
   installCreateChatMessageHook,
 } from "./fatigue/index.mjs";
 
-import { isFatigueEnabled } from "./core/settings.mjs";
+import {
+  isFatigueEnabled,
+  isStyleEnhanceEnabled,
+  _toggleStyleEnhance,
+} from "./core/settings.mjs";
 
 import { openDicePoolMonitor } from "./dice-pool-monitor/index.mjs";
 
@@ -38,6 +42,8 @@ import {
 } from "./misc/index.mjs";
 
 import { JournalBacklinks } from "./journal-backlinks/index.mjs";
+
+import { crewManifest } from "./crew-manifest/index.mjs";
 
 import { isBacklinksEnabled } from "./core/settings.mjs";
 
@@ -77,6 +83,11 @@ Hooks.once("init", () => {
     initTraitVisibility();
     initSceneConfig();
     console.log(`${MODULE_ID} | Trait Tokens feature enabled`);
+  }
+
+  // --- Style Enhancements (dynamic, can toggle at runtime) ---
+  if (isStyleEnhanceEnabled()) {
+    _toggleStyleEnhance(true);
   }
 
   // --- Hook installers (init-time) ---
@@ -158,6 +169,7 @@ Hooks.once("ready", async () => {
     stardateCalculator,
     noteStyler,
     openDicePoolMonitor,
+    crewManifest,
   };
   console.log(`${MODULE_ID} | Public API exposed at game.staUtils`);
 });

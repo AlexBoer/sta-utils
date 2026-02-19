@@ -18,7 +18,11 @@ export function installCreateChatMessageHook() {
     if (message.author?.id !== game.user?.id) return;
 
     const html = message.content ?? "";
-    if (!html.includes('class="sta roll chat card"')) return;
+    // STA v2.5.0 changed chat card class from "sta roll chat card" to "chatcard"
+    const isStaChatCard =
+      html.includes('class="sta roll chat card"') ||
+      html.includes('class="chatcard"');
+    if (!isStaChatCard) return;
 
     // Check if character is fatigued and add notice to chat message
     try {
