@@ -1,0 +1,59 @@
+---
+tags:
+  - SessionSummary/Session
+Crew:
+  - "[[USS Oberon]]"
+Season: 1
+SessionNumber: 1
+Mission: "[[Extraction at Rator]]"
+MissionNumber: 1
+Stardate: 61820
+Main Characters:
+  - "[[Sorketh]]"
+  - "[[Jonathan Hale]]"
+  - "[[Sam Ellers]]"
+  - "[[Keval Trask]]"
+Supporting Characters:
+  - "[[Takis Sabra]]"
+  - "[[Darit]]"
+Non-Player Characters:
+  - "[[Admiral Oren Burke]]"
+  - "[[Sobek]]"
+Summary: Successfully extracted Sobek and learned that the Romulans had revealed several other classified Federation science outposts that could be targets.
+---
+## Characters
+```base
+filters:
+  or:
+    - this.file.properties["Supporting Characters"].contains(file)
+    - this.file.properties["Main Characters"].contains(file)
+    - this.file.properties["Non-Player Characters"].contains(file)
+properties:
+  file.name:
+    displayName: Characters
+views:
+  - type: list
+    name: Table
+    groupBy:
+      property: Type
+      direction: ASC
+
+```
+## Summary
+The USS Oberon was at the Rator system with just systems shut down, hiding inside of an asteroid field. Sorketh had been on the planet Rator 2 for a couple of days already, looking to make contact with a Vulcan named Sobek. Sobek had information about what the Romulans have learned about the science station that they had attacked previously. and so beck was in the process of getting extracted by the by the Oberon. 
+
+Sorketh was waiting to meet with Sobek in an alleyway when he saw a shadowy figure and started trailing this figure down a street until he got to a apartment building. In the apartment building, a couple of Romulan soldiers locked the entrance to the lobby and asked Sorketh to enter a side interrogation room in 
+
+Here they asked: How do you know Sobek? Why when did you arrive here? and then told Sorketh that he would no longer be able to be in contact with Sobek and that he would have to leave the planet. Sorketh used his Borg implants to send a signal that overloaded the power on the floor of the building that they were on, shutting off the lights, used the darkness to take the interrogators by surprise, and knocked them both out. This, however, raised the alarm.
+
+Over on the USS Oberon, they were hiding inside an asteroid field, just sort of waiting in tense uselessness. The while they were hiding here, some Romulan scouts started scanning the asteroid field, looking for you know, whatever might be in there. and the crew of the Oberon hid themselves by looking for another asteroid with better metals that might reflect the scanners, and then carefully drifting themselves over in order to avoid detection from this new location, they were able to start listening in to communications on the planet, especially around the area where Sorketh was, and they discovered that Sorketh had raised an alarm and that people were being sent in to take care of the situation. They decided to continue to wait and trust that Sorketh knew what he was doing.
+
+Sorketh hacked into the building's computer systems and discovered that Sobek was being detained on the twelfth floor of the building in room 17A. He moved to the turbo lift, which lifted him up onto the floor, found the room, and prepared it to storm it in order to recover Sobek. Unbeknownst to Sorketh, there was a Romulan security team on the inside waiting for him. He used his ocular eyepiece to look into the room, located that Sobek was in the middle of the room with five Romulans surrounding him. On the outside of the building, a Romulan SWAT team was preparing it to storm in and capture Sorketh as well. 
+
+The Oberon was listening in on this through their like police scanner things and decided that as this SWAT team kind of descended upon the building that Sorketh was in, they would activate the cloak and move in to Rator II. They successfully activated the cloak and drifted the ship kind of into low orbit above the city. They needed to get a lock on Sorketh and Sobek's position, but the Romulans had activated a transport inhibitor. Sam worked to cut through some of the interference there, and send a feedback loop, short circuiting it. 
+
+The with the transport inhibitor disabled, the science officer Darit was able to get a lock on Sobek and Sorketh and transported them out. This transport beam alerted the Romulans to a ship in the area, and a Valdor class war bird scanned the system and got a lock on the Oberon's location even as they were cloaked. The Oberon quickly worked to restore its reserve power, and then jumped to warp retreating to the nearby Qualor system.
+
+At Qualor, Sobek was debriefed, treated for some injuries. Sobek said that the Romulans had learned the location of several other science research outposts that the Federation was working on, and suspected that those might be future targets that the Romulans go after. 
+
+Admiral Burke did a debriefing with the crew. Admiral Burke was concerned that the liberal use of a cloaking device in the field could anger the Federation members who oppose it, angry that the Algernon accords had been violated. Hale and Sam argued that that the cloaking device was necessary in order to save lives and complete the mission without getting into a fight. They were concerned that getting into an open firefight in a Romulan system could have sparked war even worse. Burke let them off with a warning, calling this strike 1.
