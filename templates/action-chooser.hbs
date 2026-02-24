@@ -1,0 +1,76 @@
+<div class="sta-action-chooser">
+  <section class="sta-action-chooser-header">
+    <div class="sta-action-chooser-title">
+      {{actionSetLabel}}
+      {{#if canSwitchSet}}
+        <button type="button" class="sta-action-chooser-title__switch" title="{{localize 'sta-utils.actionChooser.changeSet'}}">
+          <i class="fas fa-exchange-alt"></i>
+        </button>
+      {{/if}}
+    </div>
+    <div class="sta-actor-indicator {{#unless hasActor}}sta-actor-indicator--empty{{/unless}}">
+      <img class="sta-actor-indicator__img" src="{{actorImg}}" alt="{{actorName}}" />
+      <span class="sta-actor-indicator__name">{{actorName}}</span>
+      <button type="button" class="sta-actor-indicator__change" title="{{localize 'sta-utils.actionChooser.changeCharacter'}}">
+        <i class="fas fa-exchange-alt"></i>
+      </button>
+    </div>
+    {{#if showStarship}}
+    <div class="sta-actor-indicator sta-starship-indicator {{#unless hasStarship}}sta-actor-indicator--empty{{/unless}}">
+      <img class="sta-starship-indicator__img" src="{{starshipImg}}" alt="{{starshipName}}" />
+      <span class="sta-actor-indicator__name">{{starshipName}}</span>
+      <button type="button" class="sta-starship-indicator__change" title="{{localize 'sta-utils.actionChooser.changeStarship'}}">
+        <i class="fas fa-exchange-alt"></i>
+      </button>
+    </div>
+    {{/if}}
+  </section>
+
+  {{!-- Minor Actions --}}
+  <section class="sta-action-chooser-section" data-section="minor">
+    <h3>{{localize "sta-utils.actionChooser.minorActions"}}</h3>
+    <div class="sta-action-split">
+      <div class="sta-action-tabs">
+        {{#each minorActions as |action|}}
+          <button type="button"
+            class="sta-action-tab{{#if action.isSubtle}} sta-action-tab--subtle{{/if}}"
+            data-type="minor"
+            data-tab-id="{{action.id}}"
+            data-action-name="{{action.name}}"
+            data-action-desc="{{action.description}}"
+            data-action-roll="{{action.rollInfo}}"
+            data-action-momentum="{{action.momentumText}}">
+            <span class="sta-action-tab__name">{{action.name}}</span>
+          </button>
+        {{/each}}
+      </div>
+      <div class="sta-action-detail" data-type="minor">
+        <div class="sta-action-detail__empty">{{localize "sta-utils.actionChooser.minorActions"}}</div>
+      </div>
+    </div>
+  </section>
+
+  {{!-- Major Actions --}}
+  <section class="sta-action-chooser-section" data-section="major">
+    <h3>{{localize "sta-utils.actionChooser.majorActions"}}</h3>
+    <div class="sta-action-split">
+      <div class="sta-action-tabs">
+        {{#each majorActions as |action|}}
+          <button type="button"
+            class="sta-action-tab{{#if action.isSubtle}} sta-action-tab--subtle{{/if}}"
+            data-type="major"
+            data-tab-id="{{action.id}}"
+            data-action-name="{{action.name}}"
+            data-action-desc="{{action.description}}"
+            data-action-roll="{{action.rollInfo}}"
+            data-action-momentum="{{action.momentumText}}">
+            <span class="sta-action-tab__name">{{action.name}}</span>
+          </button>
+        {{/each}}
+      </div>
+      <div class="sta-action-detail" data-type="major">
+        <div class="sta-action-detail__empty">{{localize "sta-utils.actionChooser.majorActions"}}</div>
+      </div>
+    </div>
+  </section>
+</div>

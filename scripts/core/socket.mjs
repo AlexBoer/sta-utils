@@ -46,5 +46,19 @@ export function initSocket() {
     await handleCreateTraitTokenRPC(msg);
   });
 
+  // --- RPC: Author -> All (momentum spend selection updates) ---
+  moduleSocket.register("momentumSpendUpdate", async (msg) => {
+    const { handleMomentumSpendUpdate } =
+      await import("../momentum-spend/momentum-spend-socket.mjs");
+    handleMomentumSpendUpdate(msg);
+  });
+
+  // --- RPC: Author -> All (momentum spend dialog closed) ---
+  moduleSocket.register("momentumSpendClose", async (msg) => {
+    const { handleMomentumSpendClose } =
+      await import("../momentum-spend/momentum-spend-socket.mjs");
+    handleMomentumSpendClose(msg);
+  });
+
   return moduleSocket;
 }

@@ -59,6 +59,14 @@ function _getActorFromWindow(w) {
  * @private
  */
 function _detectActor(app, root, _context) {
+  // Priority 0: data-actor-id attribute stamped by the action chooser
+  const actorIdAttr =
+    root?.querySelector?.("[data-actor-id]")?.dataset?.actorId;
+  if (actorIdAttr) {
+    const actor = game.actors?.get(actorIdAttr);
+    if (actor) return { actor, source: "data-actor-id" };
+  }
+
   // Priority 1: Actor explicitly passed in app options or context
   if (app?.options?.actor) {
     return { actor: app.options.actor, source: "app.options" };
@@ -139,6 +147,8 @@ function _gatherDicePoolState(root) {
     form.querySelector?.('input[name="usingDedicatedFocus"]')?.checked ?? false;
   const usingDetermination =
     form.querySelector?.('input[name="usingDetermination"]')?.checked ?? false;
+  const usingReservePower =
+    form.querySelector?.('input[name="usingReservePower"]')?.checked ?? false;
 
   const complicationRangeInput = form.querySelector?.(
     'input[name="complicationRange"]',
@@ -170,10 +180,20 @@ function _gatherDicePoolState(root) {
   const selectedDepartment = departmentSelect?.value ?? "";
   const departmentOptions = _gatherSelectOptions(departmentSelect);
 
+  // Attribute / discipline selects (action chooser only)
+  const attributeSelect = form.querySelector?.('select[name="attribute"]');
+  const selectedAttribute = attributeSelect?.value ?? null;
+  const attributeOptions = _gatherSelectOptions(attributeSelect);
+
+  const disciplineSelect = form.querySelector?.('select[name="discipline"]');
+  const selectedDiscipline = disciplineSelect?.value ?? null;
+  const disciplineOptions = _gatherSelectOptions(disciplineSelect);
+
   return {
     usingFocus,
     usingDedicatedFocus,
     usingDetermination,
+    usingReservePower,
     complicationRange,
     dicePoolSlider,
     starshipAssisting,
@@ -183,6 +203,10 @@ function _gatherDicePoolState(root) {
     systemOptions,
     selectedDepartment,
     departmentOptions,
+    selectedAttribute,
+    attributeOptions,
+    selectedDiscipline,
+    disciplineOptions,
   };
 }
 
@@ -393,6 +417,10 @@ export function applyGMUpdate(data) {
     const input = form.querySelector?.('input[name="usingDetermination"]');
     if (input) input.checked = data.usingDetermination;
   }
+  if (data.usingReservePower !== undefined) {
+    const input = form.querySelector?.('input[name="usingReservePower"]');
+    if (input) input.checked = data.usingReservePower;
+  }
 
   // Apply numeric updates
   if (data.complicationRange !== undefined) {
@@ -402,6 +430,16 @@ export function applyGMUpdate(data) {
   if (data.dicePoolSlider !== undefined) {
     const input = form.querySelector?.('input[name="dicePoolSlider"]');
     if (input) input.value = String(data.dicePoolSlider);
+  }
+
+  // Apply attribute / discipline updates
+  if (data.selectedAttribute !== undefined) {
+    const select = form.querySelector?.('select[name="attribute"]');
+    if (select) select.value = data.selectedAttribute;
+  }
+  if (data.selectedDiscipline !== undefined) {
+    const select = form.querySelector?.('select[name="discipline"]');
+    if (select) select.value = data.selectedDiscipline;
   }
 
   // Apply ship-assist updates

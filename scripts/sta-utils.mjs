@@ -36,6 +36,8 @@ import { warpCalculator } from "./warp-calculator/index.mjs";
 
 import { stardateCalculator } from "./stardate/index.mjs";
 
+import { actionChooser } from "./action-chooser/index.mjs";
+
 import {
   installMacroActorImageHook,
   installAmbientAudioSelectionListenerPatch,
@@ -45,7 +47,25 @@ import { JournalBacklinks } from "./journal-backlinks/index.mjs";
 
 import { crewManifest } from "./crew-manifest/index.mjs";
 
-import { isBacklinksEnabled } from "./core/settings.mjs";
+import {
+  initTalentAutomations,
+  registerAllMiddleware,
+} from "./talent-automations/index.mjs";
+
+import {
+  installDicePoolOverride,
+  installRerollOverride,
+} from "./dice-pool-override/index.mjs";
+
+import { installMomentumSpendHook } from "./momentum-spend/index.mjs";
+
+import {
+  isBacklinksEnabled,
+  isTalentAutomationsEnabled,
+  isMomentumSpendEnabled,
+} from "./core/settings.mjs";
+
+import { isActionChooserEnabled } from "./core/settings.mjs";
 
 const MODULE_ID = "sta-utils";
 const SETTING_TRAIT_TOKENS = "enableTraitTokens";
@@ -60,6 +80,8 @@ Hooks.once("init", () => {
   // --- Preload templates ---
   foundry.applications.handlebars.loadTemplates([
     `modules/${MODULE_ID}/templates/dice-pool-monitor-player.hbs`,
+    `modules/${MODULE_ID}/templates/action-chooser.hbs`,
+    `modules/${MODULE_ID}/templates/dice-pool-selectors.hbs`,
   ]);
 
   // --- Register settings ---
@@ -99,6 +121,12 @@ Hooks.once("init", () => {
   installMacroActorImageHook();
   installAmbientAudioSelectionListenerPatch();
   registerNoteStylerHooks();
+
+  // --- Talent Automations ---
+  if (isTalentAutomationsEnabled()) {
+    initTalentAutomations();
+    console.log(`${MODULE_ID} | Talent Automations feature enabled`);
+  }
 
   // --- Journal Backlinks ---
   // Always register settings so the hidden sync-version key exists.
@@ -153,6 +181,12 @@ Hooks.once("ready", async () => {
     installCreateChatMessageHook();
   }
 
+  // --- Momentum Spend ---
+  if (isMomentumSpendEnabled()) {
+    installMomentumSpendHook();
+    console.log(`${MODULE_ID} | Momentum Spend feature enabled`);
+  }
+
   // --- Flag migration (GM only) ---
   if (game.user.isGM) {
     await runMigrations();
@@ -163,6 +197,13 @@ Hooks.once("ready", async () => {
     game.journalBacklinks.checkInitialSync();
   }
 
+  // --- Dice Pool Override (needed by talent automations) ---
+  if (isTalentAutomationsEnabled()) {
+    registerAllMiddleware();
+    installDicePoolOverride();
+    installRerollOverride();
+  }
+
   // --- Public API ---
   game.staUtils = {
     warpCalculator,
@@ -170,6 +211,7 @@ Hooks.once("ready", async () => {
     noteStyler,
     openDicePoolMonitor,
     crewManifest,
+    actionChooser,
   };
   console.log(`${MODULE_ID} | Public API exposed at game.staUtils`);
 });

@@ -7,12 +7,28 @@ const AMBIENT_AUDIO_SELECTION_ONLY_SETTING = "playerAmbientAudioSelectionOnly";
 const ENABLE_FATIGUE_SETTING = "enableFatigue";
 const ENABLE_BACKLINKS_SETTING = "enableBacklinks";
 const ENABLE_STYLE_ENHANCE_SETTING = "enableStyleEnhance";
+const ENABLE_TALENT_AUTOMATIONS_SETTING = "enableTalentAutomations";
+const DISABLE_TOOLTIPS_SETTING = "disableTooltips";
+const ENABLE_ACTION_CHOOSER_SETTING = "enableActionChooser";
+const ENABLE_MOMENTUM_SPEND_SETTING = "enableMomentumSpend";
+const AUTO_DEDUCT_MOMENTUM_SETTING = "autoDeductMomentum";
 
 /**
  * Register all sta-utils game settings.
  * Called once during the `init` hook.
  */
 export function registerSettings() {
+  // --- World: Enable Talent Automations ---
+  game.settings.register(MODULE_ID, ENABLE_TALENT_AUTOMATIONS_SETTING, {
+    name: t("sta-utils.settings.enableTalentAutomations.name"),
+    hint: t("sta-utils.settings.enableTalentAutomations.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+  });
+
   // --- Client: Show Info Buttons ---
   game.settings.register(MODULE_ID, SHOW_INFO_BUTTONS_SETTING, {
     name: t("sta-utils.settings.showInfoButtons.name"),
@@ -80,6 +96,49 @@ export function registerSettings() {
     requiresReload: true,
   });
 
+  // --- Client: Disable Item Tooltips ---
+  game.settings.register(MODULE_ID, DISABLE_TOOLTIPS_SETTING, {
+    name: t("sta-utils.settings.disableTooltips.name"),
+    hint: t("sta-utils.settings.disableTooltips.hint"),
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+  });
+
+  // --- World: Enable Action Chooser ---
+  game.settings.register(MODULE_ID, ENABLE_ACTION_CHOOSER_SETTING, {
+    name: t("sta-utils.settings.enableActionChooser.name"),
+    hint: t("sta-utils.settings.enableActionChooser.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+  });
+
+  // --- World: Enable Momentum Spend ---
+  game.settings.register(MODULE_ID, ENABLE_MOMENTUM_SPEND_SETTING, {
+    name: t("sta-utils.settings.enableMomentumSpend.name"),
+    hint: t("sta-utils.settings.enableMomentumSpend.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+  });
+
+  // --- World: Auto-deduct Momentum ---
+  game.settings.register(MODULE_ID, AUTO_DEDUCT_MOMENTUM_SETTING, {
+    name: t("sta-utils.settings.autoDeductMomentum.name"),
+    hint: t("sta-utils.settings.autoDeductMomentum.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+  });
+
   // --- World: Enable Style Enhancements ---
   game.settings.register(MODULE_ID, ENABLE_STYLE_ENHANCE_SETTING, {
     name: t("sta-utils.settings.enableStyleEnhance.name"),
@@ -141,6 +200,68 @@ export function isBacklinksEnabled() {
 export function isStyleEnhanceEnabled() {
   try {
     return Boolean(game.settings.get(MODULE_ID, ENABLE_STYLE_ENHANCE_SETTING));
+  } catch (_) {
+    return true; // default to true
+  }
+}
+
+/**
+ * Check whether the "Enable Talent Automations" world setting is enabled.
+ * @returns {boolean}
+ */
+export function isTalentAutomationsEnabled() {
+  try {
+    return Boolean(
+      game.settings.get(MODULE_ID, ENABLE_TALENT_AUTOMATIONS_SETTING),
+    );
+  } catch (_) {
+    return false; // default to false
+  }
+}
+
+/**
+ * Check whether the "Enable Action Chooser" world setting is enabled.
+ * @returns {boolean}
+ */
+export function isActionChooserEnabled() {
+  try {
+    return Boolean(game.settings.get(MODULE_ID, ENABLE_ACTION_CHOOSER_SETTING));
+  } catch (_) {
+    return false; // default to false
+  }
+}
+
+/**
+ * Check whether the "Disable Item Tooltips" client setting is enabled.
+ * @returns {boolean}
+ */
+export function isTooltipsDisabled() {
+  try {
+    return Boolean(game.settings.get(MODULE_ID, DISABLE_TOOLTIPS_SETTING));
+  } catch (_) {
+    return false; // default to false
+  }
+}
+
+/**
+ * Check whether the "Enable Momentum Spend" world setting is enabled.
+ * @returns {boolean}
+ */
+export function isMomentumSpendEnabled() {
+  try {
+    return Boolean(game.settings.get(MODULE_ID, ENABLE_MOMENTUM_SPEND_SETTING));
+  } catch (_) {
+    return false;
+  }
+}
+
+/**
+ * Check whether the "Auto-deduct Momentum" world setting is enabled.
+ * @returns {boolean}
+ */
+export function isAutoDeductMomentumEnabled() {
+  try {
+    return Boolean(game.settings.get(MODULE_ID, AUTO_DEDUCT_MOMENTUM_SETTING));
   } catch (_) {
     return true; // default to true
   }

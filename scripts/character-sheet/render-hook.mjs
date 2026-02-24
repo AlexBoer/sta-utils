@@ -10,7 +10,7 @@
 import { installDicePoolFatigueNotice } from "../fatigue/dice-pool-fatigue-notice.mjs";
 import { installDicePoolBroadcast } from "../dice-pool-monitor/dice-pool-broadcast.mjs";
 import { installFatiguedAttributeDisplay } from "../fatigue/fatigued-attribute-display.mjs";
-import { isFatigueEnabled } from "../core/settings.mjs";
+import { isFatigueEnabled, isActionChooserEnabled } from "../core/settings.mjs";
 import {
   installStressInfoButton,
   installDeterminationInfoButton,
@@ -25,6 +25,9 @@ import {
 } from "./section-info-buttons.mjs";
 import { installChooseAttributeButtons } from "../fatigue/trait-fatigue-buttons.mjs";
 import { installTraitFatigueCheckbox } from "../fatigue/trait-fatigue-checkbox.mjs";
+import { disableItemTooltips } from "../disable-tooltips/index.mjs";
+import { actionChooser } from "../action-chooser/index.mjs";
+import { t } from "../core/i18n.mjs";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Handler: Dialogs
@@ -149,6 +152,43 @@ function handleCharacterSheetRender(app, root) {
       // ignore
     }
   }
+
+  if (isActionChooserEnabled()) {
+    try {
+      installActionChooserButton(root, actor);
+    } catch (_) {
+      // ignore
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Handler: Action Chooser Button
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Inject the "Conflict Actions" button below the Perform Task / Roll Reputation
+ * buttons on the character sheet.
+ *
+ * @param {HTMLElement} root - The root element of the character sheet.
+ * @param {Actor} actor - The actor associated with this character sheet.
+ */
+function installActionChooserButton(root, actor) {
+  const buttonsDiv = root?.querySelector?.(".bottom-left-column .buttons");
+  if (!buttonsDiv) return;
+
+  // Don't add the button if it already exists
+  if (buttonsDiv.querySelector(".sta-utils-action-chooser-btn")) return;
+
+  const btn = document.createElement("div");
+  btn.className = "check-button btn2 sta-utils-action-chooser-btn";
+  btn.textContent = t("sta-utils.actionChooser.conflictActionsButton");
+  btn.addEventListener("click", (ev) => {
+    ev.preventDefault();
+    actionChooser.open("personal-conflict", { actor });
+  });
+
+  buttonsDiv.appendChild(btn);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -220,5 +260,14 @@ export function installRenderApplicationV2Hook() {
 
     // Handle character sheet enhancements.
     handleCharacterSheetRender(app, root);
+
+    // Strip rich item-description tooltips if the user has disabled them.
+    if (isStaApp) {
+      try {
+        disableItemTooltips(root);
+      } catch (_) {
+        // ignore
+      }
+    }
   });
 }

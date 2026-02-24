@@ -25,6 +25,26 @@
       "enableStyleEnhance": {
         "name": "Enable Style Enhancements",
         "hint": "Apply additional CSS styling tweaks to STA sheets and chat cards. Takes effect immediately."
+      },
+      "enableTalentAutomations": {
+        "name": "Enable Talent Automations",
+        "hint": "Automatically apply effects based on talents a character possesses (e.g. modify attributes, post reminders). Requires a world reload when changed."
+      },
+      "disableTooltips": {
+        "name": "Disable Item Tooltips",
+        "hint": "Hide the item description tooltip popups that appear when hovering over item names on actor sheets."
+      },
+      "enableActionChooser": {
+        "name": "Enable Conflict Actions Window",
+        "hint": "Show a window listing available actions, roll info, and Momentum costs during conflict scenes. Requires a world reload when changed."
+      },
+      "enableMomentumSpend": {
+        "name": "Enable Momentum Spend",
+        "hint": "Add a 'Spend Momentum' button to task roll chat messages that opens a momentum spend dialog. Requires a world reload when changed."
+      },
+      "autoDeductMomentum": {
+        "name": "Auto-deduct Momentum",
+        "hint": "Automatically deduct momentum from the shared pool when spending via the Momentum Spend dialog."
       }
     },
     "traits": {
@@ -115,6 +135,9 @@
       "desc": "Directives are group values, and can be used in all the same ways as a value. Ask the GM what your Mission Directives are.",
       "ok": "OK"
     },
+    "dicePool": {
+      "useReservePower": "Use Reserve Power"
+    },
     "dicePoolMonitor": {
       "title": "Dice Pool Monitor",
       "close": "Close",
@@ -129,12 +152,15 @@
       "usingFocus": "Focus",
       "usingDedicatedFocus": "Dedicated Focus",
       "usingDetermination": "Determination",
+      "usingReservePower": "Reserve Power",
       "complicationRange": "Complication",
       "diceInPool": "Dice",
       "shipAssisting": "Ship Assisting",
       "starship": "Ship",
       "system": "System",
-      "department": "Department"
+      "department": "Department",
+      "attribute": "Attribute",
+      "discipline": "Discipline"
     },
     "warpCalculator": {
       "title": "Warp Speed Calculator",
@@ -225,6 +251,608 @@
       "imageMode": "Image source:",
       "portraits": "Portraits",
       "tokens": "Tokens"
+    },
+    "momentumSpend": {
+      "spendMomentum": "Spend Momentum",
+      "dialogTitle": "Momentum Spend",
+      "submit": "Confirm Spend",
+      "close": "Close",
+      "momentum": "Momentum",
+      "threat": "Threat",
+      "momentumAvailable": "Momentum Available",
+      "momentumCost": "Momentum Cost",
+      "threatPool": "Threat Pool",
+      "threatToAdd": "Threat to Add",
+      "overBudget": "Not enough Momentum.",
+      "readOnly": "Watching",
+      "commonTab": "Common",
+      "personalConflictTab": "Personal Conflict",
+      "starshipCombatTab": "Starship Combat",
+      "spends": {
+        "createOpportunity": {
+          "name": "Create Opportunity",
+          "description": "Before you attempt a task (but after the GM sets its Difficulty), build your dice pool, starting with 2d20. Add bonus d20s granted from talents and other game effects. Add more d20s by spending Momentum or adding Threat. The first bonus die costs 1, the second costs 2 more, and the third costs 3 more. You can't roll more than 5d20 on any task attempt.",
+          "cost": "Immediate, Repeatable, 1–6 Momentum"
+        },
+        "alterTrait": {
+          "name": "Create/Change Trait",
+          "description": "You can establish a new trait in the scene, or change, increase the Potency of, or remove a trait currently in play. A trait you create must relate to the task you just passed, and it must be something that would result from your actions.",
+          "cost": "2 Momentum"
+        },
+        "reduceTime": {
+          "name": "Reduce Time",
+          "description": "You can spend 2 Momentum to reduce the time it takes to complete the activity represented by the task, typically taking half the normal amount of time. You can't use this option during an action scene.",
+          "cost": "2 Momentum"
+        },
+        "extraMajorAction": {
+          "name": "Extra Major Action",
+          "description": "During your turn in an action scene, you may spend 2 Momentum to take an additional major action. However, any task roll attempted as part of this action increases in Difficulty by 1.",
+          "cost": "2 Momentum"
+        },
+        "extraMinorAction": {
+          "name": "Extra Minor Action",
+          "description": "During your turn in an action scene, you may spend 1 Momentum to take an additional minor action. Each minor action may only be performed once per turn.",
+          "cost": "1 Momentum"
+        },
+        "addedSeverity": {
+          "name": "Added Severity",
+          "description": "Increase the severity of a successful attack by 1 for every 2 Momentum spent.",
+          "cost": "Repeatable, 2 Momentum"
+        },
+        "buyD20s": {
+          "name": "Buy D20s",
+          "description": "Before attempting a task (but after the GM sets its Difficulty), start your dice pool with 2d20. Add bonus d20s granted from talents and other game effects. Add more d20s by spending Momentum or adding Threat. The first bonus die costs 1, the second costs 2 more, and the third costs 3 more. You can't roll more than 5d20 on a task attempt.",
+          "cost": "Immediate, Repeatable, 1–3 Momentum"
+        },
+        "disarm": {
+          "name": "Disarm",
+          "description": "Target drops one weapon they are holding to within their Reach. This costs 1 Momentum if the weapon is held in one hand. If the weapon is two-handed, the cost increases to 2 Momentum.",
+          "cost": "1–2 Momentum"
+        },
+        "keepInitiative": {
+          "name": "Keep The Initiative",
+          "description": "At the end of your turn, pass the next turn to an ally instead of an enemy. Once that ally has acted, the next turn must go to an enemy.",
+          "cost": "Immediate, 2 Momentum"
+        },
+        "obtainInformation": {
+          "name": "Obtain Information",
+          "description": "You can ask the GM a single question about the scene. The question must be related to the task attempted, and the GM must answer truthfully but doesn't have to give complete information. If there's no information your character could determine, the GM may answer 'you don't know,' but they must refund the Momentum spent for that question.",
+          "cost": "Repeatable, 1–3 Momentum"
+        },
+        "recoveringStress": {
+          "name": "Recovering Stress",
+          "description": "After a successful task, you may spend 2 Momentum to remove 1 Stress (Repeatable) from yourself or one ally who can hear you. A character cannot remove more than 3 Stress in this way on any single task.",
+          "cost": "Repeatable, 2 Momentum"
+        },
+        "addedDamage": {
+          "name": "Added Damage",
+          "description": "Increase the damage of a successful attack by 1 for every 2 Momentum spent.",
+          "cost": "Repeatable, 2 Momentum"
+        },
+        "devastatingAttack": {
+          "name": "Devastating Attack",
+          "description": "Roll an additional system; that system suffers a hit dealing half the attack's damage, rounding up.",
+          "cost": "2 Momentum"
+        }
+      }
+    },
+    "actionChooser": {
+      "title": "Conflict Actions",
+      "conflictActionsButton": "Conflict Actions",
+      "minorActions": "Minor Actions",
+      "majorActions": "Major Actions",
+      "useAction": "Use",
+      "rollInfo": "{attribute} + {discipline}, Difficulty {difficulty}",
+      "rollInfoVaries": "Attribute + Discipline varies",
+      "momentumCost": "Costs {cost} Momentum",
+      "difficultyVaries": "Varies",
+      "chooseAttribute": "Choose Attribute",
+      "chooseDiscipline": "Choose Discipline",
+      "dicePool": "Dice Pool",
+      "complicationRange": "Complication Range",
+      "usingFocus": "Focus",
+      "usingDedicatedFocus": "Dedicated Focus",
+      "usingDetermination": "Determination",
+      "configureRoll": "Configure Roll",
+      "rollNow": "Roll",
+      "cancel": "Cancel",
+      "noActor": "Select a token or set an active character before using an action.",
+      "noActorSelected": "No Character",
+      "noEligibleActors": "No characters available for selection.",
+      "selectCharacter": "Select Character",
+      "changeCharacter": "Change Character",
+      "changeSet": "Change Action Set",
+      "noWeapons": "This character has no weapons.",
+      "noStarshipWeapons": "This starship has no weapons.",
+      "noStarship": "Select a starship before using this action.",
+      "noStarshipSelected": "No Starship",
+      "changeStarship": "Change Starship",
+      "selectStarship": "Select Starship",
+      "chooseStarshipWeapon": "Weapon",
+      "chooseWeapon": "Choose Weapon",
+      "selectWeapon": "Select",
+      "sets": {
+        "personalConflict": "Personal Conflict",
+        "commandStation": "Command Station",
+        "communicationsStation": "Comms Station",
+        "helmStation": "Helm Station",
+        "navigatorStation": "Navigator Station",
+        "operationsStation": "Operations Station",
+        "sensorsStation": "Sensors Station",
+        "tacticalStation": "Tactical Station",
+        "socialConflict": "Social Conflict"
+      },
+      "socialConflict": {
+        "majorLabel": "Social Tools",
+        "actions": {
+          "evidence": {
+            "name": "Evidence",
+            "description": "Offer proof to support your claims. Each piece of evidence acts as a trait, allowing a Persuasion task or reducing its Difficulty by 1. Evidence can complement other social tools and each accepted piece adds 1 to the severity after an opposed Persuade task."
+          },
+          "intimidation": {
+            "name": "Intimidation",
+            "description": "Use threats to compel action by inspiring fear and doubt. This is an opposed task whose Difficulty reflects each side's perceived strength. Success imposes a fear-based trait on the target; failure makes further intimidation harder. Intimidation is inherently hostile and may worsen other interactions or provoke aggression."
+          },
+          "negotiation": {
+            "name": "Negotiation",
+            "description": "Offer compensation in exchange for a request. Each offer creates a trait representing what you give and a complication representing its cost, counting as a new circumstance for a Persuasion task. No task is required for the offer itself, but the cost of success may exceed expectations, and failing to deliver on promises can cause serious problems."
+          }
+        }
+      },
+      "commandStation": {
+        "actions": {
+          "changePosition": {
+            "name": "Change Position",
+            "description": "Move to another station. You must wait for the station to be unmanned before taking control. Immediate if the station is in the same room, otherwise, arrive at the start of the next turn."
+          },
+          "interact": {
+            "name": "Interact",
+            "description": "Perform a task not otherwise listed. Complex actions require a major action."
+          },
+          "prepare": {
+            "name": "Prepare",
+            "description": "Get something ready for a rolled task and establish a narrative position to do it."
+          },
+          "restore": {
+            "name": "Restore",
+            "description": "Resolve minor narrative issues with ship systems."
+          },
+          "assist": {
+            "name": "Assist",
+            "description": "Help 2 other characters per round instead of just 1. You may take this action on their turn if you have not acted already."
+          },
+          "createTrait": {
+            "name": "Create a Trait",
+            "description": "Roll vs Difficulty 2 to create a trait, change a trait, or remove a trait (e.g. battle plans, strategies, inspiration, etc.)."
+          },
+          "override": {
+            "name": "Override",
+            "description": "Take an action from a non-Command station at +1 Difficulty."
+          },
+          "pass": {
+            "name": "Pass",
+            "description": "Do nothing!"
+          },
+          "ready": {
+            "name": "Ready",
+            "description": "Choose another major action and perform that when a specific trigger event of your choice occurs."
+          },
+          "direct": {
+            "name": "Direct",
+            "description": "Spend 1 Momentum and select one ally on the bridge who immediately attempts a single Major Action. Assist them by rolling 1d20 with your Control + Command."
+          },
+          "rally": {
+            "name": "Rally",
+            "description": "Roll Presence + Command vs Difficulty 0. Generate momentum to spend or save."
+          }
+        }
+      },
+      "communicationsStation": {
+        "actions": {
+          "changePosition": {
+            "name": "Change Position",
+            "description": "Move to another station. You must wait for the station to be unmanned before taking control. Immediate if the station is in the same room, otherwise, arrive at the start of the next turn."
+          },
+          "interact": {
+            "name": "Interact",
+            "description": "Perform a task not otherwise listed. Complex actions require a major action."
+          },
+          "prepare": {
+            "name": "Prepare",
+            "description": "Get something ready for a rolled task and establish a narrative position to do it."
+          },
+          "restore": {
+            "name": "Restore",
+            "description": "Resolve minor narrative issues with ship systems."
+          },
+          "assist": {
+            "name": "Assist",
+            "description": "Help another character. You may take this action on their turn if you have not acted already."
+          },
+          "createTrait": {
+            "name": "Create a Trait",
+            "description": "Roll vs Difficulty 2 to create a trait, change a trait, or remove a trait (e.g. coordinating personnel, piercing interference, encryption and decryption)."
+          },
+          "override": {
+            "name": "Override",
+            "description": "Take a major action from a non-Command station at +1 Difficulty."
+          },
+          "pass": {
+            "name": "Pass",
+            "description": "Do nothing!"
+          },
+          "ready": {
+            "name": "Ready",
+            "description": "Choose another major action and perform that when a specific trigger event of your choice occurs."
+          },
+          "damageControl": {
+            "name": "Damage Control",
+            "description": "Direct a team to patch a breach. Roll Presence + Engineering vs Difficulty 2, plus 1 for each degree of potency. Breach is temporarily removed on success."
+          },
+          "transport": {
+            "name": "Transport",
+            "description": "Teleport people or objects. Roll Control + Engineering assisted by the ship's Sensors + Science. Base Difficulty 0. +1 if away from transporter room. +1 if Site A is not a transporter pad. +1 if Site B is not a transporter pad."
+          }
+        }
+      },
+      "helmStation": {
+        "actions": {
+          "changePosition": {
+            "name": "Change Position",
+            "description": "Move to another station. You must wait for the station to be unmanned before taking control. Immediate if the station is in the same room, otherwise, arrive at the start of the next turn."
+          },
+          "interact": {
+            "name": "Interact",
+            "description": "Perform a task not otherwise listed. Complex actions require a major action."
+          },
+          "prepare": {
+            "name": "Prepare",
+            "description": "Get something ready for a rolled task and establish a narrative position to do it."
+          },
+          "restore": {
+            "name": "Restore",
+            "description": "Resolve minor narrative issues with ship systems."
+          },
+          "impulse": {
+            "name": "Impulse",
+            "description": "Move 2 zones. If you only move 1 zone, you may reduce the Momentum cost of movement through difficult or hazardous terrain by 1."
+          },
+          "thrusters": {
+            "name": "Thrusters",
+            "description": "Move around within your current zone. You may make Contact with another ship safely, such as docking or landing."
+          },
+          "assist": {
+            "name": "Assist",
+            "description": "Help another character. You may take this action on their turn if you have not acted already."
+          },
+          "createTrait": {
+            "name": "Create a Trait",
+            "description": "Roll vs Difficulty 2 to create a trait, change a trait, or remove a trait (e.g. careful positioning, skilled maneuvering)."
+          },
+          "override": {
+            "name": "Override",
+            "description": "Take a major action from a non-Command station at +1 Difficulty."
+          },
+          "pass": {
+            "name": "Pass",
+            "description": "Do nothing!"
+          },
+          "ready": {
+            "name": "Ready",
+            "description": "Choose another major action and perform that when a specific trigger event of your choice occurs."
+          },
+          "attackPattern": {
+            "name": "Attack Pattern",
+            "description": "Assist each attack until your next turn with Control + Conn. All incoming attacks have difficulty reduced by 1 until your next turn."
+          },
+          "evasiveAction": {
+            "name": "Evasive Action",
+            "description": "Until your next turn, all incoming attacks are opposed rolls vs your Daring + Conn assisted by the ship's Structure + Conn. If you win the opposed roll, you may move the ship 1 zone. All attacks made by your ship suffer +1 Difficulty until your next turn. You may not take this action at the same time as Defensive Fire."
+          },
+          "maneuver": {
+            "name": "Maneuver",
+            "description": "Roll Control + Conn vs Difficulty 0 to generate momentum, especially when crossing difficult terrain."
+          },
+          "ram": {
+            "name": "Ram",
+            "description": "Move into Contact with a target at Close range. Perform an Attack with Daring + Conn assisted by the ship's Engines + Conn vs Difficulty 2. Each ship suffers damage equal to the other's scale + half the number of zones moved before collision. This attack is Devastating, Piercing, and Intense."
+          },
+          "warp": {
+            "name": "Warp",
+            "description": "Requires Reserve Power. You must take a Prepare minor action first. Roll Control + Conn assisted by the ship's Engines + Conn vs Difficulty 1. On success, move a number of zones equal to Engines or leave the battlefield."
+          }
+        }
+      },
+      "navigatorStation": {
+        "actions": {
+          "changePosition": {
+            "name": "Change Position",
+            "description": "Move to another station. You must wait for the station to be unmanned before taking control. Immediate if the station is in the same room, otherwise, arrive at the start of the next turn."
+          },
+          "interact": {
+            "name": "Interact",
+            "description": "Perform a task not otherwise listed. Complex actions require a major action."
+          },
+          "prepare": {
+            "name": "Prepare",
+            "description": "Get something ready for a rolled task and establish a narrative position to do it."
+          },
+          "restore": {
+            "name": "Restore",
+            "description": "Resolve minor narrative issues with ship systems."
+          },
+          "assist": {
+            "name": "Assist",
+            "description": "Help another character. You may take this action on their turn if you have not acted already."
+          },
+          "createTrait": {
+            "name": "Create a Trait",
+            "description": "Roll vs Difficulty 2 to create a trait, change a trait, or remove a trait (e.g. plotting a careful course, studying the terrain)."
+          },
+          "override": {
+            "name": "Override",
+            "description": "Take a major action from a non-Command station at +1 Difficulty."
+          },
+          "pass": {
+            "name": "Pass",
+            "description": "Do nothing!"
+          },
+          "ready": {
+            "name": "Ready",
+            "description": "Choose another major action and perform that when a specific trigger event of your choice occurs."
+          }
+        }
+      },
+      "operationsStation": {
+        "actions": {
+          "changePosition": {
+            "name": "Change Position",
+            "description": "Move to another station. You must wait for the station to be unmanned before taking control. Immediate if the station is in the same room, otherwise, arrive at the start of the next turn."
+          },
+          "interact": {
+            "name": "Interact",
+            "description": "Perform a task not otherwise listed. Complex actions require a major action."
+          },
+          "prepare": {
+            "name": "Prepare",
+            "description": "Get something ready for a rolled task and establish a narrative position to do it."
+          },
+          "restore": {
+            "name": "Restore",
+            "description": "Resolve minor narrative issues with ship systems."
+          },
+          "assist": {
+            "name": "Assist",
+            "description": "Help another character. You may take this action on their turn if you have not acted already."
+          },
+          "createTrait": {
+            "name": "Create a Trait",
+            "description": "Roll vs Difficulty 2 to create a trait, change a trait, or remove a trait (e.g. modifications to ship systems)."
+          },
+          "override": {
+            "name": "Override",
+            "description": "Take a major action from a non-Command station at +1 Difficulty."
+          },
+          "pass": {
+            "name": "Pass",
+            "description": "Do nothing!"
+          },
+          "ready": {
+            "name": "Ready",
+            "description": "Choose another major action and perform that when a specific trigger event of your choice occurs."
+          },
+          "damageControl": {
+            "name": "Damage Control",
+            "description": "Repair a damaged or disabled system. Roll Presence + Engineering assisted by the ship's Structure + Engineering vs Difficulty 2. A damaged system is repaired. A disabled system becomes damaged instead."
+          },
+          "regainPower": {
+            "name": "Regain Power",
+            "description": "Roll Control + Engineering assisted by the ship's Engines + Engineering vs Difficulty 1. On success, regain 1 Reserve Power, plus 1 per Momentum spent (Repeatable)."
+          },
+          "regenerateShields": {
+            "name": "Regenerate Shields",
+            "description": "Requires Reserve Power. Roll Control + Engineering assisted by the ship's Structure + Engineering vs Difficulty 2. On success, regain shields equal to the ship's Security score."
+          },
+          "reroutePower": {
+            "name": "Reroute Power",
+            "description": "No roll required. Move Reserve Power from Engines to any other system, or vice versa. You may not move power from other systems."
+          },
+          "transport": {
+            "name": "Transport",
+            "description": "Teleport people or objects. Roll Control + Engineering assisted by the ship's Sensors + Science. Base Difficulty 0. +1 if away from transporter room. +1 if Site A is not a transporter pad. +1 if Site B is not a transporter pad."
+          }
+        }
+      },
+      "sensorsStation": {
+        "actions": {
+          "changePosition": {
+            "name": "Change Position",
+            "description": "Move to another station. You must wait for the station to be unmanned before taking control. Immediate if the station is in the same room, otherwise, arrive at the start of the next turn."
+          },
+          "interact": {
+            "name": "Interact",
+            "description": "Perform a task not otherwise listed. Complex actions require a major action."
+          },
+          "prepare": {
+            "name": "Prepare",
+            "description": "Get something ready for a rolled task and establish a narrative position to do it."
+          },
+          "restore": {
+            "name": "Restore",
+            "description": "Resolve minor narrative issues with ship systems."
+          },
+          "calibrateSensors": {
+            "name": "Calibrate Sensors",
+            "description": "Recalibrate the ship's sensors. The next Sensor Sweep or Scan for Weakness task reduces its Difficulty by 1."
+          },
+          "launchProbe": {
+            "name": "Launch Probe",
+            "description": "Launch a sensor probe to a zone within Long range. Until the probe is destroyed or retrieved, all tasks to detect or scan that zone reduce their Difficulty by 1."
+          },
+          "assist": {
+            "name": "Assist",
+            "description": "Help another character. You may take this action on their turn if you have not acted already."
+          },
+          "createTrait": {
+            "name": "Create a Trait",
+            "description": "Roll vs Difficulty 2 to create a trait, change a trait, or remove a trait (e.g. extra information gathered from sensor scans)."
+          },
+          "override": {
+            "name": "Override",
+            "description": "Take a major action from a non-Command station at +1 Difficulty."
+          },
+          "pass": {
+            "name": "Pass",
+            "description": "Do nothing!"
+          },
+          "ready": {
+            "name": "Ready",
+            "description": "Choose another major action and perform that when a specific trigger event of your choice occurs."
+          },
+          "reveal": {
+            "name": "Reveal",
+            "description": "Scan a ship or zone to reveal all of its traits, including hidden ones. Roll Reason + Science assisted by the ship's Sensors + Science vs Difficulty 3."
+          },
+          "scanForWeakness": {
+            "name": "Scan for Weakness",
+            "description": "Opposed roll: Control + Science assisted by the ship's Sensors + Science vs the target's Daring + Security assisted by its Structure + Security. On success, the next attack against the target may re-roll any number of challenge dice on the damage roll."
+          },
+          "sensorSweep": {
+            "name": "Sensor Sweep",
+            "description": "Scan for nearby objects, energy signatures, and anomalies. Roll Reason + Science assisted by the ship's Sensors + Science vs Difficulty 1. On success, learn basic information; spend Momentum for more detail."
+          }
+        }
+      },
+      "tacticalStation": {
+        "actions": {
+          "changePosition": {
+            "name": "Change Position",
+            "description": "Move to another station. You must wait for the station to be unmanned before taking control. Immediate if the station is in the same room, otherwise, arrive at the start of the next turn."
+          },
+          "interact": {
+            "name": "Interact",
+            "description": "Perform a task not otherwise listed. Complex actions require a major action."
+          },
+          "prepare": {
+            "name": "Prepare",
+            "description": "Get something ready for a rolled task and establish a narrative position to do it."
+          },
+          "restore": {
+            "name": "Restore",
+            "description": "Resolve minor narrative issues with ship systems."
+          },
+          "calibrateWeapons": {
+            "name": "Calibrate Weapons",
+            "description": "Recalibrate the ship's weapons. Your next attack with ship weapons may re-roll a single d20 on the task roll."
+          },
+          "targetingSolution": {
+            "name": "Targeting Solution",
+            "description": "Lock onto a target. Your next attack against that target reduces its Difficulty by 1."
+          },
+          "assist": {
+            "name": "Assist",
+            "description": "Help another character. You may take this action on their turn if you have not acted already."
+          },
+          "createTrait": {
+            "name": "Create a Trait",
+            "description": "Roll vs Difficulty 2 to create a trait, change a trait, or remove a trait (e.g. weapon modifications and targeting solutions)."
+          },
+          "override": {
+            "name": "Override",
+            "description": "Take a major action from a non-Command station at +1 Difficulty."
+          },
+          "pass": {
+            "name": "Pass",
+            "description": "Do nothing!"
+          },
+          "ready": {
+            "name": "Ready",
+            "description": "Choose another major action and perform that when a specific trigger event of your choice occurs."
+          },
+          "defensiveFire": {
+            "name": "Defensive Fire",
+            "description": "Until your next turn, when an enemy ship moves into or within Close range of your ship, you may make an immediate attack against them using Daring + Security assisted by the ship's Weapons + Security. You may not take this action at the same time as Evasive Action."
+          },
+          "fire": {
+            "name": "Fire",
+            "description": "Attack an enemy ship or target with the ship's weapons. Roll Control + Security assisted by the ship's Weapons + Security. See Starship Attacks for details."
+          },
+          "modulateShields": {
+            "name": "Modulate Shields",
+            "description": "No roll required. Spend 1 Reserve Power. Until the start of your next turn, the ship's Resistance is increased by 2 against energy weapons."
+          },
+          "tractorBeam": {
+            "name": "Tractor Beam",
+            "description": "Grab and hold a target in place. Roll Control + Security assisted by the ship's Sensors + Science vs Difficulty 2. On success, the target cannot move until freed. Escaping requires an opposed roll."
+          }
+        }
+      },
+      "actions": {
+        "aim": {
+          "name": "Aim",
+          "description": "When you make an Attack this turn, you may re-roll a single d20 on the task roll."
+        },
+        "drawItem": {
+          "name": "Draw Item",
+          "description": "Pick up an item within Reach or draw an item you are carrying. If using the item doesn’t require a task to use, you can use it immediately as part of this minor action."
+        },
+        "interact": {
+          "name": "Interact",
+          "description": "Interact with an object in the environment. Complex actions require a major action."
+        },
+        "movement": {
+          "name": "Move",
+          "description": "Move up to one zone, to any point within Medium range. You cannot take this minor action in the same turn as the Sprint major action. If there are any enemies within Reach of you, you cannot perform this action."
+        },
+        "prepare": {
+          "name": "Prepare",
+          "description": "Some items require this minor action before they can be used, and some major actions require this minor action before they can be attempted. Sometimes items will grant special benefits if this action is used before performing a task."
+        },
+        "standDropProne": {
+          "name": "Stand/Drop Prone",
+          "description": "Drop to the ground, making yourself a smaller target, or stand up from being prone. You cannot Stand and Drop Prone in the same turn."
+        },
+        "assist": {
+          "name": "Assist",
+          "description": "Help 2 other characters per round instead of just 1. You may take this action on their turn if you have not acted already."
+        },
+        "attack": {
+          "name": "Attack",
+          "description": "Attack an enemy or other viable target and attempt to injure them. See Attempting an Attack (page 290) for details."
+        },
+        "createTrait": {
+          "name": "Create a Trait",
+          "description": "Roll vs Difficulty 2 (usually) to Create, Change, or Remove a trait. Describe how you're doing it."
+        },
+        "direct": {
+          "name": "Direct",
+          "description": "May only be attempted by one character on each side in a position of authority. Spend 1 Momentum and select one ally who can hear you. They may immediately attempt a single major action with no +1 Difficulty; you Assist them with your Control + Command."
+        },
+        "firstAid": {
+          "name": "First Aid",
+          "description": "Attempt to revive a Defeated character within reach. Perform a Daring + Medicine task, Difficulty 2. If successful, the character is no longer Defeated. Alternatively, treat the Injury with a Difficulty equal to its severity. If successful, remove the injury."
+        },
+        "guard": {
+          "name": "Guard",
+          "description": "Defend yourself, preparing for an attack. This is an Insight + Security task, Difficulty 0. Success increases the Difficulty of any attacks against you by 1 until the start of your next turn. +1 Difficulty to guard an ally within Reach instead."
+        },
+        "otherTasks": {
+          "name": "Other Tasks",
+          "description": "Do something not described here. GM will tell you how to do it."
+        },
+        "pass": {
+          "name": "Pass",
+          "description": "Do nothing."
+        },
+        "ready": {
+          "name": "Ready",
+          "description": "Choose another major action and perform that when a specific trigger event of your choice occurs."
+        },
+        "sprint": {
+          "name": "Sprint",
+          "description": "Move two zones, to any point within Long range. If there is difficult or hazardous terrain, you may attempt a Fitness + Conn task with Difficulty 0 as part of this action, to generate Momentum to cross the terrain."
+        }
+      }
     }
   }
 }

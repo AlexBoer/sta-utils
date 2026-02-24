@@ -91,12 +91,15 @@ function _getLabels() {
     usingFocus: t("sta-utils.dicePoolMonitor.usingFocus"),
     usingDedicatedFocus: t("sta-utils.dicePoolMonitor.usingDedicatedFocus"),
     usingDetermination: t("sta-utils.dicePoolMonitor.usingDetermination"),
+    usingReservePower: t("sta-utils.dicePoolMonitor.usingReservePower"),
     complicationRange: t("sta-utils.dicePoolMonitor.complicationRange"),
     diceInPool: t("sta-utils.dicePoolMonitor.diceInPool"),
     shipAssisting: t("sta-utils.dicePoolMonitor.shipAssisting"),
     starship: t("sta-utils.dicePoolMonitor.starship"),
     system: t("sta-utils.dicePoolMonitor.system"),
     department: t("sta-utils.dicePoolMonitor.department"),
+    attribute: t("sta-utils.dicePoolMonitor.attribute"),
+    discipline: t("sta-utils.dicePoolMonitor.discipline"),
   };
 }
 
@@ -235,6 +238,7 @@ function _renderEditInputs(playerCol, dialogId, userId) {
     "usingFocus",
     "usingDedicatedFocus",
     "usingDetermination",
+    "usingReservePower",
   ];
   const numOptions = ["complicationRange", "dicePoolSlider"];
 
@@ -287,6 +291,9 @@ function _renderEditInputs(playerCol, dialogId, userId) {
     });
   }
 
+  // Attribute/discipline edit controls
+  _renderAttrDiscEditInputs(playerCol, dialogId, userId);
+
   // Ship-assist edit controls
   _renderShipAssistEditInputs(playerCol, dialogId, userId);
 }
@@ -301,6 +308,7 @@ function _renderDisplayValues(playerCol) {
     "usingFocus",
     "usingDedicatedFocus",
     "usingDetermination",
+    "usingReservePower",
   ];
   const numOptions = ["complicationRange", "dicePoolSlider"];
 
@@ -332,8 +340,102 @@ function _renderDisplayValues(playerCol) {
     valueEl.textContent = value;
   }
 
+  // Restore attribute/discipline display values
+  _renderAttrDiscDisplayValues(playerCol);
+
   // Restore ship-assist display values
   _renderShipAssistDisplayValues(playerCol);
+}
+
+/**
+ * Render editable dropdowns for the attribute/discipline section.
+ * @param {HTMLElement} playerCol
+ * @param {string} dialogId
+ * @param {string} userId
+ * @private
+ */
+function _renderAttrDiscEditInputs(playerCol, dialogId, userId) {
+  const section = playerCol.querySelector(
+    ".sta-dice-pool-monitor-attrdisc-section",
+  );
+  if (!section) return;
+
+  const selectFields = [
+    { key: "selectedAttribute", optionsKey: "attributeOptions" },
+    { key: "selectedDiscipline", optionsKey: "disciplineOptions" },
+  ];
+
+  for (const { key, optionsKey } of selectFields) {
+    const optionEl = section.querySelector(
+      `.sta-dice-pool-monitor-option[data-option="${key}"]`,
+    );
+    if (!optionEl) continue;
+    const valueEl = optionEl.querySelector(
+      ".sta-dice-pool-monitor-option-value",
+    );
+    if (!valueEl) continue;
+
+    let options = [];
+    try {
+      options = JSON.parse(playerCol.dataset[optionsKey] || "[]");
+    } catch (_) {
+      // ignore
+    }
+    if (options.length === 0) continue;
+
+    const currentValue = optionEl.dataset.value || "";
+    const optionsHtml = options
+      .map(
+        (o) =>
+          `<option value="${o.value}" ${o.value === currentValue ? "selected" : ""}>${o.label}</option>`,
+      )
+      .join("");
+    valueEl.innerHTML = `<select class="sta-dice-pool-monitor-edit-select">${optionsHtml}</select>`;
+
+    const select = valueEl.querySelector("select");
+    select?.addEventListener("change", () => {
+      optionEl.dataset.value = select.value;
+      _sendGMUpdate(dialogId, userId, { [key]: select.value });
+    });
+  }
+}
+
+/**
+ * Restore display values for the attribute/discipline section.
+ * @param {HTMLElement} playerCol
+ * @private
+ */
+function _renderAttrDiscDisplayValues(playerCol) {
+  const section = playerCol.querySelector(
+    ".sta-dice-pool-monitor-attrdisc-section",
+  );
+  if (!section) return;
+
+  const selectFields = [
+    { key: "selectedAttribute", optionsKey: "attributeOptions" },
+    { key: "selectedDiscipline", optionsKey: "disciplineOptions" },
+  ];
+
+  for (const { key, optionsKey } of selectFields) {
+    const optionEl = section.querySelector(
+      `.sta-dice-pool-monitor-option[data-option="${key}"]`,
+    );
+    if (!optionEl) continue;
+    const valueEl = optionEl.querySelector(
+      ".sta-dice-pool-monitor-option-value",
+    );
+    if (!valueEl) continue;
+
+    const currentValue = optionEl.dataset.value || "";
+    let options = [];
+    try {
+      options = JSON.parse(playerCol.dataset[optionsKey] || "[]");
+    } catch (_) {
+      // ignore
+    }
+    const selectedOpt = options.find((o) => o.value === currentValue);
+    valueEl.textContent = selectedOpt?.label ?? currentValue ?? "—";
+  }
 }
 
 /**
@@ -465,6 +567,103 @@ function _renderShipAssistDisplayValues(playerCol) {
     }
     const selectedOpt = options.find((o) => o.value === currentValue);
     valueEl.textContent = selectedOpt?.label ?? currentValue ?? "—";
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Attribute / Discipline section (action chooser dialogs)            */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Update the attribute/discipline section in a player column.
+ * Creates the section if it doesn't exist yet; only appears for action
+ * chooser dialogs that include attribute + discipline selects.
+ *
+ * @param {HTMLElement} playerCol
+ * @param {object} data - The dice pool update data.
+ * @param {boolean} isEditing - Whether the column is in edit mode.
+ * @private
+ */
+function _updateAttrDiscSection(playerCol, data, isEditing) {
+  // Only process when at least one of these fields is present
+  if (
+    data.selectedAttribute === undefined &&
+    data.selectedDiscipline === undefined
+  )
+    return;
+
+  // Skip nulls (standard STA dialog doesn't have these selects)
+  if (data.selectedAttribute === null && data.selectedDiscipline === null)
+    return;
+
+  // Store dropdown options for edit mode
+  if (data.attributeOptions?.length) {
+    playerCol.dataset.attributeOptions = JSON.stringify(data.attributeOptions);
+  }
+  if (data.disciplineOptions?.length) {
+    playerCol.dataset.disciplineOptions = JSON.stringify(
+      data.disciplineOptions,
+    );
+  }
+
+  let section = playerCol.querySelector(
+    ".sta-dice-pool-monitor-attrdisc-section",
+  );
+
+  if (!section) {
+    section = document.createElement("div");
+    section.className = "sta-dice-pool-monitor-attrdisc-section";
+    const labels = _getLabels();
+    section.innerHTML = `
+      <div class="sta-dice-pool-monitor-option" data-option="selectedAttribute" data-value="">
+        <span class="sta-dice-pool-monitor-option-label">${labels.attribute}</span>
+        <span class="sta-dice-pool-monitor-option-value">—</span>
+      </div>
+      <div class="sta-dice-pool-monitor-option" data-option="selectedDiscipline" data-value="">
+        <span class="sta-dice-pool-monitor-option-label">${labels.discipline}</span>
+        <span class="sta-dice-pool-monitor-option-value">—</span>
+      </div>
+    `;
+    // Insert before the main options section
+    const optionsSection = playerCol.querySelector(
+      ".sta-dice-pool-monitor-options",
+    );
+    if (optionsSection) {
+      optionsSection.before(section);
+    } else {
+      playerCol.appendChild(section);
+    }
+  }
+
+  // Update values
+  const fields = {
+    selectedAttribute: data.selectedAttribute,
+    selectedDiscipline: data.selectedDiscipline,
+  };
+  const optionSources = {
+    selectedAttribute: data.attributeOptions,
+    selectedDiscipline: data.disciplineOptions,
+  };
+
+  for (const [key, value] of Object.entries(fields)) {
+    if (value === undefined || value === null) continue;
+    const optionEl = section.querySelector(
+      `.sta-dice-pool-monitor-option[data-option="${key}"]`,
+    );
+    if (!optionEl) continue;
+
+    optionEl.dataset.value = value;
+
+    if (isEditing) continue;
+
+    const valueEl = optionEl.querySelector(
+      ".sta-dice-pool-monitor-option-value",
+    );
+    if (!valueEl) continue;
+
+    const options = optionSources[key] ?? [];
+    const selectedOpt = options.find((o) => o.value === value);
+    valueEl.textContent = selectedOpt?.label ?? value ?? "—";
   }
 }
 
@@ -666,6 +865,7 @@ export async function updateDicePoolMonitor(data) {
     usingFocus: data.usingFocus,
     usingDedicatedFocus: data.usingDedicatedFocus,
     usingDetermination: data.usingDetermination,
+    usingReservePower: data.usingReservePower,
     complicationRange: data.complicationRange,
     dicePoolSlider: data.dicePoolSlider,
   };
@@ -694,6 +894,9 @@ export async function updateDicePoolMonitor(data) {
       valueEl.textContent = String(value);
     }
   }
+
+  // Update attribute/discipline section (action chooser dialogs)
+  _updateAttrDiscSection(playerCol, data, isEditing);
 
   // Update ship-assist section
   _updateShipAssistSection(playerCol, data, isEditing);

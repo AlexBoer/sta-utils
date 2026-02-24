@@ -180,17 +180,17 @@ export class JournalBacklinks {
   /** Run an initial sync if SYNC_VERSION has been bumped since last run. */
   checkInitialSync() {
     const lastSynced = game.settings.get(MODULE_ID, SETTING_LAST_SYNCED);
-    this.log(
+    this.debug(
       `checkInitialSync: lastSynced=${lastSynced}, SYNC_VERSION=${SYNC_VERSION}`,
     );
     if (lastSynced < SYNC_VERSION) {
-      this.log("performing initial sync…");
+      this.debug("performing initial sync…");
       this.sync().then(() => {
-        this.log("initial sync complete, updating lastSyncedVersion");
+        this.debug("initial sync complete, updating lastSyncedVersion");
         game.settings.set(MODULE_ID, SETTING_LAST_SYNCED, SYNC_VERSION);
       });
     } else {
-      this.log("already synced, skipping initial sync");
+      this.debug("already synced, skipping initial sync");
     }
   }
 
@@ -742,8 +742,11 @@ export class JournalBacklinks {
       if (entity.description) parts.push(entity.description);
       if (entity.results?.size) {
         for (const result of entity.results) {
-          if (result.text && result.text.includes("@UUID[")) {
-            parts.push(result.text);
+          const resultCandidates = [result.description, result.name];
+          for (const candidate of resultCandidates) {
+            if (typeof candidate === "string" && candidate.includes("@UUID[")) {
+              parts.push(candidate);
+            }
           }
         }
       }

@@ -8,5 +8,9 @@ export {
   shouldShowInfoButtons,
   isFatigueEnabled,
   isBacklinksEnabled,
+  isTalentAutomationsEnabled,
+  isMomentumSpendEnabled,
+  isAutoDeductMomentumEnabled,
+  isTooltipsDisabled,
 } from "./settings.mjs";
 export { getModuleSocket, initSocket } from "./socket.mjs";
