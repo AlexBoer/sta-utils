@@ -169,6 +169,10 @@ display: none;
     color: #ddd;
 }
 
+.chat-message h1, .chat-message h2, .chat-message h3, .chat-message h4, .chat-message h5, .chat-message h6 {
+    color: #ddd;
+}
+
 /* body.ccs-active .chat-message.message.flexcol:has(.chatcard) .chatcard .heading {
     background: var(--ccs-chat-border-color);
     color: oklch(from var(--ccs-chat-border-color) clamp(0, (0.6 - l) * 1000, 1) 0 0);
