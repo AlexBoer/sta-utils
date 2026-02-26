@@ -145,8 +145,20 @@ function _gatherDicePoolState(root) {
     form.querySelector?.('input[name="usingFocus"]')?.checked ?? false;
   const usingDedicatedFocus =
     form.querySelector?.('input[name="usingDedicatedFocus"]')?.checked ?? false;
-  const usingDetermination =
-    form.querySelector?.('input[name="usingDetermination"]')?.checked ?? false;
+  // When sta-officers-log replaces the checkbox with a <select>, derive
+  // the boolean from whether a value is selected in the dropdown, and
+  // also broadcast the full dropdown state for GM editing.
+  const deterDropdown = form.querySelector?.(
+    'select[name="determinationValueId"]',
+  );
+  const usingDetermination = deterDropdown
+    ? !!deterDropdown.value
+    : (form.querySelector?.('input[name="usingDetermination"]')?.checked ??
+      false);
+  const determinationValueId = deterDropdown?.value ?? null;
+  const determinationValueOptions = deterDropdown
+    ? _gatherSelectOptions(deterDropdown)
+    : null;
   const usingReservePower =
     form.querySelector?.('input[name="usingReservePower"]')?.checked ?? false;
 
@@ -193,6 +205,8 @@ function _gatherDicePoolState(root) {
     usingFocus,
     usingDedicatedFocus,
     usingDetermination,
+    determinationValueId,
+    determinationValueOptions,
     usingReservePower,
     complicationRange,
     dicePoolSlider,
@@ -387,6 +401,7 @@ export function installDicePoolBroadcast(app, root, _context) {
  * @param {boolean} [data.usingFocus]
  * @param {boolean} [data.usingDedicatedFocus]
  * @param {boolean} [data.usingDetermination]
+ * @param {string}  [data.determinationValueId] - Selected value item ID (officers-log dropdown).
  * @param {number} [data.complicationRange]
  * @param {number} [data.dicePoolSlider]
  */
@@ -413,9 +428,23 @@ export function applyGMUpdate(data) {
     const input = form.querySelector?.('input[name="usingDedicatedFocus"]');
     if (input) input.checked = data.usingDedicatedFocus;
   }
-  if (data.usingDetermination !== undefined) {
-    const input = form.querySelector?.('input[name="usingDetermination"]');
-    if (input) input.checked = data.usingDetermination;
+  if (data.determinationValueId !== undefined) {
+    // GM selected a specific value in the dropdown
+    const deterDropdown = form.querySelector?.(
+      'select[name="determinationValueId"]',
+    );
+    if (deterDropdown) deterDropdown.value = data.determinationValueId;
+  } else if (data.usingDetermination !== undefined) {
+    const deterDropdown = form.querySelector?.(
+      'select[name="determinationValueId"]',
+    );
+    if (deterDropdown) {
+      // GM toggled determination off → reset dropdown to blank
+      if (!data.usingDetermination) deterDropdown.value = "";
+    } else {
+      const input = form.querySelector?.('input[name="usingDetermination"]');
+      if (input) input.checked = data.usingDetermination;
+    }
   }
   if (data.usingReservePower !== undefined) {
     const input = form.querySelector?.('input[name="usingReservePower"]');

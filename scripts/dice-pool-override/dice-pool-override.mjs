@@ -21,7 +21,11 @@
 
 import { MODULE_ID } from "../core/constants.mjs";
 import { showDicePoolDialog } from "./dice-pool-dialog.mjs";
-import { executeTaskRoll, runMiddleware } from "./execute-task-roll.mjs";
+import {
+  executeTaskRoll,
+  runMiddleware,
+  installRollSpeakerHook,
+} from "./execute-task-roll.mjs";
 
 /* ------------------------------------------------------------------ */
 /*  Middleware registry                                                */
@@ -95,6 +99,11 @@ let _installed = false;
 export function installDicePoolOverride() {
   if (_installed) return;
   _installed = true;
+
+  // Register the preCreateChatMessage hook that stamps roll messages with
+  // the correct speaker (actor ID + alias) for Character Chat Selector
+  // and similar portrait modules.
+  installRollSpeakerHook();
 
   // STAActors is the common base; patching its prototype covers
   // STACharacterSheet2e, STASupportingSheet2e, STAStarshipSheet2e, etc.
@@ -307,7 +316,11 @@ async function _overriddenAttributeTest(event, _original) {
 
   if (!dialogResult) return;
 
-  const { formData, automationStates: _automationStates } = dialogResult;
+  const {
+    formData,
+    automationStates: _automationStates,
+    determinationValueId,
+  } = dialogResult;
 
   /* ---- Read form values (identical) ---- */
   dicePool = parseInt(formData.get("dicePoolSlider"), 10);
@@ -316,6 +329,11 @@ async function _overriddenAttributeTest(event, _original) {
   usingDetermination = formData.get("usingDetermination") === "on";
   usingReservePower = formData.get("usingReservePower") === "on";
   complicationRange = parseInt(formData.get("complicationRange"), 10);
+
+  // sta-officers-log dropdown: selecting a value counts as using determination
+  if (determinationValueId) {
+    usingDetermination = true;
+  }
 
   const speaker = this.actor;
   const reputationValue =
@@ -466,5 +484,21 @@ async function _overriddenAttributeTest(event, _original) {
   /* ================================================================ */
 
   /* ---- Execute roll (delegates to shared execute-task-roll module) ---- */
-  await executeTaskRoll(taskData, { isShipAssist });
+  await executeTaskRoll(taskData, { isShipAssist, actor: speaker });
+
+  /* ---- Post-roll: record positive value use via sta-officers-log ---- */
+  if (determinationValueId && game.modules.get("sta-officers-log")?.active) {
+    try {
+      await game.staofficerslog.useValue({
+        actor: speaker,
+        valueItemId: determinationValueId,
+        useType: "positive",
+      });
+    } catch (err) {
+      console.warn(
+        `${MODULE_ID} | Failed to record value use via sta-officers-log:`,
+        err,
+      );
+    }
+  }
 }

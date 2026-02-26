@@ -10,36 +10,68 @@ const rollDefaults = {
 };
 
 const actions = [
+  //Major Actions
+  {
+    id: "Persuade",
+    type: "major",
+    name: "sta-utils.actionChooser.socialConflict.actions.persuade.name",
+    description:
+      "sta-utils.actionChooser.socialConflict.actions.persuade.description",
+    chatSummary:
+      "sta-utils.actionChooser.socialConflict.actions.persuade.chatSummary",
+    roll: {
+      ...rollDefaults,
+      attribute: "presence",
+      discipline: "command",
+      difficulty: "opposed",
+    },
+    momentumCost: 0,
+    callback: sendActionChat,
+  },
   // Social Tools
   {
     id: "evidence",
-    type: "major",
+    type: "social",
     name: "sta-utils.actionChooser.socialConflict.actions.evidence.name",
     description:
       "sta-utils.actionChooser.socialConflict.actions.evidence.description",
+    chatSummary:
+      "sta-utils.actionChooser.socialConflict.actions.evidence.chatSummary",
     roll: null,
     momentumCost: 0,
-    callback: sendActionChat,
   },
   {
     id: "intimidation",
-    type: "major",
+    type: "social",
     name: "sta-utils.actionChooser.socialConflict.actions.intimidation.name",
     description:
       "sta-utils.actionChooser.socialConflict.actions.intimidation.description",
+    chatSummary:
+      "sta-utils.actionChooser.socialConflict.actions.intimidation.chatSummary",
     roll: null,
     momentumCost: 0,
-    callback: sendActionChat,
   },
   {
     id: "negotiation",
-    type: "major",
+    type: "social",
     name: "sta-utils.actionChooser.socialConflict.actions.negotiation.name",
     description:
       "sta-utils.actionChooser.socialConflict.actions.negotiation.description",
+    chatSummary:
+      "sta-utils.actionChooser.socialConflict.actions.negotiation.chatSummary",
     roll: null,
     momentumCost: 0,
-    callback: sendActionChat,
+  },
+  {
+    id: "deception",
+    type: "social",
+    name: "sta-utils.actionChooser.socialConflict.actions.deception.name",
+    description:
+      "sta-utils.actionChooser.socialConflict.actions.deception.description",
+    chatSummary:
+      "sta-utils.actionChooser.socialConflict.actions.deception.chatSummary",
+    roll: null,
+    momentumCost: 0,
   },
 ];
 

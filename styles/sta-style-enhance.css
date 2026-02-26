@@ -150,8 +150,31 @@ display: none;
     color: #ff5858;
 }
 
-.chat-message {
+.chat-message.message.flexcol:has(.chatcard)  {
     border: blue;
     border-radius: 6px;
     background: rgba(11, 10, 19, 0.9);
+    color: #ddd
 }
+
+.chat-message.message.flexcol  {
+    border: blue;
+    border-radius: 6px;
+    background: rgba(11, 10, 19, 0.9);
+    color: #ddd
+}
+
+.message-header {
+    background: none;
+    color: #ddd;
+}
+
+/* body.ccs-active .chat-message.message.flexcol:has(.chatcard) .chatcard .heading {
+    background: var(--ccs-chat-border-color);
+    color: oklch(from var(--ccs-chat-border-color) clamp(0, (0.6 - l) * 1000, 1) 0 0);
+}
+
+.chat-message.message.flexcol:has(.chatcard) .chatcard .heading .flavor.task {
+    background: var(--ccs-chat-border-color);
+    color: oklch(from var(--ccs-chat-border-color) clamp(0, (0.6 - l) * 1000, 1) 0 0);
+} */

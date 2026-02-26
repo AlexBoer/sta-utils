@@ -2,6 +2,77 @@
 /*  STA Utilities — Module Styles               */
 /* -------------------------------------------- */
 
+/* =============================================================================
+ * TRAIT DRAWING SETTINGS DIALOG — compact & scrollable
+ * ============================================================================= */
+
+.trait-drawing-settings {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.trait-drawing-settings-body fieldset {
+  margin: 0 0 0.4rem;
+  padding: 0.25rem 0.5rem 0.35rem;
+  border: 1px solid var(--color-border-light-tertiary, #bbb);
+  border-radius: 4px;
+}
+
+.trait-drawing-settings-body fieldset legend {
+  font-size: 0.85em;
+  font-weight: 600;
+  padding: 0 0.3rem;
+}
+
+.trait-drawing-settings-body .form-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.4rem;
+  margin: 0.2rem 0;
+}
+
+.trait-drawing-settings-body .form-group > label {
+  flex: 0 0 40% !important;
+  font-size: 0.85em;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.trait-drawing-settings-body .form-group > select,
+.trait-drawing-settings-body .form-group > input[type="number"],
+.trait-drawing-settings-body .form-group > color-picker {
+  flex: 1 1 0 !important;
+  min-width: 0;
+}
+
+.trait-drawing-settings-body .form-group > range-picker {
+  flex: 1 1 0 !important;
+  min-width: 0;
+}
+
+/* Force range-picker internals: slider gets most space, number readout stays small */
+.trait-drawing-settings-body range-picker input[type="range"] {
+  flex: 1 1 auto !important;
+  min-width: 60px !important;
+}
+.trait-drawing-settings-body range-picker input[type="number"] {
+  flex: 0 0 40px !important;
+  width: 40px !important;
+}
+
+.trait-drawing-settings-body .form-group > input[type="checkbox"] {
+  flex: 0 0 auto;
+}
+
+.trait-drawing-settings-body .form-group > .hint {
+  flex: 1 1 100%;
+  font-size: 0.75em;
+  opacity: 0.7;
+  margin: 0;
+  padding: 0;
+}
+
 /* ---- Trait Visibility Toggle ---- */
 
 .sta-utils-visibility-toggle {
@@ -1962,21 +2033,27 @@ input.selector.attribute.sta-fatigued-attribute {
   white-space: nowrap;
 }
 
-.sta-actor-indicator__change {
-  background: none;
-  border: none;
+.sta-actor-indicator__select,
+.sta-starship-indicator__select {
+  font-family: var(--lcars-font);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
   color: var(--lcars-text-dark);
-  cursor: pointer;
-  font-size: 0.75rem;
-  padding: 0.15rem 0.3rem;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.25);
   border-radius: 8px;
-  transition: background 0.15s ease;
-  line-height: 1;
+  padding: 0.1rem 0.3rem;
+  cursor: pointer;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.sta-actor-indicator__change:hover {
-  background: rgba(0, 0, 0, 0.3);
-  color: #fff;
+.sta-actor-indicator__select:hover,
+.sta-starship-indicator__select:hover {
+  background: rgba(0, 0, 0, 0.15);
 }
 
 /* ---- Starship indicator (extends actor indicator) ---- */
@@ -1988,40 +2065,22 @@ input.selector.attribute.sta-fatigued-attribute {
   object-fit: cover;
 }
 
-.sta-starship-indicator__change {
-  background: none;
-  border: none;
+.sta-action-chooser-title__select {
+  font-family: var(--lcars-font);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
   color: var(--lcars-text-dark);
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 0.2rem 0.4rem;
   cursor: pointer;
-  font-size: 0.75rem;
-  padding: 0.15rem 0.3rem;
-  border-radius: 8px;
-  transition: background 0.15s ease;
-  line-height: 1;
 }
 
-.sta-starship-indicator__change:hover {
+.sta-action-chooser-title__select:hover {
   background: rgba(0, 0, 0, 0.3);
-  color: #fff;
-}
-
-.sta-action-chooser-title__switch {
-  background: none;
-  border: none;
-  color: var(--lcars-text-dark);
-  cursor: pointer;
-  font-size: 0.7rem;
-  padding: 0.1rem 0.35rem;
-  margin-left: 0.4rem;
-  border-radius: 8px;
-  transition: background 0.15s ease;
-  vertical-align: middle;
-  line-height: 1;
-}
-
-.sta-action-chooser-title__switch:hover {
-  background: rgba(0, 0, 0, 0.3);
-  color: #fff;
 }
 
 /* ---- Section headings ---- */
@@ -2031,10 +2090,23 @@ input.selector.attribute.sta-fatigued-attribute {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: var(--lcars-peach);
   margin: 0 0 0.4rem;
   padding-left: 0.25rem;
+}
+
+.sta-action-chooser .sta-action-chooser-section[data-section="minor"] h3 {
+  color: var(--lcars-blue);
+  border-left: 4px solid var(--lcars-blue);
+}
+
+.sta-action-chooser .sta-action-chooser-section[data-section="major"] h3 {
+  color: var(--lcars-peach);
   border-left: 4px solid var(--lcars-peach);
+}
+
+.sta-action-chooser .sta-action-chooser-section[data-section="social"] h3 {
+  color: var(--lcars-red);
+  border-left: 4px solid var(--lcars-red);
 }
 
 /* ---- Card grid ---- */
@@ -2077,6 +2149,10 @@ input.selector.attribute.sta-fatigued-attribute {
 
 .sta-action-tab[data-type="major"] {
   background: var(--lcars-peach);
+}
+
+.sta-action-tab[data-type="social"] {
+  background: var(--lcars-red);
 }
 
 .sta-action-tab:hover {
@@ -2122,6 +2198,11 @@ input.selector.attribute.sta-fatigued-attribute {
   border: 2px solid var(--lcars-peach);
 }
 
+.sta-action-detail[data-type="social"] {
+  background: rgba(255, 102, 102, 0.08);
+  border: 2px solid var(--lcars-red);
+}
+
 .sta-action-detail__empty {
   font-family: var(--lcars-font);
   font-size: 0.8rem;
@@ -2146,6 +2227,10 @@ input.selector.attribute.sta-fatigued-attribute {
 
 .sta-action-detail[data-type="major"] .sta-action-detail__name {
   color: var(--lcars-peach);
+}
+
+.sta-action-detail[data-type="social"] .sta-action-detail__name {
+  color: var(--lcars-red);
 }
 
 .sta-action-detail__badges {
@@ -2186,6 +2271,10 @@ input.selector.attribute.sta-fatigued-attribute {
   color: var(--lcars-peach);
 }
 
+.sta-action-detail[data-type="social"] .sta-action-detail__desc {
+  color: var(--lcars-red);
+}
+
 .sta-action-detail__weapon-picker {
   display: flex;
   align-items: center;
@@ -2204,6 +2293,10 @@ input.selector.attribute.sta-fatigued-attribute {
 
 .sta-action-detail[data-type="major"] .sta-action-detail__weapon-label {
   color: var(--lcars-peach);
+}
+
+.sta-action-detail[data-type="social"] .sta-action-detail__weapon-label {
+  color: var(--lcars-red);
 }
 
 .sta-action-detail__weapon-select {
@@ -2259,6 +2352,11 @@ input.selector.attribute.sta-fatigued-attribute {
   color: var(--lcars-peach);
 }
 
+.sta-action-detail[data-type="social"] .sta-action-detail__btn {
+  border: 2px solid var(--lcars-red);
+  color: var(--lcars-red);
+}
+
 .sta-action-detail__btn:hover {
   background: rgba(0, 0, 0, 0.4);
   color: #fff;
@@ -2289,5 +2387,17 @@ input.selector.attribute.sta-fatigued-attribute {
   margin-top: 4px;
   width: 100%;
   cursor: pointer;
+}
+
+/* ---- Determination value dropdown (officers-log integration) ---- */
+.sta-utils-determination-value-select {
+  width: 100%;
+  padding: 2px 4px;
+  font-size: 0.9em;
+}
+
+.sta-utils-determination-value-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 

@@ -7,4 +7,9 @@ export {
 } from "./dice-pool-override.mjs";
 export { installRerollOverride } from "./reroll-override.mjs";
 export { showDicePoolDialog } from "./dice-pool-dialog.mjs";
-export { executeTaskRoll, runMiddleware } from "./execute-task-roll.mjs";
+export {
+  executeTaskRoll,
+  runMiddleware,
+  installRollSpeakerHook,
+} from "./execute-task-roll.mjs";
+export { dicePoolApi } from "./api.mjs";

@@ -219,9 +219,9 @@ export class JournalBacklinks {
     this.debug(
       `preUpdateActor fired: ${entity.name}, change keys: ${Object.keys(change).join(", ")}`,
     );
-    // Trigger on any system data change — we can't predict which field path
-    // a given game system uses for rich text content.
-    if (change.system !== undefined) {
+    // Only rebuild when system.notes is edited — the only rich-text field
+    // on STA actors that can contain @UUID references.
+    if (change.system?.notes !== undefined) {
       await this.update(
         entity,
         "Actor",
@@ -235,6 +235,10 @@ export class JournalBacklinks {
         this._getContent(entity, "Actor"),
         true,
       );
+    } else if (change.system !== undefined) {
+      this.debug(
+        `skipping Actor update for ${entity.name} — change does not affect text content`,
+      );
     }
   }
 
@@ -242,7 +246,10 @@ export class JournalBacklinks {
     this.debug(
       `preUpdateItem fired: ${entity.name}, change keys: ${Object.keys(change).join(", ")}`,
     );
-    if (change.system !== undefined) {
+    if (
+      change.system !== undefined &&
+      this._changeAffectsTextContent(change.system)
+    ) {
       await this.update(
         entity,
         "Item",
@@ -251,6 +258,10 @@ export class JournalBacklinks {
       );
     } else if (change.flags?.[FLAG_SCOPE]?.["-=sync"] === null) {
       await this.update(entity, "Item", this._getContent(entity, "Item"), true);
+    } else if (change.system !== undefined) {
+      this.debug(
+        `skipping Item update for ${entity.name} — change does not affect text content`,
+      );
     }
   }
 
@@ -394,7 +405,18 @@ export class JournalBacklinks {
     }
 
     this.debug(`final updated references: ${JSON.stringify(updated)}`);
-    await entity.setFlag(FLAG_SCOPE, "references", updated);
+
+    // Only write the references flag if the list actually changed
+    const refsChanged =
+      updated.length !== existing.length ||
+      updated.some((r, i) => r !== existing[i]);
+    if (refsChanged) {
+      await entity.setFlag(FLAG_SCOPE, "references", updated);
+    } else {
+      this.debug(
+        `references unchanged for ${entity.name}, skipping flag write`,
+      );
+    }
     this.debug(`update complete for ${entity.name}`);
   }
 
@@ -785,6 +807,60 @@ export class JournalBacklinks {
     // Deduplicate (some paths may overlap)
     const unique = [...new Set(parts)];
     return unique.join("\n");
+  }
+
+  /**
+   * Check whether a system-data change object touches any fields that could
+   * contain rich-text / @UUID content.  Returns true when:
+   *  - A well-known text field path (biography, description, notes, …) is present, OR
+   *  - Any string value in the change tree already contains an @UUID reference.
+   */
+  _changeAffectsTextContent(changeSystem) {
+    if (!changeSystem) return false;
+
+    // Well-known rich-text paths used by various game systems
+    const nestedChecks = [
+      changeSystem.details?.biography?.value,
+      changeSystem.details?.biography,
+      changeSystem.biography?.value,
+      changeSystem.biography,
+      changeSystem.description?.value,
+      changeSystem.description,
+      changeSystem.notes,
+      changeSystem.details?.notes,
+      changeSystem.details?.appearance,
+    ];
+
+    for (const val of nestedChecks) {
+      if (typeof val === "string") return true;
+    }
+
+    // Handle flattened dot-notation keys (e.g. "details.biography.value")
+    const textKeyPatterns = ["biography", "description", "notes", "appearance"];
+    for (const key of Object.keys(changeSystem)) {
+      if (textKeyPatterns.some((p) => key.includes(p))) {
+        return true;
+      }
+    }
+
+    // Deep-scan for any strings containing @UUID in non-standard fields
+    return this._containsUuidStrings(changeSystem);
+  }
+
+  /** Return true if any string value in the tree contains an @UUID reference. */
+  _containsUuidStrings(obj, seen = new Set()) {
+    if (!obj || typeof obj !== "object" || seen.has(obj)) return false;
+    seen.add(obj);
+    for (const value of Object.values(obj)) {
+      if (typeof value === "string" && value.includes("@UUID[")) return true;
+      if (
+        typeof value === "object" &&
+        value !== null &&
+        this._containsUuidStrings(value, seen)
+      )
+        return true;
+    }
+    return false;
   }
 
   /** Recursively scan an object for string values containing @UUID references. */

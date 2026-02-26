@@ -18,6 +18,8 @@ const actions = [
     name: "sta-utils.actionChooser.tacticalStation.actions.changePosition.name",
     description:
       "sta-utils.actionChooser.tacticalStation.actions.changePosition.description",
+    chatSummary:
+      "sta-utils.actionChooser.tacticalStation.actions.changePosition.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -29,6 +31,8 @@ const actions = [
     name: "sta-utils.actionChooser.tacticalStation.actions.interact.name",
     description:
       "sta-utils.actionChooser.tacticalStation.actions.interact.description",
+    chatSummary:
+      "sta-utils.actionChooser.tacticalStation.actions.interact.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -40,6 +44,8 @@ const actions = [
     name: "sta-utils.actionChooser.tacticalStation.actions.prepare.name",
     description:
       "sta-utils.actionChooser.tacticalStation.actions.prepare.description",
+    chatSummary:
+      "sta-utils.actionChooser.tacticalStation.actions.prepare.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -51,6 +57,8 @@ const actions = [
     name: "sta-utils.actionChooser.tacticalStation.actions.restore.name",
     description:
       "sta-utils.actionChooser.tacticalStation.actions.restore.description",
+    chatSummary:
+      "sta-utils.actionChooser.tacticalStation.actions.restore.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -61,6 +69,8 @@ const actions = [
     name: "sta-utils.actionChooser.tacticalStation.actions.calibrateWeapons.name",
     description:
       "sta-utils.actionChooser.tacticalStation.actions.calibrateWeapons.description",
+    chatSummary:
+      "sta-utils.actionChooser.tacticalStation.actions.calibrateWeapons.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -71,6 +81,8 @@ const actions = [
     name: "sta-utils.actionChooser.tacticalStation.actions.targetingSolution.name",
     description:
       "sta-utils.actionChooser.tacticalStation.actions.targetingSolution.description",
+    chatSummary:
+      "sta-utils.actionChooser.tacticalStation.actions.targetingSolution.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -83,6 +95,8 @@ const actions = [
     name: "sta-utils.actionChooser.tacticalStation.actions.assist.name",
     description:
       "sta-utils.actionChooser.tacticalStation.actions.assist.description",
+    chatSummary:
+      "sta-utils.actionChooser.tacticalStation.actions.assist.chatSummary",
     roll: null,
     subtle: true,
     momentumCost: 0,
@@ -94,6 +108,8 @@ const actions = [
     name: "sta-utils.actionChooser.tacticalStation.actions.createTrait.name",
     description:
       "sta-utils.actionChooser.tacticalStation.actions.createTrait.description",
+    chatSummary:
+      "sta-utils.actionChooser.tacticalStation.actions.createTrait.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: null,
@@ -110,6 +126,8 @@ const actions = [
     name: "sta-utils.actionChooser.tacticalStation.actions.override.name",
     description:
       "sta-utils.actionChooser.tacticalStation.actions.override.description",
+    chatSummary:
+      "sta-utils.actionChooser.tacticalStation.actions.override.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -121,6 +139,8 @@ const actions = [
     name: "sta-utils.actionChooser.tacticalStation.actions.pass.name",
     description:
       "sta-utils.actionChooser.tacticalStation.actions.pass.description",
+    chatSummary:
+      "sta-utils.actionChooser.tacticalStation.actions.pass.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -131,6 +151,8 @@ const actions = [
     name: "sta-utils.actionChooser.tacticalStation.actions.ready.name",
     description:
       "sta-utils.actionChooser.tacticalStation.actions.ready.description",
+    chatSummary:
+      "sta-utils.actionChooser.tacticalStation.actions.ready.chatSummary",
     roll: null,
     subtle: true,
     momentumCost: 0,
@@ -143,6 +165,8 @@ const actions = [
     name: "sta-utils.actionChooser.tacticalStation.actions.defensiveFire.name",
     description:
       "sta-utils.actionChooser.tacticalStation.actions.defensiveFire.description",
+    chatSummary:
+      "sta-utils.actionChooser.tacticalStation.actions.defensiveFire.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: "daring",
@@ -160,6 +184,8 @@ const actions = [
     name: "sta-utils.actionChooser.tacticalStation.actions.fire.name",
     description:
       "sta-utils.actionChooser.tacticalStation.actions.fire.description",
+    chatSummary:
+      "sta-utils.actionChooser.tacticalStation.actions.fire.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: "control",
@@ -176,6 +202,8 @@ const actions = [
     name: "sta-utils.actionChooser.tacticalStation.actions.modulateShields.name",
     description:
       "sta-utils.actionChooser.tacticalStation.actions.modulateShields.description",
+    chatSummary:
+      "sta-utils.actionChooser.tacticalStation.actions.modulateShields.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -186,6 +214,8 @@ const actions = [
     name: "sta-utils.actionChooser.tacticalStation.actions.tractorBeam.name",
     description:
       "sta-utils.actionChooser.tacticalStation.actions.tractorBeam.description",
+    chatSummary:
+      "sta-utils.actionChooser.tacticalStation.actions.tractorBeam.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: "control",

@@ -17,6 +17,8 @@ const actions = [
     name: "sta-utils.actionChooser.helmStation.actions.changePosition.name",
     description:
       "sta-utils.actionChooser.helmStation.actions.changePosition.description",
+    chatSummary:
+      "sta-utils.actionChooser.helmStation.actions.changePosition.chatSummary",
     roll: null,
     subtle: true,
     momentumCost: 0,
@@ -29,6 +31,8 @@ const actions = [
     name: "sta-utils.actionChooser.helmStation.actions.interact.name",
     description:
       "sta-utils.actionChooser.helmStation.actions.interact.description",
+    chatSummary:
+      "sta-utils.actionChooser.helmStation.actions.interact.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -40,6 +44,8 @@ const actions = [
     name: "sta-utils.actionChooser.helmStation.actions.prepare.name",
     description:
       "sta-utils.actionChooser.helmStation.actions.prepare.description",
+    chatSummary:
+      "sta-utils.actionChooser.helmStation.actions.prepare.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -51,6 +57,8 @@ const actions = [
     name: "sta-utils.actionChooser.helmStation.actions.restore.name",
     description:
       "sta-utils.actionChooser.helmStation.actions.restore.description",
+    chatSummary:
+      "sta-utils.actionChooser.helmStation.actions.restore.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -61,6 +69,8 @@ const actions = [
     name: "sta-utils.actionChooser.helmStation.actions.impulse.name",
     description:
       "sta-utils.actionChooser.helmStation.actions.impulse.description",
+    chatSummary:
+      "sta-utils.actionChooser.helmStation.actions.impulse.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -71,6 +81,8 @@ const actions = [
     name: "sta-utils.actionChooser.helmStation.actions.thrusters.name",
     description:
       "sta-utils.actionChooser.helmStation.actions.thrusters.description",
+    chatSummary:
+      "sta-utils.actionChooser.helmStation.actions.thrusters.chatSummary",
     roll: null,
     subtle: true,
     momentumCost: 0,
@@ -84,6 +96,8 @@ const actions = [
     name: "sta-utils.actionChooser.helmStation.actions.assist.name",
     description:
       "sta-utils.actionChooser.helmStation.actions.assist.description",
+    chatSummary:
+      "sta-utils.actionChooser.helmStation.actions.assist.chatSummary",
     roll: null,
     subtle: true,
     momentumCost: 0,
@@ -95,6 +109,8 @@ const actions = [
     name: "sta-utils.actionChooser.helmStation.actions.createTrait.name",
     description:
       "sta-utils.actionChooser.helmStation.actions.createTrait.description",
+    chatSummary:
+      "sta-utils.actionChooser.helmStation.actions.createTrait.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: null,
@@ -110,6 +126,8 @@ const actions = [
     name: "sta-utils.actionChooser.helmStation.actions.override.name",
     description:
       "sta-utils.actionChooser.helmStation.actions.override.description",
+    chatSummary:
+      "sta-utils.actionChooser.helmStation.actions.override.chatSummary",
     roll: null,
     subtle: true,
     momentumCost: 0,
@@ -121,6 +139,7 @@ const actions = [
     subtle: true,
     name: "sta-utils.actionChooser.helmStation.actions.pass.name",
     description: "sta-utils.actionChooser.helmStation.actions.pass.description",
+    chatSummary: "sta-utils.actionChooser.helmStation.actions.pass.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -131,6 +150,8 @@ const actions = [
     name: "sta-utils.actionChooser.helmStation.actions.ready.name",
     description:
       "sta-utils.actionChooser.helmStation.actions.ready.description",
+    chatSummary:
+      "sta-utils.actionChooser.helmStation.actions.ready.chatSummary",
     roll: null,
     subtle: true,
     momentumCost: 0,
@@ -142,6 +163,8 @@ const actions = [
     name: "sta-utils.actionChooser.helmStation.actions.attackPattern.name",
     description:
       "sta-utils.actionChooser.helmStation.actions.attackPattern.description",
+    chatSummary:
+      "sta-utils.actionChooser.helmStation.actions.attackPattern.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: "control",
@@ -157,6 +180,8 @@ const actions = [
     name: "sta-utils.actionChooser.helmStation.actions.evasiveAction.name",
     description:
       "sta-utils.actionChooser.helmStation.actions.evasiveAction.description",
+    chatSummary:
+      "sta-utils.actionChooser.helmStation.actions.evasiveAction.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: "daring",
@@ -173,6 +198,8 @@ const actions = [
     name: "sta-utils.actionChooser.helmStation.actions.maneuver.name",
     description:
       "sta-utils.actionChooser.helmStation.actions.maneuver.description",
+    chatSummary:
+      "sta-utils.actionChooser.helmStation.actions.maneuver.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: "control",
@@ -187,6 +214,7 @@ const actions = [
     type: "major",
     name: "sta-utils.actionChooser.helmStation.actions.ram.name",
     description: "sta-utils.actionChooser.helmStation.actions.ram.description",
+    chatSummary: "sta-utils.actionChooser.helmStation.actions.ram.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: "daring",
@@ -202,6 +230,7 @@ const actions = [
     type: "major",
     name: "sta-utils.actionChooser.helmStation.actions.warp.name",
     description: "sta-utils.actionChooser.helmStation.actions.warp.description",
+    chatSummary: "sta-utils.actionChooser.helmStation.actions.warp.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: "control",

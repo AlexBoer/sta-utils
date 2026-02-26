@@ -16,6 +16,67 @@ import { MODULE_ID } from "../core/constants.mjs";
 import { getRegisteredMiddleware } from "./dice-pool-override.mjs";
 
 /* ------------------------------------------------------------------ */
+/*  Roll speaker (Character Chat Selector compatibility)               */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Tracks the actor whose roll is currently being executed.
+ * Set before calling rollTask/rollNPCTask and cleared afterwards.
+ * The preCreateChatMessage hook reads this to inject a proper `speaker`
+ * object so that modules like Character Chat Selector can display the
+ * correct portrait and name.
+ * @type {Actor|null}
+ */
+let _pendingRollActor = null;
+let _pendingRollActorTimer = null;
+
+/**
+ * Register a preCreateChatMessage hook that stamps every roll chat
+ * message with the correct speaker (actor ID, alias, and token if
+ * available on the current scene).
+ *
+ * Called once from installDicePoolOverride().
+ *
+ * NOTE: The STA system's rollTask / rollNPCTask call sendToChat()
+ * **without await**, so by the time ChatMessage.create() fires, the
+ * calling function has already returned.  That is why we consume and
+ * clear _pendingRollActor inside this hook rather than in a finally
+ * block around the roll call.
+ */
+export function installRollSpeakerHook() {
+  Hooks.on("preCreateChatMessage", (doc) => {
+    if (!_pendingRollActor) return;
+    const actor = _pendingRollActor;
+
+    // Consume: clear the pending actor so it won't affect later messages.
+    _pendingRollActor = null;
+    if (_pendingRollActorTimer) {
+      clearTimeout(_pendingRollActorTimer);
+      _pendingRollActorTimer = null;
+    }
+
+    // Try to find a linked token on the viewed scene for chat-bubble support.
+    let tokenId = null;
+    if (canvas?.ready && canvas.scene) {
+      const token =
+        canvas.tokens?.controlled?.find((t) => t.document?.actorId === actor.id)
+          ?.document ??
+        canvas.scene.tokens?.find((t) => t.actorId === actor.id);
+      if (token) tokenId = token.id;
+    }
+
+    doc.updateSource({
+      speaker: {
+        actor: actor.id,
+        alias: actor.name,
+        scene: game.scenes?.current?.id ?? null,
+        token: tokenId,
+      },
+    });
+  });
+}
+
+/* ------------------------------------------------------------------ */
 /*  Middleware execution                                               */
 /* ------------------------------------------------------------------ */
 
@@ -64,9 +125,13 @@ export async function runMiddleware(
  * @param {object}  taskData     - Fully assembled roll data.
  * @param {object}  opts
  * @param {boolean} opts.isShipAssist - Whether the roll uses ship assist.
+ * @param {Actor}   [opts.actor]      - The actor making the roll.  When
+ *   provided, the preCreateChatMessage hook stamps the resulting chat
+ *   message with the correct speaker so that portrait modules (e.g.
+ *   Character Chat Selector) display the right character.
  * @returns {Promise<void>}
  */
-export async function executeTaskRoll(taskData, { isShipAssist }) {
+export async function executeTaskRoll(taskData, { isShipAssist, actor }) {
   const STARoll = window.STARoll;
   const staRoll = new STARoll();
 
@@ -85,6 +150,21 @@ export async function executeTaskRoll(taskData, { isShipAssist }) {
     taskData.shipDicePool == null
   ) {
     taskData.shipDicePool = 1;
+  }
+
+  /* ---- Set pending roll actor for speaker hook ---- */
+  // The STA system's rollTask/rollNPCTask call sendToChat() without await,
+  // so ChatMessage.create() fires asynchronously after this function
+  // returns. We therefore cannot use try/finally to clear the flag;
+  // instead we let the preCreateChatMessage hook consume it, and set a
+  // safety timeout in case the chat message is never created.
+  if (actor) {
+    _pendingRollActor = actor;
+    if (_pendingRollActorTimer) clearTimeout(_pendingRollActorTimer);
+    _pendingRollActorTimer = setTimeout(() => {
+      _pendingRollActor = null;
+      _pendingRollActorTimer = null;
+    }, 10_000);
   }
 
   /* ---- Execute roll ---- */

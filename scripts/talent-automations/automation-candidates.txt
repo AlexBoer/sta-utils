@@ -1,0 +1,400 @@
+================================================================================
+  STA-UTILS — TALENT AUTOMATION CANDIDATES
+  Generated: 2026-02-26
+================================================================================
+
+LEGEND
+------
+  [ALREADY DONE]  — Already automated in sta-utils
+  Difficulty:  EASY / MEDIUM / HARD
+  Hook type:   middleware = registerTaskDataMiddleware (pre-roll mutation)
+               onAdd/onRemove = item lifecycle (passive stat changes)
+               onRoll = post-roll chat card injection
+               chatHook = renderChatMessage hook
+
+Exclusion criteria applied:
+  - Narrative/situational triggers (can't detect programmatically) → EXCLUDED
+  - Primary effect is "re-roll a d20" → EXCLUDED (redundant with existing reroll button)
+  - No clear mechanical trigger or effect → EXCLUDE
+
+
+================================================================================
+  TIER 2 — MODERATE DIFFICULTY  (bonus d20 / bonus Momentum on specific tasks)
+================================================================================
+
+20. Defuse the Tension (Command)
+    Effect: +1 bonus d20 when persuading someone not to resort to violence.
+    How: middleware → if talent detected, show toggle "Defuse the Tension (+1d20)"
+         that adds 1 to dicePool when enabled.
+    Difficulty: MEDIUM (user must opt-in via toggle since trigger is narrative)
+    Notes: Toggle-based — user clicks it when applicable.
+
+21. Computer Expertise (Science)
+    Effect: +1 bonus d20 when programming or studying a computer system.
+    How: middleware → show toggle "+1d20 Computer Expertise" when Science is used.
+    Difficulty: MEDIUM (toggle-based, same pattern)
+
+22. I Know My Ship (Engineering)
+    Effect: +1 bonus d20 when determining source of a technical problem on own ship.
+    How: middleware → toggle when Engineering is used.
+    Difficulty: MEDIUM
+
+23. Dauntless (General)
+    Effect: +1 bonus d20 to resist intimidation/threats.
+    How: middleware → toggle.
+    Difficulty: MEDIUM
+
+24. First Response (Medicine)
+    Effect: +1 bonus d20 on First Aid during combat.
+    How: middleware → toggle when Medicine is used.
+    Difficulty: MEDIUM
+
+25. Cyberneticist (Medicine)
+    Effect: +1d20 when working on cybernetic devices.
+    How: middleware → toggle.
+    Difficulty: MEDIUM
+
+26. Direct Neural Interface (Liberated Borg)
+    Effect: +1 bonus d20 when task involves a computer.
+    How: middleware → toggle when task involves computers.
+    Difficulty: MEDIUM
+
+27. Deltan Pheromones (Deltan)
+    Effect: +1 bonus d20 on Presence tasks to influence, but +2 Complication Range.
+    How: middleware → toggle that adds +1 dicePool AND +2 complicationRange.
+    Difficulty: EASY-MEDIUM (clean mechanical trade-off)
+
+28. Campaign Fatigue (Iotian)
+    Effect: +1 bonus d20 to resist deception.
+    How: middleware → toggle.
+    Difficulty: MEDIUM
+
+29. Zero-G Swimmer (I'Qosa)
+    Effect: +1 bonus d20 on swimming/zero-g maneuvering tasks.
+    How: middleware → toggle.
+    Difficulty: MEDIUM
+
+30. Nimble (Qofuari)
+    Effect: +1 bonus d20 on Fitness tests for water/tight spaces/climbing.
+    How: middleware → toggle.
+    Difficulty: MEDIUM
+
+31. Omnidirectional Vision (Phylosian)
+    Effect: +1 bonus d20 on perception tasks using eyesight.
+    How: middleware → toggle.
+    Difficulty: MEDIUM
+
+32. Quick Learner (Ocampa)
+    Effect: +1 bonus d20 when attempting a task already seen an ally perform.
+    How: middleware → toggle.
+    Difficulty: MEDIUM (narrative trigger but toggle works)
+
+33. Zenite in the Soul (Ardanan)
+    Effect: +1 bonus d20 on Engineering/Science tasks related to geology/mining.
+    How: middleware → toggle when Engineering or Science is used.
+    Difficulty: MEDIUM
+
+34. Listener (El-Aurian)
+    Effect: +1 bonus d20 when advising/convincing someone.
+    How: middleware → toggle.
+    Difficulty: MEDIUM
+
+35. Mind for Information (Yridian)
+    Effect: +1 bonus d20 for organizing/recalling information tasks.
+    How: middleware → toggle.
+    Difficulty: MEDIUM
+
+36. Powerful Frame (Ariolo)
+    Effect: +1 free d20 on physical labor tasks.
+    How: middleware → toggle on Fitness tasks.
+    Difficulty: MEDIUM
+
+
+================================================================================
+  TIER 3 — MODERATE-HARD  (modify dice pool behavior, post-roll effects)
+================================================================================
+
+37. Positronic Brain (Soong-type Android)
+    Effect: +1 automatic success on all Tasks using Reason.
+    How: middleware → when Reason is the attribute, add +1 success to result.
+         Or display as persistent banner/reminder.
+    Difficulty: HARD (adding successes post-roll requires intercepting results)
+
+38. Experimental Vessel [ALREADY DONE]
+    Effect: +2 Complication Range on ship rolls.
+    How: middleware (already implemented).
+
+39. Advanced Sensor Suites [ALREADY DONE]
+    Effect: Ship rolls 2 dice with Sensors.
+    How: middleware (already implemented).
+
+40. Untapped Potential [ALREADY DONE]
+    Effect: On task with extra dice bought, roll 1[D] for bonus Momentum/Threat.
+    How: Post-roll button injection (already implemented).
+
+41. Veteran (Career)
+    Effect: When spending Determination, roll 1[D]; on Effect, regain the point.
+    How: chatHook or Determination-spend intercept → roll 1[D], if Effect
+         auto-restore Determination.
+    Difficulty: HARD (needs to detect Determination spend)
+
+42. Dedicated Focus X (Science)
+    Effect: Each d20 scoring 2 successes also generates 1 bonus Momentum.
+    How: onRoll → count double-successes in the dice results → auto-add
+         bonus Momentum.
+    Difficulty: HARD (must parse individual die results)
+
+43. Studious (General)
+    Effect: +1 additional question when spending Momentum on Obtain Information.
+    How: Could hook into Momentum spend UI if one exists, or display reminder.
+    Difficulty: MEDIUM (reminder is easy, full automation is hard)
+
+44. Nerve Pinch (Vulcan)
+    Effect: Creates a special melee weapon (1[D], Size 1H, Intense, Non-lethal).
+         Can use Science/Medicine instead of Security.
+    How: onAdd → create a weapon item "Nerve Pinch" on the actor.
+         onRemove → delete it.
+    Difficulty: MEDIUM
+
+45. Radiation Burst (Tholian)
+    Effect: Ranged weapon (3[D], Vicious 1).
+    How: onAdd → create weapon item. onRemove → delete.
+    Difficulty: EASY-MEDIUM
+
+46. Silent Scream (VinShari)
+    Effect: Ranged weapon (2[D], Area, Piercing 1).
+    How: onAdd → create weapon item. onRemove → delete.
+    Difficulty: EASY-MEDIUM
+
+47. Throw Anything (Gorn)
+    Effect: Once per combat, Thrown Object attack (3[D] + Security, Knockdown).
+    How: onAdd → create weapon item. Track once-per-combat usage.
+    Difficulty: MEDIUM
+
+48. A Little More Power (Engineering)
+    Effect: On successful Engineering task on own ship, spend 1 Momentum to
+            regain 1 Power.
+    How: onRoll/chatHook → on Engineering success on ship, show button
+         "Regain 1 Power (1 Momentum)".
+    Difficulty: MEDIUM-HARD (needs to detect Engineering success + ship context)
+
+49. Fly-By (Conn)
+    Effect: No Difficulty increase on 2nd Task when using Swift Task if one
+            task is piloting.
+    How: middleware → toggle to negate Swift Task difficulty increase.
+    Difficulty: MEDIUM
+
+50. Fire at Will (Security)
+    Effect: No Difficulty increase from Swift Task for 2nd ranged attack.
+    How: middleware → toggle to negate Swift Task difficulty increase.
+    Difficulty: MEDIUM
+
+51. Deadeye Marksman (Security)
+    Effect: Aim Minor Action reduces next attack Difficulty by 1 (in addition
+            to normal Aim benefits).
+    How: middleware → toggle "Aimed (Deadeye)" that reduces Difficulty by 1.
+    Difficulty: MEDIUM
+
+52. Applied Force (Security/Kzinti)
+    Effect: Use Fitness instead of Daring for melee; +1[D] or +2[D] unarmed
+            based on Fitness.
+    How: middleware → if melee, offer Fitness swap; onAdd → modify unarmed
+         damage based on Fitness value.
+    Difficulty: MEDIUM
+
+53. Strength of the Elders (Betelgeusian)
+    Effect: Use Fitness instead of Daring for melee; +1[D] Stress on melee.
+    How: Same as Applied Force pattern.
+    Difficulty: MEDIUM
+
+54. Saboteur (Engineering - Player's Guide)
+    Effect: Use Engineering instead of Security for attacks on structures.
+    How: middleware → toggle to swap discipline.
+    Difficulty: MEDIUM
+
+55. Combat Gunner (General - War)
+    Effect: Use Conn instead of Security for mounted weapon attacks.
+    How: middleware → toggle to swap discipline.
+    Difficulty: MEDIUM
+
+56. Doctor's Orders (Medicine)
+    Effect: Use Medicine instead of Command for coordination/coercion.
+    How: middleware → toggle to swap discipline.
+    Difficulty: MEDIUM
+
+57. Baffling Briefing (Science)
+    Effect: Use Science instead of Command for deception.
+    How: middleware → toggle to swap discipline.
+    Difficulty: MEDIUM
+
+58. Three-Dimensional Thinking (Cetacean)
+    Effect: Complication Range -1 on all Conn tasks.
+    How: middleware → when Conn is used, reduce complicationRange by 1.
+    Difficulty: EASY (auto-detect, no toggle needed)
+
+59. Meticulous (Engineering)
+    Effect: Negate one Complication from Engineering Tasks.
+    How: onRoll/chatHook → on Engineering roll, show "Negate 1 Complication"
+         button.
+    Difficulty: MEDIUM-HARD
+
+60. Back-Up Plans (General)
+    Effect: On any failed task, add 1 Momentum to group pool.
+    How: chatHook → detect failed roll → auto-add 1 Momentum, or show button.
+    Difficulty: MEDIUM
+
+61. Close-Knit Crew (General)
+    Effect: At scene start, if Momentum < # of characters with this talent,
+            add 1 Momentum.
+    How: Could add a scene-start button/reminder in the chat.
+    Difficulty: MEDIUM
+
+62. Gut Feeling (General)
+    Effect: GM must spend 2 extra Threat for reinforcements/reversals.
+    How: Reminder/flag only — can't enforce GM-side mechanics.
+    Difficulty: EASY (as reminder)
+
+63. Hyper Agile (Kzinti)
+    Effect: +1 Difficulty for ranged attacks against this character.
+    How: onAdd → add a flag/trait. Display in combat as reminder.
+    Difficulty: EASY (as reminder/trait)
+
+64. Defensive Training (Security)
+    Effect: +1 Difficulty for melee OR ranged attacks against character (chosen).
+    How: onAdd → prompt for melee/ranged choice, store flag, add trait.
+    Difficulty: MEDIUM
+
+65. Quick to Action (Security)
+    Effect: During first round of combat, allies ignore cost to Retain Initiative.
+    How: Chat reminder at combat start.
+    Difficulty: EASY (as reminder)
+
+66. Extra Effort (General)
+    Effect: Reduce Difficulty by 1 (min 0), but reduce max Stress by 2 for
+            rest of adventure.
+    How: middleware → toggle that reduces difficulty by 1 AND calls
+         actor.update() to reduce stress max by 2.
+    Difficulty: MEDIUM-HARD (persistent stat change)
+
+67. Self-Reliant (General)
+    Effect: On success without buying extra dice, generate bonus Momentum
+            equal to Difficulty.
+    How: onRoll → check if no extra dice were bought, on success add
+         bonus Momentum = Difficulty.
+    Difficulty: HARD (needs to track purchased dice and difficulty)
+
+68. Incisive Scrutiny (Tellarite)
+    Effect: +1 bonus Momentum on success using Control/Insight (Obtain Info only).
+    How: onRoll/chatHook → on success with Control/Insight, show "+1 Momentum
+         (Obtain Info)".
+    Difficulty: MEDIUM
+
+69. Orb Experience (Bajoran)
+    Effect: Extra Value; first time challenged, roll 1[D], on Effect not crossed out.
+    How: Reminder only practical for the Effect roll part.
+    Difficulty: MEDIUM (as prompt)
+
+70. Kolinahr (Vulcan)
+    Effect: -2 Difficulty to resist coercion, mental intrusion, pain.
+    How: middleware → toggle "-2 Difficulty (Kolinahr)" for applicable tasks.
+    Difficulty: MEDIUM
+
+71. Jury-Rig (Engineering)
+    Effect: -2 Difficulty on repair tasks (min 0), but temporary.
+    How: middleware → toggle when Engineering is used.
+    Difficulty: MEDIUM
+
+72. Maintenance Specialist (Engineering)
+    Effect: -1 Difficulty on maintenance tasks (min 1).
+    How: middleware → toggle.
+    Difficulty: MEDIUM
+
+73. Constantly Watching (General)
+    Effect: -1 Difficulty to detect danger/hidden enemies.
+    How: middleware → toggle.
+    Difficulty: MEDIUM
+
+74. No Hesitation (General)
+    Effect: Add 1 Threat to take first turn in action scene.
+    How: Chat button at initiative time.
+    Difficulty: EASY (as reminder/button)
+
+================================================================================
+  TIER 4 — HARD / COMPLEX  (multi-step, cross-actor, or deep system hooks)
+================================================================================
+
+- Molecular Reconstruction (Changeling morphing) — too narrative
+- Temporal Mechanic — once-per-scene tracking + mixed bonus/penalty
+- Physical Enhancement — self-damage to buy dice, complex trade-off
+- I'm a Doctor, Not a... — Determination spend intercept + discipline swap
+- Past the Redline — multi-step setup, scene-long tracking
+- Precautions — once-per-scene injury/breach prevention, narrative
+- Bolster — Momentum spend creating Stress recovery on allies
+- Second Wind — Determination spend to clear all Stress
+
+================================================================================
+  RECOMMENDED IMPLEMENTATION ORDER (best ROI)
+================================================================================
+
+PHASE 1 — Passive stat changes (onAdd/onRemove pattern, single template):
+  → Resolute (+3 Stress max)
+  → Chelon Shell (+1 Resistance)
+  → Hardened Hide (+2 Resistance)
+  → Thickened Carapace (+2 Resistance)
+  → Carnivorous Reptilian Physiology (+2 Resistance + modify unarmed)
+  → Mean Right Hook (modify unarmed: Vicious 1)
+  → Martial Artist (modify unarmed: Intense)
+  → Talons (modify unarmed: Vicious 1 + Deadly)
+  → Toxic Claws (replace unarmed)
+  → Extra Arms (Vicious 1 on unarmed)
+
+  These are all the same pattern: detect talent add/remove, update actor stats.
+  A single generic handler could cover "on talent add, apply stat delta."
+
+PHASE 2 — Complication Range / dice pool middleware (same pattern as existing):
+  → Three-Dimensional Thinking (-1 Comp Range on Conn tasks) — AUTO, no toggle
+  → Deltan Pheromones (+1d20, +2 Comp Range — toggle)
+  → Experimental Device (+2 Comp Range — auto when using the device)
+
+PHASE 3 — Toggle-based bonus d20 middleware (user opt-in):
+  → Computer Expertise, Dauntless, First Response, Cyberneticist,
+     Direct Neural Interface, I Know My Ship, Defuse the Tension, etc.
+  Build a generic "bonus d20 toggle" system:
+    registerBonusD20Talent(talentName, {
+      description: "...",
+      appliesWhen: (ctx) => ctx.discipline === "science", // optional auto-filter
+    })
+  This would cover ~15 talents with minimal per-talent code.
+
+PHASE 4 — Discipline-swap toggles:
+  → Doctor's Orders (Medicine ↔ Command)
+  → Baffling Briefing (Science ↔ Command)
+  → Saboteur (Engineering ↔ Security)
+  → Combat Gunner (Conn ↔ Security)
+  → Applied Force (Fitness ↔ Daring for melee)
+  Build a generic "discipline swap toggle" system.
+
+PHASE 5 — Weapon item creation (onAdd creates item, onRemove deletes):
+  → Nerve Pinch, Radiation Burst, Silent Scream, Throw Anything
+  Template: on talent add, createEmbeddedDocuments("Item", [weaponData]).
+
+PHASE 6 — Post-roll effects (chat card buttons, like Untapped Potential):
+  → Veteran (roll 1[D] after Determination spend)
+  → A Little More Power (button to regain Power)
+  → Dedicated Focus X (count double-successes)
+  → Back-Up Plans (add Momentum on failure)
+
+================================================================================
+  SUMMARY COUNTS
+================================================================================
+
+  Already automated:           3  (Experimental Vessel, Advanced Sensor Suites,
+                                    Untapped Potential)
+  Tier 1 (Easy):             ~19  (passive stat / resistance / unarmed mods)
+  Tier 2 (Medium - toggles): ~17  (bonus d20 via toggle middleware)
+  Tier 3 (Moderate-Hard):    ~18  (discipline swaps, comp range, post-roll)
+  Tier 4 (Hard/Complex):      ~8  (multi-step, narrative-dependent)
+
+  Excluded (narrative/reroll): ~200+ (majority of talents)
+
+================================================================================

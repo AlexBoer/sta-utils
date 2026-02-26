@@ -166,6 +166,149 @@ function _getMomentumThreatText(dicePoolValue) {
   return `Total Momentum/Threat: ${totalMomentumThreat}`;
 }
 
+/**
+ * When sta-officers-log is active, replace the determination checkbox with
+ * a dropdown listing the character's unchallenged values.  Selecting a value
+ * counts as "using determination" for the roll, and after the roll sta-utils
+ * calls `game.staofficerslog.useValue()` to record the positive use.
+ */
+function _replaceDeterminationWithValueDropdown(dialogEl, actor) {
+  if (!game.modules.get("sta-officers-log")?.active) return;
+  if (!actor || actor.type !== "character") return;
+
+  const deterCheckbox = dialogEl.querySelector("#usingDetermination");
+  if (!deterCheckbox) return;
+  const row = deterCheckbox.closest(".row");
+  if (!row) return;
+
+  // Gather unchallenged values
+  const values = (actor.items ?? [])
+    .filter((i) => i.type === "value")
+    .filter((i) => !i.system?.used && !i.system?.challenged);
+
+  const determination = Number(actor.system?.determination?.value ?? 0);
+  const disabled = determination <= 0;
+
+  const options = values
+    .map((v) => `<option value="${v.id}">${v.name}</option>`)
+    .join("");
+
+  const label = game.i18n.localize("sta-utils.dicePool.useValue");
+  const newRow = document.createElement("div");
+  newRow.className = "row";
+  newRow.innerHTML = `
+    <div class="tracktitle">${label}</div>
+    <select name="determinationValueId" id="determinationValueId"
+            class="sta-utils-determination-value-select"
+            ${disabled ? "disabled" : ""}>
+      <option value=""></option>
+      ${options}
+    </select>`;
+
+  row.replaceWith(newRow);
+}
+
+/**
+ * Wire bidirectional synchronization between the dialog's attribute/discipline
+ * dropdowns and the corresponding checkboxes on the actor's character sheet.
+ *
+ * - Changing a dropdown in the dialog auto-checks the matching sheet checkbox.
+ * - Checking a checkbox on the sheet auto-selects the matching dropdown option.
+ * - Initial sync pushes the dropdown selections to the sheet on dialog open.
+ *
+ * @param {HTMLElement} dialogEl - The dialog element containing #attribute/#discipline dropdowns
+ * @param {Actor}       actor    - The actor whose sheet checkboxes to sync
+ */
+function _wireAttributeDialogSync(dialogEl, actor) {
+  const sheetEl = actor?.sheet?.element;
+  if (!sheetEl) return;
+
+  const attrDropdown = dialogEl.querySelector("#attribute");
+  const discDropdown = dialogEl.querySelector("#discipline");
+  if (!attrDropdown && !discDropdown) return;
+
+  let syncing = false;
+
+  // --- Helper: update sheet checkboxes to match a dropdown value ---
+  function syncToSheet(dropdown, blockSelector, selectorClass) {
+    if (!dropdown) return;
+    const key = dropdown.value;
+    if (!key) return;
+    sheetEl
+      .querySelectorAll(`${blockSelector} .selector.${selectorClass}`)
+      .forEach((cb) => {
+        cb.checked = cb.id === `${key}.selector`;
+      });
+  }
+
+  // --- Helper: update dropdown to match a checked sheet checkbox ---
+  function syncToDropdown(dropdown, checkboxEl) {
+    if (!dropdown) return;
+    const key = checkboxEl.id.replace(".selector", "");
+    dropdown.value = key;
+  }
+
+  // --- Initial sync: push sheet checkbox selections to the dropdowns ---
+  sheetEl
+    .querySelectorAll(".attribute-block .selector.attribute")
+    .forEach((cb) => {
+      if (cb.checked) syncToDropdown(attrDropdown, cb);
+    });
+  sheetEl
+    .querySelectorAll(".discipline-block .selector.discipline")
+    .forEach((cb) => {
+      if (cb.checked) syncToDropdown(discDropdown, cb);
+    });
+
+  // --- Dialog → Sheet ---
+  if (attrDropdown) {
+    attrDropdown.addEventListener("change", () => {
+      if (syncing) return;
+      syncing = true;
+      syncToSheet(attrDropdown, ".attribute-block", "attribute");
+      syncing = false;
+    });
+  }
+
+  if (discDropdown) {
+    discDropdown.addEventListener("change", () => {
+      if (syncing) return;
+      syncing = true;
+      syncToSheet(discDropdown, ".discipline-block", "discipline");
+      syncing = false;
+    });
+  }
+
+  // --- Sheet → Dialog (event delegation, auto-disables when dialog closes) ---
+  sheetEl.addEventListener("change", (ev) => {
+    if (syncing) return;
+    // If the dialog is no longer in the DOM, bail out
+    if (!attrDropdown?.isConnected && !discDropdown?.isConnected) return;
+
+    if (
+      attrDropdown?.isConnected &&
+      ev.target.matches(".selector.attribute") &&
+      ev.target.closest(".attribute-block") &&
+      ev.target.checked
+    ) {
+      syncing = true;
+      syncToDropdown(attrDropdown, ev.target);
+      syncing = false;
+    }
+
+    if (
+      discDropdown?.isConnected &&
+      ev.target.matches(".selector.discipline") &&
+      ev.target.closest(".discipline-block") &&
+      ev.target.checked
+    ) {
+      syncing = true;
+      syncToDropdown(discDropdown, ev.target);
+      syncing = false;
+    }
+  });
+}
+
 function _ensureMomentumThreatHelper(dialogEl) {
   const slider = dialogEl.querySelector("#dicePoolSlider");
   if (!slider) return;
@@ -201,6 +344,9 @@ function _ensureMomentumThreatHelper(dialogEl) {
  * @param {boolean} [opts.injectReservePower=true] - Whether to inject
  *   the "Use Reserve Power" checkbox dynamically (set false when the
  *   template already contains it).
+ * @param {string|null} [opts.preSelectDeterminationValue=null] - When
+ *   sta-officers-log is active and replaces the determination checkbox
+ *   with a value dropdown, pre-select the value item with this ID.
  * @returns {Promise<{ formData: FormData, automationStates: Record<string, boolean> } | null>}
  *   Resolved with the collected form data and automation checkbox states,
  *   or `null` if the dialog was cancelled.
@@ -211,10 +357,12 @@ export async function showDicePoolDialog(opts) {
     applicabilityContext,
     hasShipAssistUI = true,
     injectReservePower = true,
+    preSelectDeterminationValue = null,
   } = opts;
 
   const api = foundry.applications.api;
   let _automationStates = {};
+  let _determinationValueId = "";
 
   const formData = await api.DialogV2.wait({
     window: {
@@ -234,6 +382,17 @@ export async function showDicePoolDialog(opts) {
 
       // --- Momentum / Threat helper ---
       _ensureMomentumThreatHelper(el);
+
+      // --- Determination value dropdown (sta-officers-log integration) ---
+      _replaceDeterminationWithValueDropdown(el, applicabilityContext.actor);
+
+      // --- Pre-select a value in the determination dropdown ---
+      if (preSelectDeterminationValue) {
+        const deterSelect = el.querySelector("#determinationValueId");
+        if (deterSelect) {
+          deterSelect.value = preSelectDeterminationValue;
+        }
+      }
 
       // --- Reserve Power checkbox ---
       if (injectReservePower) {
@@ -271,6 +430,9 @@ export async function showDicePoolDialog(opts) {
           });
         }
       }
+
+      // --- Attribute/discipline ↔ sheet checkbox sync ---
+      _wireAttributeDialogSync(el, applicabilityContext.actor);
     },
     buttons: [
       {
@@ -285,6 +447,14 @@ export async function showDicePoolDialog(opts) {
               _automationStates[cb.dataset.middlewareIndex] = cb.checked;
             });
 
+          // Capture determination value selection (sta-officers-log dropdown)
+          const deterSelect = dialog.element.querySelector(
+            "#determinationValueId",
+          );
+          if (deterSelect) {
+            _determinationValueId = deterSelect.value || "";
+          }
+
           const form = dialog.element.querySelector("form");
           return form ? new FormData(form) : null;
         },
@@ -295,5 +465,9 @@ export async function showDicePoolDialog(opts) {
 
   if (!formData) return null;
 
-  return { formData, automationStates: _automationStates };
+  return {
+    formData,
+    automationStates: _automationStates,
+    determinationValueId: _determinationValueId,
+  };
 }

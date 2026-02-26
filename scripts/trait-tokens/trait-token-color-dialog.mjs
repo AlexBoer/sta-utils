@@ -1,15 +1,15 @@
 const MODULE_ID = "sta-utils";
 
 /**
- * Preset post-it colors with human-readable labels.
+ * Preset LCARS-style colors with human-readable labels.
  */
 const COLOR_PRESETS = [
-  { label: "Yellow", hex: "#FFEB3B" },
-  { label: "Pink", hex: "#F48FB1" },
-  { label: "Green", hex: "#A5D6A7" },
-  { label: "Blue", hex: "#90CAF9" },
-  { label: "Orange", hex: "#FFCC80" },
-  { label: "Purple", hex: "#CE93D8" },
+  { label: "Amber", hex: "#FF9900" },
+  { label: "Tan", hex: "#FFCC99" },
+  { label: "Gold", hex: "#F1DF6F" },
+  { label: "Blue", hex: "#9999FF" },
+  { label: "Lavender", hex: "#CC99CC" },
+  { label: "Rose", hex: "#CC6699" },
 ];
 
 /**

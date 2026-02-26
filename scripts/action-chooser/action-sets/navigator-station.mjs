@@ -18,6 +18,8 @@ const actions = [
     name: "sta-utils.actionChooser.navigatorStation.actions.changePosition.name",
     description:
       "sta-utils.actionChooser.navigatorStation.actions.changePosition.description",
+    chatSummary:
+      "sta-utils.actionChooser.navigatorStation.actions.changePosition.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -29,6 +31,8 @@ const actions = [
     name: "sta-utils.actionChooser.navigatorStation.actions.interact.name",
     description:
       "sta-utils.actionChooser.navigatorStation.actions.interact.description",
+    chatSummary:
+      "sta-utils.actionChooser.navigatorStation.actions.interact.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -40,6 +44,8 @@ const actions = [
     name: "sta-utils.actionChooser.navigatorStation.actions.prepare.name",
     description:
       "sta-utils.actionChooser.navigatorStation.actions.prepare.description",
+    chatSummary:
+      "sta-utils.actionChooser.navigatorStation.actions.prepare.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -51,6 +57,8 @@ const actions = [
     name: "sta-utils.actionChooser.navigatorStation.actions.restore.name",
     description:
       "sta-utils.actionChooser.navigatorStation.actions.restore.description",
+    chatSummary:
+      "sta-utils.actionChooser.navigatorStation.actions.restore.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -63,6 +71,8 @@ const actions = [
     name: "sta-utils.actionChooser.navigatorStation.actions.assist.name",
     description:
       "sta-utils.actionChooser.navigatorStation.actions.assist.description",
+    chatSummary:
+      "sta-utils.actionChooser.navigatorStation.actions.assist.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -73,6 +83,8 @@ const actions = [
     name: "sta-utils.actionChooser.navigatorStation.actions.createTrait.name",
     description:
       "sta-utils.actionChooser.navigatorStation.actions.createTrait.description",
+    chatSummary:
+      "sta-utils.actionChooser.navigatorStation.actions.createTrait.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: null,
@@ -88,6 +100,8 @@ const actions = [
     name: "sta-utils.actionChooser.navigatorStation.actions.override.name",
     description:
       "sta-utils.actionChooser.navigatorStation.actions.override.description",
+    chatSummary:
+      "sta-utils.actionChooser.navigatorStation.actions.override.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -99,6 +113,8 @@ const actions = [
     name: "sta-utils.actionChooser.navigatorStation.actions.pass.name",
     description:
       "sta-utils.actionChooser.navigatorStation.actions.pass.description",
+    chatSummary:
+      "sta-utils.actionChooser.navigatorStation.actions.pass.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -109,6 +125,8 @@ const actions = [
     name: "sta-utils.actionChooser.navigatorStation.actions.ready.name",
     description:
       "sta-utils.actionChooser.navigatorStation.actions.ready.description",
+    chatSummary:
+      "sta-utils.actionChooser.navigatorStation.actions.ready.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,

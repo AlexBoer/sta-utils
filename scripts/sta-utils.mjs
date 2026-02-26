@@ -13,6 +13,10 @@ import {
   initTraitVisibility,
   initSceneConfig,
   getOrCreateProxyActor,
+  getOrCreateWorldTraitActor,
+  initTraitDrawings,
+  initTraitDrawingClick,
+  initTraitDrawingSettingsHook,
 } from "./trait-tokens/index.mjs";
 
 import {
@@ -55,6 +59,7 @@ import {
 import {
   installDicePoolOverride,
   installRerollOverride,
+  dicePoolApi,
 } from "./dice-pool-override/index.mjs";
 
 import { installMomentumSpendHook } from "./momentum-spend/index.mjs";
@@ -69,6 +74,7 @@ import { isActionChooserEnabled } from "./core/settings.mjs";
 
 const MODULE_ID = "sta-utils";
 const SETTING_TRAIT_TOKENS = "enableTraitTokens";
+const SETTING_TRAIT_DRAWINGS = "traitTokensAsDrawings";
 
 /* -------------------------------------------- */
 /*  Initialization                              */
@@ -98,18 +104,135 @@ Hooks.once("init", () => {
     requiresReload: true,
   });
 
+  game.settings.register(MODULE_ID, SETTING_TRAIT_DRAWINGS, {
+    name: game.i18n.localize(
+      `${MODULE_ID}.settings.traitTokensAsDrawings.name`,
+    ),
+    hint: game.i18n.localize(
+      `${MODULE_ID}.settings.traitTokensAsDrawings.hint`,
+    ),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+  });
+
+  // --- Trait Drawing style settings (config: false — managed via custom UI) ---
+  // Defaults are LCARS-style: solid coloured blocks, no border, black text.
+  game.settings.register(MODULE_ID, "traitDrawingFontSize", {
+    scope: "world",
+    config: false,
+    type: Number,
+    default: 100,
+  });
+  game.settings.register(MODULE_ID, "traitDrawingFontFamily", {
+    scope: "world",
+    config: false,
+    type: String,
+    default: "Arial",
+  });
+  game.settings.register(MODULE_ID, "traitDrawingTextColor", {
+    scope: "world",
+    config: false,
+    type: String,
+    default: "#000000",
+  });
+  game.settings.register(MODULE_ID, "traitDrawingFillOpacity", {
+    scope: "world",
+    config: false,
+    type: Number,
+    default: 1,
+  });
+  game.settings.register(MODULE_ID, "traitDrawingBorderWidth", {
+    scope: "world",
+    config: false,
+    type: Number,
+    default: 0,
+  });
+  game.settings.register(MODULE_ID, "traitDrawingBorderColor", {
+    scope: "world",
+    config: false,
+    type: String,
+    default: "#000000",
+  });
+  game.settings.register(MODULE_ID, "traitDrawingBorderOpacity", {
+    scope: "world",
+    config: false,
+    type: Number,
+    default: 0,
+  });
+  game.settings.register(MODULE_ID, "traitDrawingTextStrokeColor", {
+    scope: "world",
+    config: false,
+    type: String,
+    default: "",
+  });
+  game.settings.register(MODULE_ID, "traitDrawingTextStrokeThickness", {
+    scope: "world",
+    config: false,
+    type: Number,
+    default: 0,
+  });
+  game.settings.register(MODULE_ID, "traitDrawingFontWeight", {
+    scope: "world",
+    config: false,
+    type: String,
+    default: "normal",
+  });
+  game.settings.register(MODULE_ID, "traitDrawingTextAlign", {
+    scope: "world",
+    config: false,
+    type: String,
+    default: "center",
+  });
+  game.settings.register(MODULE_ID, "traitDrawingBorderDashed", {
+    scope: "world",
+    config: false,
+    type: Boolean,
+    default: false,
+  });
+  game.settings.register(MODULE_ID, "traitDrawingBorderDash", {
+    scope: "world",
+    config: false,
+    type: Number,
+    default: 8,
+  });
+  game.settings.register(MODULE_ID, "traitDrawingBorderGap", {
+    scope: "world",
+    config: false,
+    type: Number,
+    default: 5,
+  });
+
   // --- Trait Tokens (gated) ---
-  if (game.settings.get(MODULE_ID, SETTING_TRAIT_TOKENS)) {
-    initTraitTokens();
-    initTraitTokenClick();
+  const traitTokensEnabled = game.settings.get(MODULE_ID, SETTING_TRAIT_TOKENS);
+  const useDrawings = game.settings.get(MODULE_ID, SETTING_TRAIT_DRAWINGS);
+
+  if (traitTokensEnabled) {
+    if (useDrawings) {
+      initTraitDrawings();
+      initTraitDrawingClick();
+      initTraitDrawingSettingsHook();
+    } else {
+      initTraitTokens();
+      initTraitTokenClick();
+    }
     initTraitVisibility();
     initSceneConfig();
-    console.log(`${MODULE_ID} | Trait Tokens feature enabled`);
+    console.log(
+      `${MODULE_ID} | Trait Tokens feature enabled (mode: ${useDrawings ? "drawings" : "tokens"})`,
+    );
   }
 
   // --- Style Enhancements (dynamic, can toggle at runtime) ---
   if (isStyleEnhanceEnabled()) {
     _toggleStyleEnhance(true);
+  }
+
+  // Flag for CSS: mark if Character Chat Selector is active
+  if (game.modules.get("character-chat-selector")?.active) {
+    document.body.classList.add("ccs-active");
   }
 
   // --- Hook installers (init-time) ---
@@ -164,6 +287,19 @@ Hooks.on("getSceneControlButtons", (controls) => {
       actor.sheet.render(true);
     },
   };
+
+  controls.tokens.tools.worldTraits = {
+    name: "worldTraits",
+    title: "World Traits",
+    icon: "fa-solid fa-globe",
+    order: Object.keys(controls.tokens.tools).length,
+    button: true,
+    visible: game.user.isGM,
+    onChange: async () => {
+      const actor = await getOrCreateWorldTraitActor();
+      actor.sheet.render(true);
+    },
+  };
 });
 
 /* -------------------------------------------- */
@@ -212,6 +348,7 @@ Hooks.once("ready", async () => {
     openDicePoolMonitor,
     crewManifest,
     actionChooser,
+    dicePool: dicePoolApi,
   };
   console.log(`${MODULE_ID} | Public API exposed at game.staUtils`);
 });

@@ -18,6 +18,8 @@ const actions = [
     name: "sta-utils.actionChooser.sensorsStation.actions.changePosition.name",
     description:
       "sta-utils.actionChooser.sensorsStation.actions.changePosition.description",
+    chatSummary:
+      "sta-utils.actionChooser.sensorsStation.actions.changePosition.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -29,6 +31,8 @@ const actions = [
     name: "sta-utils.actionChooser.sensorsStation.actions.interact.name",
     description:
       "sta-utils.actionChooser.sensorsStation.actions.interact.description",
+    chatSummary:
+      "sta-utils.actionChooser.sensorsStation.actions.interact.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -40,6 +44,8 @@ const actions = [
     name: "sta-utils.actionChooser.sensorsStation.actions.prepare.name",
     description:
       "sta-utils.actionChooser.sensorsStation.actions.prepare.description",
+    chatSummary:
+      "sta-utils.actionChooser.sensorsStation.actions.prepare.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -51,6 +57,8 @@ const actions = [
     name: "sta-utils.actionChooser.sensorsStation.actions.restore.name",
     description:
       "sta-utils.actionChooser.sensorsStation.actions.restore.description",
+    chatSummary:
+      "sta-utils.actionChooser.sensorsStation.actions.restore.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -61,6 +69,8 @@ const actions = [
     name: "sta-utils.actionChooser.sensorsStation.actions.calibrateSensors.name",
     description:
       "sta-utils.actionChooser.sensorsStation.actions.calibrateSensors.description",
+    chatSummary:
+      "sta-utils.actionChooser.sensorsStation.actions.calibrateSensors.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -71,6 +81,8 @@ const actions = [
     name: "sta-utils.actionChooser.sensorsStation.actions.launchProbe.name",
     description:
       "sta-utils.actionChooser.sensorsStation.actions.launchProbe.description",
+    chatSummary:
+      "sta-utils.actionChooser.sensorsStation.actions.launchProbe.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -83,6 +95,8 @@ const actions = [
     name: "sta-utils.actionChooser.sensorsStation.actions.assist.name",
     description:
       "sta-utils.actionChooser.sensorsStation.actions.assist.description",
+    chatSummary:
+      "sta-utils.actionChooser.sensorsStation.actions.assist.chatSummary",
     roll: null,
     subtle: true,
     momentumCost: 0,
@@ -94,6 +108,8 @@ const actions = [
     name: "sta-utils.actionChooser.sensorsStation.actions.createTrait.name",
     description:
       "sta-utils.actionChooser.sensorsStation.actions.createTrait.description",
+    chatSummary:
+      "sta-utils.actionChooser.sensorsStation.actions.createTrait.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: null,
@@ -109,6 +125,8 @@ const actions = [
     name: "sta-utils.actionChooser.sensorsStation.actions.override.name",
     description:
       "sta-utils.actionChooser.sensorsStation.actions.override.description",
+    chatSummary:
+      "sta-utils.actionChooser.sensorsStation.actions.override.chatSummary",
     roll: null,
     subtle: true,
     momentumCost: 0,
@@ -121,6 +139,8 @@ const actions = [
     name: "sta-utils.actionChooser.sensorsStation.actions.pass.name",
     description:
       "sta-utils.actionChooser.sensorsStation.actions.pass.description",
+    chatSummary:
+      "sta-utils.actionChooser.sensorsStation.actions.pass.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -132,6 +152,8 @@ const actions = [
     name: "sta-utils.actionChooser.sensorsStation.actions.ready.name",
     description:
       "sta-utils.actionChooser.sensorsStation.actions.ready.description",
+    chatSummary:
+      "sta-utils.actionChooser.sensorsStation.actions.ready.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -142,6 +164,8 @@ const actions = [
     name: "sta-utils.actionChooser.sensorsStation.actions.reveal.name",
     description:
       "sta-utils.actionChooser.sensorsStation.actions.reveal.description",
+    chatSummary:
+      "sta-utils.actionChooser.sensorsStation.actions.reveal.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: "reason",
@@ -158,6 +182,8 @@ const actions = [
     name: "sta-utils.actionChooser.sensorsStation.actions.scanForWeakness.name",
     description:
       "sta-utils.actionChooser.sensorsStation.actions.scanForWeakness.description",
+    chatSummary:
+      "sta-utils.actionChooser.sensorsStation.actions.scanForWeakness.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: "control",
@@ -174,6 +200,8 @@ const actions = [
     name: "sta-utils.actionChooser.sensorsStation.actions.sensorSweep.name",
     description:
       "sta-utils.actionChooser.sensorsStation.actions.sensorSweep.description",
+    chatSummary:
+      "sta-utils.actionChooser.sensorsStation.actions.sensorSweep.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: "reason",

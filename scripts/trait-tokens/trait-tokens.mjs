@@ -13,7 +13,7 @@ const MODULE_ID = "sta-utils";
  * @returns {string}
  */
 function traitDisplayName(name, quantity = 1) {
-  return quantity > 1 ? `${name} ${quantity}` : name;
+  return quantity > 1 ? `${name} (${quantity})` : name;
 }
 
 /**
@@ -215,8 +215,11 @@ async function _createTraitToken({
     // starship, etc.) vs. a proxy Scene Traits actor.  Items on real actors
     // are referenced directly — never duplicated, never deleted on cleanup.
     const sourceActor = sourceItem?.parent;
+    const isWorldActor =
+      sourceActor?.getFlag(MODULE_ID, "isWorldTraitActor") === true;
     const isOnProxyActor =
       sourceActor?.documentName === "Actor" &&
+      !isWorldActor &&
       (sourceActor.getFlag(MODULE_ID, "isProxyActor") === true ||
         sourceActor.type === "scenetraits");
     isOwnedByRealActor =
@@ -296,7 +299,8 @@ async function _onDeleteToken(tokenDoc, _options, _userId) {
     const isProxy =
       actor.getFlag(MODULE_ID, "isProxyActor") === true ||
       actor.type === "scenetraits";
-    if (!isProxy) return;
+    const isWorldActor = actor.getFlag(MODULE_ID, "isWorldTraitActor") === true;
+    if (!isProxy || isWorldActor) return;
 
     // Check whether any remaining tokens on this scene reference the same item
     const scene = tokenDoc.parent;

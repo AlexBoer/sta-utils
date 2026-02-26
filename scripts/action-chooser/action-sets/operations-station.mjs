@@ -18,6 +18,8 @@ const actions = [
     name: "sta-utils.actionChooser.operationsStation.actions.changePosition.name",
     description:
       "sta-utils.actionChooser.operationsStation.actions.changePosition.description",
+    chatSummary:
+      "sta-utils.actionChooser.operationsStation.actions.changePosition.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -29,6 +31,8 @@ const actions = [
     name: "sta-utils.actionChooser.operationsStation.actions.interact.name",
     description:
       "sta-utils.actionChooser.operationsStation.actions.interact.description",
+    chatSummary:
+      "sta-utils.actionChooser.operationsStation.actions.interact.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -40,6 +44,8 @@ const actions = [
     name: "sta-utils.actionChooser.operationsStation.actions.prepare.name",
     description:
       "sta-utils.actionChooser.operationsStation.actions.prepare.description",
+    chatSummary:
+      "sta-utils.actionChooser.operationsStation.actions.prepare.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -51,6 +57,8 @@ const actions = [
     name: "sta-utils.actionChooser.operationsStation.actions.restore.name",
     description:
       "sta-utils.actionChooser.operationsStation.actions.restore.description",
+    chatSummary:
+      "sta-utils.actionChooser.operationsStation.actions.restore.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -63,6 +71,8 @@ const actions = [
     name: "sta-utils.actionChooser.operationsStation.actions.assist.name",
     description:
       "sta-utils.actionChooser.operationsStation.actions.assist.description",
+    chatSummary:
+      "sta-utils.actionChooser.operationsStation.actions.assist.chatSummary",
     roll: null,
     subtle: true,
     momentumCost: 0,
@@ -74,6 +84,8 @@ const actions = [
     name: "sta-utils.actionChooser.operationsStation.actions.createTrait.name",
     description:
       "sta-utils.actionChooser.operationsStation.actions.createTrait.description",
+    chatSummary:
+      "sta-utils.actionChooser.operationsStation.actions.createTrait.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: null,
@@ -90,6 +102,8 @@ const actions = [
     name: "sta-utils.actionChooser.operationsStation.actions.override.name",
     description:
       "sta-utils.actionChooser.operationsStation.actions.override.description",
+    chatSummary:
+      "sta-utils.actionChooser.operationsStation.actions.override.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -101,6 +115,8 @@ const actions = [
     name: "sta-utils.actionChooser.operationsStation.actions.pass.name",
     description:
       "sta-utils.actionChooser.operationsStation.actions.pass.description",
+    chatSummary:
+      "sta-utils.actionChooser.operationsStation.actions.pass.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -112,6 +128,8 @@ const actions = [
     name: "sta-utils.actionChooser.operationsStation.actions.ready.name",
     description:
       "sta-utils.actionChooser.operationsStation.actions.ready.description",
+    chatSummary:
+      "sta-utils.actionChooser.operationsStation.actions.ready.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -122,6 +140,8 @@ const actions = [
     name: "sta-utils.actionChooser.operationsStation.actions.damageControl.name",
     description:
       "sta-utils.actionChooser.operationsStation.actions.damageControl.description",
+    chatSummary:
+      "sta-utils.actionChooser.operationsStation.actions.damageControl.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: "presence",
@@ -138,6 +158,8 @@ const actions = [
     name: "sta-utils.actionChooser.operationsStation.actions.regainPower.name",
     description:
       "sta-utils.actionChooser.operationsStation.actions.regainPower.description",
+    chatSummary:
+      "sta-utils.actionChooser.operationsStation.actions.regainPower.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: "control",
@@ -154,6 +176,8 @@ const actions = [
     name: "sta-utils.actionChooser.operationsStation.actions.regenerateShields.name",
     description:
       "sta-utils.actionChooser.operationsStation.actions.regenerateShields.description",
+    chatSummary:
+      "sta-utils.actionChooser.operationsStation.actions.regenerateShields.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: "control",
@@ -170,6 +194,8 @@ const actions = [
     name: "sta-utils.actionChooser.operationsStation.actions.reroutePower.name",
     description:
       "sta-utils.actionChooser.operationsStation.actions.reroutePower.description",
+    chatSummary:
+      "sta-utils.actionChooser.operationsStation.actions.reroutePower.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -180,6 +206,8 @@ const actions = [
     name: "sta-utils.actionChooser.operationsStation.actions.transport.name",
     description:
       "sta-utils.actionChooser.operationsStation.actions.transport.description",
+    chatSummary:
+      "sta-utils.actionChooser.operationsStation.actions.transport.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: "control",

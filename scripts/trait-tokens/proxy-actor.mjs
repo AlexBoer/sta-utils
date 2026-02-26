@@ -20,6 +20,49 @@ async function getOrCreateFolder() {
   return folder;
 }
 
+/* -------------------------------------------- */
+/*  World-level trait actor                      */
+/* -------------------------------------------- */
+
+/**
+ * Get (or lazily create) the single world-level Scene Traits actor.
+ *
+ * This actor is **not** tied to any particular scene.  Its items are
+ * available for dragging onto *any* scene.  Items dropped from this
+ * actor are referenced directly (never copied, never auto-deleted).
+ *
+ * Identified by the module flag `isWorldTraitActor: true`.
+ *
+ * @returns {Promise<Actor>}
+ */
+export async function getOrCreateWorldTraitActor() {
+  // Look for an existing world trait actor
+  let actor = game.actors.find(
+    (a) => a.getFlag(MODULE_ID, "isWorldTraitActor") === true,
+  );
+  if (actor) return actor;
+
+  const folder = await getOrCreateFolder();
+
+  actor = await Actor.create({
+    name: "World Traits",
+    type: "scenetraits",
+    img: "icons/svg/d20-grey.svg",
+    folder: folder.id,
+    flags: {
+      [MODULE_ID]: {
+        isProxyActor: true,
+        isWorldTraitActor: true,
+      },
+    },
+  });
+
+  console.log(
+    `${MODULE_ID} | Created world-level trait actor "${actor.name}" (${actor.id})`,
+  );
+  return actor;
+}
+
 /**
  * Get (or lazily create) a per-scene proxy actor of type "scenetraits".
  * Each scene gets its own actor so that trait tokens are scoped to the

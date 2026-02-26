@@ -242,6 +242,16 @@ function _renderEditInputs(playerCol, dialogId, userId) {
   ];
   const numOptions = ["complicationRange", "dicePoolSlider"];
 
+  // Check if determination has dropdown options (officers-log integration)
+  let deterValueOptions = [];
+  try {
+    deterValueOptions = JSON.parse(
+      playerCol.dataset.determinationValueOptions || "[]",
+    );
+  } catch (_) {
+    // ignore
+  }
+
   for (const key of boolOptions) {
     const optionEl = playerCol.querySelector(
       `.sta-dice-pool-monitor-option[data-option="${key}"]`,
@@ -251,6 +261,33 @@ function _renderEditInputs(playerCol, dialogId, userId) {
       ".sta-dice-pool-monitor-option-value",
     );
     if (!valueEl) continue;
+
+    // Determination with officers-log: render a dropdown instead of toggle
+    if (key === "usingDetermination" && deterValueOptions.length > 0) {
+      const currentValueId = playerCol.dataset.determinationValueId || "";
+      const blankOpt = `<option value="">—</option>`;
+      const optionsHtml =
+        blankOpt +
+        deterValueOptions
+          .filter((o) => o.value) // skip blank option from source
+          .map(
+            (o) =>
+              `<option value="${o.value}" ${o.value === currentValueId ? "selected" : ""}>${o.label}</option>`,
+          )
+          .join("");
+      valueEl.innerHTML = `<select class="sta-dice-pool-monitor-edit-select">${optionsHtml}</select>`;
+
+      const select = valueEl.querySelector("select");
+      select?.addEventListener("change", () => {
+        const newValueId = select.value;
+        playerCol.dataset.determinationValueId = newValueId;
+        optionEl.dataset.value = String(!!newValueId);
+        _sendGMUpdate(dialogId, userId, {
+          determinationValueId: newValueId,
+        });
+      });
+      continue;
+    }
 
     const currentValue = optionEl.dataset.value === "true";
     valueEl.innerHTML = `<span class="sta-dice-pool-monitor-edit-toggle" data-checked="${currentValue}"><i class="fa-solid ${currentValue ? "fa-square-check" : "fa-square"}"></i></span>`;
@@ -321,6 +358,30 @@ function _renderDisplayValues(playerCol) {
       ".sta-dice-pool-monitor-option-value",
     );
     if (!valueEl) continue;
+
+    // Determination with officers-log dropdown: show check/x based on
+    // whether a value is selected, and show the value name as a tooltip.
+    if (
+      key === "usingDetermination" &&
+      playerCol.dataset.determinationValueOptions
+    ) {
+      const hasValue = optionEl.dataset.value === "true";
+      let tooltip = "";
+      if (hasValue) {
+        try {
+          const opts = JSON.parse(playerCol.dataset.determinationValueOptions);
+          const valId = playerCol.dataset.determinationValueId || "";
+          const match = opts.find((o) => o.value === valId);
+          if (match) tooltip = ` title="${match.label}"`;
+        } catch (_) {
+          /* ignore */
+        }
+      }
+      valueEl.innerHTML = hasValue
+        ? `<i class="fa-solid fa-check sta-dice-pool-monitor-icon-yes"${tooltip}></i>`
+        : _boolIcon(false);
+      continue;
+    }
 
     const value = optionEl.dataset.value === "true";
     valueEl.innerHTML = _boolIcon(value);
@@ -827,6 +888,8 @@ async function _sendGMUpdate(dialogId, userId, updates) {
  * @param {boolean} [data.usingFocus]
  * @param {boolean} [data.usingDedicatedFocus]
  * @param {boolean} [data.usingDetermination]
+ * @param {string}  [data.determinationValueId] - Selected value item ID (officers-log dropdown).
+ * @param {{ value: string, label: string }[]} [data.determinationValueOptions] - Dropdown options.
  * @param {number} [data.complicationRange]
  * @param {number} [data.dicePoolSlider]
  * @param {boolean} [data.rolled] - True when the player has rolled.
@@ -869,6 +932,16 @@ export async function updateDicePoolMonitor(data) {
     complicationRange: data.complicationRange,
     dicePoolSlider: data.dicePoolSlider,
   };
+
+  // Store officers-log determination dropdown options & selected value
+  if (data.determinationValueOptions?.length) {
+    playerCol.dataset.determinationValueOptions = JSON.stringify(
+      data.determinationValueOptions,
+    );
+  }
+  if (data.determinationValueId !== undefined) {
+    playerCol.dataset.determinationValueId = data.determinationValueId ?? "";
+  }
 
   for (const [key, value] of Object.entries(optionsMap)) {
     if (value === undefined) continue;

@@ -1,0 +1,101 @@
+<div class="trait-drawing-settings-body">
+
+    {{!-- ── Text ──────────────────────────────────────────── --}}
+    <fieldset>
+        <legend><i class="fa-solid fa-font"></i> Text</legend>
+        <div class="form-group">
+            <label>{{localize 'sta-utils.traitDrawingSettings.fontFamily'}}</label>
+            <select name="font_family">
+                {{#each this.fontFamilies}}
+                <option {{#if (eq this ../fontFamily)}}selected{{/if}}>{{this}}</option>
+                {{/each}}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>{{localize 'sta-utils.traitDrawingSettings.fontSize'}}</label>
+            <input type="number" name="font_size" value="{{this.fontSize}}"/>
+            <p class="hint">{{localize 'sta-utils.traitDrawingSettings.fontSizeHint'}}</p>
+        </div>
+        <div class="form-group">
+            <label>{{localize 'sta-utils.traitDrawingSettings.textColor'}}</label>
+            <color-picker name="text_color" value="{{this.textColor}}"></color-picker>
+        </div>
+    </fieldset>
+
+    {{!-- ── Text Style (ADT only) ─────────────────────────── --}}
+    {{#if this.adtActive}}
+    <fieldset>
+        <legend><i class="fa-solid fa-text-height"></i> {{localize 'sta-utils.traitDrawingSettings.textStyleSection'}}</legend>
+        <div class="form-group">
+            <label>{{localize 'sta-utils.traitDrawingSettings.fontWeight'}}</label>
+            <select name="font_weight">
+                <option value="normal" {{#if (eq fontWeight "normal")}}selected{{/if}}>Normal</option>
+                <option value="bold" {{#if (eq fontWeight "bold")}}selected{{/if}}>Bold</option>
+                <option value="lighter" {{#if (eq fontWeight "lighter")}}selected{{/if}}>Lighter</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>{{localize 'sta-utils.traitDrawingSettings.textAlign'}}</label>
+            <select name="text_align">
+                <option value="left" {{#if (eq textAlign "left")}}selected{{/if}}>Left</option>
+                <option value="center" {{#if (eq textAlign "center")}}selected{{/if}}>Center</option>
+                <option value="right" {{#if (eq textAlign "right")}}selected{{/if}}>Right</option>
+            </select>
+        </div>
+    </fieldset>
+
+    {{!-- ── Text Outline ──────────────────────────────────── --}}
+    <fieldset>
+        <legend><i class="fa-solid fa-pen-nib"></i> {{localize 'sta-utils.traitDrawingSettings.textStroke'}}</legend>
+        <div class="form-group">
+            <label>{{localize 'sta-utils.traitDrawingSettings.textStrokeColor'}}</label>
+            <color-picker name="text_stroke_color" value="{{this.textStrokeColor}}"></color-picker>
+        </div>
+        <div class="form-group">
+            <label>{{localize 'sta-utils.traitDrawingSettings.textStrokeThickness'}}</label>
+            <input type="number" name="text_stroke_thickness" value="{{this.textStrokeThickness}}" min="0" step="1"/>
+        </div>
+    </fieldset>
+    {{/if}}
+
+    {{!-- ── Fill ──────────────────────────────────────────── --}}
+    <fieldset>
+        <legend><i class="fa-solid fa-fill-drip"></i> {{localize 'sta-utils.traitDrawingSettings.fillSection'}}</legend>
+        <div class="form-group">
+            <label>{{localize 'sta-utils.traitDrawingSettings.fillOpacity'}}</label>
+            <range-picker name="fill_opacity" value="{{this.fillOpacity}}" max="1" min="0" step="0.1"></range-picker>
+        </div>
+    </fieldset>
+
+    {{!-- ── Border ────────────────────────────────────────── --}}
+    <fieldset>
+        <legend><i class="fa-solid fa-border-all"></i> {{localize 'sta-utils.traitDrawingSettings.borderSection'}}</legend>
+        <div class="form-group">
+            <label>{{localize 'sta-utils.traitDrawingSettings.borderWidth'}}</label>
+            <input type="number" name="border_width" value="{{this.borderWidth}}" min="0" step="1"/>
+        </div>
+        <div class="form-group">
+            <label>{{localize 'sta-utils.traitDrawingSettings.borderColor'}}</label>
+            <color-picker name="border_color" value="{{this.borderColor}}"></color-picker>
+        </div>
+        <div class="form-group">
+            <label>{{localize 'sta-utils.traitDrawingSettings.borderOpacity'}}</label>
+            <range-picker name="border_opacity" value="{{this.borderOpacity}}" max="1" min="0" step="0.1"></range-picker>
+        </div>
+        {{#if this.adtActive}}
+        <div class="form-group">
+            <label>{{localize 'sta-utils.traitDrawingSettings.borderDashed'}}</label>
+            <input type="checkbox" name="border_dashed" {{#if this.borderDashed}}checked{{/if}}/>
+        </div>
+        <div class="form-group">
+            <label>{{localize 'sta-utils.traitDrawingSettings.borderDash'}}</label>
+            <input type="number" name="border_dash" value="{{this.borderDash}}" min="0.1" step="0.1"/>
+        </div>
+        <div class="form-group">
+            <label>{{localize 'sta-utils.traitDrawingSettings.borderGap'}}</label>
+            <input type="number" name="border_gap" value="{{this.borderGap}}" min="0.1" step="0.1"/>
+        </div>
+        {{/if}}
+    </fieldset>
+
+</div>

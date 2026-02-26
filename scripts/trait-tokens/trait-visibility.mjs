@@ -106,7 +106,7 @@ async function _onUpdateItemVisibility(item, changes, _options, _userId) {
 
   // Update tokens across all scenes
   for (const scene of game.scenes) {
-    const updates = [];
+    const tokenUpdates = [];
     for (const tokenDoc of scene.tokens) {
       const flags = tokenDoc.flags?.[MODULE_ID];
       if (
@@ -115,11 +115,28 @@ async function _onUpdateItemVisibility(item, changes, _options, _userId) {
         flags.embeddedItemId === embeddedItemId &&
         tokenDoc.hidden !== shouldHide
       ) {
-        updates.push({ _id: tokenDoc.id, hidden: shouldHide });
+        tokenUpdates.push({ _id: tokenDoc.id, hidden: shouldHide });
       }
     }
-    if (updates.length) {
-      await scene.updateEmbeddedDocuments("Token", updates);
+    if (tokenUpdates.length) {
+      await scene.updateEmbeddedDocuments("Token", tokenUpdates);
+    }
+
+    // Also update trait drawings on the same scene
+    const drawingUpdates = [];
+    for (const drawingDoc of scene.drawings) {
+      const flags = drawingDoc.flags?.[MODULE_ID];
+      if (
+        flags?.isTraitDrawing &&
+        flags.proxyActorId === proxyActorId &&
+        flags.embeddedItemId === embeddedItemId &&
+        drawingDoc.hidden !== shouldHide
+      ) {
+        drawingUpdates.push({ _id: drawingDoc.id, hidden: shouldHide });
+      }
+    }
+    if (drawingUpdates.length) {
+      await scene.updateEmbeddedDocuments("Drawing", drawingUpdates);
     }
   }
 }

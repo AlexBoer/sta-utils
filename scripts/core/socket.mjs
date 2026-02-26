@@ -46,6 +46,14 @@ export function initSocket() {
     await handleCreateTraitTokenRPC(msg);
   });
 
+  // --- RPC: Player -> GM (create trait drawing on canvas) ---
+  moduleSocket.register("createTraitDrawing", async (msg) => {
+    if (!game.user.isGM) return;
+    const { handleCreateTraitDrawingRPC } =
+      await import("../trait-tokens/trait-drawing.mjs");
+    await handleCreateTraitDrawingRPC(msg);
+  });
+
   // --- RPC: Author -> All (momentum spend selection updates) ---
   moduleSocket.register("momentumSpendUpdate", async (msg) => {
     const { handleMomentumSpendUpdate } =

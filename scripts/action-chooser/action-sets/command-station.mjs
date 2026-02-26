@@ -17,6 +17,8 @@ const actions = [
     name: "sta-utils.actionChooser.commandStation.actions.changePosition.name",
     description:
       "sta-utils.actionChooser.commandStation.actions.changePosition.description",
+    chatSummary:
+      "sta-utils.actionChooser.commandStation.actions.changePosition.chatSummary",
     roll: null,
     subtle: true,
     momentumCost: 0,
@@ -29,6 +31,8 @@ const actions = [
     name: "sta-utils.actionChooser.commandStation.actions.interact.name",
     description:
       "sta-utils.actionChooser.commandStation.actions.interact.description",
+    chatSummary:
+      "sta-utils.actionChooser.commandStation.actions.interact.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -40,6 +44,8 @@ const actions = [
     name: "sta-utils.actionChooser.commandStation.actions.prepare.name",
     description:
       "sta-utils.actionChooser.commandStation.actions.prepare.description",
+    chatSummary:
+      "sta-utils.actionChooser.commandStation.actions.prepare.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -51,6 +57,8 @@ const actions = [
     name: "sta-utils.actionChooser.commandStation.actions.restore.name",
     description:
       "sta-utils.actionChooser.commandStation.actions.restore.description",
+    chatSummary:
+      "sta-utils.actionChooser.commandStation.actions.restore.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -63,6 +71,8 @@ const actions = [
     name: "sta-utils.actionChooser.commandStation.actions.assist.name",
     description:
       "sta-utils.actionChooser.commandStation.actions.assist.description",
+    chatSummary:
+      "sta-utils.actionChooser.commandStation.actions.assist.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -73,6 +83,8 @@ const actions = [
     name: "sta-utils.actionChooser.commandStation.actions.createTrait.name",
     description:
       "sta-utils.actionChooser.commandStation.actions.createTrait.description",
+    chatSummary:
+      "sta-utils.actionChooser.commandStation.actions.createTrait.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: null,
@@ -88,6 +100,8 @@ const actions = [
     name: "sta-utils.actionChooser.commandStation.actions.override.name",
     description:
       "sta-utils.actionChooser.commandStation.actions.override.description",
+    chatSummary:
+      "sta-utils.actionChooser.commandStation.actions.override.chatSummary",
     roll: null,
     subtle: true,
     momentumCost: 0,
@@ -99,6 +113,8 @@ const actions = [
     name: "sta-utils.actionChooser.commandStation.actions.pass.name",
     description:
       "sta-utils.actionChooser.commandStation.actions.pass.description",
+    chatSummary:
+      "sta-utils.actionChooser.commandStation.actions.pass.chatSummary",
     roll: null,
     subtle: true,
     momentumCost: 0,
@@ -110,6 +126,8 @@ const actions = [
     name: "sta-utils.actionChooser.commandStation.actions.ready.name",
     description:
       "sta-utils.actionChooser.commandStation.actions.ready.description",
+    chatSummary:
+      "sta-utils.actionChooser.commandStation.actions.ready.chatSummary",
     roll: null,
     subtle: true,
     momentumCost: 0,
@@ -121,6 +139,8 @@ const actions = [
     name: "sta-utils.actionChooser.commandStation.actions.direct.name",
     description:
       "sta-utils.actionChooser.commandStation.actions.direct.description",
+    chatSummary:
+      "sta-utils.actionChooser.commandStation.actions.direct.chatSummary",
     roll: {
       ...rollDefaults,
       dicePool: 1,
@@ -137,6 +157,8 @@ const actions = [
     name: "sta-utils.actionChooser.commandStation.actions.rally.name",
     description:
       "sta-utils.actionChooser.commandStation.actions.rally.description",
+    chatSummary:
+      "sta-utils.actionChooser.commandStation.actions.rally.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: "presence",

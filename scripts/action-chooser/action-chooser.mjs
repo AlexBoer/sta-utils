@@ -2,7 +2,10 @@ import { MODULE_ID } from "../core/constants.mjs";
 import { ATTRIBUTE_KEYS, ATTRIBUTE_LABELS } from "../core/gameConstants.mjs";
 import { t, tf } from "../core/i18n.mjs";
 import { showDicePoolDialog } from "../dice-pool-override/dice-pool-dialog.mjs";
-import { executeTaskRoll, runMiddleware } from "../dice-pool-override/execute-task-roll.mjs";
+import {
+  executeTaskRoll,
+  runMiddleware,
+} from "../dice-pool-override/execute-task-roll.mjs";
 
 const BaseApp = foundry.applications.api.HandlebarsApplicationMixin(
   foundry.applications.api.ApplicationV2,
@@ -18,6 +21,38 @@ const DISCIPLINE_KEYS = [
 ];
 
 const actionSetRegistry = new Map();
+
+/**
+ * Tracks which momentum-spend tab to default to for the next chat message
+ * created by a roll originating from the action chooser.
+ * Set just before executeTaskRoll and cleared in a finally block.
+ * @type {string|null}
+ */
+let _pendingMomentumTab = null;
+
+/**
+ * Map an action-set ID to the momentum-spend tab that should open by default.
+ * @param {string} setId  The action-set ID (e.g. "personal-conflict").
+ * @returns {string} One of "common", "personalConflict", "starshipCombat".
+ */
+function _actionSetToMomentumTab(setId) {
+  if (setId === "social-conflict") return "common";
+  if (setId === "personal-conflict") return "personalConflict";
+  return "starshipCombat";
+}
+
+// Stamp every chat message created while _pendingMomentumTab is set.
+Hooks.on("preCreateChatMessage", (doc) => {
+  if (_pendingMomentumTab) {
+    doc.updateSource({
+      flags: {
+        [MODULE_ID]: {
+          momentumTab: _pendingMomentumTab,
+        },
+      },
+    });
+  }
+});
 
 function registerActionSet(id, importFn) {
   actionSetRegistry.set(id, importFn);
@@ -92,6 +127,7 @@ class ActionChooserApp extends BaseApp {
     const actions = this.actionSet?.actions ?? [];
     const minorActions = [];
     const majorActions = [];
+    const socialTools = [];
 
     for (const action of actions) {
       const localized = {
@@ -104,13 +140,22 @@ class ActionChooserApp extends BaseApp {
       if (action.roll && action.roll.attribute && action.roll.discipline) {
         const attrLabel = attributeLabel(action.roll.attribute);
         const discLabel = disciplineLabel(action.roll.discipline);
+        let difficultyText;
+        if (action.roll.difficulty == null) {
+          difficultyText = "";
+        } else if (action.roll.difficulty === "varies") {
+          difficultyText = t("sta-utils.actionChooser.difficultyVaries");
+        } else if (action.roll.difficulty === "opposed") {
+          difficultyText = t("sta-utils.actionChooser.difficultyOpposed");
+        } else {
+          difficultyText = tf("sta-utils.actionChooser.difficultyNum", {
+            difficulty: action.roll.difficulty,
+          });
+        }
         localized.rollInfo = tf("sta-utils.actionChooser.rollInfo", {
           attribute: attrLabel,
           discipline: discLabel,
-          difficulty:
-            action.roll.difficulty == null
-              ? t("sta-utils.actionChooser.difficultyVaries")
-              : action.roll.difficulty,
+          difficulty: difficultyText,
         });
       } else if (action.roll) {
         localized.rollInfo = t("sta-utils.actionChooser.rollInfoVaries");
@@ -123,6 +168,7 @@ class ActionChooserApp extends BaseApp {
         : null;
 
       if (action.type === "minor") minorActions.push(localized);
+      else if (action.type === "social") socialTools.push(localized);
       else majorActions.push(localized);
     }
 
@@ -132,22 +178,62 @@ class ActionChooserApp extends BaseApp {
       a.isSubtle === b.isSubtle ? 0 : a.isSubtle ? 1 : -1;
     minorActions.sort(subtleLast);
     majorActions.sort(subtleLast);
+    socialTools.sort(subtleLast);
+
+    const actionSets = [];
+    if (actionSetRegistry.size > 1) {
+      for (const [id] of actionSetRegistry) {
+        const set = await loadActionSet(id);
+        actionSets.push({
+          id,
+          label: t(set.label ?? id),
+          selected: id === this.actionSet?.id,
+        });
+      }
+    }
 
     const actor = this.selectedActor;
     const starship = this.selectedStarship;
     const showStarship = !!this.actionSet?.showStarship;
+
+    const eligibleActors = this._getEligibleActors();
+    const actorOptions = eligibleActors.map((a) => ({
+      id: a.id,
+      name: a.name,
+      img: a.img ?? "icons/svg/mystery-man.svg",
+      selected: a.id === actor?.id,
+    }));
+
+    const eligibleStarships = showStarship ? this._getEligibleStarships() : [];
+    const starshipOptions = eligibleStarships.map((s) => ({
+      id: s.id,
+      name: s.name,
+      img: s.img ?? "icons/svg/mystery-man.svg",
+      selected: s.id === starship?.id,
+    }));
+
     return {
       actionSetLabel: t(this.actionSet?.label ?? ""),
       canSwitchSet: actionSetRegistry.size > 1,
+      actionSets,
       minorActions,
       majorActions,
+      socialTools,
+      hasMinorActions: minorActions.length > 0,
+      hasMajorActions: majorActions.length > 0,
+      hasSocialTools: socialTools.length > 0,
       actorName: actor?.name ?? t("sta-utils.actionChooser.noActorSelected"),
       actorImg: actor?.img ?? "icons/svg/mystery-man.svg",
       hasActor: !!actor,
+      actorOptions,
+      hasActorOptions: actorOptions.length > 0,
       showStarship,
-      starshipName: starship?.name ?? t("sta-utils.actionChooser.noStarshipSelected"),
+      starshipName:
+        starship?.name ?? t("sta-utils.actionChooser.noStarshipSelected"),
       starshipImg: starship?.img ?? "icons/svg/mystery-man.svg",
       hasStarship: !!starship,
+      starshipOptions,
+      hasStarshipOptions: starshipOptions.length > 0,
     };
   }
 
@@ -178,9 +264,7 @@ class ActionChooserApp extends BaseApp {
         const momentum = tab.dataset.actionMomentum ?? "";
 
         // Look up action definition while building the detail panel
-        const actionDef = this.actionSet.actions.find(
-          (a) => a.id === tabId,
-        );
+        const actionDef = this.actionSet.actions.find((a) => a.id === tabId);
 
         let badges = "";
         if (roll) {
@@ -223,8 +307,7 @@ class ActionChooserApp extends BaseApp {
           }
         } else if (actionDef?.starshipWeaponAttack && this.selectedStarship) {
           const weapons = this.selectedStarship.items.filter(
-            (i) =>
-              i.type === "starshipweapon" || i.type === "starshipweapon2e",
+            (i) => i.type === "starshipweapon" || i.type === "starshipweapon2e",
           );
           if (weapons.length === 0) {
             weaponPickerHtml = `<p class="sta-action-detail__no-weapons">${t("sta-utils.actionChooser.noStarshipWeapons")}</p>`;
@@ -240,17 +323,22 @@ class ActionChooserApp extends BaseApp {
           }
         }
 
+        const isSocial = type === "social";
+        const buttonLabel = isSocial
+          ? t("sta-utils.actionChooser.sendToChat")
+          : t("sta-utils.actionChooser.useAction");
+
         detail.innerHTML = `
           <div class="sta-action-detail__name">${name}</div>
           ${badges ? `<div class="sta-action-detail__badges">${badges}</div>` : ""}
           <p class="sta-action-detail__desc">${desc}</p>
           ${weaponPickerHtml}
           <div class="sta-action-detail__footer">
-            <button class="sta-action-detail__btn" data-action-id="${tabId}">${t("sta-utils.actionChooser.useAction")}</button>
+            <button class="sta-action-detail__btn" data-action-id="${tabId}">${buttonLabel}</button>
           </div>
         `;
 
-        // Attach Use button handler
+        // Attach button handler
         const useBtn = detail.querySelector("[data-action-id]");
         if (useBtn) {
           useBtn.addEventListener("click", async (ev) => {
@@ -258,17 +346,23 @@ class ActionChooserApp extends BaseApp {
             const action = this.actionSet.actions.find(
               (a) => a.id === useBtn.dataset.actionId,
             );
-            if (action) await this._handleAction(action, detail);
+            if (!action) return;
+            if (action.type === "social") {
+              await sendActionChat(this.selectedActor, action);
+            } else {
+              await this._handleAction(action, detail);
+            }
           });
         }
       });
     });
 
-    const changeBtn = html.querySelector(".sta-actor-indicator__change");
-    if (changeBtn) {
-      changeBtn.addEventListener("click", async (event) => {
+    const actorSelect = html.querySelector(".sta-actor-indicator__select");
+    if (actorSelect) {
+      actorSelect.addEventListener("change", (event) => {
         event.preventDefault();
-        const picked = await this._pickActor();
+        const actorId = actorSelect.value;
+        const picked = game.actors.get(actorId);
         if (picked) {
           this.selectedActor = picked;
           this.render();
@@ -276,11 +370,14 @@ class ActionChooserApp extends BaseApp {
       });
     }
 
-    const changeShipBtn = html.querySelector(".sta-starship-indicator__change");
-    if (changeShipBtn) {
-      changeShipBtn.addEventListener("click", async (event) => {
+    const starshipSelect = html.querySelector(
+      ".sta-starship-indicator__select",
+    );
+    if (starshipSelect) {
+      starshipSelect.addEventListener("change", (event) => {
         event.preventDefault();
-        const picked = await this._pickStarship();
+        const shipId = starshipSelect.value;
+        const picked = game.actors.get(shipId);
         if (picked) {
           this.selectedStarship = picked;
           this.render();
@@ -288,14 +385,14 @@ class ActionChooserApp extends BaseApp {
       });
     }
 
-    const switchBtn = html.querySelector(".sta-action-chooser-title__switch");
-    if (switchBtn) {
-      switchBtn.addEventListener("click", async (event) => {
+    const setSelect = html.querySelector(".sta-action-chooser-title__select");
+    if (setSelect) {
+      setSelect.addEventListener("change", async (event) => {
         event.preventDefault();
-        const newSet = await this._pickActionSet();
+        const setId = setSelect.value;
+        const newSet = await loadActionSet(setId);
         if (newSet) {
           this.actionSet = newSet;
-          // Resolve or clear the starship based on the new set
           this.selectedStarship = newSet.showStarship
             ? this._resolveStarship()
             : null;
@@ -305,62 +402,6 @@ class ActionChooserApp extends BaseApp {
     }
   }
 
-  async _pickActionSet() {
-    const ids = [...actionSetRegistry.keys()];
-    if (ids.length <= 1) return null;
-
-    // If only 2 sets, just toggle to the other one
-    if (ids.length === 2) {
-      const otherId = ids.find((id) => id !== this.actionSet.id);
-      return otherId ? await loadActionSet(otherId) : null;
-    }
-
-    // 3+ sets: show a picker dialog
-    const loaded = await Promise.all(
-      ids.map(async (id) => ({ id, set: await loadActionSet(id) })),
-    );
-
-    const options = loaded
-      .map(
-        (entry) =>
-          `<option value="${entry.id}" ${entry.id === this.actionSet.id ? "selected" : ""}>${t(entry.set.label ?? entry.id)}</option>`,
-      )
-      .join("");
-
-    const content = `
-      <form>
-        <div class="row">
-          <div class="tracktitle">${t("sta-utils.actionChooser.changeSet")}</div>
-          <select name="setId" class="form-select">${options}</select>
-        </div>
-      </form>
-    `;
-
-    const api = foundry.applications.api;
-    const formData = await api.DialogV2.wait({
-      window: { title: t("sta-utils.actionChooser.changeSet") },
-      position: { height: "auto", width: 350 },
-      content,
-      classes: ["dialogue"],
-      buttons: [
-        {
-          action: "select",
-          default: true,
-          label: t("sta-utils.actionChooser.selectWeapon"),
-          callback: (event, button, dialog) => {
-            const form = dialog.element.querySelector("form");
-            return form ? new FormData(form) : null;
-          },
-        },
-      ],
-      close: () => null,
-    });
-
-    if (!formData) return null;
-    const setId = formData.get("setId");
-    return setId ? await loadActionSet(setId) : null;
-  }
-
   async _handleAction(action, detailEl) {
     const actor = this.selectedActor;
     if (!actor) {
@@ -368,27 +409,50 @@ class ActionChooserApp extends BaseApp {
       return;
     }
 
-    if (action.weaponAttack) {
-      await this._handleWeaponAttack(actor, action, detailEl);
-      return;
-    }
-
-    if (action.starshipWeaponAttack) {
-      await this._handleStarshipWeaponAttack(actor, action, detailEl);
-      return;
-    }
-
-    if (action.roll) {
-      const result = await buildTaskData(actor, action.roll, {
-        defaultStarshipId: this.selectedStarship?.id,
-      });
-      if (result) {
-        await executeTaskRoll(result.taskData, { isShipAssist: result.isShipAssist });
+    _pendingMomentumTab = _actionSetToMomentumTab(this.actionSet?.id);
+    try {
+      if (action.weaponAttack) {
+        await this._handleWeaponAttack(actor, action, detailEl);
+        return;
       }
-    }
 
-    if (typeof action.callback === "function") {
-      await action.callback(actor, action);
+      if (action.starshipWeaponAttack) {
+        await this._handleStarshipWeaponAttack(actor, action, detailEl);
+        return;
+      }
+
+      if (action.roll) {
+        const result = await buildTaskData(actor, action.roll, {
+          defaultStarshipId: this.selectedStarship?.id,
+        });
+        if (!result) return;
+        await executeTaskRoll(result.taskData, {
+          isShipAssist: result.isShipAssist,
+          actor,
+        });
+
+        // Spend the value via sta-officers-log after the roll
+        if (result.determinationValueId) {
+          try {
+            await game.staofficerslog.useValue({
+              actor,
+              valueItemId: result.determinationValueId,
+              useType: "positive",
+            });
+          } catch (err) {
+            console.error(
+              "sta-utils | Failed to spend value via officers-log",
+              err,
+            );
+          }
+        }
+      }
+
+      if (typeof action.callback === "function") {
+        await action.callback(actor, action);
+      }
+    } finally {
+      _pendingMomentumTab = null;
     }
   }
 
@@ -403,7 +467,7 @@ class ActionChooserApp extends BaseApp {
       return;
     }
 
-    const isMelee = weapon.system.range === "melee";
+    const isMelee = weapon.system.range?.toLowerCase() === "melee";
     const rollTemplate = {
       dicePool: 2,
       usingFocus: false,
@@ -423,7 +487,26 @@ class ActionChooserApp extends BaseApp {
     const roller = new STARoll();
 
     await roller.performWeaponRoll2e(weapon, actor);
-    await executeTaskRoll(result.taskData, { isShipAssist: result.isShipAssist });
+    await executeTaskRoll(result.taskData, {
+      isShipAssist: result.isShipAssist,
+      actor,
+    });
+
+    // Spend the value via sta-officers-log after the roll
+    if (result.determinationValueId) {
+      try {
+        await game.staofficerslog.useValue({
+          actor,
+          valueItemId: result.determinationValueId,
+          useType: "positive",
+        });
+      } catch (err) {
+        console.error(
+          "sta-utils | Failed to spend value via officers-log",
+          err,
+        );
+      }
+    }
 
     if (typeof action.callback === "function") {
       await action.callback(actor, action);
@@ -457,7 +540,26 @@ class ActionChooserApp extends BaseApp {
     const roller = new STARoll();
     await roller.performStarshipWeaponRoll2e(weapon, starship);
 
-    await executeTaskRoll(result.taskData, { isShipAssist: result.isShipAssist });
+    await executeTaskRoll(result.taskData, {
+      isShipAssist: result.isShipAssist,
+      actor,
+    });
+
+    // Spend the value via sta-officers-log after the roll
+    if (result.determinationValueId) {
+      try {
+        await game.staofficerslog.useValue({
+          actor,
+          valueItemId: result.determinationValueId,
+          useType: "positive",
+        });
+      } catch (err) {
+        console.error(
+          "sta-utils | Failed to spend value via officers-log",
+          err,
+        );
+      }
+    }
 
     if (typeof action.callback === "function") {
       await action.callback(actor, action);
@@ -490,60 +592,15 @@ class ActionChooserApp extends BaseApp {
     );
   }
 
-  async _pickActor() {
-    const eligible = this._getEligibleActors();
-    if (eligible.length === 0) {
-      ui.notifications.warn(t("sta-utils.actionChooser.noEligibleActors"));
-      return null;
-    }
-    if (eligible.length === 1) return eligible[0];
-
-    const options = eligible
-      .map((a) => `<option value="${a.id}">${a.name}</option>`)
-      .join("");
-
-    const content = `
-      <form>
-        <div class="row">
-          <div class="tracktitle">${t("sta-utils.actionChooser.selectCharacter")}</div>
-          <select name="actorId" class="form-select">${options}</select>
-        </div>
-      </form>
-    `;
-
-    const api = foundry.applications.api;
-    const formData = await api.DialogV2.wait({
-      window: {
-        title: t("sta-utils.actionChooser.selectCharacter"),
-      },
-      position: { height: "auto", width: 350 },
-      content,
-      classes: ["dialogue"],
-      buttons: [
-        {
-          action: "select",
-          default: true,
-          label: t("sta-utils.actionChooser.selectWeapon"),
-          callback: (event, button, dialog) => {
-            const form = dialog.element.querySelector("form");
-            return form ? new FormData(form) : null;
-          },
-        },
-      ],
-      close: () => null,
-    });
-
-    if (!formData) return null;
-    const actorId = formData.get("actorId");
-    return game.actors.get(actorId) ?? null;
-  }
-
   _resolveStarship() {
     // Try sta-officers-log group ship first
     try {
       const officersLog = game.modules.get("sta-officers-log");
       if (officersLog?.active) {
-        const shipId = game.settings.get("sta-officers-log", "groupShipActorId");
+        const shipId = game.settings.get(
+          "sta-officers-log",
+          "groupShipActorId",
+        );
         if (shipId) {
           const ship = game.actors.get(shipId);
           if (ship) return ship;
@@ -569,59 +626,13 @@ class ActionChooserApp extends BaseApp {
       )
       .sort((a, b) => (b.system?.scale || 0) - (a.system?.scale || 0));
   }
-
-  async _pickStarship() {
-    const eligible = this._getEligibleStarships();
-    if (eligible.length === 0) {
-      ui.notifications.warn(t("sta-utils.actionChooser.noStarship"));
-      return null;
-    }
-    if (eligible.length === 1) return eligible[0];
-
-    const options = eligible
-      .map((a) => `<option value="${a.id}">${a.name}</option>`)
-      .join("");
-
-    const content = `
-      <form>
-        <div class="row">
-          <div class="tracktitle">${t("sta-utils.actionChooser.selectStarship")}</div>
-          <select name="starshipId" class="form-select">${options}</select>
-        </div>
-      </form>
-    `;
-
-    const api = foundry.applications.api;
-    const formData = await api.DialogV2.wait({
-      window: {
-        title: t("sta-utils.actionChooser.selectStarship"),
-      },
-      position: { height: "auto", width: 350 },
-      content,
-      classes: ["dialogue"],
-      buttons: [
-        {
-          action: "select",
-          default: true,
-          label: t("sta-utils.actionChooser.selectWeapon"),
-          callback: (event, button, dialog) => {
-            const form = dialog.element.querySelector("form");
-            return form ? new FormData(form) : null;
-          },
-        },
-      ],
-      close: () => null,
-    });
-
-    if (!formData) return null;
-    const starshipId = formData.get("starshipId");
-    return game.actors.get(starshipId) ?? null;
-  }
 }
 
 function actionAnnouncementMessage(actor, action) {
-  const description = t(action.description);
-  return `<p><strong>${actor.name}</strong>: ${t(action.name)}</p><p>${description}</p>`;
+  const summary = action.chatSummary
+    ? t(action.chatSummary)
+    : t(action.description);
+  return `<p><strong>${actor.name}</strong>: <em>${t(action.name)}</em>: ${summary}</p>`;
 }
 
 export async function sendActionChat(actor, action) {
@@ -632,63 +643,6 @@ export async function sendActionChat(actor, action) {
   } catch (err) {
     console.error(`${MODULE_ID} | Failed to send action chat`, err);
   }
-}
-
-async function pickWeapon(actor) {
-  const weapons = actor.items.filter(
-    (i) => i.type === "characterweapon" || i.type === "characterweapon2e",
-  );
-
-  if (weapons.length === 0) {
-    ui.notifications.warn(t("sta-utils.actionChooser.noWeapons"));
-    return null;
-  }
-
-  if (weapons.length === 1) return weapons[0];
-
-  const options = weapons
-    .map((w) => {
-      const range = game.i18n.localize(
-        `sta.actor.belonging.weapon.${w.system.range}`,
-      );
-      return `<option value="${w.id}">${w.name} (${range})</option>`;
-    })
-    .join("");
-
-  const content = `
-    <form>
-      <div class="row">
-        <div class="tracktitle">${t("sta-utils.actionChooser.chooseWeapon")}</div>
-        <select name="weaponId" class="form-select">${options}</select>
-      </div>
-    </form>
-  `;
-
-  const api = foundry.applications.api;
-  const formData = await api.DialogV2.wait({
-    window: {
-      title: t("sta-utils.actionChooser.chooseWeapon"),
-    },
-    position: { height: "auto", width: 350 },
-    content,
-    classes: ["dialogue"],
-    buttons: [
-      {
-        action: "select",
-        default: true,
-        label: t("sta-utils.actionChooser.selectWeapon"),
-        callback: (event, button, dialog) => {
-          const form = dialog.element.querySelector("form");
-          return form ? new FormData(form) : null;
-        },
-      },
-    ],
-    close: () => null,
-  });
-
-  if (!formData) return null;
-  const weaponId = formData.get("weaponId");
-  return actor.items.get(weaponId) ?? null;
 }
 
 async function buildTaskData(actor, rollTemplate, { defaultStarshipId } = {}) {
@@ -783,7 +737,11 @@ async function buildTaskData(actor, rollTemplate, { defaultStarshipId } = {}) {
 
   if (!dialogResult) return null;
 
-  const { formData, automationStates: _automationStates } = dialogResult;
+  const {
+    formData,
+    automationStates: _automationStates,
+    determinationValueId,
+  } = dialogResult;
 
   /* ---- Read form values ---- */
   const selectedAttribute = formData.get("attribute");
@@ -802,8 +760,11 @@ async function buildTaskData(actor, rollTemplate, { defaultStarshipId } = {}) {
     calculatedComplicationRange;
   const usingFocus = formData.get("usingFocus") === "on";
   const usingDedicatedFocus = formData.get("usingDedicatedFocus") === "on";
-  const usingDetermination = formData.get("usingDetermination") === "on";
+  let usingDetermination = formData.get("usingDetermination") === "on";
   const usingReservePower = formData.get("usingReservePower") === "on";
+
+  // When a value is selected via the officers-log dropdown, treat as determination
+  if (determinationValueId) usingDetermination = true;
 
   /* ---- Ship assist ---- */
   const isShipAssist = formData.get("starshipAssisting") === "on";
@@ -861,10 +822,13 @@ async function buildTaskData(actor, rollTemplate, { defaultStarshipId } = {}) {
 
   await runMiddleware(taskData, middlewareContext, _automationStates);
 
-  return { taskData, isShipAssist };
+  return { taskData, isShipAssist, determinationValueId };
 }
 
-async function openActionChooser(actionSetId = "personal-conflict", { actor } = {}) {
+async function openActionChooser(
+  actionSetId = "personal-conflict",
+  { actor } = {},
+) {
   const actionSet = await loadActionSet(actionSetId);
   const app = new ActionChooserApp(actionSet, { actor });
   app.render(true);

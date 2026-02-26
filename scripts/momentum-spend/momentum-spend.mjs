@@ -396,6 +396,16 @@ function _bindEvents(
 /*  Interactive dialog (author / GM)                                   */
 /* ================================================================== */
 
+/**
+ * Determine which tab the momentum-spend dialog should open to
+ * based on the action-set flag stamped on the chat message.
+ */
+function _defaultTab(message) {
+  const tab = message.flags?.[MODULE_ID]?.momentumTab;
+  if (tab === "personalConflict" || tab === "starshipCombat") return tab;
+  return "common";
+}
+
 async function _openSpendDialog(message) {
   const interactive = _isAuthorOrGM(message);
 
@@ -408,7 +418,7 @@ async function _openSpendDialog(message) {
 
 async function _openInteractiveDialog(message) {
   const selections = {};
-  const activeTab = { value: "common" };
+  const activeTab = { value: _defaultTab(message) };
 
   // Local-only refresh (tab switches) — no broadcast
   function localRefresh() {
@@ -504,7 +514,7 @@ async function _openInteractiveDialog(message) {
 
 async function _openReadOnlyDialog(message) {
   let roSelections = {};
-  const activeTab = { value: "common" };
+  const activeTab = { value: _defaultTab(message) };
 
   function refresh() {
     _refreshDialog(dialogRef, activeTab, roSelections, true, refresh);
@@ -678,13 +688,13 @@ function _submitSpend(message, selections) {
       if (cost.threat > 0) {
         const currentThreat = _getThreat();
         game.settings.set("sta", "threat", currentThreat + cost.threat);
-        }
-        try {
-            game.STATracker?.render(true);
-            console.log("STA TRACKER RENDERED");
-        } catch (err) {
-            console.warn("Failed to render STA Tracker after momentum spend", err);
-        }
+      }
+      try {
+        game.STATracker?.render(true);
+        console.log("STA TRACKER RENDERED");
+      } catch (err) {
+        console.warn("Failed to render STA Tracker after momentum spend", err);
+      }
     } catch (err) {
       console.warn(`${MODULE_ID} | Failed to update pools`, err);
     }
