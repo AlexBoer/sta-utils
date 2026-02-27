@@ -129,15 +129,23 @@ function _refreshAutomationsSection(dialogEl, baseCtx) {
  *
  * • hasShipAssistUI=true  → inside .starshipAssisting (visible when ship assist is on)
  * • hasShipAssistUI=false → after the determination checkbox
+ *
+ * @param {HTMLElement} dialogEl - The dialog element
+ * @param {boolean} hasShipAssistUI - Whether the dialog has ship assist UI
+ * @param {Actor|null} ship - The ship to check for reserve power availability
  */
-function _injectReservePowerCheckbox(dialogEl, hasShipAssistUI) {
+function _injectReservePowerCheckbox(dialogEl, hasShipAssistUI, ship = null) {
   if (dialogEl.querySelector("#usingReservePower")) return;
+
+  // Check if reserve power is available on the ship
+  const hasReservePower = ship?.system?.reservepower ?? false;
+  const disabled = !hasReservePower ? "disabled" : "";
 
   const label = game.i18n.localize("sta-utils.dicePool.useReservePower");
   const rowHtml = `
       <div class="row">
         <div class="tracktitle">${label}</div>
-        <input type="checkbox" name="usingReservePower" id="usingReservePower">
+        <input type="checkbox" name="usingReservePower" id="usingReservePower" ${disabled}>
       </div>`;
 
   if (hasShipAssistUI) {
@@ -156,6 +164,25 @@ function _injectReservePowerCheckbox(dialogEl, hasShipAssistUI) {
         dialogEl.querySelector("form");
       if (form) form.insertAdjacentHTML("beforeend", rowHtml);
     }
+  }
+}
+
+/**
+ * Update the Reserve Power checkbox disabled state based on the current ship.
+ *
+ * @param {HTMLElement} dialogEl - The dialog element
+ * @param {Actor|null} ship - The ship to check for reserve power availability
+ */
+function _updateReservePowerCheckbox(dialogEl, ship) {
+  const checkbox = dialogEl.querySelector("#usingReservePower");
+  if (!checkbox) return;
+
+  const hasReservePower = ship?.system?.reservepower ?? false;
+  checkbox.disabled = !hasReservePower;
+
+  // Uncheck if disabled
+  if (!hasReservePower && checkbox.checked) {
+    checkbox.checked = false;
   }
 }
 
@@ -248,17 +275,11 @@ function _wireAttributeDialogSync(dialogEl, actor) {
     dropdown.value = key;
   }
 
-  // --- Initial sync: push sheet checkbox selections to the dropdowns ---
-  sheetEl
-    .querySelectorAll(".attribute-block .selector.attribute")
-    .forEach((cb) => {
-      if (cb.checked) syncToDropdown(attrDropdown, cb);
-    });
-  sheetEl
-    .querySelectorAll(".discipline-block .selector.discipline")
-    .forEach((cb) => {
-      if (cb.checked) syncToDropdown(discDropdown, cb);
-    });
+  // --- Initial sync: push dialog dropdown selections to the sheet ---
+  // This ensures that when the action chooser pre-selects an attribute/discipline,
+  // the sheet checkboxes update to match (rather than overwriting the dialog).
+  syncToSheet(attrDropdown, ".attribute-block", "attribute");
+  syncToSheet(discDropdown, ".discipline-block", "discipline");
 
   // --- Dialog → Sheet ---
   if (attrDropdown) {
@@ -377,6 +398,25 @@ export async function showDicePoolDialog(opts) {
     render: (event, dialog) => {
       const el = dialog.element;
 
+      // --- Determine initial ship for reserve power check ---
+      let currentShip = null;
+      if (hasShipAssistUI) {
+        // Character sheet path with ship assist
+        const checkbox = el.querySelector("#starshipAssisting");
+        if (checkbox?.checked) {
+          const shipId = el.querySelector("#starship")?.value;
+          if (shipId) currentShip = game.actors.get(shipId);
+        }
+      } else {
+        // Starship sheet path (actor is the ship)
+        if (
+          applicabilityContext.actor?.type === "starship" ||
+          applicabilityContext.actor?.type === "smallcraft"
+        ) {
+          currentShip = applicabilityContext.actor;
+        }
+      }
+
       // --- Automations section ---
       _refreshAutomationsSection(el, applicabilityContext);
 
@@ -396,7 +436,7 @@ export async function showDicePoolDialog(opts) {
 
       // --- Reserve Power checkbox ---
       if (injectReservePower) {
-        _injectReservePowerCheckbox(el, hasShipAssistUI);
+        _injectReservePowerCheckbox(el, hasShipAssistUI, currentShip);
       }
 
       dialog.setPosition({ height: "auto" });
@@ -416,6 +456,16 @@ export async function showDicePoolDialog(opts) {
         checkbox.addEventListener("change", () => {
           section.classList.toggle("hidden", !checkbox.checked);
           _refreshAutomationsSection(el, applicabilityContext);
+
+          // Update reserve power checkbox when ship assist changes
+          if (checkbox.checked) {
+            const shipId = el.querySelector("#starship")?.value;
+            const ship = shipId ? game.actors.get(shipId) : null;
+            _updateReservePowerCheckbox(el, ship);
+          } else {
+            _updateReservePowerCheckbox(el, null);
+          }
+
           dialog.setPosition({ height: "auto" });
         });
       }
@@ -426,6 +476,14 @@ export async function showDicePoolDialog(opts) {
         if (dropdown) {
           dropdown.addEventListener("change", () => {
             _refreshAutomationsSection(el, applicabilityContext);
+
+            // Update reserve power checkbox when ship selection changes
+            if (sel === "#starship") {
+              const shipId = dropdown.value;
+              const ship = shipId ? game.actors.get(shipId) : null;
+              _updateReservePowerCheckbox(el, ship);
+            }
+
             dialog.setPosition({ height: "auto" });
           });
         }

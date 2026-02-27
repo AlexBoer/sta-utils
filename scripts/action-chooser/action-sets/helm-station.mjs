@@ -118,6 +118,9 @@ const actions = [
       difficulty: 2,
     },
     momentumCost: 0,
+    momentumSpends: {
+      alterTrait: true,
+    },
     callback: sendActionChat,
   },
   {

@@ -614,7 +614,7 @@ function _refreshDialog(
 /*  Submit                                                             */
 /* ================================================================== */
 
-function _submitSpend(message, selections) {
+async function _submitSpend(message, selections) {
   const cost = _totalCost(selections);
   if (cost.momentum <= 0 && cost.threat <= 0) return;
 
@@ -683,15 +683,14 @@ function _submitSpend(message, selections) {
       if (cost.momentum > 0) {
         const current = _getMomentum();
         const newValue = Math.max(0, current - cost.momentum);
-        game.settings.set("sta", "momentum", newValue);
+        await game.settings.set("sta", "momentum", newValue);
       }
       if (cost.threat > 0) {
         const currentThreat = _getThreat();
-        game.settings.set("sta", "threat", currentThreat + cost.threat);
+        await game.settings.set("sta", "threat", currentThreat + cost.threat);
       }
       try {
         game.STATracker?.render(true);
-        console.log("STA TRACKER RENDERED");
       } catch (err) {
         console.warn("Failed to render STA Tracker after momentum spend", err);
       }

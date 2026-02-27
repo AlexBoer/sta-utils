@@ -11,6 +11,11 @@
         {{actionSetLabel}}
       {{/if}}
     </div>
+    {{#if isEmbedded}}
+    <button type="button" class="sta-action-chooser-popout-btn" title="{{localize "sta-utils.actionChooser.popOut"}}">
+      <i class="fas fa-external-link-alt"></i>
+    </button>
+    {{/if}}
     <div class="sta-actor-indicator {{#unless hasActor}}sta-actor-indicator--empty{{/unless}}">
       <img class="sta-actor-indicator__img" src="{{actorImg}}" alt="{{actorName}}" />
       {{#if hasActorOptions}}
@@ -44,6 +49,65 @@
     </div>
     {{/if}}
   </section>
+
+  {{!-- Ship Status (Reserve Power, Shields, Breaches) --}}
+  {{#if shipStatus}}
+  <section class="sta-ship-status">
+    <div class="sta-ship-status-row">
+      {{!-- Reserve Power Indicator --}}
+      <div class="sta-reserve-power {{#unless shipStatus.reservePower.available}}sta-reserve-power--inactive{{/unless}}">
+        <div class="sta-reserve-power__indicator">
+          {{#if shipStatus.reservePower.available}}
+            <div class="sta-reserve-power__active-bar"></div>
+            <div class="sta-reserve-power__label">Reserve Power</div>
+            {{#if shipStatus.reservePower.assigned}}
+              <div class="sta-reserve-power__system">{{shipStatus.reservePower.systemLabel}}</div>
+            {{else}}
+              <div class="sta-reserve-power__system sta-reserve-power__system--unassigned">{{shipStatus.reservePower.systemLabel}}</div>
+            {{/if}}
+          {{else}}
+            <div class="sta-reserve-power__label">No Reserve Power</div>
+          {{/if}}
+        </div>
+      </div>
+
+      {{!-- Shields Bar --}}
+      <div class="sta-shields">
+        <div class="sta-shields__header">
+          <span class="sta-shields__label">Shields</span>
+          <span class="sta-shields__value">{{shipStatus.shields.value}} / {{shipStatus.shields.max}}</span>
+        </div>
+        <div class="sta-shields__bar-container">
+          <div class="sta-shields__bar" style="width: {{shipStatus.shields.percent}}%;"></div>
+        </div>
+      </div>
+    </div>
+
+    {{!-- System Breaches --}}
+    {{#if shipStatus.hasBreaches}}
+    <div class="sta-breaches">
+      <div class="sta-breaches__header">System Breaches</div>
+      <div class="sta-breaches__list">
+        {{#each shipStatus.breaches as |breach|}}
+          <div class="sta-breach-item">
+            <span class="sta-breach-item__system">{{breach.systemLabel}}</span>
+            <span class="sta-breach-item__count">{{breach.count}}</span>
+          </div>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+  </section>
+  {{/if}}
+
+  {{!-- Common Momentum Spends Quick Reference --}}
+  <div class="sta-common-spends-row">
+    <span class="sta-common-spends-row__item">{{localize "sta-utils.actionChooser.commonSpends.extraMajor"}}</span>
+    <span class="sta-common-spends-row__sep">|</span>
+    <span class="sta-common-spends-row__item">{{localize "sta-utils.actionChooser.commonSpends.extraMinor"}}</span>
+    <span class="sta-common-spends-row__sep">|</span>
+    <span class="sta-common-spends-row__item">{{localize "sta-utils.actionChooser.commonSpends.keepInitiative"}}</span>
+  </div>
 
   {{!-- Minor Actions --}}
   {{#if hasMinorActions}}

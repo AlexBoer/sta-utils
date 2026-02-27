@@ -216,10 +216,10 @@ export async function rollTask(opts = {}) {
   const result = await showDialog(opts);
   if (!result) return null;
 
-  const { taskData, isShipAssist } = result;
+  const { taskData, isShipAssist, starship } = result;
   const actor = opts.actor ?? null;
 
-  await executeTaskRoll(taskData, { isShipAssist, actor });
+  await executeTaskRoll(taskData, { isShipAssist, actor, starship });
 
   return result;
 }
@@ -412,10 +412,11 @@ export async function showDialog(opts = {}) {
   let selectedDepartment = null;
   let selectedDepartmentValue = 0;
   let starshipName = "";
+  let starship = null;
 
   if (isShipAssist) {
     const starshipId = formData.get("starship");
-    const starship = starshipId ? game.actors.get(starshipId) : null;
+    starship = starshipId ? game.actors.get(starshipId) : null;
     selectedSystem = formData.get("system");
     selectedDepartment = formData.get("department");
     if (starship) {
@@ -453,7 +454,7 @@ export async function showDialog(opts = {}) {
   // --- Run talent automation middleware ---
   const middlewareContext = {
     actor,
-    starship: isShipAssist ? game.actors.get(formData.get("starship")) : null,
+    starship: isShipAssist ? starship : null,
     formData,
     isShipAssist,
     baseComplicationRange: calculatedComplicationRange,
@@ -461,7 +462,7 @@ export async function showDialog(opts = {}) {
 
   await runMiddleware(taskData, middlewareContext, _automationStates);
 
-  return { taskData, isShipAssist, determinationValueId };
+  return { taskData, isShipAssist, starship, determinationValueId };
 }
 
 /* ------------------------------------------------------------------ */

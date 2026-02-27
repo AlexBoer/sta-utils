@@ -1,6 +1,5 @@
 import { MODULE_ID } from "../core/constants.mjs";
 import { t } from "../core/i18n.mjs";
-import { SyncDialog } from "./sync-dialog.mjs";
 
 const FLAG_SCOPE = MODULE_ID;
 const SYNC_VERSION = 3;
@@ -27,72 +26,6 @@ export class JournalBacklinks {
     '.editor-content[data-edit="system.details.biography.value"]',
     ".journal-page-content",
   ];
-
-  /* -------------------------------------------------- */
-  /*  Settings                                          */
-  /* -------------------------------------------------- */
-
-  /** Register all settings for the journal backlinks feature. */
-  registerSettings() {
-    game.settings.register(MODULE_ID, SETTING_REBUILD_ON_SAVE, {
-      name: t("sta-utils.journalBacklinks.rebuildOnSave.name"),
-      hint: t("sta-utils.journalBacklinks.rebuildOnSave.hint"),
-      scope: "world",
-      config: true,
-      type: Boolean,
-      default: true,
-    });
-
-    game.settings.register(MODULE_ID, SETTING_HEADING_TAG, {
-      name: t("sta-utils.journalBacklinks.headingTag.name"),
-      hint: t("sta-utils.journalBacklinks.headingTag.hint"),
-      scope: "world",
-      config: true,
-      type: String,
-      default: "h2",
-    });
-
-    const permissions = Object.fromEntries(
-      Object.entries(CONST.DOCUMENT_OWNERSHIP_LEVELS).map(([k, v]) => [
-        v,
-        game.i18n.localize("OWNERSHIP." + k),
-      ]),
-    );
-
-    game.settings.register(MODULE_ID, SETTING_MIN_PERMISSION, {
-      name: t("sta-utils.journalBacklinks.minPermission.name"),
-      hint: t("sta-utils.journalBacklinks.minPermission.hint"),
-      scope: "world",
-      config: true,
-      type: Number,
-      choices: permissions,
-      default: 1,
-    });
-
-    game.settings.register(MODULE_ID, SETTING_DEBUG, {
-      name: t("sta-utils.journalBacklinks.debug.name"),
-      scope: "client",
-      config: true,
-      type: Boolean,
-      default: false,
-    });
-
-    game.settings.register(MODULE_ID, SETTING_LAST_SYNCED, {
-      name: "Journal Backlinks — last synced version",
-      scope: "world",
-      config: false,
-      type: Number,
-      default: 0,
-    });
-
-    game.settings.registerMenu(MODULE_ID, SETTING_SYNC_BUTTON, {
-      name: t("sta-utils.journalBacklinks.syncButton.name"),
-      label: t("sta-utils.journalBacklinks.syncButton.label"),
-      icon: "fas fa-sync-alt",
-      type: SyncDialog,
-      restricted: true,
-    });
-  }
 
   /* -------------------------------------------------- */
   /*  Hooks                                             */
@@ -304,13 +237,13 @@ export class JournalBacklinks {
    */
   async update(entity, entityType, content, force) {
     if (!force && !game.settings.get(MODULE_ID, SETTING_REBUILD_ON_SAVE)) {
-      this.log(
+      this.debug(
         `not updating ${entityType} ${entity.name} as rebuildOnSave is false`,
       );
       return;
     }
 
-    this.log(`updating ${entityType} ${entity.name} (${entity.uuid})`);
+    this.debug(`updating ${entityType} ${entity.name} (${entity.uuid})`);
     this.debug(`content length: ${content.length}`);
     this.debug(`content preview: ${content.substring(0, 200)}`);
 
@@ -560,7 +493,7 @@ export class JournalBacklinks {
    * @param {Document}     entityData  The document (used for logging and element lookup).
    */
   includeLinksFromRefs(html, links, entityData) {
-    this.log(`appending links to ${entityData.name}`);
+    this.debug(`appending links to ${entityData.name}`);
     this.debug(`referencedBy data: ${JSON.stringify(links)}`);
 
     // Build backlinks DOM

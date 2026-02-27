@@ -1,7 +1,9 @@
 import { MODULE_ID } from "./constants.mjs";
 import { t } from "./i18n.mjs";
 import { setPlayerAmbientAudioSelectionOnlyEnabled } from "../misc/ambient-audio-patch.mjs";
+import { SyncDialog } from "../journal-backlinks/sync-dialog.mjs";
 
+// --- Setting keys ---
 const SHOW_INFO_BUTTONS_SETTING = "showInfoButtons";
 const AMBIENT_AUDIO_SELECTION_ONLY_SETTING = "playerAmbientAudioSelectionOnly";
 const ENABLE_FATIGUE_SETTING = "enableFatigue";
@@ -10,15 +12,248 @@ const ENABLE_STYLE_ENHANCE_SETTING = "enableStyleEnhance";
 const ENABLE_TALENT_AUTOMATIONS_SETTING = "enableTalentAutomations";
 const DISABLE_TOOLTIPS_SETTING = "disableTooltips";
 const ENABLE_ACTION_CHOOSER_SETTING = "enableActionChooser";
+const ACTION_CHOOSER_AS_TAB_SETTING = "actionChooserAsTab";
 const ENABLE_MOMENTUM_SPEND_SETTING = "enableMomentumSpend";
 const AUTO_DEDUCT_MOMENTUM_SETTING = "autoDeductMomentum";
+const ENABLE_MOMENTUM_MERGER_SETTING = "enableMomentumMerger";
+const ENABLE_CHAT_HEADER_MERGE_SETTING = "enableChatHeaderMerge";
+const SETTING_TRAIT_TOKENS = "enableTraitTokens";
+const SETTING_TRAIT_DRAWINGS = "traitTokensAsDrawings";
+const SETTING_BACKLINKS_REBUILD_ON_SAVE = "backlinksRebuildOnSave";
+const SETTING_BACKLINKS_HEADING_TAG = "backlinksHeadingTag";
+const SETTING_BACKLINKS_MIN_PERMISSION = "backlinksMinPermission";
+const SETTING_BACKLINKS_DEBUG = "backlinksDebug";
+const SETTING_BACKLINKS_LAST_SYNCED = "backlinksLastSyncedVersion";
+const SETTING_BACKLINKS_SYNC_BUTTON = "backlinksSyncButton";
+
+/** Localized group labels for the settings menu. */
+const GROUP_WORLD = "sta-utils.settings.groups.world";
+const GROUP_CLIENT = "sta-utils.settings.groups.client";
 
 /**
- * Register all sta-utils game settings.
+ * Subgroup definitions — each maps its first setting key to a localization
+ * label.  The order here matches the registration order below.
+ */
+const SUBGROUPS = [
+  {
+    firstKey: ENABLE_MOMENTUM_SPEND_SETTING,
+    label: "sta-utils.settings.subgroups.dicePoolMomentum",
+  },
+  {
+    firstKey: ENABLE_ACTION_CHOOSER_SETTING,
+    label: "sta-utils.settings.subgroups.actionChooser",
+  },
+  {
+    firstKey: ENABLE_BACKLINKS_SETTING,
+    label: "sta-utils.settings.subgroups.journalBacklinks",
+  },
+  {
+    firstKey: SETTING_TRAIT_TOKENS,
+    label: "sta-utils.settings.subgroups.traitTokens",
+  },
+  {
+    firstKey: ENABLE_CHAT_HEADER_MERGE_SETTING,
+    label: "sta-utils.settings.subgroups.chatUi",
+  },
+  {
+    firstKey: ENABLE_TALENT_AUTOMATIONS_SETTING,
+    label: "sta-utils.settings.subgroups.standalone",
+  },
+];
+
+/**
+ * Register ALL sta-utils game settings in a single place.
  * Called once during the `init` hook.
+ *
+ * World (GM-only) settings are registered first, grouped by feature,
+ * followed by client (per-user) settings.
  */
 export function registerSettings() {
-  // --- World: Enable Talent Automations ---
+  // =====================================================
+  //  WORLD SETTINGS (GM Only)
+  // =====================================================
+
+  // ----- Dice Pool & Momentum -----
+
+  game.settings.register(MODULE_ID, ENABLE_MOMENTUM_SPEND_SETTING, {
+    name: t("sta-utils.settings.enableMomentumSpend.name"),
+    hint: t("sta-utils.settings.enableMomentumSpend.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, AUTO_DEDUCT_MOMENTUM_SETTING, {
+    name: t("sta-utils.settings.autoDeductMomentum.name"),
+    hint: t("sta-utils.settings.autoDeductMomentum.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, ENABLE_MOMENTUM_MERGER_SETTING, {
+    name: t("sta-utils.settings.enableMomentumMerger.name"),
+    hint: t("sta-utils.settings.enableMomentumMerger.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+    group: GROUP_WORLD,
+  });
+
+  // ----- Action Chooser -----
+
+  game.settings.register(MODULE_ID, ENABLE_ACTION_CHOOSER_SETTING, {
+    name: t("sta-utils.settings.enableActionChooser.name"),
+    hint: t("sta-utils.settings.enableActionChooser.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, ACTION_CHOOSER_AS_TAB_SETTING, {
+    name: t("sta-utils.settings.actionChooserAsTab.name"),
+    hint: t("sta-utils.settings.actionChooserAsTab.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+    group: GROUP_WORLD,
+  });
+
+  // ----- Journal Backlinks -----
+
+  game.settings.register(MODULE_ID, ENABLE_BACKLINKS_SETTING, {
+    name: t("sta-utils.settings.enableBacklinks.name"),
+    hint: t("sta-utils.settings.enableBacklinks.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, SETTING_BACKLINKS_REBUILD_ON_SAVE, {
+    name: t("sta-utils.journalBacklinks.rebuildOnSave.name"),
+    hint: t("sta-utils.journalBacklinks.rebuildOnSave.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, SETTING_BACKLINKS_HEADING_TAG, {
+    name: t("sta-utils.journalBacklinks.headingTag.name"),
+    hint: t("sta-utils.journalBacklinks.headingTag.hint"),
+    scope: "world",
+    config: true,
+    type: String,
+    default: "h2",
+    group: GROUP_WORLD,
+  });
+
+  const permissions = Object.fromEntries(
+    Object.entries(CONST.DOCUMENT_OWNERSHIP_LEVELS).map(([k, v]) => [
+      v,
+      game.i18n.localize("OWNERSHIP." + k),
+    ]),
+  );
+  game.settings.register(MODULE_ID, SETTING_BACKLINKS_MIN_PERMISSION, {
+    name: t("sta-utils.journalBacklinks.minPermission.name"),
+    hint: t("sta-utils.journalBacklinks.minPermission.hint"),
+    scope: "world",
+    config: true,
+    type: Number,
+    choices: permissions,
+    default: 1,
+    group: GROUP_WORLD,
+  });
+
+  game.settings.registerMenu(MODULE_ID, SETTING_BACKLINKS_SYNC_BUTTON, {
+    name: t("sta-utils.journalBacklinks.syncButton.name"),
+    label: t("sta-utils.journalBacklinks.syncButton.label"),
+    icon: "fas fa-sync-alt",
+    type: SyncDialog,
+    restricted: true,
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, SETTING_BACKLINKS_LAST_SYNCED, {
+    name: "Journal Backlinks — last synced version",
+    scope: "world",
+    config: false,
+    type: Number,
+    default: 0,
+  });
+
+  // ----- Trait Tokens -----
+
+  game.settings.register(MODULE_ID, SETTING_TRAIT_TOKENS, {
+    name: t("sta-utils.settings.enableTraitTokens.name"),
+    hint: t("sta-utils.settings.enableTraitTokens.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, SETTING_TRAIT_DRAWINGS, {
+    name: t("sta-utils.settings.traitTokensAsDrawings.name"),
+    hint: t("sta-utils.settings.traitTokensAsDrawings.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+    group: GROUP_WORLD,
+  });
+
+  // ----- Chat & UI -----
+
+  game.settings.register(MODULE_ID, ENABLE_CHAT_HEADER_MERGE_SETTING, {
+    name: t("sta-utils.settings.enableChatHeaderMerge.name"),
+    hint: t("sta-utils.settings.enableChatHeaderMerge.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, ENABLE_STYLE_ENHANCE_SETTING, {
+    name: t("sta-utils.settings.enableStyleEnhance.name"),
+    hint: t("sta-utils.settings.enableStyleEnhance.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    onChange: (value) => {
+      try {
+        _toggleStyleEnhance(Boolean(value));
+      } catch (err) {
+        console.error(`${MODULE_ID} | style enhance onChange failed`, err);
+      }
+    },
+    group: GROUP_WORLD,
+  });
+
+  // ----- Standalone Features -----
+
   game.settings.register(MODULE_ID, ENABLE_TALENT_AUTOMATIONS_SETTING, {
     name: t("sta-utils.settings.enableTalentAutomations.name"),
     hint: t("sta-utils.settings.enableTalentAutomations.hint"),
@@ -27,34 +262,9 @@ export function registerSettings() {
     type: Boolean,
     default: false,
     requiresReload: true,
+    group: GROUP_WORLD,
   });
 
-  // --- Client: Show Info Buttons ---
-  game.settings.register(MODULE_ID, SHOW_INFO_BUTTONS_SETTING, {
-    name: t("sta-utils.settings.showInfoButtons.name"),
-    hint: t("sta-utils.settings.showInfoButtons.hint"),
-    scope: "client",
-    config: true,
-    type: Boolean,
-    default: true,
-    onChange: () => {
-      try {
-        // Force existing STA character sheets to redraw so info buttons appear/disappear.
-        for (const app of Object.values(ui?.windows ?? {})) {
-          try {
-            if (app?.id?.startsWith?.("STACharacterSheet2e"))
-              app.render?.(true);
-          } catch (_) {
-            // sheet may have closed
-          }
-        }
-      } catch (_) {
-        // safe to fail silently
-      }
-    },
-  });
-
-  // --- World: Enable Fatigue Management ---
   game.settings.register(MODULE_ID, ENABLE_FATIGUE_SETTING, {
     name: t("sta-utils.settings.enableFatigue.name"),
     hint: t("sta-utils.settings.enableFatigue.hint"),
@@ -63,9 +273,9 @@ export function registerSettings() {
     type: Boolean,
     default: false,
     requiresReload: true,
+    group: GROUP_WORLD,
   });
 
-  // --- World: Ambient Audio Selection Only ---
   game.settings.register(MODULE_ID, AMBIENT_AUDIO_SELECTION_ONLY_SETTING, {
     name: t("sta-utils.settings.playerAmbientAudioSelectionOnly.name"),
     hint: t("sta-utils.settings.playerAmbientAudioSelectionOnly.hint"),
@@ -83,20 +293,124 @@ export function registerSettings() {
         );
       }
     },
+    group: GROUP_WORLD,
   });
 
-  // --- World: Enable Journal Backlinks ---
-  game.settings.register(MODULE_ID, ENABLE_BACKLINKS_SETTING, {
-    name: t("sta-utils.settings.enableBacklinks.name"),
-    hint: t("sta-utils.settings.enableBacklinks.hint"),
+  // ----- Trait Drawing style settings (config: false — managed via custom UI) -----
+
+  game.settings.register(MODULE_ID, "traitDrawingFontSize", {
     scope: "world",
-    config: true,
+    config: false,
+    type: Number,
+    default: 100,
+  });
+  game.settings.register(MODULE_ID, "traitDrawingFontFamily", {
+    scope: "world",
+    config: false,
+    type: String,
+    default: "Arial",
+  });
+  game.settings.register(MODULE_ID, "traitDrawingTextColor", {
+    scope: "world",
+    config: false,
+    type: String,
+    default: "#000000",
+  });
+  game.settings.register(MODULE_ID, "traitDrawingFillOpacity", {
+    scope: "world",
+    config: false,
+    type: Number,
+    default: 1,
+  });
+  game.settings.register(MODULE_ID, "traitDrawingBorderWidth", {
+    scope: "world",
+    config: false,
+    type: Number,
+    default: 0,
+  });
+  game.settings.register(MODULE_ID, "traitDrawingBorderColor", {
+    scope: "world",
+    config: false,
+    type: String,
+    default: "#000000",
+  });
+  game.settings.register(MODULE_ID, "traitDrawingBorderOpacity", {
+    scope: "world",
+    config: false,
+    type: Number,
+    default: 0,
+  });
+  game.settings.register(MODULE_ID, "traitDrawingTextStrokeColor", {
+    scope: "world",
+    config: false,
+    type: String,
+    default: "",
+  });
+  game.settings.register(MODULE_ID, "traitDrawingTextStrokeThickness", {
+    scope: "world",
+    config: false,
+    type: Number,
+    default: 0,
+  });
+  game.settings.register(MODULE_ID, "traitDrawingFontWeight", {
+    scope: "world",
+    config: false,
+    type: String,
+    default: "normal",
+  });
+  game.settings.register(MODULE_ID, "traitDrawingTextAlign", {
+    scope: "world",
+    config: false,
+    type: String,
+    default: "center",
+  });
+  game.settings.register(MODULE_ID, "traitDrawingBorderDashed", {
+    scope: "world",
+    config: false,
     type: Boolean,
     default: false,
-    requiresReload: true,
+  });
+  game.settings.register(MODULE_ID, "traitDrawingBorderDash", {
+    scope: "world",
+    config: false,
+    type: Number,
+    default: 8,
+  });
+  game.settings.register(MODULE_ID, "traitDrawingBorderGap", {
+    scope: "world",
+    config: false,
+    type: Number,
+    default: 5,
   });
 
-  // --- Client: Disable Item Tooltips ---
+  // =====================================================
+  //  CLIENT SETTINGS (per-user)
+  // =====================================================
+
+  game.settings.register(MODULE_ID, SHOW_INFO_BUTTONS_SETTING, {
+    name: t("sta-utils.settings.showInfoButtons.name"),
+    hint: t("sta-utils.settings.showInfoButtons.hint"),
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: true,
+    onChange: () => {
+      try {
+        for (const app of Object.values(ui?.windows ?? {})) {
+          try {
+            if (app?.id?.startsWith?.("STACharacterSheet2e"))
+              app.render?.(true);
+          } catch (_) {
+            // sheet may have closed
+          }
+        }
+      } catch (_) {
+        // safe to fail silently
+      }
+    },
+    group: GROUP_CLIENT,
+  });
+
   game.settings.register(MODULE_ID, DISABLE_TOOLTIPS_SETTING, {
     name: t("sta-utils.settings.disableTooltips.name"),
     hint: t("sta-utils.settings.disableTooltips.hint"),
@@ -105,148 +419,98 @@ export function registerSettings() {
     type: Boolean,
     default: false,
     requiresReload: true,
+    group: GROUP_CLIENT,
   });
 
-  // --- World: Enable Action Chooser ---
-  game.settings.register(MODULE_ID, ENABLE_ACTION_CHOOSER_SETTING, {
-    name: t("sta-utils.settings.enableActionChooser.name"),
-    hint: t("sta-utils.settings.enableActionChooser.hint"),
-    scope: "world",
+  game.settings.register(MODULE_ID, SETTING_BACKLINKS_DEBUG, {
+    name: t("sta-utils.journalBacklinks.debug.name"),
+    scope: "client",
     config: true,
     type: Boolean,
     default: false,
-    requiresReload: true,
-  });
-
-  // --- World: Enable Momentum Spend ---
-  game.settings.register(MODULE_ID, ENABLE_MOMENTUM_SPEND_SETTING, {
-    name: t("sta-utils.settings.enableMomentumSpend.name"),
-    hint: t("sta-utils.settings.enableMomentumSpend.hint"),
-    scope: "world",
-    config: true,
-    type: Boolean,
-    default: false,
-    requiresReload: true,
-  });
-
-  // --- World: Auto-deduct Momentum ---
-  game.settings.register(MODULE_ID, AUTO_DEDUCT_MOMENTUM_SETTING, {
-    name: t("sta-utils.settings.autoDeductMomentum.name"),
-    hint: t("sta-utils.settings.autoDeductMomentum.hint"),
-    scope: "world",
-    config: true,
-    type: Boolean,
-    default: true,
-  });
-
-  // --- World: Enable Style Enhancements ---
-  game.settings.register(MODULE_ID, ENABLE_STYLE_ENHANCE_SETTING, {
-    name: t("sta-utils.settings.enableStyleEnhance.name"),
-    hint: t("sta-utils.settings.enableStyleEnhance.hint"),
-    scope: "world",
-    config: true,
-    type: Boolean,
-    default: true,
-    onChange: (value) => {
-      try {
-        _toggleStyleEnhance(Boolean(value));
-      } catch (err) {
-        console.error(`${MODULE_ID} | style enhance onChange failed`, err);
-      }
-    },
+    group: GROUP_CLIENT,
   });
 }
 
-/**
- * Check whether the "Show Info Buttons" client setting is enabled.
- * @returns {boolean}
- */
+/* ------------------------------------------------------------------ */
+/*  Getter helpers                                                    */
+/* ------------------------------------------------------------------ */
+
+/** @returns {boolean} */
 export function shouldShowInfoButtons() {
   try {
     return Boolean(game.settings.get(MODULE_ID, SHOW_INFO_BUTTONS_SETTING));
   } catch (_) {
-    return true; // default to true
+    return true;
   }
 }
 
-/**
- * Check whether the "Enable Fatigue Management" world setting is enabled.
- * @returns {boolean}
- */
+/** @returns {boolean} */
 export function isFatigueEnabled() {
   try {
     return Boolean(game.settings.get(MODULE_ID, ENABLE_FATIGUE_SETTING));
   } catch (_) {
-    return false; // default to false
+    return false;
   }
 }
 
-/**
- * Check whether the "Enable Journal Backlinks" world setting is enabled.
- * @returns {boolean}
- */
+/** @returns {boolean} */
 export function isBacklinksEnabled() {
   try {
     return Boolean(game.settings.get(MODULE_ID, ENABLE_BACKLINKS_SETTING));
   } catch (_) {
-    return false; // default to false
+    return false;
   }
 }
 
-/**
- * Check whether the "Enable Style Enhancements" world setting is enabled.
- * @returns {boolean}
- */
+/** @returns {boolean} */
 export function isStyleEnhanceEnabled() {
   try {
     return Boolean(game.settings.get(MODULE_ID, ENABLE_STYLE_ENHANCE_SETTING));
   } catch (_) {
-    return true; // default to true
+    return true;
   }
 }
 
-/**
- * Check whether the "Enable Talent Automations" world setting is enabled.
- * @returns {boolean}
- */
+/** @returns {boolean} */
 export function isTalentAutomationsEnabled() {
   try {
     return Boolean(
       game.settings.get(MODULE_ID, ENABLE_TALENT_AUTOMATIONS_SETTING),
     );
   } catch (_) {
-    return false; // default to false
+    return false;
   }
 }
 
-/**
- * Check whether the "Enable Action Chooser" world setting is enabled.
- * @returns {boolean}
- */
+/** @returns {boolean} */
 export function isActionChooserEnabled() {
   try {
     return Boolean(game.settings.get(MODULE_ID, ENABLE_ACTION_CHOOSER_SETTING));
   } catch (_) {
-    return false; // default to false
+    return false;
   }
 }
 
-/**
- * Check whether the "Disable Item Tooltips" client setting is enabled.
- * @returns {boolean}
- */
+/** @returns {boolean} */
+export function isActionChooserAsTabEnabled() {
+  try {
+    return Boolean(game.settings.get(MODULE_ID, ACTION_CHOOSER_AS_TAB_SETTING));
+  } catch (_) {
+    return false;
+  }
+}
+
+/** @returns {boolean} */
 export function isTooltipsDisabled() {
   try {
     return Boolean(game.settings.get(MODULE_ID, DISABLE_TOOLTIPS_SETTING));
   } catch (_) {
-    return false; // default to false
+    return false;
   }
 }
 
-/**
- * Check whether the "Enable Momentum Spend" world setting is enabled.
- * @returns {boolean}
- */
+/** @returns {boolean} */
 export function isMomentumSpendEnabled() {
   try {
     return Boolean(game.settings.get(MODULE_ID, ENABLE_MOMENTUM_SPEND_SETTING));
@@ -255,17 +519,220 @@ export function isMomentumSpendEnabled() {
   }
 }
 
-/**
- * Check whether the "Auto-deduct Momentum" world setting is enabled.
- * @returns {boolean}
- */
+/** @returns {boolean} */
 export function isAutoDeductMomentumEnabled() {
   try {
     return Boolean(game.settings.get(MODULE_ID, AUTO_DEDUCT_MOMENTUM_SETTING));
   } catch (_) {
-    return true; // default to true
+    return true;
   }
 }
+
+/** @returns {boolean} */
+export function isChatHeaderMergeEnabled() {
+  try {
+    return Boolean(
+      game.settings.get(MODULE_ID, ENABLE_CHAT_HEADER_MERGE_SETTING),
+    );
+  } catch (_) {
+    return false;
+  }
+}
+
+/** @returns {boolean} */
+export function isMomentumMergerEnabled() {
+  try {
+    return Boolean(
+      game.settings.get(MODULE_ID, ENABLE_MOMENTUM_MERGER_SETTING),
+    );
+  } catch (_) {
+    return false;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Settings group headers (renderSettingsConfig hook)                 */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Parent → child dependency map.  When a parent toggle is off, its
+ * children are visually disabled in the settings panel.
+ */
+const SETTING_DEPENDENCIES = [
+  {
+    parent: ENABLE_MOMENTUM_SPEND_SETTING,
+    children: [AUTO_DEDUCT_MOMENTUM_SETTING, ENABLE_MOMENTUM_MERGER_SETTING],
+  },
+  {
+    parent: ENABLE_ACTION_CHOOSER_SETTING,
+    children: [ACTION_CHOOSER_AS_TAB_SETTING],
+  },
+  {
+    parent: ENABLE_BACKLINKS_SETTING,
+    children: [
+      SETTING_BACKLINKS_REBUILD_ON_SAVE,
+      SETTING_BACKLINKS_HEADING_TAG,
+      SETTING_BACKLINKS_MIN_PERMISSION,
+      SETTING_BACKLINKS_SYNC_BUTTON,
+      SETTING_BACKLINKS_DEBUG,
+    ],
+  },
+  {
+    parent: SETTING_TRAIT_TOKENS,
+    children: [SETTING_TRAIT_DRAWINGS],
+  },
+];
+
+/**
+ * Install a hook that injects group and subgroup headers into the
+ * module's settings panel.
+ */
+export function installSettingsHeaderHook() {
+  Hooks.on("renderSettingsConfig", (_app, html) => {
+    const tab =
+      html.querySelector?.(`section[data-category="${MODULE_ID}"]`) ??
+      html[0]?.querySelector?.(`section[data-category="${MODULE_ID}"]`);
+    if (!tab) return;
+
+    // Avoid double-injection if the hook fires again
+    if (tab.querySelector(".sta-utils-settings-group-header")) return;
+
+    // --- Main group headers ---
+    const formGroups = tab.querySelectorAll(".form-group");
+    if (!formGroups.length) return;
+
+    // "World Settings" header before the very first setting
+    formGroups[0].before(
+      _createGroupHeader(t("sta-utils.settings.groups.world")),
+    );
+
+    // "Client Settings" header before the first client setting
+    const clientInput = tab.querySelector(
+      `input[name="${MODULE_ID}.${SHOW_INFO_BUTTONS_SETTING}"]`,
+    );
+    const clientGroup = clientInput?.closest(".form-group");
+    if (clientGroup) {
+      clientGroup.before(
+        _createGroupHeader(t("sta-utils.settings.groups.client")),
+      );
+    }
+
+    // --- Subgroup headers ---
+    for (const { firstKey, label } of SUBGROUPS) {
+      // Regular settings have an input with name="MODULE_ID.key"
+      let anchor = tab.querySelector(`input[name="${MODULE_ID}.${firstKey}"]`);
+      // Menu buttons use data-key="MODULE_ID.key"
+      if (!anchor) {
+        anchor = tab.querySelector(
+          `button[data-key="${MODULE_ID}.${firstKey}"]`,
+        );
+      }
+      const fg = anchor?.closest(".form-group");
+      if (fg) {
+        fg.before(_createSubgroupHeader(t(label)));
+      }
+    }
+
+    // --- Dependency enforcement ---
+    _enforceDependencies(tab);
+  });
+}
+
+/**
+ * For each dependency pair, disable children when the parent is off and
+ * add a live change listener so toggling the parent immediately updates them.
+ * @param {HTMLElement} tab  The module's settings tab element.
+ */
+function _enforceDependencies(tab) {
+  for (const { parent, children } of SETTING_DEPENDENCIES) {
+    const parentInput = tab.querySelector(
+      `input[name="${MODULE_ID}.${parent}"]`,
+    );
+    if (!parentInput) continue;
+
+    const childGroups = children
+      .map((key) => _findSettingFormGroup(tab, key))
+      .filter(Boolean);
+
+    /** Set disabled state on all child form-groups. */
+    const sync = () => {
+      const enabled = parentInput.checked;
+      for (const fg of childGroups) {
+        _setFormGroupDisabled(fg, !enabled);
+      }
+    };
+
+    // Initial state
+    sync();
+
+    // Live toggle
+    parentInput.addEventListener("change", sync);
+  }
+}
+
+/**
+ * Find the `.form-group` for a setting or menu by key.
+ * @param {HTMLElement} tab
+ * @param {string} key  Setting key (without namespace).
+ * @returns {HTMLElement|null}
+ */
+function _findSettingFormGroup(tab, key) {
+  // Regular setting — input with name="MODULE_ID.key"
+  const input = tab.querySelector(`input[name="${MODULE_ID}.${key}"]`);
+  if (input) return input.closest(".form-group");
+  // Select / other form controls
+  const select = tab.querySelector(`select[name="${MODULE_ID}.${key}"]`);
+  if (select) return select.closest(".form-group");
+  // Menu button — button[data-key="MODULE_ID.key"]
+  const btn = tab.querySelector(`button[data-key="${MODULE_ID}.${key}"]`);
+  if (btn) return btn.closest(".form-group");
+  return null;
+}
+
+/**
+ * Visually enable or disable a form-group and all interactive elements
+ * inside it.
+ * @param {HTMLElement} fg       The `.form-group` element.
+ * @param {boolean}     disabled Whether to disable.
+ */
+function _setFormGroupDisabled(fg, disabled) {
+  fg.classList.toggle("sta-utils-disabled", disabled);
+  for (const el of fg.querySelectorAll("input, select, button, textarea")) {
+    el.disabled = disabled;
+  }
+}
+
+/**
+ * Create a styled header element for a top-level settings group.
+ * @param {string} label
+ * @returns {HTMLElement}
+ */
+function _createGroupHeader(label) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "form-group sta-utils-settings-group-header";
+  const h3 = document.createElement("h3");
+  h3.textContent = label;
+  wrapper.appendChild(h3);
+  return wrapper;
+}
+
+/**
+ * Create a styled subheader element for a settings subgroup.
+ * @param {string} label
+ * @returns {HTMLElement}
+ */
+function _createSubgroupHeader(label) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "form-group sta-utils-settings-subgroup-header";
+  const h4 = document.createElement("h4");
+  h4.textContent = label;
+  wrapper.appendChild(h4);
+  return wrapper;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Style enhance toggle                                              */
+/* ------------------------------------------------------------------ */
 
 const STYLE_ENHANCE_LINK_ID = "sta-utils-style-enhance";
 

@@ -117,6 +117,9 @@ const actions = [
       difficulty: 2,
     },
     momentumCost: 0,
+    momentumSpends: {
+      alterTrait: true,
+    },
     callback: sendActionChat,
   },
   {
@@ -174,6 +177,10 @@ const actions = [
       shipAssist: { system: "sensors", department: "science" },
     },
     momentumCost: 0,
+    momentumSpends: {
+      obtainInformation: true,
+      extraMajorAction: true,
+    },
     callback: sendActionChat,
   },
   {
@@ -210,6 +217,10 @@ const actions = [
       shipAssist: { system: "sensors", department: "science" },
     },
     momentumCost: 0,
+    momentumSpends: {
+      alterTrait: true,
+      obtainInformation: true,
+    },
     callback: sendActionChat,
   },
 ];

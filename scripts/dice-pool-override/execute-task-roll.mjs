@@ -129,9 +129,10 @@ export async function runMiddleware(
  *   provided, the preCreateChatMessage hook stamps the resulting chat
  *   message with the correct speaker so that portrait modules (e.g.
  *   Character Chat Selector) display the right character.
+ * @param {Actor}   [opts.starship]   - The starship being used (for ship assist or if actor is a ship)
  * @returns {Promise<void>}
  */
-export async function executeTaskRoll(taskData, { isShipAssist, actor }) {
+export async function executeTaskRoll(taskData, { isShipAssist, actor, starship }) {
   const STARoll = window.STARoll;
   const staRoll = new STARoll();
 
@@ -181,6 +182,26 @@ export async function executeTaskRoll(taskData, { isShipAssist, actor }) {
     }
   } else {
     await staRoll.rollTask(taskData);
+  }
+
+  /* ---- Consume Reserve Power ---- */
+  // After successfully executing the roll, if reserve power was used,
+  // set the ship's system.reservepower to false.
+  if (taskData.usingReservePower) {
+    const shipToUpdate = isShipAssist 
+      ? starship 
+      : (actor?.type === "starship" || actor?.type === "smallcraft" ? actor : null);
+    
+    if (shipToUpdate && shipToUpdate.system?.reservepower) {
+      try {
+        await shipToUpdate.update({ "system.reservepower": false });
+      } catch (err) {
+        console.warn(
+          `${MODULE_ID} | Failed to consume reserve power on ${shipToUpdate.name}:`,
+          err,
+        );
+      }
+    }
   }
 }
 

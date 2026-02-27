@@ -484,7 +484,7 @@ async function _overriddenAttributeTest(event, _original) {
   /* ================================================================ */
 
   /* ---- Execute roll (delegates to shared execute-task-roll module) ---- */
-  await executeTaskRoll(taskData, { isShipAssist, actor: speaker });
+  await executeTaskRoll(taskData, { isShipAssist, actor: speaker, starship });
 
   /* ---- Post-roll: record positive value use via sta-officers-log ---- */
   if (determinationValueId && game.modules.get("sta-officers-log")?.active) {

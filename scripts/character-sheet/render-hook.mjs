@@ -10,7 +10,11 @@
 import { installDicePoolFatigueNotice } from "../fatigue/dice-pool-fatigue-notice.mjs";
 import { installDicePoolBroadcast } from "../dice-pool-monitor/dice-pool-broadcast.mjs";
 import { installFatiguedAttributeDisplay } from "../fatigue/fatigued-attribute-display.mjs";
-import { isFatigueEnabled, isActionChooserEnabled } from "../core/settings.mjs";
+import {
+  isFatigueEnabled,
+  isActionChooserEnabled,
+  isActionChooserAsTabEnabled,
+} from "../core/settings.mjs";
 import {
   installStressInfoButton,
   installDeterminationInfoButton,
@@ -154,10 +158,18 @@ function handleCharacterSheetRender(app, root) {
   }
 
   if (isActionChooserEnabled()) {
-    try {
-      installActionChooserButton(root, actor);
-    } catch (_) {
-      // ignore
+    if (isActionChooserAsTabEnabled()) {
+      try {
+        installActionChooserTab(app, root, actor);
+      } catch (_) {
+        // ignore
+      }
+    } else {
+      try {
+        installActionChooserButton(root, actor);
+      } catch (_) {
+        // ignore
+      }
     }
   }
 }
@@ -189,6 +201,78 @@ function installActionChooserButton(root, actor) {
   });
 
   buttonsDiv.appendChild(btn);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Handler: Action Chooser Tab (Embedded)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Inject the action chooser as a tab on the character sheet.
+ * Uses the proper Foundry v13 ApplicationV2 pipeline: an EmbeddedActionChooserApp
+ * renders frameless into a container div inside the tab pane. Foundry's render
+ * pipeline manages the DOM, so switching action sets never blanks the tab.
+ *
+ * When embedded, the actor is locked (no actor dropdown) but ship selection
+ * remains available.
+ *
+ * @param {Application} sheetApp - The character sheet ApplicationV2 instance.
+ * @param {HTMLElement} root - The root element of the character sheet.
+ * @param {Actor} actor - The actor associated with this character sheet.
+ */
+async function installActionChooserTab(sheetApp, root, actor) {
+  const tabNav = root?.querySelector?.(".sheet-tabs.tabs");
+  const sheetBody = root?.querySelector?.(".sheet-body");
+  if (!tabNav || !sheetBody) return;
+
+  // Add the tab header if not already present
+  let tabLink = tabNav.querySelector('[data-tab="actions"]');
+  if (!tabLink) {
+    tabLink = document.createElement("a");
+    tabLink.className = "item";
+    tabLink.dataset.group = "primary";
+    tabLink.dataset.action = "tab";
+    tabLink.dataset.tab = "actions";
+    tabLink.textContent = t("sta-utils.actionChooser.tabLabel");
+    tabNav.appendChild(tabLink);
+  }
+
+  // Add the tab pane if not already present
+  let tabPane = sheetBody.querySelector('[data-tab="actions"][name="actions"]');
+  if (!tabPane) {
+    tabPane = document.createElement("div");
+    tabPane.className = "tab";
+    tabPane.dataset.group = "primary";
+    tabPane.dataset.tab = "actions";
+    tabPane.setAttribute("name", "actions");
+    // The EmbeddedActionChooserApp will insert its own <section> element here
+    sheetBody.appendChild(tabPane);
+  }
+
+  // Check if "actions" was the active tab — Foundry stores this in the sheet's
+  // tabGroups map. Since our tab is injected after Foundry's render pass, it
+  // won't have been activated automatically. We need to manually sync.
+  const activeGroup = sheetApp?.tabGroups?.primary;
+  if (activeGroup === "actions") {
+    // Mark the tab link active
+    tabNav
+      .querySelectorAll('.item[data-group="primary"]')
+      .forEach((link) =>
+        link.classList.toggle("active", link.dataset.tab === "actions"),
+      );
+    // Deactivate all sibling panes, activate ours
+    sheetBody
+      .querySelectorAll('.tab[data-group="primary"]')
+      .forEach((p) => p.classList.remove("active"));
+    tabPane.classList.add("active");
+  }
+
+  // Render the embedded action chooser into the tab pane
+  try {
+    await actionChooser.renderEmbed(tabPane, actor);
+  } catch (err) {
+    console.error("sta-utils | Failed to render embedded action chooser", err);
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

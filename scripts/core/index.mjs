@@ -5,11 +5,14 @@ export { t, tf } from "./i18n.mjs";
 export { registerMigrationSetting, runMigrations } from "./migration.mjs";
 export {
   registerSettings,
+  installSettingsHeaderHook,
   shouldShowInfoButtons,
   isFatigueEnabled,
   isBacklinksEnabled,
   isTalentAutomationsEnabled,
   isMomentumSpendEnabled,
+  isMomentumMergerEnabled,
+  isChatHeaderMergeEnabled,
   isAutoDeductMomentumEnabled,
   isTooltipsDisabled,
 } from "./settings.mjs";

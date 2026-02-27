@@ -1,0 +1,161 @@
+<ol class="chat-log plain themed theme-light"><li class="chat-message message flexcol " data-message-id="FAZEMJRwufcmoBHz" style="border-color: rgb(101, 76, 6);">
+    <header class="message-header flexrow chat-portrait-message-header-generic"><img src="icons/svg/mystery-man.svg" width="36" height="36" class="chat-portrait-message-portrait-generic" style="border: 3px solid rgb(101, 76, 6); border-radius: 50%;">
+        <h4 class="message-sender chat-portrait-text-size-name-generic" style="align-self: center;">Gamemaster</h4>
+        <span class="message-metadata">
+            <time class="message-timestamp">59s ago</time>
+            <a aria-label="Delete" class="message-delete" data-action="deleteMessage">
+                <i class="fa-solid fa-trash" inert=""></i>
+            </a>
+        </span>
+
+
+    </header>
+    <div class="message-content"><h4 class="chat-portrait-text-content-name-generic chat-portrait-flexrow"></h4>
+        <div class="chatcard tracker">
+              <div class="heading">
+              </div>
+              <div class="momentumtext">Added 2 momentum to the pool. </div>
+              <div class="threattext"></div>
+            </div>
+    </div>
+</li><li class="chat-message message flexcol " data-message-id="bhVRjsBVMOrddgBT" style="border-color: rgb(101, 76, 6);">
+    <header class="message-header flexrow chat-portrait-message-header-generic"><img src="icons/svg/mystery-man.svg" width="36" height="36" class="chat-portrait-message-portrait-generic" style="border: 3px solid rgb(101, 76, 6); border-radius: 50%;">
+        <h4 class="message-sender chat-portrait-text-size-name-generic" style="align-self: center;">Gamemaster</h4>
+        <span class="message-metadata">
+            <time class="message-timestamp">49s ago</time>
+            <a aria-label="Delete" class="message-delete" data-action="deleteMessage">
+                <i class="fa-solid fa-trash" inert=""></i>
+            </a>
+        </span>
+
+
+    </header>
+    <div class="message-content"><h4 class="chat-portrait-text-content-name-generic chat-portrait-flexrow"></h4>
+        <div class="chatcard tracker">
+              <div class="heading">
+              </div>
+              <div class="momentumtext"></div>
+              <div class="threattext">Added 2 threat to the pool.</div>
+            </div>
+    </div>
+</li><li class="chat-message message flexcol " data-message-id="gbcVS0DTQmSL4UtL" style="border-color: rgb(101, 76, 6);">
+    <header class="message-header flexrow chat-portrait-message-header-generic"><img src="icons/svg/mystery-man.svg" width="36" height="36" class="chat-portrait-message-portrait-generic" style="border: 3px solid rgb(101, 76, 6); border-radius: 50%;">
+        <h4 class="message-sender chat-portrait-text-size-name-generic" style="align-self: center;">Gamemaster</h4>
+        <span class="message-metadata">
+            <time class="message-timestamp">46s ago</time>
+            <a aria-label="Delete" class="message-delete" data-action="deleteMessage">
+                <i class="fa-solid fa-trash" inert=""></i>
+            </a>
+        </span>
+
+
+    </header>
+    <div class="message-content"><h4 class="chat-portrait-text-content-name-generic chat-portrait-flexrow"></h4>
+        <div class="chatcard tracker">
+              <div class="heading">
+              </div>
+              <div class="momentumtext">Added 2 momentum to the pool. </div>
+              <div class="threattext">Added 1 threat to the pool.</div>
+            </div>
+    </div>
+</li><li class="chat-message message flexcol " data-message-id="fLKOUH3AZdyeyVrV" style="border-color: rgb(101, 76, 6);">
+    <header class="message-header flexrow chat-portrait-message-header-generic"><img src="icons/svg/mystery-man.svg" width="36" height="36" class="chat-portrait-message-portrait-generic" style="border: 3px solid rgb(101, 76, 6); border-radius: 50%;">
+        <h4 class="message-sender chat-portrait-text-size-name-generic" style="align-self: center;">Gamemaster</h4>
+        <span class="message-metadata">
+            <time class="message-timestamp">42s ago</time>
+            <a aria-label="Delete" class="message-delete" data-action="deleteMessage">
+                <i class="fa-solid fa-trash" inert=""></i>
+            </a>
+        </span>
+
+
+    </header>
+    <div class="message-content"><h4 class="chat-portrait-text-content-name-generic chat-portrait-flexrow"></h4>
+        <div class="chatcard tracker">
+              <div class="heading">
+              </div>
+              <div class="momentumtext">Removed 1 momentum from the pool. </div>
+              <div class="threattext"></div>
+            </div>
+    </div>
+</li><li class="chat-message message flexcol " data-message-id="G34kFy9FIQrdWPjq" style="border-color: rgb(101, 76, 6);">
+    <header class="message-header flexrow chat-portrait-message-header-generic"><img src="icons/svg/mystery-man.svg" width="36" height="36" class="chat-portrait-message-portrait-generic" style="border: 3px solid rgb(101, 76, 6); border-radius: 50%;">
+        <h4 class="message-sender chat-portrait-text-size-name-generic" style="align-self: center;">Gamemaster</h4>
+        <span class="message-metadata">
+            <time class="message-timestamp">40s ago</time>
+            <a aria-label="Delete" class="message-delete" data-action="deleteMessage">
+                <i class="fa-solid fa-trash" inert=""></i>
+            </a>
+        </span>
+
+
+    </header>
+    <div class="message-content"><h4 class="chat-portrait-text-content-name-generic chat-portrait-flexrow"></h4>
+        <div class="chatcard tracker">
+              <div class="heading">
+              </div>
+              <div class="momentumtext"></div>
+              <div class="threattext">Removed 1 threat from the pool.</div>
+            </div>
+    </div>
+</li><li class="chat-message message flexcol " data-message-id="JKVfSZtllMAd9Wl0" style="border-color: rgb(101, 76, 6);">
+    <header class="message-header flexrow chat-portrait-message-header-generic"><img src="icons/svg/mystery-man.svg" width="36" height="36" class="chat-portrait-message-portrait-generic" style="border: 3px solid rgb(101, 76, 6); border-radius: 50%;">
+        <h4 class="message-sender chat-portrait-text-size-name-generic" style="align-self: center;">Gamemaster</h4>
+        <span class="message-metadata">
+            <time class="message-timestamp">37s ago</time>
+            <a aria-label="Delete" class="message-delete" data-action="deleteMessage">
+                <i class="fa-solid fa-trash" inert=""></i>
+            </a>
+        </span>
+
+
+    </header>
+    <div class="message-content"><h4 class="chat-portrait-text-content-name-generic chat-portrait-flexrow"></h4>
+        <div class="chatcard tracker">
+              <div class="heading">
+              </div>
+              <div class="momentumtext">Removed 2 momentum from the pool. </div>
+              <div class="threattext">Removed 2 threat from the pool.</div>
+            </div>
+    </div>
+</li><li class="chat-message message flexcol " data-message-id="eKBBXExDvsLuEOrY" style="border-color: rgb(101, 76, 6);">
+    <header class="message-header flexrow chat-portrait-message-header-generic"><img src="icons/svg/mystery-man.svg" width="36" height="36" class="chat-portrait-message-portrait-generic" style="border: 3px solid rgb(101, 76, 6); border-radius: 50%;">
+        <h4 class="message-sender chat-portrait-text-size-name-generic" style="align-self: center;">Gamemaster</h4>
+        <span class="message-metadata">
+            <time class="message-timestamp">33s ago</time>
+            <a aria-label="Delete" class="message-delete" data-action="deleteMessage">
+                <i class="fa-solid fa-trash" inert=""></i>
+            </a>
+        </span>
+
+
+    </header>
+    <div class="message-content"><h4 class="chat-portrait-text-content-name-generic chat-portrait-flexrow"></h4>
+        <div class="chatcard tracker">
+              <div class="heading">
+              </div>
+              <div class="momentumtext">Removed 1 momentum from the pool. </div>
+              <div class="threattext">Added 2 threat to the pool.</div>
+            </div>
+    </div>
+</li><li class="chat-message message flexcol " data-message-id="R7FxSOupedGgdXJZ" style="border-color: rgb(101, 76, 6);">
+    <header class="message-header flexrow chat-portrait-message-header-generic"><img src="icons/svg/mystery-man.svg" width="36" height="36" class="chat-portrait-message-portrait-generic" style="border: 3px solid rgb(101, 76, 6); border-radius: 50%;">
+        <h4 class="message-sender chat-portrait-text-size-name-generic" style="align-self: center;">Gamemaster</h4>
+        <span class="message-metadata">
+            <time class="message-timestamp">27s ago</time>
+            <a aria-label="Delete" class="message-delete" data-action="deleteMessage">
+                <i class="fa-solid fa-trash" inert=""></i>
+            </a>
+        </span>
+
+
+    </header>
+    <div class="message-content"><h4 class="chat-portrait-text-content-name-generic chat-portrait-flexrow"></h4>
+        <div class="chatcard tracker">
+              <div class="heading">
+              </div>
+              <div class="momentumtext">Added 3 momentum to the pool. </div>
+              <div class="threattext">Removed 3 threat from the pool.</div>
+            </div>
+    </div>
+</li></ol>

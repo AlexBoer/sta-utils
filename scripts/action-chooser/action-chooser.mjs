@@ -6,6 +6,23 @@ import {
   executeTaskRoll,
   runMiddleware,
 } from "../dice-pool-override/execute-task-roll.mjs";
+import {
+  COMMON_SPENDS,
+  PERSONAL_CONFLICT_SPENDS,
+  STARSHIP_COMBAT_SPENDS,
+} from "../momentum-spend/momentum-spend-data.mjs";
+
+/**
+ * Flat lookup of all momentum-spend definitions keyed by spend ID.
+ * @type {Map<string, import('../momentum-spend/momentum-spend-data.mjs').MomentumSpendOption>}
+ */
+const MOMENTUM_SPEND_LOOKUP = new Map(
+  [
+    ...COMMON_SPENDS,
+    ...PERSONAL_CONFLICT_SPENDS,
+    ...STARSHIP_COMBAT_SPENDS,
+  ].map((s) => [s.id, s]),
+);
 
 const BaseApp = foundry.applications.api.HandlebarsApplicationMixin(
   foundry.applications.api.ApplicationV2,
@@ -31,6 +48,48 @@ const actionSetRegistry = new Map();
 let _pendingMomentumTab = null;
 
 /**
+ * Tracks the actor performing the current action so that all chat messages
+ * created during the flow (weapon cards, rolls, announcements) receive a
+ * proper `speaker` matching the character — not the logged-in user.
+ *
+ * Set at the top of `_handleAction` / `sendActionChat` and cleared in the
+ * corresponding `finally` block.  A safety timer also clears it after 15 s
+ * in case un-awaited `sendToChat()` calls from the STA system fire late.
+ * @type {Actor|null}
+ */
+let _pendingActionActor = null;
+let _pendingActionActorTimer = null;
+
+/**
+ * Set the pending action actor and start a safety-clear timer.
+ * The preCreateChatMessage hook reads this to stamp the speaker.
+ * @param {Actor|null} actor
+ */
+function _setActionActor(actor) {
+  _pendingActionActor = actor;
+  if (_pendingActionActorTimer) clearTimeout(_pendingActionActorTimer);
+  if (actor) {
+    _pendingActionActorTimer = setTimeout(() => {
+      _pendingActionActor = null;
+      _pendingActionActorTimer = null;
+    }, 15_000);
+  } else {
+    _pendingActionActorTimer = null;
+  }
+}
+
+/**
+ * Clear the pending action actor (called in finally blocks).
+ */
+function _clearActionActor() {
+  _pendingActionActor = null;
+  if (_pendingActionActorTimer) {
+    clearTimeout(_pendingActionActorTimer);
+    _pendingActionActorTimer = null;
+  }
+}
+
+/**
  * Map an action-set ID to the momentum-spend tab that should open by default.
  * @param {string} setId  The action-set ID (e.g. "personal-conflict").
  * @returns {string} One of "common", "personalConflict", "starshipCombat".
@@ -41,8 +100,10 @@ function _actionSetToMomentumTab(setId) {
   return "starshipCombat";
 }
 
-// Stamp every chat message created while _pendingMomentumTab is set.
+// Stamp every chat message created while _pendingMomentumTab or
+// _pendingActionActor is set.
 Hooks.on("preCreateChatMessage", (doc) => {
+  // --- Momentum-spend tab flag ---
   if (_pendingMomentumTab) {
     doc.updateSource({
       flags: {
@@ -52,10 +113,62 @@ Hooks.on("preCreateChatMessage", (doc) => {
       },
     });
   }
+
+  // --- Speaker stamp ---
+  // If an action is in progress and the message has no speaker, inject one
+  // so weapon cards, rolls, and announcements all show the character.
+  if (_pendingActionActor) {
+    const speaker = doc.speaker;
+    if (!speaker?.actor && !speaker?.alias) {
+      const actor = _pendingActionActor;
+      let tokenId = null;
+      if (canvas?.ready && canvas.scene) {
+        const token =
+          canvas.tokens?.controlled?.find(
+            (t) => t.document?.actorId === actor.id,
+          )?.document ??
+          canvas.scene.tokens?.find((t) => t.actorId === actor.id);
+        if (token) tokenId = token.id;
+      }
+      doc.updateSource({
+        speaker: {
+          actor: actor.id,
+          alias: actor.name,
+          scene: game.scenes?.current?.id ?? null,
+          token: tokenId,
+        },
+      });
+    }
+  }
 });
 
 function registerActionSet(id, importFn) {
   actionSetRegistry.set(id, importFn);
+}
+
+/**
+ * Wait for the next chat message to be committed to `game.messages`.
+ *
+ * The STA system's `sendToChat()` calls `ChatMessage.create()` **without
+ * await**, so the returned Promise from `performWeaponRoll2e` /
+ * `rollTask` resolves before the message is actually saved.  This helper
+ * listens for the `createChatMessage` hook and resolves once the message
+ * exists, ensuring sequential ordering for header-merge comparisons.
+ *
+ * @param {number} [timeout=5000] Safety timeout in ms.
+ * @returns {Promise<void>}
+ */
+function _waitForChatMessage(timeout = 5000) {
+  return new Promise((resolve) => {
+    const hookId = Hooks.on("createChatMessage", () => {
+      Hooks.off("createChatMessage", hookId);
+      resolve();
+    });
+    setTimeout(() => {
+      Hooks.off("createChatMessage", hookId);
+      resolve();
+    }, timeout);
+  });
 }
 
 async function loadActionSet(id) {
@@ -101,10 +214,13 @@ class ActionChooserApp extends BaseApp {
     super(options);
     this.actionSet = actionSet;
     this._preferredActor = options.actor ?? null;
+    this._embedded = options.embedded ?? false;
     this.selectedActor = this._resolveActor();
     this.selectedStarship = actionSet.showStarship
       ? this._resolveStarship()
       : null;
+    this._actorUpdateHookId = null;
+    this._savedActiveActions = null; // Track active action tabs during re-renders
   }
 
   static DEFAULT_OPTIONS = {
@@ -116,6 +232,17 @@ class ActionChooserApp extends BaseApp {
     position: { width: 520, height: "auto" },
     resizable: true,
   };
+
+  /**
+   * Generate a unique application ID per actor so multiple windowed instances
+   * can coexist (one per character).
+   */
+  _initializeApplicationOptions(options) {
+    const merged = super._initializeApplicationOptions(options);
+    const actorId = options.actor?.id ?? "shared";
+    merged.uniqueId = `${MODULE_ID}-action-chooser-${actorId}-${foundry.utils.randomID()}`;
+    return merged;
+  }
 
   static PARTS = {
     main: {
@@ -152,11 +279,15 @@ class ActionChooserApp extends BaseApp {
             difficulty: action.roll.difficulty,
           });
         }
-        localized.rollInfo = tf("sta-utils.actionChooser.rollInfo", {
-          attribute: attrLabel,
-          discipline: discLabel,
-          difficulty: difficultyText,
-        });
+        if (difficultyText) {
+          localized.rollInfo = tf("sta-utils.actionChooser.rollInfo", {
+            attribute: attrLabel,
+            discipline: discLabel,
+            difficulty: difficultyText,
+          });
+        } else {
+          localized.rollInfo = `${attrLabel} + ${discLabel}`;
+        }
       } else if (action.roll) {
         localized.rollInfo = t("sta-utils.actionChooser.rollInfoVaries");
       }
@@ -196,7 +327,7 @@ class ActionChooserApp extends BaseApp {
     const starship = this.selectedStarship;
     const showStarship = !!this.actionSet?.showStarship;
 
-    const eligibleActors = this._getEligibleActors();
+    const eligibleActors = this._embedded ? [] : this._getEligibleActors();
     const actorOptions = eligibleActors.map((a) => ({
       id: a.id,
       name: a.name,
@@ -211,6 +342,75 @@ class ActionChooserApp extends BaseApp {
       img: s.img ?? "icons/svg/mystery-man.svg",
       selected: s.id === starship?.id,
     }));
+
+    // Extract ship status information (shields, reserve power, breaches)
+    let shipStatus = null;
+    if (showStarship && starship) {
+      const shields = starship.system?.shields ?? { value: 0, max: 0 };
+      const shieldsValue = shields.value ?? 0;
+      const shieldsMax = shields.max ?? 0;
+      const shieldsPercent =
+        shieldsMax > 0 ? Math.round((shieldsValue / shieldsMax) * 100) : 0;
+
+      // Extract reserve power information (boolean property)
+      const hasReservePowerFlag = starship.system?.reservepower ?? false;
+
+      // Get which system reserve power is assigned to from actor flag
+      // Can be null/undefined if not assigned to a specific system
+      const reservePowerSystem = starship.getFlag(
+        MODULE_ID,
+        "reservePowerSystem",
+      );
+      const hasAssignedSystem = reservePowerSystem != null;
+
+      // Reserve power is only available if the flag is true AND not assigned to a system (location is null)
+      const isReservePowerAvailable =
+        hasReservePowerFlag && reservePowerSystem == null;
+
+      // Extract breaches for each system
+      const systemNames = [
+        "communications",
+        "computers",
+        "engines",
+        "sensors",
+        "structure",
+        "weapons",
+      ];
+      const breaches = [];
+      for (const systemName of systemNames) {
+        const systemData = starship.system?.systems?.[systemName];
+        const breachCount = systemData?.breaches ?? 0;
+        if (breachCount > 0) {
+          breaches.push({
+            system: systemName,
+            systemLabel: game.i18n.localize(
+              `sta.actor.starship.system.${systemName}`,
+            ),
+            count: breachCount,
+          });
+        }
+      }
+
+      shipStatus = {
+        shields: {
+          value: shieldsValue,
+          max: shieldsMax,
+          percent: shieldsPercent,
+        },
+        reservePower: {
+          available: isReservePowerAvailable,
+          assigned: hasAssignedSystem,
+          system: reservePowerSystem,
+          systemLabel: hasAssignedSystem
+            ? game.i18n.localize(
+                `sta.actor.starship.system.${reservePowerSystem}`,
+              )
+            : "Available",
+        },
+        breaches,
+        hasBreaches: breaches.length > 0,
+      };
+    }
 
     return {
       actionSetLabel: t(this.actionSet?.label ?? ""),
@@ -234,7 +434,154 @@ class ActionChooserApp extends BaseApp {
       hasStarship: !!starship,
       starshipOptions,
       hasStarshipOptions: starshipOptions.length > 0,
+      isEmbedded: this._embedded,
+      shipStatus,
     };
+  }
+
+  /**
+   * Replace a native <select> with a searchable dropdown widget.
+   * @param {HTMLSelectElement} selectEl - The original select element
+   * @param {function(string): void} onSelect - Callback with selected value
+   */
+  _enhanceSelectWithSearch(selectEl, onSelect) {
+    // Collect options from the native select
+    const options = [];
+    let selectedLabel = "";
+    for (const opt of selectEl.options) {
+      if (opt.disabled) continue;
+      options.push({
+        value: opt.value,
+        label: opt.textContent.trim(),
+        selected: opt.selected,
+      });
+      if (opt.selected) selectedLabel = opt.textContent.trim();
+    }
+
+    // Don't bother enhancing if there are very few options
+    if (options.length <= 5) {
+      selectEl.addEventListener("change", (event) => {
+        event.preventDefault();
+        onSelect(selectEl.value);
+      });
+      return;
+    }
+
+    // Build the widget DOM
+    const wrapper = document.createElement("div");
+    wrapper.classList.add("sta-searchable-select");
+
+    const display = document.createElement("button");
+    display.type = "button";
+    display.classList.add("sta-searchable-select__display");
+    display.textContent =
+      selectedLabel || t("sta-utils.actionChooser.selectCharacter");
+
+    const dropdown = document.createElement("div");
+    dropdown.classList.add("sta-searchable-select__dropdown");
+
+    const searchInput = document.createElement("input");
+    searchInput.type = "text";
+    searchInput.classList.add("sta-searchable-select__search");
+    searchInput.placeholder = t("sta-utils.actionChooser.searchPlaceholder");
+
+    const optionsList = document.createElement("ul");
+    optionsList.classList.add("sta-searchable-select__options");
+
+    for (const opt of options) {
+      const li = document.createElement("li");
+      li.classList.add("sta-searchable-select__option");
+      if (opt.selected)
+        li.classList.add("sta-searchable-select__option--selected");
+      li.dataset.value = opt.value;
+      li.textContent = opt.label;
+      optionsList.appendChild(li);
+    }
+
+    dropdown.appendChild(searchInput);
+    dropdown.appendChild(optionsList);
+    wrapper.appendChild(display);
+    wrapper.appendChild(dropdown);
+
+    // Replace the native select
+    selectEl.replaceWith(wrapper);
+
+    // --- Interaction logic ---
+    const open = () => {
+      wrapper.classList.add("sta-searchable-select--open");
+      searchInput.value = "";
+      filterOptions("");
+      requestAnimationFrame(() => searchInput.focus());
+    };
+
+    const close = () => {
+      wrapper.classList.remove("sta-searchable-select--open");
+    };
+
+    const filterOptions = (query) => {
+      const lower = query.toLowerCase();
+      for (const li of optionsList.children) {
+        const match = !lower || li.textContent.toLowerCase().includes(lower);
+        li.classList.toggle("sta-searchable-select__option--hidden", !match);
+      }
+    };
+
+    display.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      if (wrapper.classList.contains("sta-searchable-select--open")) {
+        close();
+      } else {
+        open();
+      }
+    });
+
+    searchInput.addEventListener("input", (ev) => {
+      ev.stopPropagation();
+      filterOptions(searchInput.value);
+    });
+
+    // Prevent events from bubbling to the character sheet form
+    searchInput.addEventListener("change", (ev) => ev.stopPropagation());
+
+    optionsList.addEventListener("click", (ev) => {
+      const li = ev.target.closest(".sta-searchable-select__option");
+      if (!li) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      const value = li.dataset.value;
+      display.textContent = li.textContent;
+
+      // Update selected styling
+      for (const child of optionsList.children) {
+        child.classList.remove("sta-searchable-select__option--selected");
+      }
+      li.classList.add("sta-searchable-select__option--selected");
+
+      close();
+      onSelect(value);
+    });
+
+    // Close when clicking outside
+    document.addEventListener("click", (ev) => {
+      if (!wrapper.contains(ev.target)) close();
+    });
+
+    // Keyboard navigation
+    searchInput.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape") {
+        ev.stopPropagation();
+        close();
+      } else if (ev.key === "Enter") {
+        ev.preventDefault();
+        ev.stopPropagation();
+        // Select the first visible option
+        const firstVisible = optionsList.querySelector(
+          ".sta-searchable-select__option:not(.sta-searchable-select__option--hidden)",
+        );
+        if (firstVisible) firstVisible.click();
+      }
+    });
   }
 
   _attachPartListeners(_partId, html) {
@@ -266,12 +613,23 @@ class ActionChooserApp extends BaseApp {
         // Look up action definition while building the detail panel
         const actionDef = this.actionSet.actions.find((a) => a.id === tabId);
 
+        // Sync character sheet stats to match this action's roll
+        if (actionDef?.roll?.attribute && actionDef?.roll?.discipline) {
+          this._syncSheetStats(
+            actionDef.roll.attribute,
+            actionDef.roll.discipline,
+          );
+        }
+
         let badges = "";
         if (roll) {
-          badges += `<span class="sta-action-detail__badge">${roll}</span>`;
+          badges += `<span class="sta-action-detail__badge" data-roll-badge>${roll}</span>`;
         }
         if (momentum) {
           badges += `<span class="sta-action-detail__badge sta-action-detail__badge--momentum">${momentum}</span>`;
+        }
+        if (actionDef?.id === "fire") {
+          badges += `<span class="sta-action-detail__badge sta-action-detail__badge--threat" data-threat-badge hidden></span>`;
         }
 
         // Build weapon picker row for weapon-attack actions
@@ -281,7 +639,21 @@ class ActionChooserApp extends BaseApp {
             (i) =>
               i.type === "characterweapon" || i.type === "characterweapon2e",
           );
-          // Deduplicate by name (e.g. multiple "Unarmed Strike" entries)
+          // Sort to prefer characterweapon2e over characterweapon
+          allWeapons.sort((a, b) => {
+            if (
+              a.type === "characterweapon2e" &&
+              b.type !== "characterweapon2e"
+            )
+              return -1;
+            if (
+              a.type !== "characterweapon2e" &&
+              b.type === "characterweapon2e"
+            )
+              return 1;
+            return 0;
+          });
+          // Deduplicate by name (e.g. multiple "Unarmed Strike" entries), preferring 2e
           const seen = new Set();
           const weapons = allWeapons.filter((w) => {
             if (seen.has(w.name)) return false;
@@ -302,7 +674,10 @@ class ActionChooserApp extends BaseApp {
             weaponPickerHtml = `
               <div class="sta-action-detail__weapon-picker">
                 <label class="sta-action-detail__weapon-label" for="sta-weapon-select">${t("sta-utils.actionChooser.chooseWeapon")}</label>
-                <select id="sta-weapon-select" class="sta-action-detail__weapon-select">${opts}</select>
+                <div class="sta-action-detail__weapon-select-wrapper">
+                  <select id="sta-weapon-select" class="sta-action-detail__weapon-select">${opts}</select>
+                </div>
+                <div class="sta-weapon-info" id="sta-weapon-info"></div>
               </div>`;
           }
         } else if (actionDef?.starshipWeaponAttack && this.selectedStarship) {
@@ -318,7 +693,10 @@ class ActionChooserApp extends BaseApp {
             weaponPickerHtml = `
               <div class="sta-action-detail__weapon-picker">
                 <label class="sta-action-detail__weapon-label" for="sta-weapon-select">${t("sta-utils.actionChooser.chooseStarshipWeapon")}</label>
-                <select id="sta-weapon-select" class="sta-action-detail__weapon-select">${opts}</select>
+                <div class="sta-action-detail__weapon-select-wrapper">
+                  <select id="sta-weapon-select" class="sta-action-detail__weapon-select">${opts}</select>
+                </div>
+                <div class="sta-weapon-info" id="sta-weapon-info"></div>
               </div>`;
           }
         }
@@ -328,61 +706,439 @@ class ActionChooserApp extends BaseApp {
           ? t("sta-utils.actionChooser.sendToChat")
           : t("sta-utils.actionChooser.useAction");
 
+        // Special handling for reroute-power action
+        let footerHtml;
+        if (actionDef?.id === "reroute-power" && this.selectedStarship) {
+          const systemNames = [
+            "communications",
+            "computers",
+            "engines",
+            "sensors",
+            "structure",
+            "weapons",
+          ];
+          const currentSystem = this.selectedStarship.getFlag(
+            MODULE_ID,
+            "reservePowerSystem",
+          );
+          const systemButtons = systemNames
+            .map((sys) => {
+              const label = game.i18n.localize(
+                `sta.actor.starship.system.${sys}`,
+              );
+              const isActive =
+                currentSystem === sys ? " sta-reroute-btn--active" : "";
+              return `<button class="sta-reroute-btn${isActive}" data-system="${sys}">${label}</button>`;
+            })
+            .join("");
+          footerHtml = `
+            <div class="sta-action-detail__footer sta-action-detail__footer--reroute">
+              <div class="sta-reroute-grid">${systemButtons}</div>
+            </div>`;
+        } else {
+          footerHtml = `
+            <div class="sta-action-detail__footer">
+              <button class="sta-action-detail__btn" data-action-id="${tabId}">${buttonLabel}</button>
+            </div>`;
+        }
+
+        // Insert a container for suggested momentum spends (updated dynamically when weapon changes)
+        const momentumSpendsHtml = actionDef?.momentumSpends
+          ? `<div class="sta-momentum-spends-container" data-action-tab="${tabId}"></div>`
+          : "";
+
         detail.innerHTML = `
           <div class="sta-action-detail__name">${name}</div>
           ${badges ? `<div class="sta-action-detail__badges">${badges}</div>` : ""}
-          <p class="sta-action-detail__desc">${desc}</p>
+          <div class="sta-action-detail__desc-wrapper">${desc}</div>
+          ${momentumSpendsHtml}
           ${weaponPickerHtml}
-          <div class="sta-action-detail__footer">
-            <button class="sta-action-detail__btn" data-action-id="${tabId}">${buttonLabel}</button>
-          </div>
+          ${footerHtml}
         `;
 
-        // Attach button handler
-        const useBtn = detail.querySelector("[data-action-id]");
-        if (useBtn) {
-          useBtn.addEventListener("click", async (ev) => {
-            ev.preventDefault();
-            const action = this.actionSet.actions.find(
-              (a) => a.id === useBtn.dataset.actionId,
-            );
-            if (!action) return;
-            if (action.type === "social") {
-              await sendActionChat(this.selectedActor, action);
-            } else {
-              await this._handleAction(action, detail);
-            }
+        // Populate the momentum-spends container (no weapon context yet)
+        const spendsContainer = detail.querySelector(
+          ".sta-momentum-spends-container",
+        );
+        if (spendsContainer) {
+          spendsContainer.innerHTML = this._buildMomentumSpendsHtml(
+            actionDef,
+            null,
+          );
+        }
+
+        // Attach button handler for reroute-power
+        if (actionDef?.id === "reroute-power" && this.selectedStarship) {
+          const rerouteButtons = detail.querySelectorAll(".sta-reroute-btn");
+          rerouteButtons.forEach((btn) => {
+            btn.addEventListener("click", async (ev) => {
+              ev.preventDefault();
+              const system = btn.dataset.system;
+              await this.selectedStarship.setFlag(
+                MODULE_ID,
+                "reservePowerSystem",
+                system,
+              );
+              // Send chat message about the reroute
+              const systemLabel = game.i18n.localize(
+                `sta.actor.starship.system.${system}`,
+              );
+              await ChatMessage.create({
+                content: `<p><strong>${this.selectedStarship.name}</strong> rerouted Reserve Power to <strong>${systemLabel}</strong>.</p>`,
+                speaker: ChatMessage.getSpeaker({
+                  actor: this.selectedStarship,
+                }),
+              });
+              // Re-render to update active button state
+              this._rerender();
+            });
           });
+        } else {
+          // Standard button handler
+          const useBtn = detail.querySelector("[data-action-id]");
+          if (useBtn) {
+            useBtn.addEventListener("click", async (ev) => {
+              ev.preventDefault();
+              const action = this.actionSet.actions.find(
+                (a) => a.id === useBtn.dataset.actionId,
+              );
+              if (!action) return;
+              if (action.type === "social") {
+                await sendActionChat(this.selectedActor, action);
+              } else {
+                await this._handleAction(action, detail);
+              }
+            });
+          }
+        }
+
+        // Attach weapon info updater for character weapons
+        if (actionDef?.weaponAttack && this.selectedActor) {
+          const weaponSelect = detail.querySelector("#sta-weapon-select");
+          const weaponInfo = detail.querySelector("#sta-weapon-info");
+          const rollBadge = detail.querySelector("[data-roll-badge]");
+
+          const updateWeaponInfo = (weaponId) => {
+            if (!weaponInfo) return;
+            const weapon = this.selectedActor.items.get(weaponId);
+            if (!weapon) {
+              weaponInfo.innerHTML = "";
+              // Re-render momentum spends without weapon context
+              if (spendsContainer) {
+                spendsContainer.innerHTML = this._buildMomentumSpendsHtml(
+                  actionDef,
+                  null,
+                );
+              }
+              return;
+            }
+
+            if (actionDef?.id === "attack" && actionDef.roll) {
+              const range = weapon.system?.range?.toLowerCase();
+              const attributeKey = range === "melee" ? "daring" : "control";
+              const disciplineKey = "security";
+              actionDef.roll.attribute = attributeKey;
+              actionDef.roll.discipline = disciplineKey;
+              this._syncSheetStats(attributeKey, disciplineKey);
+
+              if (rollBadge) {
+                const attrLabel = attributeLabel(attributeKey);
+                const discLabel = disciplineLabel(disciplineKey);
+                let difficultyText = "";
+                if (actionDef.roll.difficulty === "varies") {
+                  difficultyText = t(
+                    "sta-utils.actionChooser.difficultyVaries",
+                  );
+                } else if (actionDef.roll.difficulty === "opposed") {
+                  difficultyText = t(
+                    "sta-utils.actionChooser.difficultyOpposed",
+                  );
+                } else if (actionDef.roll.difficulty != null) {
+                  difficultyText = tf("sta-utils.actionChooser.difficultyNum", {
+                    difficulty: actionDef.roll.difficulty,
+                  });
+                }
+                rollBadge.textContent = difficultyText
+                  ? tf("sta-utils.actionChooser.rollInfo", {
+                      attribute: attrLabel,
+                      discipline: discLabel,
+                      difficulty: difficultyText,
+                    })
+                  : `${attrLabel} + ${discLabel}`;
+              }
+            }
+
+            const sys = weapon.system;
+            const damage = sys?.damage ?? "—";
+            const qualitiesObj = sys?.qualities || {};
+
+            // Extract active qualities (boolean values that are true)
+            const activeQualities = Object.entries(qualitiesObj)
+              .filter(([key, value]) => {
+                // Handle boolean qualities and numeric qualities
+                if (typeof value === "boolean") return value === true;
+                if (typeof value === "number") return value > 0;
+                return false;
+              })
+              .map(([key, value]) => {
+                // Format quality names (e.g., "nonlethal" -> "Nonlethal")
+                const formatted = key
+                  .replace(/([A-Z])/g, " $1")
+                  .replace(/^./, (str) => str.toUpperCase())
+                  .trim();
+                const qualityKey = key.toLowerCase();
+                const qualityDescription = t(
+                  `sta-utils.weaponQualities.personal.${qualityKey}`,
+                  "",
+                );
+                // Add value suffix for numeric qualities
+                let displayText = formatted;
+                if (typeof value === "number" && value > 0) {
+                  displayText = `${formatted} ${value}`;
+                }
+
+                const tooltip = qualityDescription
+                  ? ` data-tooltip="${qualityDescription}"`
+                  : "";
+                return `<span${tooltip}>${displayText}</span>`;
+              });
+
+            weaponInfo.innerHTML = `
+              <div class="sta-weapon-info__row">
+                <span class="sta-weapon-info__label">Damage:</span>
+                <span class="sta-weapon-info__value">${damage}</span>
+              </div>
+              ${
+                activeQualities.length > 0
+                  ? `
+                <div class="sta-weapon-info__row">
+                  <span class="sta-weapon-info__label">Qualities:</span>
+                  <span class="sta-weapon-info__value">${activeQualities.join(", ")}</span>
+                </div>
+              `
+                  : ""
+              }
+            `;
+
+            // Update momentum spends with weapon context (character weapon)
+            if (spendsContainer) {
+              spendsContainer.innerHTML = this._buildMomentumSpendsHtml(
+                actionDef,
+                weapon,
+              );
+            }
+          };
+
+          if (weaponSelect) {
+            weaponSelect.addEventListener("change", (ev) => {
+              updateWeaponInfo(ev.target.value);
+            });
+            // Initialize with first weapon
+            if (weaponSelect.value) {
+              updateWeaponInfo(weaponSelect.value);
+            }
+          }
+        }
+
+        // Attach weapon info updater for starship weapons
+        if (actionDef?.starshipWeaponAttack && this.selectedStarship) {
+          const weaponSelect = detail.querySelector("#sta-weapon-select");
+          const weaponInfo = detail.querySelector("#sta-weapon-info");
+          const threatBadge = detail.querySelector("[data-threat-badge]");
+
+          const updateWeaponInfo = (weaponId) => {
+            if (!weaponInfo) return;
+            const weapon = this.selectedStarship.items.get(weaponId);
+            if (!weapon) {
+              weaponInfo.innerHTML = "";
+              // Re-render momentum spends without weapon context
+              if (spendsContainer) {
+                spendsContainer.innerHTML = this._buildMomentumSpendsHtml(
+                  actionDef,
+                  null,
+                );
+              }
+              return;
+            }
+
+            const sys = weapon.system;
+            const weaponType = sys?.includescale || "Unknown";
+            const baseDamage = sys?.damage ?? 0;
+            const qualitiesObj = sys?.qualities || {};
+
+            // Get ship stats for damage calculation
+            const shipScale = this.selectedStarship.system?.scale ?? 0;
+            const weaponsRating =
+              this.selectedStarship.system?.systems?.weapons?.value ?? 0;
+
+            // Calculate weapons bonus based on rating table
+            let weaponsBonus = 0;
+            if (weaponsRating >= 13) weaponsBonus = 4;
+            else if (weaponsRating >= 11) weaponsBonus = 3;
+            else if (weaponsRating >= 9) weaponsBonus = 2;
+            else if (weaponsRating >= 7) weaponsBonus = 1;
+            else weaponsBonus = 0;
+
+            // Calculate total damage based on weapon type
+            let totalDamage = baseDamage;
+            const isEnergy = weaponType.toLowerCase() === "energy";
+            const isTorpedo = weaponType.toLowerCase() === "torpedo";
+
+            if (isEnergy) {
+              // Energy weapons: BaseDmg + Ship Scale + Weapons Bonus
+              totalDamage = baseDamage + shipScale + weaponsBonus;
+            } else if (isTorpedo) {
+              // Torpedoes: BaseDmg + Weapons Bonus
+              totalDamage = baseDamage + weaponsBonus;
+            }
+
+            if (actionDef?.id === "fire" && threatBadge) {
+              if (isTorpedo) {
+                const weaponName = (weapon?.name ?? "").toLowerCase();
+                const threatCost = weaponName.includes("salvo") ? 3 : 1;
+                threatBadge.textContent = tf(
+                  "sta-utils.actionChooser.threatCost",
+                  {
+                    cost: threatCost,
+                  },
+                );
+                threatBadge.hidden = false;
+              } else {
+                threatBadge.textContent = "";
+                threatBadge.hidden = true;
+              }
+            }
+
+            // Extract active qualities (boolean values that are true)
+            const activeQualities = Object.entries(qualitiesObj)
+              .filter(([key, value]) => {
+                // Handle boolean qualities and numeric qualities (like hiddenx, versatilex)
+                if (typeof value === "boolean") return value === true;
+                if (typeof value === "number") return value > 0;
+                return false;
+              })
+              .map(([key, value]) => {
+                // Format quality names (e.g., "highyield" -> "High Yield")
+                const formatted = key
+                  .replace(/([A-Z])/g, " $1")
+                  .replace(/^./, (str) => str.toUpperCase())
+                  .trim();
+                const qualityKey = key.toLowerCase();
+                const qualityDescription = t(
+                  `sta-utils.weaponQualities.starship.${qualityKey}`,
+                  "",
+                );
+                // Add value suffix for numeric qualities
+                let displayText = formatted;
+                if (typeof value === "number" && value > 0) {
+                  displayText = `${formatted} ${value}`;
+                }
+
+                const tooltip = qualityDescription
+                  ? ` data-tooltip="${qualityDescription}"`
+                  : "";
+                return `<span${tooltip}>${displayText}</span>`;
+              });
+
+            // Format weapon type
+            const typeLabel =
+              weaponType.charAt(0).toUpperCase() + weaponType.slice(1);
+
+            // Build damage display with calculation details
+            let damageDisplay;
+            if (isEnergy || isTorpedo) {
+              damageDisplay = `<strong>${totalDamage}</strong>`;
+            } else {
+              damageDisplay = `<strong>${baseDamage}</strong>`;
+            }
+
+            weaponInfo.innerHTML = `
+              <div class="sta-weapon-info__row">
+                <span class="sta-weapon-info__label">Type:</span>
+                <span class="sta-weapon-info__value">${typeLabel}</span>
+              </div>
+              <div class="sta-weapon-info__row">
+                <span class="sta-weapon-info__label">Damage:</span>
+                <span class="sta-weapon-info__value">${damageDisplay}</span>
+              </div>
+              ${
+                activeQualities.length > 0
+                  ? `
+                <div class="sta-weapon-info__row">
+                  <span class="sta-weapon-info__label">Qualities:</span>
+                  <span class="sta-weapon-info__value">${activeQualities.join(", ")}</span>
+                </div>
+              `
+                  : ""
+              }
+            `;
+
+            // Update momentum spends with weapon context (starship weapon)
+            if (spendsContainer) {
+              spendsContainer.innerHTML = this._buildMomentumSpendsHtml(
+                actionDef,
+                weapon,
+              );
+            }
+          };
+
+          if (weaponSelect) {
+            weaponSelect.addEventListener("change", (ev) => {
+              updateWeaponInfo(ev.target.value);
+            });
+            // Initialize with first weapon
+            if (weaponSelect.value) {
+              updateWeaponInfo(weaponSelect.value);
+            }
+          }
         }
       });
     });
 
     const actorSelect = html.querySelector(".sta-actor-indicator__select");
     if (actorSelect) {
-      actorSelect.addEventListener("change", (event) => {
-        event.preventDefault();
-        const actorId = actorSelect.value;
+      this._enhanceSelectWithSearch(actorSelect, (actorId) => {
         const picked = game.actors.get(actorId);
         if (picked) {
           this.selectedActor = picked;
-          this.render();
+          this._rerender();
         }
       });
+    }
+
+    const actorImg = html.querySelector(".sta-actor-indicator__img");
+    if (actorImg) {
+      actorImg.addEventListener("click", (event) => {
+        event.preventDefault();
+        if (this.selectedActor) {
+          this.selectedActor.sheet.render(true);
+        }
+      });
+      actorImg.style.cursor = "pointer";
     }
 
     const starshipSelect = html.querySelector(
       ".sta-starship-indicator__select",
     );
     if (starshipSelect) {
-      starshipSelect.addEventListener("change", (event) => {
-        event.preventDefault();
-        const shipId = starshipSelect.value;
+      this._enhanceSelectWithSearch(starshipSelect, (shipId) => {
         const picked = game.actors.get(shipId);
         if (picked) {
           this.selectedStarship = picked;
-          this.render();
+          this._rerender();
         }
       });
+    }
+
+    const starshipImg = html.querySelector(".sta-starship-indicator__img");
+    if (starshipImg) {
+      starshipImg.addEventListener("click", (event) => {
+        event.preventDefault();
+        if (this.selectedStarship) {
+          this.selectedStarship.sheet.render(true);
+        }
+      });
+      starshipImg.style.cursor = "pointer";
     }
 
     const setSelect = html.querySelector(".sta-action-chooser-title__select");
@@ -396,10 +1152,139 @@ class ActionChooserApp extends BaseApp {
           this.selectedStarship = newSet.showStarship
             ? this._resolveStarship()
             : null;
-          this.render();
+          this._rerender();
         }
       });
     }
+
+    // Pop-out button (only shown in embedded mode)
+    const popoutBtn = html.querySelector(".sta-action-chooser-popout-btn");
+    if (popoutBtn) {
+      popoutBtn.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        const currentSetId = this.actionSet?.id ?? "personal-conflict";
+        openActionChooser(currentSetId, { actor: this._preferredActor });
+      });
+    }
+
+    // Set up actor update listener (only once)
+    if (!this._actorUpdateHookId) {
+      this._actorUpdateHookId = Hooks.on(
+        "updateActor",
+        (actor, changes, options, userId) => {
+          // If reserve power is being set to false, reset the assignment flag
+          if (
+            this.selectedStarship &&
+            actor.id === this.selectedStarship.id &&
+            changes.system?.reservepower === false
+          ) {
+            actor.setFlag(MODULE_ID, "reservePowerSystem", null);
+          }
+
+          // Re-render if the updated actor is our selected starship
+          if (this.selectedStarship && actor.id === this.selectedStarship.id) {
+            // Check if the update affects ship status (shields, reserve power, breaches, or flags)
+            const affectsShipStatus =
+              changes.system?.shields !== undefined ||
+              changes.system?.reservepower !== undefined ||
+              changes.system?.systems !== undefined ||
+              changes.flags?.[MODULE_ID]?.reservePowerSystem !== undefined;
+
+            if (affectsShipStatus) {
+              // Save currently active actions before re-rendering
+              this._saveActiveActions();
+              this._rerender();
+            }
+          }
+        },
+      );
+    }
+  }
+
+  _saveActiveActions() {
+    // Save which action tabs are currently active
+    const html = this.element;
+    if (!html) return;
+
+    this._savedActiveActions = [];
+    html.querySelectorAll(".sta-action-tab.active").forEach((tab) => {
+      this._savedActiveActions.push({
+        tabId: tab.dataset.tabId,
+        type: tab.dataset.type,
+      });
+    });
+  }
+
+  /**
+   * Re-render the action chooser.
+   * Works for both windowed and embedded (EmbeddedActionChooserApp) modes
+   * since both use the standard ApplicationV2 render pipeline.
+   */
+  async _rerender() {
+    this.render({ force: false });
+  }
+
+  _restoreActiveActions() {
+    // Restore previously active action tabs
+    if (!this._savedActiveActions || this._savedActiveActions.length === 0)
+      return;
+
+    const html = this.element;
+    if (!html) return;
+
+    this._savedActiveActions.forEach((saved) => {
+      const tab = html.querySelector(
+        `.sta-action-tab[data-tab-id="${saved.tabId}"][data-type="${saved.type}"]`,
+      );
+      if (tab) {
+        // Trigger a click to restore the action detail
+        tab.click();
+      }
+    });
+
+    // Clear saved state after restoration
+    this._savedActiveActions = null;
+  }
+
+  /**
+   * Update the character sheet's attribute/discipline checkboxes to match
+   * the given keys. Called when browsing actions so the sheet reflects the
+   * currently-viewed action's stats in real time.
+   */
+  _syncSheetStats(attributeKey, disciplineKey) {
+    const sheetEl = this.selectedActor?.sheet?.element;
+    if (!sheetEl) return;
+
+    if (attributeKey) {
+      sheetEl
+        .querySelectorAll(".attribute-block .selector.attribute")
+        .forEach((cb) => {
+          cb.checked = cb.id === `${attributeKey}.selector`;
+        });
+    }
+
+    if (disciplineKey) {
+      sheetEl
+        .querySelectorAll(".discipline-block .selector.discipline")
+        .forEach((cb) => {
+          cb.checked = cb.id === `${disciplineKey}.selector`;
+        });
+    }
+  }
+
+  _onRender(context, options) {
+    super._onRender?.(context, options);
+    // Restore active actions after render completes
+    this._restoreActiveActions();
+  }
+
+  async close(options = {}) {
+    // Clean up the actor update hook
+    if (this._actorUpdateHookId !== null) {
+      Hooks.off("updateActor", this._actorUpdateHookId);
+      this._actorUpdateHookId = null;
+    }
+    return super.close(options);
   }
 
   async _handleAction(action, detailEl) {
@@ -410,6 +1295,7 @@ class ActionChooserApp extends BaseApp {
     }
 
     _pendingMomentumTab = _actionSetToMomentumTab(this.actionSet?.id);
+    _setActionActor(actor);
     try {
       if (action.weaponAttack) {
         await this._handleWeaponAttack(actor, action, detailEl);
@@ -421,15 +1307,25 @@ class ActionChooserApp extends BaseApp {
         return;
       }
 
+      // Send the action announcement first (fully awaitable) so the
+      // roll message that follows can have its header merged.
+      if (typeof action.callback === "function") {
+        await action.callback(actor, action);
+      }
+
       if (action.roll) {
         const result = await buildTaskData(actor, action.roll, {
           defaultStarshipId: this.selectedStarship?.id,
         });
         if (!result) return;
+
+        const rollDone = _waitForChatMessage();
         await executeTaskRoll(result.taskData, {
           isShipAssist: result.isShipAssist,
           actor,
+          starship: result.starship,
         });
+        await rollDone;
 
         // Spend the value via sta-officers-log after the roll
         if (result.determinationValueId) {
@@ -447,12 +1343,12 @@ class ActionChooserApp extends BaseApp {
           }
         }
       }
-
-      if (typeof action.callback === "function") {
-        await action.callback(actor, action);
-      }
     } finally {
       _pendingMomentumTab = null;
+      // Don't clear _pendingActionActor here — the STA system's
+      // sendToChat() calls are un-awaited, so ChatMessage.create() may
+      // fire AFTER this finally block runs.  The safety timer in
+      // _setActionActor handles cleanup instead.
     }
   }
 
@@ -486,11 +1382,24 @@ class ActionChooserApp extends BaseApp {
     const { STARoll } = await loadSTARoll();
     const roller = new STARoll();
 
+    // 1. Action announcement (fully awaitable — uses ChatMessage.create)
+    if (typeof action.callback === "function") {
+      await action.callback(actor, action);
+    }
+
+    // 2. Weapon card (STA fires sendToChat without await — wait for it)
+    const weaponDone = _waitForChatMessage();
     await roller.performWeaponRoll2e(weapon, actor);
+    await weaponDone;
+
+    // 3. Task roll (STA fires sendToChat without await — wait for it)
+    const rollDone = _waitForChatMessage();
     await executeTaskRoll(result.taskData, {
       isShipAssist: result.isShipAssist,
       actor,
+      starship: result.starship,
     });
+    await rollDone;
 
     // Spend the value via sta-officers-log after the roll
     if (result.determinationValueId) {
@@ -506,10 +1415,6 @@ class ActionChooserApp extends BaseApp {
           err,
         );
       }
-    }
-
-    if (typeof action.callback === "function") {
-      await action.callback(actor, action);
     }
   }
 
@@ -535,15 +1440,27 @@ class ActionChooserApp extends BaseApp {
     });
     if (!result) return;
 
-    // Send the starship weapon chat card
     const { STARoll } = await loadSTARoll();
     const roller = new STARoll();
-    await roller.performStarshipWeaponRoll2e(weapon, starship);
 
+    // 1. Action announcement (fully awaitable)
+    if (typeof action.callback === "function") {
+      await action.callback(actor, action);
+    }
+
+    // 2. Starship weapon card (wait for STA's un-awaited sendToChat)
+    const weaponDone = _waitForChatMessage();
+    await roller.performStarshipWeaponRoll2e(weapon, starship);
+    await weaponDone;
+
+    // 3. Task roll (wait for STA's un-awaited sendToChat)
+    const rollDone = _waitForChatMessage();
     await executeTaskRoll(result.taskData, {
       isShipAssist: result.isShipAssist,
       actor,
+      starship: result.starship,
     });
+    await rollDone;
 
     // Spend the value via sta-officers-log after the roll
     if (result.determinationValueId) {
@@ -560,13 +1477,98 @@ class ActionChooserApp extends BaseApp {
         );
       }
     }
+  }
 
-    if (typeof action.callback === "function") {
-      await action.callback(actor, action);
-    }
+  /**
+   * Build the inner HTML for the "Suggested Momentum Spends" section.
+   * Adjusts displayed costs when a weapon has the Intense quality or
+   * the actor has the "Chief Tactical Officer" talent.
+   *
+   * @param {object} actionDef  The action definition with a `momentumSpends` object.
+   * @param {object} [weapon]   The currently-selected weapon item (if any).
+   * @returns {string} HTML string (empty if no spends are enabled).
+   */
+  _buildMomentumSpendsHtml(actionDef, weapon) {
+    const spendDef = actionDef?.momentumSpends;
+    if (!spendDef || typeof spendDef !== "object") return "";
+
+    const enabledSpends = Object.entries(spendDef)
+      .filter(([, v]) => v)
+      .map(([id]) => MOMENTUM_SPEND_LOOKUP.get(id))
+      .filter(Boolean);
+
+    if (!enabledSpends.length) return "";
+
+    // Detect cost modifiers
+    const weaponQualities = weapon?.system?.qualities ?? {};
+    const hasIntense =
+      weaponQualities.intense === true ||
+      (typeof weaponQualities.intense === "number" &&
+        weaponQualities.intense > 0);
+
+    const hasSpread =
+      weaponQualities.spread === true ||
+      (typeof weaponQualities.spread === "number" &&
+        weaponQualities.spread > 0);
+
+    const hasChiefTactical =
+      this.selectedActor?.items?.some(
+        (i) =>
+          i.type === "talent" &&
+          i.name.toLowerCase() === "chief tactical officer",
+      ) ?? false;
+
+    const spendItems = enabledSpends
+      .map((spend) => {
+        const spendName = t(
+          `sta-utils.momentumSpend.spends.${spend.i18nKey}.name`,
+        );
+        let costText = t(
+          `sta-utils.momentumSpend.spends.${spend.i18nKey}.cost`,
+        );
+
+        // Adjust cost for Intense quality (addedDamage / addedSeverity)
+        const isAddedDamage = spend.id === "addedDamage";
+        const isAddedSeverity = spend.id === "addedSeverity";
+        if ((isAddedDamage || isAddedSeverity) && hasIntense) {
+          costText = tf("sta-utils.actionChooser.momentumSpendReduced", {
+            cost: "1",
+            reason: t("sta-utils.actionChooser.intenseQuality"),
+          });
+        }
+        // Chief Tactical Officer also reduces addedDamage
+        if (isAddedDamage && hasChiefTactical && !hasIntense) {
+          costText = tf("sta-utils.actionChooser.momentumSpendReduced", {
+            cost: "1",
+            reason: t("sta-utils.actionChooser.chiefTacticalOfficer"),
+          });
+        }
+        // Spread quality reduces devastatingAttack to 1 Momentum, Repeatable
+        // Exception: weapons with "Array" in the name can choose Area or Spread,
+        // so we don't assume Spread is active.
+        const weaponName = (weapon?.name ?? "").toLowerCase();
+        const isArray = weaponName.includes("array");
+        if (spend.id === "devastatingAttack" && hasSpread && !isArray) {
+          costText = tf("sta-utils.actionChooser.momentumSpendReduced", {
+            cost: "1",
+            reason: t("sta-utils.actionChooser.spreadQuality"),
+          });
+        }
+
+        return `<li class="sta-momentum-spends__item"><strong>${spendName}</strong> — ${costText}</li>`;
+      })
+      .join("");
+
+    return `
+      <div class="sta-momentum-spends">
+        <div class="sta-momentum-spends__header">${t("sta-utils.actionChooser.suggestedMomentumSpends")}</div>
+        <ul class="sta-momentum-spends__list">${spendItems}</ul>
+      </div>`;
   }
 
   _resolveActor() {
+    // When embedded in a character sheet, always lock to the sheet's actor
+    if (this._embedded && this._preferredActor) return this._preferredActor;
     // Prefer explicitly provided actor (e.g. opened from a character sheet)
     if (this._preferredActor) return this._preferredActor;
     // Then user's assigned character; fall back to first controlled token
@@ -628,6 +1630,86 @@ class ActionChooserApp extends BaseApp {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Embedded Action Chooser (frameless ApplicationV2 for sheet tab integration)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * A frameless, non-positioned variant of ActionChooserApp designed to render
+ * inside another application's DOM (e.g. a character sheet tab pane).
+ *
+ * Uses the official Foundry v13 ApplicationV2 API:
+ * - `window.frame: false` — no window chrome (header, drag, resize, close)
+ * - `window.positioned: false` — element flows with its container, no absolute positioning
+ * - `_insertElement` override — appends into the target container instead of document.body
+ * - `_removeElement` override — simply removes the element from the DOM
+ *
+ * This lets the full ApplicationV2 render pipeline (context → renderHTML →
+ * replaceHTML → onRender) manage the DOM, so actions like switching action sets
+ * perform part-level replacement without touching the parent tab pane node.
+ */
+class EmbeddedActionChooserApp extends ActionChooserApp {
+  constructor(actionSet, options = {}) {
+    super(actionSet, { ...options, embedded: true });
+    /** @type {HTMLElement|null} The external DOM container to render into */
+    this._targetContainer = null;
+  }
+
+  static DEFAULT_OPTIONS = {
+    // Each instance gets a unique ID via _initializeApplicationOptions
+    id: `${MODULE_ID}-action-chooser-embed`,
+    tag: "section",
+    window: {
+      frame: false,
+      positioned: false,
+    },
+    classes: ["sta-utils", "sta-action-chooser", "sta-action-chooser-embed"],
+  };
+
+  static PARTS = {
+    main: {
+      template: `modules/${MODULE_ID}/templates/action-chooser.hbs`,
+    },
+  };
+
+  /**
+   * Generate a unique application ID per actor so multiple character sheets
+   * can each have their own independent embedded action chooser.
+   */
+  _initializeApplicationOptions(options) {
+    const merged = super._initializeApplicationOptions(options);
+    const actorId = options.actor?.id ?? "unknown";
+    merged.uniqueId = `${MODULE_ID}-action-chooser-embed-${actorId}`;
+    return merged;
+  }
+
+  /** Insert into the target container instead of document.body */
+  _insertElement(element) {
+    if (this._targetContainer) {
+      this._targetContainer.appendChild(element);
+    } else {
+      super._insertElement(element);
+    }
+  }
+
+  /** Simply remove from the DOM (no window frame teardown needed) */
+  _removeElement(element) {
+    element.remove();
+  }
+
+  /**
+   * On first render, isolate the embedded app's form events from the parent
+   * character sheet. Without this, change/input events bubble up to the
+   * sheet's <form>, triggering _onChangeForm which re-renders the entire sheet
+   * and destroys our tab pane container.
+   */
+  async _onFirstRender(context, options) {
+    super._onFirstRender?.(context, options);
+    this.element.addEventListener("change", (e) => e.stopPropagation());
+    this.element.addEventListener("input", (e) => e.stopPropagation());
+  }
+}
+
 function actionAnnouncementMessage(actor, action) {
   const summary = action.chatSummary
     ? t(action.chatSummary)
@@ -639,6 +1721,7 @@ export async function sendActionChat(actor, action) {
   try {
     await ChatMessage.create({
       content: actionAnnouncementMessage(actor, action),
+      speaker: ChatMessage.getSpeaker({ actor }),
     });
   } catch (err) {
     console.error(`${MODULE_ID} | Failed to send action chat`, err);
@@ -773,10 +1856,11 @@ async function buildTaskData(actor, rollTemplate, { defaultStarshipId } = {}) {
   let selectedDepartment = null;
   let selectedDepartmentValue = 0;
   let starshipName = "";
+  let starship = null;
 
   if (isShipAssist) {
     const starshipId = formData.get("starship");
-    const starship = starshipId ? game.actors.get(starshipId) : null;
+    starship = starshipId ? game.actors.get(starshipId) : null;
     selectedSystem = formData.get("system");
     selectedDepartment = formData.get("department");
     if (starship) {
@@ -814,7 +1898,7 @@ async function buildTaskData(actor, rollTemplate, { defaultStarshipId } = {}) {
   /* ---- Run talent automation middleware ---- */
   const middlewareContext = {
     actor,
-    starship: isShipAssist ? game.actors.get(formData.get("starship")) : null,
+    starship: isShipAssist ? starship : null,
     formData,
     isShipAssist,
     baseComplicationRange: calculatedComplicationRange,
@@ -822,7 +1906,7 @@ async function buildTaskData(actor, rollTemplate, { defaultStarshipId } = {}) {
 
   await runMiddleware(taskData, middlewareContext, _automationStates);
 
-  return { taskData, isShipAssist, determinationValueId };
+  return { taskData, isShipAssist, starship, determinationValueId };
 }
 
 async function openActionChooser(
@@ -873,8 +1957,66 @@ registerActionSet("social-conflict", () =>
   import("./action-sets/social-conflict.mjs").then((m) => m.default ?? m),
 );
 
+/**
+ * Render the action chooser UI into an existing DOM container (embedded mode).
+ * Uses the proper Foundry v13 ApplicationV2 pipeline: the EmbeddedActionChooserApp
+ * renders frameless and non-positioned, inserting its element into the container
+ * via the overridden _insertElement method.
+ *
+ * The selected actor is locked to the provided actor (no actor dropdown).
+ * Ship selection remains fully functional.
+ *
+ * @param {HTMLElement} container - The container element to render into.
+ * @param {Actor} actor - The actor to lock the action chooser to.
+ * @returns {Promise<EmbeddedActionChooserApp>} The embedded app instance.
+ */
+/** Module-level store for embedded apps, keyed by actor ID. Survives DOM destruction. */
+const _embeddedApps = new Map();
+
+async function renderActionChooserEmbed(container, actor) {
+  const actorId = actor?.id ?? "unknown";
+
+  // Reuse existing instance if actor matches; otherwise create a new one
+  let app = _embeddedApps.get(actorId);
+
+  if (app && app._preferredActor?.id === actor?.id) {
+    // Existing instance — just move the element into the new container.
+    // Do NOT re-render: that would rebuild the HTML, causing flicker and
+    // losing the player's selected actions / state.
+    app._targetContainer = container;
+
+    if (app.element) {
+      // The element is still a live DOM node; just re-parent it.
+      container.appendChild(app.element);
+    } else {
+      // Element was somehow lost — do a full render
+      await app.render({ force: true });
+    }
+
+    return app;
+  }
+
+  // Clean up old instance if actor changed
+  if (app) {
+    await app.close({ animate: false });
+    _embeddedApps.delete(actorId);
+  }
+
+  // Create a new embedded instance
+  const actionSet = await loadActionSet("personal-conflict");
+  app = new EmbeddedActionChooserApp(actionSet, { actor });
+  app._targetContainer = container;
+
+  // Render via the full ApplicationV2 pipeline
+  await app.render({ force: true });
+
+  _embeddedApps.set(actorId, app);
+  return app;
+}
+
 export const actionChooser = {
   open: openActionChooser,
+  renderEmbed: renderActionChooserEmbed,
   registerActionSet,
   sendActionChat,
 };

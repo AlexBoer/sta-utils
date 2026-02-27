@@ -9,14 +9,46 @@ const rollDefaults = {
   rolltype: "character2e",
 };
 
+// Common Spends:
+
+// alterTrait — 2 Momentum
+// reduceTime — 2 Momentum
+// obtainInformation — Repeatable, 1 Momentum
+// recoveringStress — Repeatable, 2 Momentum
+// Personal Conflict Spends:
+
+// addedSeverity — Repeatable, 2 Momentum
+// disarm — 1–2 Momentum
+// keepInitiative — Immediate, 2 Momentum
+// extraMajorAction — 2 Momentum
+// extraMinorAction — 1 Momentum
+// pc_recoveringStress — Repeatable, 2 Momentum
+// pc_alterTrait — 2 Momentum
+// pc_obtainInformation — Repeatable, 1 Momentum
+// Starship Combat Spends:
+
+// addedDamage — Repeatable, 2 Momentum
+// devastatingAttack — 2 Momentum
+// sc_keepInitiative — Immediate, 2 Momentum
+// sc_extraMajorAction — 2 Momentum
+// sc_extraMinorAction — 1 Momentum
+// sc_alterTrait — 2 Momentum
+// sc_obtainInformation — Repeatable, 1 Momentum
+
+// momentumSpends: {
+//   addedSeverity: true,
+// },
+
 const actions = [
   // Minor Actions
   {
     id: "aim",
     type: "minor",
     name: "sta-utils.actionChooser.personalConflict.actions.aim.name",
-    description: "sta-utils.actionChooser.personalConflict.actions.aim.description",
-    chatSummary: "sta-utils.actionChooser.personalConflict.actions.aim.chatSummary",
+    description:
+      "sta-utils.actionChooser.personalConflict.actions.aim.description",
+    chatSummary:
+      "sta-utils.actionChooser.personalConflict.actions.aim.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -26,8 +58,10 @@ const actions = [
     type: "minor",
     subtle: true,
     name: "sta-utils.actionChooser.personalConflict.actions.drawItem.name",
-    description: "sta-utils.actionChooser.personalConflict.actions.drawItem.description",
-    chatSummary: "sta-utils.actionChooser.personalConflict.actions.drawItem.chatSummary",
+    description:
+      "sta-utils.actionChooser.personalConflict.actions.drawItem.description",
+    chatSummary:
+      "sta-utils.actionChooser.personalConflict.actions.drawItem.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -37,8 +71,10 @@ const actions = [
     type: "minor",
     subtle: true,
     name: "sta-utils.actionChooser.personalConflict.actions.interact.name",
-    description: "sta-utils.actionChooser.personalConflict.actions.interact.description",
-    chatSummary: "sta-utils.actionChooser.personalConflict.actions.interact.chatSummary",
+    description:
+      "sta-utils.actionChooser.personalConflict.actions.interact.description",
+    chatSummary:
+      "sta-utils.actionChooser.personalConflict.actions.interact.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -47,8 +83,10 @@ const actions = [
     id: "movement",
     type: "minor",
     name: "sta-utils.actionChooser.personalConflict.actions.movement.name",
-    description: "sta-utils.actionChooser.personalConflict.actions.movement.description",
-    chatSummary: "sta-utils.actionChooser.personalConflict.actions.movement.chatSummary",
+    description:
+      "sta-utils.actionChooser.personalConflict.actions.movement.description",
+    chatSummary:
+      "sta-utils.actionChooser.personalConflict.actions.movement.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -58,8 +96,10 @@ const actions = [
     type: "minor",
     subtle: true,
     name: "sta-utils.actionChooser.personalConflict.actions.prepare.name",
-    description: "sta-utils.actionChooser.personalConflict.actions.prepare.description",
-    chatSummary: "sta-utils.actionChooser.personalConflict.actions.prepare.chatSummary",
+    description:
+      "sta-utils.actionChooser.personalConflict.actions.prepare.description",
+    chatSummary:
+      "sta-utils.actionChooser.personalConflict.actions.prepare.chatSummary",
     roll: null,
     momentumCost: 0,
     callback: sendActionChat,
@@ -68,8 +108,10 @@ const actions = [
     id: "stand-drop-prone",
     type: "minor",
     name: "sta-utils.actionChooser.personalConflict.actions.standDropProne.name",
-    description: "sta-utils.actionChooser.personalConflict.actions.standDropProne.description",
-    chatSummary: "sta-utils.actionChooser.personalConflict.actions.standDropProne.chatSummary",
+    description:
+      "sta-utils.actionChooser.personalConflict.actions.standDropProne.description",
+    chatSummary:
+      "sta-utils.actionChooser.personalConflict.actions.standDropProne.chatSummary",
     roll: null,
     momentumCost: 0,
     subtle: true,
@@ -81,8 +123,10 @@ const actions = [
     id: "assist",
     type: "major",
     name: "sta-utils.actionChooser.personalConflict.actions.assist.name",
-    description: "sta-utils.actionChooser.personalConflict.actions.assist.description",
-    chatSummary: "sta-utils.actionChooser.personalConflict.actions.assist.chatSummary",
+    description:
+      "sta-utils.actionChooser.personalConflict.actions.assist.description",
+    chatSummary:
+      "sta-utils.actionChooser.personalConflict.actions.assist.chatSummary",
     roll: null,
     momentumCost: 0,
     subtle: true,
@@ -92,8 +136,10 @@ const actions = [
     id: "attack",
     type: "major",
     name: "sta-utils.actionChooser.personalConflict.actions.attack.name",
-    description: "sta-utils.actionChooser.personalConflict.actions.attack.description",
-    chatSummary: "sta-utils.actionChooser.personalConflict.actions.attack.chatSummary",
+    description:
+      "sta-utils.actionChooser.personalConflict.actions.attack.description",
+    chatSummary:
+      "sta-utils.actionChooser.personalConflict.actions.attack.chatSummary",
     weaponAttack: true,
     roll: {
       ...rollDefaults,
@@ -102,14 +148,19 @@ const actions = [
       difficulty: null,
     },
     momentumCost: 0,
+    momentumSpends: {
+      addedSeverity: true,
+    },
     callback: sendActionChat,
   },
   {
     id: "create-trait",
     type: "major",
     name: "sta-utils.actionChooser.personalConflict.actions.createTrait.name",
-    description: "sta-utils.actionChooser.personalConflict.actions.createTrait.description",
-    chatSummary: "sta-utils.actionChooser.personalConflict.actions.createTrait.chatSummary",
+    description:
+      "sta-utils.actionChooser.personalConflict.actions.createTrait.description",
+    chatSummary:
+      "sta-utils.actionChooser.personalConflict.actions.createTrait.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: null,
@@ -117,14 +168,19 @@ const actions = [
       difficulty: 2,
     },
     momentumCost: 0,
+    momentumSpends: {
+      alterTrait: true,
+    },
     callback: sendActionChat,
   },
   {
     id: "direct",
     type: "major",
     name: "sta-utils.actionChooser.personalConflict.actions.direct.name",
-    description: "sta-utils.actionChooser.personalConflict.actions.direct.description",
-    chatSummary: "sta-utils.actionChooser.personalConflict.actions.direct.chatSummary",
+    description:
+      "sta-utils.actionChooser.personalConflict.actions.direct.description",
+    chatSummary:
+      "sta-utils.actionChooser.personalConflict.actions.direct.chatSummary",
     roll: {
       ...rollDefaults,
       dicePool: 1,
@@ -139,8 +195,10 @@ const actions = [
     id: "first-aid",
     type: "major",
     name: "sta-utils.actionChooser.personalConflict.actions.firstAid.name",
-    description: "sta-utils.actionChooser.personalConflict.actions.firstAid.description",
-    chatSummary: "sta-utils.actionChooser.personalConflict.actions.firstAid.chatSummary",
+    description:
+      "sta-utils.actionChooser.personalConflict.actions.firstAid.description",
+    chatSummary:
+      "sta-utils.actionChooser.personalConflict.actions.firstAid.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: "daring",
@@ -154,8 +212,10 @@ const actions = [
     id: "guard",
     type: "major",
     name: "sta-utils.actionChooser.personalConflict.actions.guard.name",
-    description: "sta-utils.actionChooser.personalConflict.actions.guard.description",
-    chatSummary: "sta-utils.actionChooser.personalConflict.actions.guard.chatSummary",
+    description:
+      "sta-utils.actionChooser.personalConflict.actions.guard.description",
+    chatSummary:
+      "sta-utils.actionChooser.personalConflict.actions.guard.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: "insight",
@@ -169,8 +229,10 @@ const actions = [
     id: "other-tasks",
     type: "major",
     name: "sta-utils.actionChooser.personalConflict.actions.otherTasks.name",
-    description: "sta-utils.actionChooser.personalConflict.actions.otherTasks.description",
-    chatSummary: "sta-utils.actionChooser.personalConflict.actions.otherTasks.chatSummary",
+    description:
+      "sta-utils.actionChooser.personalConflict.actions.otherTasks.description",
+    chatSummary:
+      "sta-utils.actionChooser.personalConflict.actions.otherTasks.chatSummary",
     roll: null,
     subtle: true,
     momentumCost: 0,
@@ -180,8 +242,10 @@ const actions = [
     id: "pass",
     type: "major",
     name: "sta-utils.actionChooser.personalConflict.actions.pass.name",
-    description: "sta-utils.actionChooser.personalConflict.actions.pass.description",
-    chatSummary: "sta-utils.actionChooser.personalConflict.actions.pass.chatSummary",
+    description:
+      "sta-utils.actionChooser.personalConflict.actions.pass.description",
+    chatSummary:
+      "sta-utils.actionChooser.personalConflict.actions.pass.chatSummary",
     roll: null,
     momentumCost: 0,
     subtle: true,
@@ -191,8 +255,10 @@ const actions = [
     id: "ready",
     type: "major",
     name: "sta-utils.actionChooser.personalConflict.actions.ready.name",
-    description: "sta-utils.actionChooser.personalConflict.actions.ready.description",
-    chatSummary: "sta-utils.actionChooser.personalConflict.actions.ready.chatSummary",
+    description:
+      "sta-utils.actionChooser.personalConflict.actions.ready.description",
+    chatSummary:
+      "sta-utils.actionChooser.personalConflict.actions.ready.chatSummary",
     roll: null,
     momentumCost: 0,
     subtle: true,
@@ -202,8 +268,10 @@ const actions = [
     id: "sprint",
     type: "major",
     name: "sta-utils.actionChooser.personalConflict.actions.sprint.name",
-    description: "sta-utils.actionChooser.personalConflict.actions.sprint.description",
-    chatSummary: "sta-utils.actionChooser.personalConflict.actions.sprint.chatSummary",
+    description:
+      "sta-utils.actionChooser.personalConflict.actions.sprint.description",
+    chatSummary:
+      "sta-utils.actionChooser.personalConflict.actions.sprint.chatSummary",
     roll: {
       ...rollDefaults,
       attribute: "fitness",

@@ -182,3 +182,7 @@ display: none;
     background: var(--ccs-chat-border-color);
     color: oklch(from var(--ccs-chat-border-color) clamp(0, (0.6 - l) * 1000, 1) 0 0);
 } */
+
+.chat-portrait-flexrow {
+    display: none;
+}

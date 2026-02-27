@@ -9,6 +9,36 @@ const rollDefaults = {
   rolltype: "character2e",
 };
 
+// Common Spends:
+
+// alterTrait — 2 Momentum
+// reduceTime — 2 Momentum
+// obtainInformation — Repeatable, 1 Momentum
+// recoveringStress — Repeatable, 2 Momentum
+// Personal Conflict Spends:
+
+// addedSeverity — Repeatable, 2 Momentum
+// disarm — 1–2 Momentum
+// keepInitiative — Immediate, 2 Momentum
+// extraMajorAction — 2 Momentum
+// extraMinorAction — 1 Momentum
+// pc_recoveringStress — Repeatable, 2 Momentum
+// pc_alterTrait — 2 Momentum
+// pc_obtainInformation — Repeatable, 1 Momentum
+// Starship Combat Spends:
+
+// addedDamage — Repeatable, 2 Momentum
+// devastatingAttack — 2 Momentum
+// sc_keepInitiative — Immediate, 2 Momentum
+// sc_extraMajorAction — 2 Momentum
+// sc_extraMinorAction — 1 Momentum
+// sc_alterTrait — 2 Momentum
+// sc_obtainInformation — Repeatable, 1 Momentum
+
+// momentumSpends: {
+//   addedSeverity: true,
+// },
+
 const actions = [
   // Minor Actions
   {
@@ -92,6 +122,9 @@ const actions = [
       difficulty: 2,
     },
     momentumCost: 0,
+    momentumSpends: {
+      alterTrait: true,
+    },
     callback: sendActionChat,
   },
   {

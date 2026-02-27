@@ -194,6 +194,10 @@ const actions = [
       shipAssist: { system: "weapons", department: "security" },
     },
     momentumCost: 0,
+    momentumSpends: {
+      addedDamage: true,
+      devastatingAttack: true,
+    },
     callback: sendActionChat,
   },
   {

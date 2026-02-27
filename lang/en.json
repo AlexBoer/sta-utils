@@ -2,6 +2,18 @@
   "sta-utils": {
     "title": "STA Utilities",
     "settings": {
+      "groups": {
+        "world": "World Settings (GM Only)",
+        "client": "Client Settings"
+      },
+      "subgroups": {
+        "dicePoolMomentum": "Dice Pool & Momentum",
+        "actionChooser": "Action Chooser",
+        "journalBacklinks": "Journal Backlinks",
+        "traitTokens": "Trait Tokens",
+        "chatUi": "Chat & UI",
+        "standalone": "Other Features"
+      },
       "enableTraitTokens": {
         "name": "Enable Trait Tokens",
         "hint": "Drag trait items onto the canvas to create post-it note tokens. Requires a world reload when changed."
@@ -42,6 +54,10 @@
         "name": "Enable Conflict Actions Window",
         "hint": "Show a window listing available actions, roll info, and Momentum costs during conflict scenes. Requires a world reload when changed."
       },
+      "actionChooserAsTab": {
+        "name": "Action Chooser as Sheet Tab",
+        "hint": "Embed the action chooser as a tab on the character sheet instead of opening it as a separate window."
+      },
       "enableMomentumSpend": {
         "name": "Enable Momentum Spend",
         "hint": "Add a 'Spend Momentum' button to task roll chat messages that opens a momentum spend dialog. Requires a world reload when changed."
@@ -49,6 +65,14 @@
       "autoDeductMomentum": {
         "name": "Auto-deduct Momentum",
         "hint": "Automatically deduct momentum from the shared pool when spending via the Momentum Spend dialog."
+      },
+      "enableMomentumMerger": {
+        "name": "Enable Momentum Merger",
+        "hint": "Automatically merge consecutive momentum/threat tracker messages in chat into a single expandable message. Requires a world reload when changed."
+      },
+      "enableChatHeaderMerge": {
+        "name": "Enable Chat Header Merge",
+        "hint": "Hide the message header (avatar, name, timestamp) on consecutive chat messages from the same sender. Requires a world reload when changed."
       }
     },
     "traits": {
@@ -361,13 +385,14 @@
         },
         "devastatingAttack": {
           "name": "Devastating Attack",
-          "description": "Roll an additional system; that system suffers a hit dealing half the attack's damage, rounding up.",
+          "description": "Roll an additional system. That system suffers a hit dealing half the attack's damage, rounding up.",
           "cost": "2 Momentum"
         }
       }
     },
     "actionChooser": {
       "title": "Conflict Actions",
+      "tabLabel": "Actions",
       "conflictActionsButton": "Conflict Actions",
       "minorActions": "Minor Actions",
       "majorActions": "Major Actions",
@@ -377,6 +402,7 @@
       "rollInfo": "{attribute} + {discipline}, {difficulty}",
       "rollInfoVaries": "Attribute + Discipline varies",
       "momentumCost": "Costs {cost} Momentum",
+      "threatCost": "Costs {cost} Threat",
       "difficultyNum": "Difficulty {difficulty}",
       "difficultyVaries": "Difficulty Varies",
       "difficultyOpposed": "Opposed Difficulty",
@@ -394,6 +420,7 @@
       "noActorSelected": "No Character",
       "noEligibleActors": "No characters available for selection.",
       "selectCharacter": "Select Character",
+      "searchPlaceholder": "Type to filter…",
       "changeCharacter": "Change Character",
       "changeSet": "Change Action Set",
       "noWeapons": "This character has no weapons.",
@@ -402,9 +429,20 @@
       "noStarshipSelected": "No Starship",
       "changeStarship": "Change Starship",
       "selectStarship": "Select Starship",
+      "popOut": "Pop out to separate window",
       "chooseStarshipWeapon": "Weapon",
+      "suggestedMomentumSpends": "Suggested Momentum Spends",
+      "momentumSpendReduced": "Repeatable, {cost} Momentum ({reason})",
+      "intenseQuality": "Intense",
+      "spreadQuality": "Spread",
+      "chiefTacticalOfficer": "Chief Tactical Officer",
       "chooseWeapon": "Choose Weapon",
       "selectWeapon": "Select",
+      "commonSpends": {
+        "extraMajor": "Extra Major: 2M",
+        "extraMinor": "Extra Minor: 1M",
+        "keepInitiative": "Keep Initiative: 2M/T"
+      },
       "sets": {
         "personalConflict": "Personal Conflict",
         "commandStation": "Command Station",
@@ -421,27 +459,27 @@
         "actions": {
           "persuade": {
             "name": "Persuade",
-            "description": "An opposed task. Roll an appropriate Attribute + Discipline to set the Difficulty; the target rolls their own combination to resist. Traits such as deception, evidence, intimidation, or negotiation can alter the Difficulty. If you win, the target must either comply or resist by taking Stress equal to your successes. You may spend 2 Momentum (Repeatable) to increase the Stress by 1. If the target wins, the request is simply refused with no further effect.",
-            "chatSummary": "Opposed task. Target must comply or take Stress equal to your successes."
+            "description": "Opposed Task. Your roll sets the Difficulty and the target rolls to resist being persuaded.<br><br><strong>Success</strong>, the target must either comply or resist by taking Stress equal to your successes. You may spend <strong>2 Momentum (Repeatable)</strong> to increase the Stress by 1<br><br><strong>Failure</strong>: If the target resists, they may not be persuaded again until the circumstance changes (usually by introducing a new trait or social tool).",
+            "chatSummary": "Opposed task. Active character sets the Difficulty. Target must comply or take Stress equal to your successes."
           },
           "evidence": {
             "name": "Evidence",
-            "description": "Offer proof to support your claims. Each piece of evidence acts as a trait, allowing a Persuasion task or reducing its Difficulty by 1. Evidence can complement other social tools and each accepted piece adds 1 to the severity after an opposed Persuade task.",
+            "description": "Offer proof to support your claims. Each piece of evidence is a trait, allowing a Persuasion task to happen or reducing its Difficulty by 1. Evidence can complement other social tools and each accepted piece adds 1 to the severity after an opposed Persuade task.",
             "chatSummary": "Enables a Persuade task or reduces its Difficulty by 1. Adds 1 to severity."
           },
           "intimidation": {
             "name": "Intimidation",
-            "description": "Use threats to compel action. This is an opposed task whose Difficulty reflects each side's perceived strength. Success imposes a fear-based trait on the target; failure makes further intimidation harder. Intimidation is inherently hostile and may worsen other interactions or provoke aggression.",
-            "chatSummary": "Opposed task. Success imposes a fear trait; failure makes further intimidation harder."
+            "description": "Use threats to compel action. The active character rolls to set the difficulty, representing their percieved stregnth. The target rolls to resist being intimidated.<br><br><strong>Success</strong>: Impose a fear-based trait on the target.<br><strong>Failure</strong>: Further intimidation attempts come at +1 Difficulty.<br><br>",
+            "chatSummary": "Opposed task. Success imposes a fear trait. Failure makes further intimidation harder."
           },
           "negotiation": {
             "name": "Negotiation",
-            "description": "Offer a trade. There is no roll for this. Each offer creates a trait representing what you give and a complication representing its cost. This is primarly used to create a new circumstance for a Persuasion task. Failing to honor your end of the deal will have consequences.",
-            "chatSummary": "Creates a trait (offer) and a complication (cost), counting as a new circumstance for Persuade."
+            "description": "Offer a trade. No roll is required to negotiate. Each offer creates:<ul><li>a trait representing what you give</li><li>a complication representing its cost <strong>to you</strong></li></ul>This could create new circumstances to facilitate a Persuade task, or even bypass the need for a roll entirely.<br><br>Note that the Negotiation traits don't define what the target character gives in return, other than being willing to speak to you or lowering the difficulty. Failing to honor your end of the deal will have consequences.",
+            "chatSummary": "Creates a trait (the offer) and a complication (the cost), counting as a new circumstance for Persuade."
           },
           "deception": {
             "name": "Deception",
-            "description": "Convince someone of something untrue. You roll to set the Difficulty and the target rolls to see through the lie. Success creates a trait representing the false belief. Each successful lie increase severity and complication range of Persuade tasks by 1 each. If the target discovers the deception, the trait is lost and replaced by a complication.",
+            "description": "Convince someone of something untrue. You roll to set the Difficulty and the target rolls to see through the lie.<br><br><strong>Success</strong>: Creates a trait representing the false belief. Each successful lie increases <strong>severity</strong> and <strong>complication range</strong> of Persuade tasks by <strong>1</strong> each.<br><br><strong>Failure</strong>: If the target discovers the deception, the trait is lost and replaced by a complication.",
             "chatSummary": "Opposed task. Each lie adds 1 to Persuade severity but also +1 complication range."
           }
         }
@@ -470,17 +508,17 @@
           },
           "assist": {
             "name": "Assist",
-            "description": "Help 2 other characters per round instead of just 1. You may take this action on their turn if you have not acted already.",
+            "description": "Help <strong>2</strong> other characters per round instead of just 1. You may take this action on their turn if you have not acted already.",
             "chatSummary": "Assist up to 2 allies per round."
           },
           "createTrait": {
             "name": "Create a Trait",
-            "description": "Roll vs Difficulty 2 to create a trait, change a trait, or remove a trait (e.g. battle plans, strategies, inspiration, etc.).",
+            "description": "Roll vs <strong>Difficulty 2</strong> to:<ul><li>create a trait</li><li>change a trait</li><li>remove a trait</li></ul> <em>Examples include: battle plans, strategies, inspiration, etc</em>.",
             "chatSummary": "Difficulty 2. Create, change, or remove a trait."
           },
           "override": {
             "name": "Override",
-            "description": "Take an action from a non-Command station at +1 Difficulty.",
+            "description": "Take an action from a non-Command station at <strong>+1 Difficulty</strong>.",
             "chatSummary": "Take a non-Command station action at +1 Difficulty."
           },
           "pass": {
@@ -495,13 +533,13 @@
           },
           "direct": {
             "name": "Direct",
-            "description": "Spend 1 Momentum and select one ally on the bridge who immediately attempts a single Major Action. Assist them by rolling 1d20 with your Control + Command.",
-            "chatSummary": "Spend 1 Momentum. An ally takes a major action; assist with Control + Command."
+            "description": "Spend <strong>1 Momentum</strong> and select one ally on the bridge who immediately attempts a single Major Action. Assist them by rolling 1d20 with your <strong>Control + Command</strong>.",
+            "chatSummary": "<strong>Spend 1 Momentum</strong>. An ally takes a major action. Assist with <strong>Control + Command</strong>."
           },
           "rally": {
             "name": "Rally",
-            "description": "Roll Presence + Command vs Difficulty 0. Generate momentum to spend or save.",
-            "chatSummary": "Presence + Command, Difficulty 0. Generate Momentum."
+            "description": "Roll <strong>Presence + Command</strong> vs <strong>Difficulty 0</strong>. Generate momentum to spend or save.",
+            "chatSummary": "<strong>Presence + Command</strong>, <strong>Difficulty 0</strong>. Generate Momentum."
           }
         }
       },
@@ -534,13 +572,13 @@
           },
           "createTrait": {
             "name": "Create a Trait",
-            "description": "Roll vs Difficulty 2 to create a trait, change a trait, or remove a trait (e.g. coordinating personnel, piercing interference, encryption and decryption).",
-            "chatSummary": "Difficulty 2. Create, change, or remove a trait."
+            "description": "Roll vs <strong>Difficulty 2</strong> to<ul><li>create a trait</li><li>change a trait</li><li>remove a trait</li></ul><em>Examples include: coordinating personnel, piercing interference, encryption and decryption</em>.",
+            "chatSummary": "<strong>Difficulty 2</strong>. Create, change, or remove a trait."
           },
           "override": {
             "name": "Override",
-            "description": "Take a major action from a non-Command station at +1 Difficulty.",
-            "chatSummary": "Take a non-Command station action at +1 Difficulty."
+            "description": "Take a major action from a non-Command station at <strong>+1 Difficulty</strong>.",
+            "chatSummary": "Take a non-Command station action at <strong>+1 Difficulty</strong>."
           },
           "pass": {
             "name": "Pass",
@@ -554,13 +592,13 @@
           },
           "damageControl": {
             "name": "Damage Control",
-            "description": "Direct a team to patch a breach. Roll Presence + Engineering vs Difficulty 2, plus 1 for each degree of potency. Breach is temporarily removed on success.",
-            "chatSummary": "Presence + Engineering, Difficulty 2+. Temporarily patch a breach."
+            "description": "Direct a team to patch a breach. Roll <strong>Presence + Engineering</strong> vs <strong>Difficulty 2</strong>, plus 1 for each degree of potency. Breach is temporarily removed on success.",
+            "chatSummary": "<strong>Presence + Engineering</strong>, <strong>Difficulty 2+</strong>. Temporarily patch a breach."
           },
           "transport": {
             "name": "Transport",
-            "description": "Teleport people or objects. Roll Control + Engineering assisted by the ship's Sensors + Science. Base Difficulty 0. +1 if away from transporter room. +1 if Site A is not a transporter pad. +1 if Site B is not a transporter pad.",
-            "chatSummary": "Control + Engineering, Difficulty 0+. Teleport people or objects."
+            "description": "Beam people or objects over distances. Roll <strong>Control + Engineering</strong> assisted by the ship's <strong>Sensors + Science</strong>. Base <strong>Difficulty 0</strong>.<ul><li>+1 if away from transporter room.</li><li>+1 if Site A is not a transporter pad.</li><li>+1 if Site B is not a transporter pad.</li></ul>",
+            "chatSummary": "<strong>Control + Engineering</strong>, <strong>Difficulty 0+</strong>. Transport people or objects."
           }
         }
       },
@@ -588,8 +626,8 @@
           },
           "impulse": {
             "name": "Impulse",
-            "description": "Move 2 zones. If you only move 1 zone, you may reduce the Momentum cost of movement through difficult or hazardous terrain by 1.",
-            "chatSummary": "Move 2 zones. Moving 1 zone reduces terrain Momentum cost by 1."
+            "description": "<strong>Move 2 zones.</strong><br><br>If you only move 1 zone, you may reduce the Momentum cost of movement through difficult or hazardous terrain by 1.",
+            "chatSummary": "<strong>Move 2 zones.</strong> Moving 1 zone reduces terrain Momentum cost by 1."
           },
           "thrusters": {
             "name": "Thrusters",
@@ -603,13 +641,13 @@
           },
           "createTrait": {
             "name": "Create a Trait",
-            "description": "Roll vs Difficulty 2 to create a trait, change a trait, or remove a trait (e.g. careful positioning, skilled maneuvering).",
-            "chatSummary": "Difficulty 2. Create, change, or remove a trait."
+            "description": "Roll vs <strong>Difficulty 2</strong> to:<ul><li>create a trait</li><li>change a trait<li>or remove a trait</li></ul><em>Examples include: careful positioning, skilled maneuvering.</em>",
+            "chatSummary": "<strong>Difficulty 2</strong>. Create, change, or remove a trait."
           },
           "override": {
             "name": "Override",
-            "description": "Take a major action from a non-Command station at +1 Difficulty.",
-            "chatSummary": "Take a non-Command station action at +1 Difficulty."
+            "description": "Take a major action from a non-Command station at <strong>+1 Difficulty</strong>.",
+            "chatSummary": "Take a non-Command station action at <strong>+1 Difficulty</strong>."
           },
           "pass": {
             "name": "Pass",
@@ -623,28 +661,28 @@
           },
           "attackPattern": {
             "name": "Attack Pattern",
-            "description": "Assist each attack until your next turn with Control + Conn. All incoming attacks have difficulty reduced by 1 until your next turn.",
+            "description": "Assist each attack until your next turn with <strong>Control + Conn</strong>. All incoming attacks have <strong>-1 Difficulty</strong> until your next turn.",
             "chatSummary": "Assist all attacks until next turn. Incoming attack difficulty -1."
           },
           "evasiveAction": {
             "name": "Evasive Action",
-            "description": "Until your next turn, all incoming attacks are opposed rolls vs your Daring + Conn assisted by the ship's Structure + Conn. If you win the opposed roll, you may move the ship 1 zone. All attacks made by your ship suffer +1 Difficulty until your next turn. You may not take this action at the same time as Defensive Fire.",
-            "chatSummary": "Opposed roll vs incoming attacks. Your attacks +1 Difficulty until next turn."
+            "description": "Until your next turn, all incoming attacks are opposed rolls vs your <strong>Daring + Conn</strong> assisted by the ship's <strong>Structure + Conn</strong>.If you win the opposed roll, you may move the ship 1 zone.<br><br>All attacks made by your ship suffer <strong>+1 Difficulty</strong> until your next turn.<br><br>You may not take this action at the same time as <strong>Defensive Fire</strong>.",
+            "chatSummary": "Opposed roll vs incoming attacks. Your attacks <strong>+1 Difficulty</strong> until next turn."
           },
           "maneuver": {
             "name": "Maneuver",
-            "description": "Roll Control + Conn vs Difficulty 0 to generate momentum, especially when crossing difficult terrain.",
-            "chatSummary": "Control + Conn, Difficulty 0. Generate Momentum, cross terrain."
+            "description": "Roll <strong>Control + Conn</strong> vs <strong>Difficulty 0</strong> to generate momentum, especially when crossing difficult terrain.",
+            "chatSummary": "<strong>Control + Conn</strong>, <strong>Difficulty 0</strong>. Generate Momentum, cross terrain."
           },
           "ram": {
             "name": "Ram",
-            "description": "Move into Contact with a target at Close range. Perform an Attack with Daring + Conn assisted by the ship's Engines + Conn vs Difficulty 2. Each ship suffers damage equal to the other's scale + half the number of zones moved before collision. This attack is Devastating, Piercing, and Intense.",
-            "chatSummary": "Daring + Conn, Difficulty 2. Both ships take scale + half-zones damage."
+            "description": "Move into Contact with a target at Close range. Perform an Attack with <strong>Daring + Conn</strong> assisted by the ship's <strong>Engines + Conn</strong> vs <strong>Difficulty 2</strong>. Each ship suffers damage equal to the other's scale + half the number of zones moved before collision. This attack is Devastating, Piercing, and Intense.",
+            "chatSummary": "<strong>Daring + Conn</strong>, <strong>Difficulty 2</strong>. Both ships take scale + half-zones damage."
           },
           "warp": {
             "name": "Warp",
-            "description": "Requires Reserve Power. You must take a Prepare minor action first. Roll Control + Conn assisted by the ship's Engines + Conn vs Difficulty 1. On success, move a number of zones equal to Engines or leave the battlefield.",
-            "chatSummary": "Requires Reserve Power + Prepare. Control + Conn, Difficulty 1."
+            "description": "Requires Reserve Power. You must take a Prepare minor action first. Roll <strong>Control + Conn</strong> assisted by the ship's <strong>Engines + Conn</strong> vs <strong>Difficulty 1</strong>. On success, move a number of zones equal to Engines or leave the battlefield.",
+            "chatSummary": "Requires Reserve Power + Prepare. <strong>Control + Conn</strong>, <strong>Difficulty 1</strong>."
           }
         }
       },
@@ -677,13 +715,13 @@
           },
           "createTrait": {
             "name": "Create a Trait",
-            "description": "Roll vs Difficulty 2 to create a trait, change a trait, or remove a trait (e.g. plotting a careful course, studying the terrain).",
-            "chatSummary": "Difficulty 2. Create, change, or remove a trait."
+            "description": "Roll vs <strong>Difficulty 2</strong> to create a trait, change a trait, or remove a trait (e.g. plotting a careful course, studying the terrain).",
+            "chatSummary": "<strong>Difficulty 2</strong>. Create, change, or remove a trait."
           },
           "override": {
             "name": "Override",
-            "description": "Take a major action from a non-Command station at +1 Difficulty.",
-            "chatSummary": "Take a non-Command station action at +1 Difficulty."
+            "description": "Take a major action from a non-Command station at <strong>+1 Difficulty</strong>.",
+            "chatSummary": "Take a non-Command station action at <strong>+1 Difficulty</strong>."
           },
           "pass": {
             "name": "Pass",
@@ -726,13 +764,13 @@
           },
           "createTrait": {
             "name": "Create a Trait",
-            "description": "Roll vs Difficulty 2 to create a trait, change a trait, or remove a trait (e.g. modifications to ship systems).",
-            "chatSummary": "Difficulty 2. Create, change, or remove a trait."
+            "description": "Roll vs <strong>Difficulty 2</strong> to create a trait, change a trait, or remove a trait (e.g. modifications to ship systems).",
+            "chatSummary": "<strong>Difficulty 2</strong>. Create, change, or remove a trait."
           },
           "override": {
             "name": "Override",
-            "description": "Take a major action from a non-Command station at +1 Difficulty.",
-            "chatSummary": "Take a non-Command station action at +1 Difficulty."
+            "description": "Take a major action from a non-Command station at <strong>+1 Difficulty</strong>.",
+            "chatSummary": "Take a non-Command station action at <strong>+1 Difficulty</strong>."
           },
           "pass": {
             "name": "Pass",
@@ -746,28 +784,28 @@
           },
           "damageControl": {
             "name": "Damage Control",
-            "description": "Repair a damaged or disabled system. Roll Presence + Engineering assisted by the ship's Structure + Engineering vs Difficulty 2. A damaged system is repaired. A disabled system becomes damaged instead.",
-            "chatSummary": "Presence + Engineering, Difficulty 2. Repair a damaged/disabled system."
+            "description": "Repair a damaged or disabled system. Roll Presence + Engineering assisted by the ship's Structure + Engineering vs <strong>Difficulty 2</strong>. A damaged system is repaired. A disabled system becomes damaged instead.",
+            "chatSummary": "Presence + Engineering, <strong>Difficulty 2</strong>. Repair a damaged/disabled system."
           },
           "regainPower": {
             "name": "Regain Power",
-            "description": "Roll Control + Engineering assisted by the ship's Engines + Engineering vs Difficulty 1. On success, regain 1 Reserve Power, plus 1 per Momentum spent (Repeatable).",
-            "chatSummary": "Control + Engineering, Difficulty 1. Regain 1+ Reserve Power."
+            "description": "Roll <strong>Control + Engineering</strong> vs <strong>Difficulty 1</strong>. On success, restore Reserve Power. May succeed at a cost, where complications reprsent subsystems shutting down.",
+            "chatSummary": "Control + Engineering, <strong>Difficulty 1</strong>. Restore Reserve Power."
           },
           "regenerateShields": {
             "name": "Regenerate Shields",
-            "description": "Requires Reserve Power. Roll Control + Engineering assisted by the ship's Structure + Engineering vs Difficulty 2. On success, regain shields equal to the ship's Security score.",
-            "chatSummary": "Requires Reserve Power. Difficulty 2. Regain shields equal to Security."
+            "description": "Requires Reserve Power. Roll <strong>Control + Engineering</strong> vs <strong>Difficulty 2</strong>. On success, regain shields equal to the ship's Security score.",
+            "chatSummary": "Requires Reserve Power. <strong>Difficulty 2</strong>. Regain shields equal to Security."
           },
           "reroutePower": {
             "name": "Reroute Power",
             "description": "No roll required. Move Reserve Power from Engines to any other system, or vice versa. You may not move power from other systems.",
-            "chatSummary": "No roll. Move Reserve Power between Engines and another system."
+            "chatSummary": "Move Reserve Power between Engines and another system."
           },
           "transport": {
             "name": "Transport",
-            "description": "Teleport people or objects. Roll Control + Engineering assisted by the ship's Sensors + Science. Base Difficulty 0. +1 if away from transporter room. +1 if Site A is not a transporter pad. +1 if Site B is not a transporter pad.",
-            "chatSummary": "Control + Engineering, Difficulty 0+. Teleport people or objects."
+            "description": "Beam people or objects over distances. Roll <strong>Control + Engineering</strong> assisted by the ship's <strong>Sensors + Science</strong>. Base <strong>Difficulty 0</strong>.<ul><li>+1 if away from transporter room.</li><li>+1 if Site A is not a transporter pad.</li><li>+1 if Site B is not a transporter pad.</li></ul>",
+            "chatSummary": "<strong>Control + Engineering</strong>, <strong>Difficulty 0+</strong>. Transport people or objects."
           }
         }
       },
@@ -795,13 +833,13 @@
           },
           "calibrateSensors": {
             "name": "Calibrate Sensors",
-            "description": "Recalibrate the ship's sensors. The next Sensor Sweep or Scan for Weakness task reduces its Difficulty by 1.",
-            "chatSummary": "Next Sensor Sweep or Scan for Weakness is at -1 Difficulty."
+            "description": "On your next Sensor Operations action, you may either ignore a single trait affecting the task, or re-roll 1d20.",
+            "chatSummary": "Ignore a single trait affecting a Sensors task, or re-roll a d20."
           },
           "launchProbe": {
             "name": "Launch Probe",
-            "description": "Launch a sensor probe to a zone within Long range. Until the probe is destroyed or retrieved, all tasks to detect or scan that zone reduce their Difficulty by 1.",
-            "chatSummary": "Launch probe to Long range. -1 Difficulty to scan that zone."
+            "description": "Select a single zone anywhere within <strong>Long range</strong> and launch a sensor probe to that zone. Sensor Operations major actions may determine range from the probe's location rather than the ship.<br><br>The probe can be targeted as if a Small Craft and is destroyed if it takes any damage.",
+            "chatSummary": "Launch probe to Long range. Sensor Operations actions use probe's location."
           },
           "assist": {
             "name": "Assist",
@@ -810,13 +848,13 @@
           },
           "createTrait": {
             "name": "Create a Trait",
-            "description": "Roll vs Difficulty 2 to create a trait, change a trait, or remove a trait (e.g. extra information gathered from sensor scans).",
-            "chatSummary": "Difficulty 2. Create, change, or remove a trait."
+            "description": "Roll vs <strong>Difficulty 2</strong> to:<ul><li>create a trait</li><li>change a trait</li><li>or remove a trait</li></ul><em>For example, extra information gathered from sensor scans.</em>",
+            "chatSummary": "<strong>Difficulty 2</strong>. Create, change, or remove a trait."
           },
           "override": {
             "name": "Override",
-            "description": "Take a major action from a non-Command station at +1 Difficulty.",
-            "chatSummary": "Take a non-Command station action at +1 Difficulty."
+            "description": "Take a major action from a non-Command station at <strong>+1 Difficulty</strong>.",
+            "chatSummary": "Take a non-Command station action at <strong>+1 Difficulty</strong>."
           },
           "pass": {
             "name": "Pass",
@@ -830,18 +868,18 @@
           },
           "reveal": {
             "name": "Reveal",
-            "description": "Scan a ship or zone to reveal all of its traits, including hidden ones. Roll Reason + Science assisted by the ship's Sensors + Science vs Difficulty 3.",
-            "chatSummary": "Reason + Science, Difficulty 3. Reveal all traits including hidden ones."
+            "description": "You scan for the trace signals that may reveal the tell-tale presence of a cloaked vessel, or a vessel concealed by some other phenomenon. Attempt a <strong>Reason + Science</strong> task, assisted by the ship's <strong>Sensors + Science</strong>, with a <strong>Difficulty of 3</strong>.<br><br>If you succeed, and there is a hidden vessel within <strong>Long range</strong>, you reveal which zone it is in (if there are multiple, this only reveals one such vessel, chosen at random). Until that vessel moves, your ship may attack that hidden vessel, but attacks increase the Difficulty by <strong>2</strong>.",
+            "chatSummary": "<strong>Reason + Science</strong> (ship <strong>Sensors + Science</strong>), <strong>Difficulty 3</strong>. Reveal hidden vessel's zone; attacks vs it are possible until it moves, but at <strong>+2 Difficulty</strong>."
           },
           "scanForWeakness": {
             "name": "Scan for Weakness",
-            "description": "Opposed roll: Control + Science assisted by the ship's Sensors + Science vs the target's Daring + Security assisted by its Structure + Security. On success, the next attack against the target may re-roll any number of challenge dice on the damage roll.",
-            "chatSummary": "Opposed roll. On success, next attack may re-roll damage dice."
+            "description": "You scan an enemy vessel, looking for vulnerabilities. Choose a single vessel and attempt a <strong>Difficulty 2 Control + Science</strong> task, assisted by the ship's <strong>Sensors + Security</strong>.<br><br>On success, the next attack against that ship either increases its damage by <strong>2</strong> or gains the <strong>Piercing</strong> quality (ignoring the target's resistance).",
+            "chatSummary": "<strong>Control + Science</strong> (ship <strong>Sensors + Security</strong>), <strong>Difficulty 2</strong>. The next attack vs that ship is <strong>+2 damage</strong> or gains <strong>Piercing</strong>."
           },
           "sensorSweep": {
             "name": "Sensor Sweep",
-            "description": "Scan for nearby objects, energy signatures, and anomalies. Roll Reason + Science assisted by the ship's Sensors + Science vs Difficulty 1. On success, learn basic information; spend Momentum for more detail.",
-            "chatSummary": "Reason + Science, Difficulty 1. Learn about nearby objects and anomalies."
+            "description": "Scan for nearby objects, energy signatures, and anomalies. Attempt a <strong>Difficulty 1 Reason + Science</strong> task, assisted by the ship's <strong>Sensors + Science</strong>. On success, learn basic information about a single zone. Spend Momentum for more detail.",
+            "chatSummary": "<strong>Reason + Science</strong> (ship <strong>Sensors + Science</strong>), <strong>Difficulty 1</strong>. Learn about nearby objects and anomalies."
           }
         }
       },
@@ -859,8 +897,8 @@
           },
           "prepare": {
             "name": "Prepare",
-            "description": "Get something ready for a rolled task and establish a narrative position to do it.",
-            "chatSummary": "Ready yourself for a rolled task."
+            "description": "Spend time setting up a task. At tactical, this action can also be used to raise or lower the ship's shields, or to arm or disarm the ship's weapons.<ul><li><strong>Shields:</strong> When the shields are lowered, the ship's maximum shields are 0. When raised, they are restored to their normal maximum, or to their previous total if the ship has taken any damage this scene.</li><li><strong>Weapons:</strong> The ship may only make Weapons Attacks if the weapons are armed. However, enemy ships can detect whether your ship's weapons are armed.</li></ul>",
+            "chatSummary": "Ready a task, raise/lower shields, or arm/disarm weapons."
           },
           "restore": {
             "name": "Restore",
@@ -869,13 +907,13 @@
           },
           "calibrateWeapons": {
             "name": "Calibrate Weapons",
-            "description": "Recalibrate the ship's weapons. Your next attack with ship weapons may re-roll a single d20 on the task roll.",
-            "chatSummary": "Next ship weapon attack may re-roll 1d20."
+            "description": "Recalibrate the ship's weapons. On your next attack with the ship’s weapons, increase the weapon’s damage by 1.",
+            "chatSummary": "Next ship weapon attack increases damage by 1."
           },
           "targetingSolution": {
             "name": "Targeting Solution",
-            "description": "Lock onto a target. Your next attack against that target reduces its Difficulty by 1.",
-            "chatSummary": "Next attack vs that target is at -1 Difficulty."
+            "description": "You lock targeting sensors onto an enemy vessel. Select a single enemy vessel within <strong>Long range</strong>. On the next attack against that vessel, either re-roll a d20 on the task, or choose which of the target's systems are hit by the attack, rather than rolling.",
+            "chatSummary": "Select a target within <strong>Long range</strong>. Next attack: re-roll 1d20 or choose hit systems."
           },
           "assist": {
             "name": "Assist",
@@ -884,13 +922,13 @@
           },
           "createTrait": {
             "name": "Create a Trait",
-            "description": "Roll vs Difficulty 2 to create a trait, change a trait, or remove a trait (e.g. weapon modifications and targeting solutions).",
-            "chatSummary": "Difficulty 2. Create, change, or remove a trait."
+            "description": "Roll vs <strong>Difficulty 2</strong> to:<ul><li>create a trait</li><li>change a trait</li><li>remove a trait</li></ul><em>Examples include weapon modifications and targeting solutions.</em>",
+            "chatSummary": "<strong>Difficulty 2</strong>. Create, change, or remove a trait."
           },
           "override": {
             "name": "Override",
-            "description": "Take a major action from a non-Command station at +1 Difficulty.",
-            "chatSummary": "Take a non-Command station action at +1 Difficulty."
+            "description": "Take a major action from a non-Command station at <strong>+1 Difficulty</strong>.",
+            "chatSummary": "Take a non-Command station action at <strong>+1 Difficulty</strong>."
           },
           "pass": {
             "name": "Pass",
@@ -904,23 +942,23 @@
           },
           "defensiveFire": {
             "name": "Defensive Fire",
-            "description": "Until your next turn, when an enemy ship moves into or within Close range of your ship, you may make an immediate attack against them using Daring + Security assisted by the ship's Weapons + Security. You may not take this action at the same time as Evasive Action.",
-            "chatSummary": "React to enemy movement at Close range with an immediate attack."
+            "description": "Choose a single energy weapon on your ship. Until your next turn, any enemy attack against your ship becomes an opposed task, opposed by your <strong>Daring + Security</strong>, assisted by the ship's <strong>Weapons + Security</strong>.<br><br>If you succeed, you may spend 2 Momentum to counterattack, inflicting your weapon's damage against the attacker.<br><br>You cannot take this action if the ship is currently benefitting from Evasive Action.",
+            "chatSummary": "Oppose enemy attacks. On success, spend 2 Momentum to counterattack."
           },
           "fire": {
             "name": "Fire",
-            "description": "Attack an enemy ship or target with the ship's weapons. Roll Control + Security assisted by the ship's Weapons + Security. See Starship Attacks for details.",
-            "chatSummary": "Attack with ship weapons. Control + Security."
+            "description": "Attack an enemy ship or target with the ship's weapons. Roll <strong>Control + Security</strong> assisted by the ship's <strong>Weapons + Security</strong>. Base Difficulty 2 for energy weapons. Difficulty 3 for torpedoes.",
+            "chatSummary": "Attack with ship weapons. <strong>Control + Security</strong>."
           },
           "modulateShields": {
             "name": "Modulate Shields",
-            "description": "No roll required. Spend 1 Reserve Power. Until the start of your next turn, the ship's Resistance is increased by 2 against energy weapons.",
-            "chatSummary": "Spend 1 Reserve Power. +2 Resistance vs energy weapons until next turn."
+            "description": "No roll required. Spend <strong>1 Reserve Power</strong>. Until the start of your next turn, the ship gains <strong>+2 Resistance</strong> against energy weapons.<br><br>You cannot use this acion if shields are at 0.",
+            "chatSummary": "Spend <strong>1 Reserve Power. +2 Resistance</strong> vs energy weapons until the next turn."
           },
           "tractorBeam": {
             "name": "Tractor Beam",
-            "description": "Grab and hold a target in place. Roll Control + Security assisted by the ship's Sensors + Science vs Difficulty 2. On success, the target cannot move until freed. Escaping requires an opposed roll.",
-            "chatSummary": "Control + Security, Difficulty 2. Hold a target in place."
+            "description": "Engage a tractor beam on a nearby object or vessel within <strong>Close</strong> range. Attempt a <strong>Control + Security</strong> task at <strong>Difficulty 2</strong>, assisted by the ship's <strong>Structure + Security</strong>. On success, the target cannot move. Attempts to escape use a Difficulty equal to your ship's tractor beam strength.",
+            "chatSummary": "<strong>Control + Security</strong> (ship <strong>Structure + Security</strong>), <strong>Difficulty 2</strong>, Close range. On success, target is immobilized. Escape Difficulty equals your tractor beam strength."
           }
         }
       },
@@ -953,7 +991,7 @@
         },
         "standDropProne": {
           "name": "Stand/Drop Prone",
-          "description": "Drop to the ground or stand up. While prone, Ranged attacks against you have +1 Difficulty, and if you are in Cover, you gain an additional +1 Protection. However, Melee Attacks and Ranged Attacks at Close range gain 2 bonus Momentum against you, and you cannot attempt any movement-related major actions. Bonus Momentum cannot be saved. You cannot Stand and Drop Prone in the same turn.",
+          "description": "Drop to the ground or stand up. While prone, Ranged attacks against you have <strong>+1 Difficulty</strong>, and if you are in Cover, you gain an additional <strong>+1 Protection</strong>. However, Melee Attacks and Ranged Attacks at Close range gain <strong>2 bonus Momentum</strong> against you, and you cannot attempt any movement-related major actions. Bonus Momentum cannot be saved. You cannot Stand and Drop Prone in the same turn.",
           "chatSummary": "Drop prone or stand up."
         },
         "assist": {
@@ -963,28 +1001,28 @@
         },
         "attack": {
           "name": "Attack",
-          "description": "Attack an enemy or other viable target and attempt to injure them. See Attempting an Attack (page 290) for details.",
-          "chatSummary": "Attack an enemy to injure them."
+          "description": "Attack an enemy or other viable target and attempt to injure them. Ranged attacks use <strong>Control + Security</strong> at <strong>Difficulty 2</strong>. Melee attacks use <strong>Daring + Security</strong> at <strong>Difficulty 1</strong>.<br><br>Attack tasks are opposed if the Enemy is able to defend themselves in melee or have cover. On a success, the target must take stress equal to the weapon's severity or suffer an Injury and become Defeated.",
+          "chatSummary": "Attack an enemy to injure them or deal stress equal to the weapon's severity."
         },
         "createTrait": {
           "name": "Create a Trait",
-          "description": "Roll vs Difficulty 2 (usually) to Create, Change, or Remove a trait. Describe how you're doing it.",
-          "chatSummary": "Difficulty 2. Create, change, or remove a trait."
+          "description": "Roll vs <strong>Difficulty 2</strong> (usually) to:<ul><li>Create a trait</li><li>Change a trait</li><li>Remove a trait</li></ul><em>Examples include: cover, difficult terrain, distractions, or other environmental effects.</em>",
+          "chatSummary": "<strong>Difficulty 2</strong>. Create, change, or remove a trait."
         },
         "direct": {
           "name": "Direct",
-          "description": "May only be attempted by one character on each side in a position of authority. Spend 1 Momentum and select one ally who can hear you. They may immediately attempt a single major action with no +1 Difficulty; you Assist them with your Control + Command.",
-          "chatSummary": "Spend 1 Momentum. An ally takes a major action; you assist with Control + Command."
+          "description": "May only be attempted by one character on each side in a position of authority. Spend <strong>1 Momentum</strong> and select one ally who can hear you. They may immediately attempt a single major action with no <strong>+1 Difficulty</strong>. Assist them with your <strong>Control + Command</strong>.",
+          "chatSummary": "Spend <strong>1 Momentum</strong>. An ally takes a major action. You assist with <strong>Control + Command</strong>."
         },
         "firstAid": {
           "name": "First Aid",
-          "description": "Attempt to revive a Defeated character within reach. Perform a Daring + Medicine task, Difficulty 2. If successful, the character is no longer Defeated. Alternatively, treat the Injury with a Difficulty equal to its severity. If successful, remove the injury.",
-          "chatSummary": "Daring + Medicine, Difficulty 2. Revive Defeated or treat an Injury."
+          "description": "Attempt to revive a Defeated character within reach. Perform a <strong>Daring + Medicine</strong> task, <strong>Difficulty 2</strong>. If successful, the character is no longer Defeated.<br><br>Alternatively, treat the Injury with a Difficulty equal to its severity. If successful, the injury has been treated and imposes no penalty for the rest of the scene, but is not removed until long term care is given.",
+          "chatSummary": "<strong>Daring + Medicine</strong>, <strong>Difficulty 2</strong>. Revive a Defeated character or treat their Injury."
         },
         "guard": {
           "name": "Guard",
-          "description": "Defend yourself, preparing for an attack. This is an Insight + Security task, Difficulty 0. Success increases the Difficulty of any attacks against you by 1 until the start of your next turn. +1 Difficulty to guard an ally within Reach instead.",
-          "chatSummary": "Insight + Security, Difficulty 0. +1 Difficulty to attacks against you."
+          "description": "Defend yourself, preparing for an attack. This is an <strong>Insight + Security</strong> task, <strong>Difficulty 0</strong>.<br><br>Success increases the Difficulty of any attacks against you by 1 until the start of your next turn.<br><br>You may guard an ally within reach instead of yourself at +1 Difficulty.",
+          "chatSummary": "<strong>Insight + Security</strong>, <strong>Difficulty 0</strong>. <strong>+1 Difficulty</strong> to attacks against you."
         },
         "otherTasks": {
           "name": "Other Tasks",
@@ -998,15 +1036,47 @@
         },
         "ready": {
           "name": "Ready",
-          "description": "Choose another major action and perform that when a specific trigger event of your choice occurs.",
+          "description": "Choose another major action and perform it when a specific trigger event of your choice occurs.",
           "chatSummary": "Defer a major action until a chosen trigger occurs."
         },
         "sprint": {
           "name": "Sprint",
-          "description": "Move two zones, to any point within Long range. If there is difficult or hazardous terrain, you may attempt a Fitness + Conn task with Difficulty 0 as part of this action, to generate Momentum to cross the terrain.",
-          "chatSummary": "Move 2 zones (Long range). Fitness + Conn Difficulty 0 for terrain."
+          "description": "Move two zones, to any point within Long range. If there is difficult or hazardous terrain, you may attempt a <strong>Fitness + Conn</strong> task with <strong>Difficulty 0</strong> as part of this action, to generate Momentum to cross the terrain.",
+          "chatSummary": "Move 2 zones (Long range). <strong>Fitness + Conn</strong> <strong>Difficulty 0</strong> for terrain."
         }
       }
+      }
+    },
+    "weaponQualities": {
+      "personal": {
+        "accurate": "If you perform the Aim minor action before making an attack with this weapon, you may re-roll up to two d20s in your dice pool, rather than only one.",
+        "area": "When you succeed at an attack, additional targets in the same zone may be hit by spending 1 Momentum for each additional target (Repeatable). This attack may Succeed at Cost.",
+        "charge": "If you perform the Prepare minor action before attacking with this weapon, you may add one of the following qualities to the attack: Area, Intense, or Piercing. If you choose Area, the attack's severity is reduced by 1.",
+        "cumbersome": "You cannot attack with a cumbersome weapon unless you take the Prepare minor action on the same turn.",
+        "debilitating": "The Difficulty to treat or to heal injuries caused by this weapon is increased by 1.",
+        "grenade": "You can attack a target at up to Medium range and have enough grenades for three separate attacks.",
+        "hiddenx": "You can use a minor action to conceal this weapon. Any search for the weapon requires an Insight or Reason + Security task with a Difficulty of X.",
+        "inaccurate": "The weapon is imprecise and clumsy. You do not benefit from the Aim minor action when making an attack with this weapon.",
+        "intense": "When making an attack with this weapon, you may increase the severity by spending 1 Momentum, rather than 2 (Repeatable).",
+        "piercing": "A successful attack with this weapon ignores the target's Protection rating.",
+        "nonlethal": "This weapon deals non-lethal damage."
+      },
+      "starship": {
+        "area": "This weapon impacts a wider area and can affect several targets at once. When you succeed at an attack, additional targets in the same zone may be hit by spending 1 Momentum for each additional target (Repeatable). This attack may Succeed at Cost.",
+        "calibration": "This weapon needs to be calibrated before firing. The weapon cannot be fired unless a Prepare minor action is performed before the Attack major action in the same turn.",
+        "cumbersome": "This weapon is difficult to bring to bear against a target, increasing the Difficulty of an attack made using it by 1. If this weapon is a torpedo, it cannot be fired as part of a salvo.",
+        "dampening": "This attack drains the target's reserve power, causing widespread disruption. If the target has Reserve Power available, it loses Reserve Power.",
+        "depleting": "This attack strips away the protective layers of deflector shields. The attack cannot cause the ship to be shaken, but the Momentum cost to increase damage is reduced to 1.",
+        "devastating": "Tasks to repair breaches caused by this weapon increase in Difficulty by 1.",
+        "hiddenx": "This weapon system is concealed from scans. When the weapon is hidden, it cannot be detected unless a specific scan is attempted. This scan is a task with a Difficulty of X.",
+        "highyield": "This weapon inflicts massive damage to energy vessels. If the attack inflicts one or more breaches to a system, it inflicts one additional breach (or steps up the Potency of a breach inflicted by 1—attacker's choice).",
+        "intense": "When making an attack with this weapon, you may increase the damage by 1 by spending 1 Momentum, rather than 2. This is Repeatable.",
+        "jamming": "This weapon sends out a scattering field, disrupting the target's sensors or communications systems. Until the end of the current round, the target increases the Difficulty for all tasks assisted by Communications and Sensors by 1.",
+        "persistent": "When this weapon hits, you may spend 1–3 Momentum. At the end of each round, the target suffers half the weapon's damage rating (round up) again. This effect lasts for a number of rounds equal to the Momentum spent.",
+        "piercing": "The weapon is effective at cutting through layers of protection. When this weapon makes an attack, any Resistance the target has is ignored.",
+        "slowing": "Until the end of the current round, characters aboard the target vessel cannot use the Keep the Initiative Momentum spend.",
+        "spread": "Attacks with this weapon reduce the cost of the Devastating Attack Momentum spend to 1. This is Repeatable.",
+        "versatile": "If an attack with this weapon is successful, it gains bonus Momentum points. Bonus Momentum cannot be saved."
       }
     }
   }

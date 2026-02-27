@@ -1,6 +1,7 @@
 // Core
 import {
   registerSettings,
+  installSettingsHeaderHook,
   registerMigrationSetting,
   runMigrations,
   initSocket,
@@ -64,17 +65,24 @@ import {
 
 import { installMomentumSpendHook } from "./momentum-spend/index.mjs";
 
+import { installMomentumMergerHook } from "./momentum-merger/index.mjs";
+
+import {
+  installChatHeaderMergeHook,
+  installChatHeaderMergeRenderHook,
+} from "./chat-header-merge/index.mjs";
+
 import {
   isBacklinksEnabled,
   isTalentAutomationsEnabled,
   isMomentumSpendEnabled,
+  isMomentumMergerEnabled,
+  isChatHeaderMergeEnabled,
 } from "./core/settings.mjs";
 
 import { isActionChooserEnabled } from "./core/settings.mjs";
 
 const MODULE_ID = "sta-utils";
-const SETTING_TRAIT_TOKENS = "enableTraitTokens";
-const SETTING_TRAIT_DRAWINGS = "traitTokensAsDrawings";
 
 /* -------------------------------------------- */
 /*  Initialization                              */
@@ -92,122 +100,19 @@ Hooks.once("init", () => {
 
   // --- Register settings ---
   registerSettings();
+  installSettingsHeaderHook();
   registerMigrationSetting();
 
-  game.settings.register(MODULE_ID, SETTING_TRAIT_TOKENS, {
-    name: game.i18n.localize(`${MODULE_ID}.settings.enableTraitTokens.name`),
-    hint: game.i18n.localize(`${MODULE_ID}.settings.enableTraitTokens.hint`),
-    scope: "world",
-    config: true,
-    type: Boolean,
-    default: false,
-    requiresReload: true,
-  });
-
-  game.settings.register(MODULE_ID, SETTING_TRAIT_DRAWINGS, {
-    name: game.i18n.localize(
-      `${MODULE_ID}.settings.traitTokensAsDrawings.name`,
-    ),
-    hint: game.i18n.localize(
-      `${MODULE_ID}.settings.traitTokensAsDrawings.hint`,
-    ),
-    scope: "world",
-    config: true,
-    type: Boolean,
-    default: false,
-    requiresReload: true,
-  });
-
-  // --- Trait Drawing style settings (config: false — managed via custom UI) ---
-  // Defaults are LCARS-style: solid coloured blocks, no border, black text.
-  game.settings.register(MODULE_ID, "traitDrawingFontSize", {
-    scope: "world",
-    config: false,
-    type: Number,
-    default: 100,
-  });
-  game.settings.register(MODULE_ID, "traitDrawingFontFamily", {
-    scope: "world",
-    config: false,
-    type: String,
-    default: "Arial",
-  });
-  game.settings.register(MODULE_ID, "traitDrawingTextColor", {
-    scope: "world",
-    config: false,
-    type: String,
-    default: "#000000",
-  });
-  game.settings.register(MODULE_ID, "traitDrawingFillOpacity", {
-    scope: "world",
-    config: false,
-    type: Number,
-    default: 1,
-  });
-  game.settings.register(MODULE_ID, "traitDrawingBorderWidth", {
-    scope: "world",
-    config: false,
-    type: Number,
-    default: 0,
-  });
-  game.settings.register(MODULE_ID, "traitDrawingBorderColor", {
-    scope: "world",
-    config: false,
-    type: String,
-    default: "#000000",
-  });
-  game.settings.register(MODULE_ID, "traitDrawingBorderOpacity", {
-    scope: "world",
-    config: false,
-    type: Number,
-    default: 0,
-  });
-  game.settings.register(MODULE_ID, "traitDrawingTextStrokeColor", {
-    scope: "world",
-    config: false,
-    type: String,
-    default: "",
-  });
-  game.settings.register(MODULE_ID, "traitDrawingTextStrokeThickness", {
-    scope: "world",
-    config: false,
-    type: Number,
-    default: 0,
-  });
-  game.settings.register(MODULE_ID, "traitDrawingFontWeight", {
-    scope: "world",
-    config: false,
-    type: String,
-    default: "normal",
-  });
-  game.settings.register(MODULE_ID, "traitDrawingTextAlign", {
-    scope: "world",
-    config: false,
-    type: String,
-    default: "center",
-  });
-  game.settings.register(MODULE_ID, "traitDrawingBorderDashed", {
-    scope: "world",
-    config: false,
-    type: Boolean,
-    default: false,
-  });
-  game.settings.register(MODULE_ID, "traitDrawingBorderDash", {
-    scope: "world",
-    config: false,
-    type: Number,
-    default: 8,
-  });
-  game.settings.register(MODULE_ID, "traitDrawingBorderGap", {
-    scope: "world",
-    config: false,
-    type: Number,
-    default: 5,
-  });
+  // --- Chat Header Merge (render hook) ---
+  // Must be registered at init time so it catches messages rendered from
+  // the chat log cache before the ready hook fires.
+  if (isChatHeaderMergeEnabled()) {
+    installChatHeaderMergeRenderHook();
+  }
 
   // --- Trait Tokens (gated) ---
-  const traitTokensEnabled = game.settings.get(MODULE_ID, SETTING_TRAIT_TOKENS);
-  const useDrawings = game.settings.get(MODULE_ID, SETTING_TRAIT_DRAWINGS);
+  const traitTokensEnabled = game.settings.get(MODULE_ID, "enableTraitTokens");
+  const useDrawings = game.settings.get(MODULE_ID, "traitTokensAsDrawings");
 
   if (traitTokensEnabled) {
     if (useDrawings) {
@@ -252,10 +157,8 @@ Hooks.once("init", () => {
   }
 
   // --- Journal Backlinks ---
-  // Always register settings so the hidden sync-version key exists.
   const backlinks = new JournalBacklinks();
   game.journalBacklinks = backlinks;
-  backlinks.registerSettings();
 
   if (isBacklinksEnabled()) {
     backlinks.registerHooks();
@@ -268,7 +171,7 @@ Hooks.once("init", () => {
 /* -------------------------------------------- */
 
 Hooks.on("getSceneControlButtons", (controls) => {
-  if (!game.settings.get(MODULE_ID, SETTING_TRAIT_TOKENS)) return;
+  if (!game.settings.get(MODULE_ID, "enableTraitTokens")) return;
 
   controls.tokens.tools.sceneTraits = {
     name: "sceneTraits",
@@ -321,6 +224,18 @@ Hooks.once("ready", async () => {
   if (isMomentumSpendEnabled()) {
     installMomentumSpendHook();
     console.log(`${MODULE_ID} | Momentum Spend feature enabled`);
+  }
+
+  // --- Momentum Merger ---
+  if (isMomentumMergerEnabled()) {
+    installMomentumMergerHook();
+    console.log(`${MODULE_ID} | Momentum Merger feature enabled`);
+  }
+
+  // --- Chat Header Merge ---
+  if (isChatHeaderMergeEnabled()) {
+    installChatHeaderMergeHook();
+    console.log(`${MODULE_ID} | Chat Header Merge feature enabled`);
   }
 
   // --- Flag migration (GM only) ---
