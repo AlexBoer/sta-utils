@@ -73,18 +73,30 @@ function _injectButton(message, html) {
 
   // Avoid double‑injection.
   if (card.querySelector(".sta-utils-momentum-spend-btn")) return;
-  if (card.querySelector(".sta-utils-momentum-spend-btn-small")) return;
 
   const btn = document.createElement("button");
   btn.type = "button";
   btn.classList.add("sta-utils-momentum-spend-btn");
-  btn.innerHTML = `<i class="fas fa-coins"></i> ${t("sta-utils.momentumSpend.spendMomentum")}`;
+  btn.innerHTML = `${t("sta-utils.momentumSpend.spendMomentum")}`;
   btn.addEventListener("click", (ev) => {
     ev.preventDefault();
     _openSpendDialog(message);
   });
 
-  card.appendChild(btn);
+  // Place the button next to the Reroll button in a flex row
+  const rerollBtn = card.querySelector(".reroll-button");
+  if (rerollBtn) {
+    let row = card.querySelector(".sta-utils-chat-btn-row");
+    if (!row) {
+      row = document.createElement("div");
+      row.className = "sta-utils-chat-btn-row";
+      rerollBtn.before(row);
+      row.appendChild(rerollBtn);
+    }
+    row.appendChild(btn);
+  } else {
+    card.appendChild(btn);
+  }
 }
 
 /* ================================================================== */
@@ -477,6 +489,7 @@ async function _openInteractiveDialog(message) {
       content: _renderContent(activeTab.value, selections, false),
       render: (event, dialog) => {
         dialogRef = dialog;
+        dialog.element?.classList?.add("sta-utils-ms-lcars");
         _bindEvents(
           dialog,
           selections,
@@ -554,6 +567,7 @@ async function _openReadOnlyDialog(message) {
       content: _renderContent(activeTab.value, roSelections, true),
       render: (event, dialog) => {
         dialogRef = dialog;
+        dialog.element?.classList?.add("sta-utils-ms-lcars");
         // Update the registered dialog reference
         registerReadOnlyDialog(message.id, dialog, onRemoteUpdate);
         _bindEvents(dialog, roSelections, activeTab, true, refresh);

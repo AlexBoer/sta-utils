@@ -38,14 +38,6 @@ export function initSocket() {
     applyGMUpdate(msg);
   });
 
-  // --- RPC: Player -> GM (create trait token on canvas) ---
-  moduleSocket.register("createTraitToken", async (msg) => {
-    if (!game.user.isGM) return;
-    const { handleCreateTraitTokenRPC } =
-      await import("../trait-tokens/trait-tokens.mjs");
-    await handleCreateTraitTokenRPC(msg);
-  });
-
   // --- RPC: Player -> GM (create trait drawing on canvas) ---
   moduleSocket.register("createTraitDrawing", async (msg) => {
     if (!game.user.isGM) return;

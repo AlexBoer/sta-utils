@@ -466,7 +466,7 @@ async function _onDeleteDrawing(drawingDoc, _options, _userId) {
     const scene = drawingDoc.parent;
 
     // Check whether any remaining drawings on this scene reference the same item
-    const stillUsedByDrawing = scene?.drawings.some((d) => {
+    const stillUsed = scene?.drawings.some((d) => {
       if (d.id === drawingDoc.id) return false;
       const f = d.flags?.[MODULE_ID];
       return (
@@ -476,17 +476,7 @@ async function _onDeleteDrawing(drawingDoc, _options, _userId) {
       );
     });
 
-    // Also check tokens (in case both modes were used at different times)
-    const stillUsedByToken = scene?.tokens.some((t) => {
-      const f = t.flags?.[MODULE_ID];
-      return (
-        f?.isTraitToken &&
-        f.proxyActorId === flags.proxyActorId &&
-        f.embeddedItemId === flags.embeddedItemId
-      );
-    });
-
-    if (stillUsedByDrawing || stillUsedByToken) return;
+    if (stillUsed) return;
 
     try {
       if (actor.items.has(flags.embeddedItemId)) {

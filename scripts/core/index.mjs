@@ -15,5 +15,8 @@ export {
   isChatHeaderMergeEnabled,
   isAutoDeductMomentumEnabled,
   isTooltipsDisabled,
+  getGroupShipActorId,
+  getGroupShipActor,
+  getWorldTraitsActorUuid,
 } from "./settings.mjs";
 export { getModuleSocket, initSocket } from "./socket.mjs";

@@ -1699,76 +1699,209 @@ input.selector.attribute.sta-fatigued-attribute {
  * MOMENTUM SPEND — Button & Dialog
  * ============================================================================= */
 
-.sta-utils-momentum-spend-btn {
+/* ---- Chat button row (Reroll + Spend Momentum side by side) ---- */
+.sta-utils-chat-btn-row {
   display: flex;
-  align-items: center;
-  justify-content: center;
   gap: 6px;
-  margin-top: 8px;
-  width: 100%;
-  cursor: pointer;
-  color: #ddd;
-  border: #ddd solid 1px;
+  margin-top: 4px;
+  justify-content: center;
+}
+
+.sta-utils-momentum-spend-btn, .sta-utils-chat-btn-row .reroll-button, .chat-message.message.flexcol:has(.chatcard) .chatcard .reroll-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    flex: 1;
+    cursor: pointer;
+    font-family: "Roboto Condensed", sans-serif;
+    font-weight: 700;
+    font-size: 0.8em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 8px 8px;
+    border: none;
+    color: #f1a43c;
+    transition: background 0.15s ease, color 0.15s ease;
+    min-height: 10px;
+    --button-size: 1rem;
+    height: 15px;
+    border: #f1a43c solid 1px;
+    border-radius: 4px;
+    margin: 1px;
+}
+
+.sta-utils-momentum-spend-btn:hover, .sta-utils-chat-btn-row .reroll-button:hover, .chat-message.message.flexcol:has(.chatcard) .chatcard .reroll-button:hover {
+  background: rgba(241, 164, 60, 0.15);
+  color: #fff;
 }
 
 .sta-utils-momentum-spend-btn-small {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   margin-top: 4px;
   padding: 2px 8px;
+  font-family: "Roboto Condensed", sans-serif;
+  font-weight: 700;
   font-size: 0.8em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   cursor: pointer;
-  color: #aaa;
-  border: 1px solid #666;
-  background: transparent;
-  opacity: 0.7;
-  transition: opacity 0.15s;
+  color: #c5a3d9;
+  border: 2px solid #9b8fc2;
+  background: rgba(0, 0, 0, 0.2);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .sta-utils-momentum-spend-btn-small:hover {
-  opacity: 1;
-  color: #ddd;
-  border-color: #aaa;
+  background: rgba(197, 163, 217, 0.15);
+  border-color: #f1a43c;
+  color: #f1a43c;
 }
 
-/* ---- Dialog ---- */
+.sta-utils-momentum-spend-btn:disabled,
+.sta-utils-momentum-spend-btn-small:disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
 
+/* ---- Dialog — LCARS Theme ---- */
+
+/* LCARS variables scoped to dialog */
 .sta-utils-ms-dialog {
+  --lcars-orange: #f1a43c;
+  --lcars-peach: #f0b872;
+  --lcars-lavender: #c5a3d9;
+  --lcars-lilac: #9b8fc2;
+  --lcars-blue: #6688cc;
+  --lcars-sky: #88aaff;
+  --lcars-red: #d05050;
+  --lcars-tan: #e8c57a;
+  --lcars-bg: #000;
+  --lcars-text: #ff9900;
+  --lcars-text-dark: #000;
+  --lcars-font: "Antonio", "Roboto Condensed", sans-serif;
+  --lcars-radius: 24px;
+
   padding: 0.5rem 0;
-  width: 420px;
+  width: 440px;
+  font-family: var(--lcars-font);
+  color: var(--lcars-peach);
 }
+
+/* Window-level overrides when the LCARS class is on the dialog wrapper */
+.sta-utils-ms-lcars {
+  background: var(--lcars-bg, #000) !important;
+  border: 3px solid var(--lcars-orange, #f1a43c) !important;
+  border-radius: 24px !important;
+  overflow: hidden;
+}
+
+.sta-utils-ms-lcars .window-header {
+  background: var(--lcars-orange, #f1a43c);
+  color: var(--lcars-text-dark, #000);
+  font-family: "Antonio", "Roboto Condensed", sans-serif;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 0.3rem 1rem;
+  border-radius: 0;
+  border-bottom: none;
+}
+
+.sta-utils-ms-lcars .window-header .window-title {
+  font-family: "Antonio", "Roboto Condensed", sans-serif;
+  font-weight: 700;
+  color: var(--lcars-text-dark, #000);
+}
+
+.sta-utils-ms-lcars .window-header a,
+.sta-utils-ms-lcars .window-header button {
+  color: var(--lcars-text-dark, #000);
+}
+
+.sta-utils-ms-lcars .window-content {
+  background: var(--lcars-bg, #000);
+  padding: 0.75rem;
+}
+
+.sta-utils-ms-lcars .dialog-buttons {
+  border-top: 2px solid rgba(241, 164, 60, 0.3);
+  padding-top: 0.5rem;
+}
+
+.sta-utils-ms-lcars .dialog-buttons button,
+.sta-utils-ms-lcars .dialog-button {
+  font-family: "Antonio", "Roboto Condensed", sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: 12px;
+  border: 2px solid var(--lcars-orange, #f1a43c);
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--lcars-orange, #f1a43c);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.sta-utils-ms-lcars .dialog-buttons button:hover,
+.sta-utils-ms-lcars .dialog-button:hover {
+  background: rgba(241, 164, 60, 0.15);
+  color: #fff;
+}
+
+.sta-utils-ms-lcars .dialog-buttons button:disabled,
+.sta-utils-ms-lcars .dialog-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* ---- Separator ---- */
+.sta-utils-ms-dialog hr {
+  border: none;
+  border-top: 2px solid rgba(241, 164, 60, 0.25);
+  margin: 0.6em 0;
+}
+
+/* ---- Tabs ---- */
 
 .sta-utils-ms-tabs {
   display: flex;
-  gap: 2px;
+  gap: 0.3rem;
   margin-bottom: 0.75em;
-  border-bottom: 2px solid #444;
+  border-bottom: none;
 }
 
 .sta-utils-ms-tab-btn {
   flex: 1;
-  padding: 0.35em 0.5em;
+  padding: 0.4rem 0.5rem;
+  font-family: var(--lcars-font);
   font-size: 0.85em;
-  font-weight: bold;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  background: #333;
-  color: #aaa;
+  letter-spacing: 0.8px;
+  background: var(--lcars-lilac);
+  color: var(--lcars-text-dark);
   border: none;
-  border-bottom: 3px solid transparent;
+  border-radius: var(--lcars-radius) 8px 8px var(--lcars-radius);
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
+  transition: filter 0.15s ease, opacity 0.15s ease;
 }
 
 .sta-utils-ms-tab-btn:hover {
-  color: #ddd;
+  filter: brightness(1.15);
 }
 
 .sta-utils-ms-tab-btn.active {
-  color: #fff;
-  border-bottom-color: #f1a43c;
-  background: #444;
+  background: var(--lcars-orange);
+  color: var(--lcars-text-dark);
+  filter: brightness(1.1);
+  outline: 2px solid #fff;
+  outline-offset: -2px;
 }
 
 /* ---- Spend rows ---- */
@@ -1783,29 +1916,39 @@ input.selector.attribute.sta-fatigued-attribute {
   display: flex;
   align-items: center;
   gap: 0.5em;
-  padding: 0.3em 0.4em;
-  border-radius: 4px;
-  transition: background 0.1s;
+  padding: 0.4em 0.6em;
+  border-radius: 8px;
+  background: rgba(155, 143, 194, 0.06);
+  border-left: 3px solid var(--lcars-lilac);
+  transition: background 0.15s, border-color 0.15s;
 }
 
 .sta-utils-ms-row:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(155, 143, 194, 0.12);
+  border-left-color: var(--lcars-orange);
 }
 
 .sta-utils-ms-name {
   flex: 1;
-  font-weight: 600;
+  font-family: var(--lcars-font);
+  font-weight: 700;
   font-size: 0.95em;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--lcars-peach);
   min-width: 0;
 }
 
 .sta-utils-ms-cost-label {
-  font-size: 0.8em;
-  color: #888;
-  font-style: italic;
-  width: 9em;
-  text-align: right;
-  flex-shrink: 0;
+    font-family: 'Roboto Condensed';
+    font-size: 0.85em;
+    font-weight: 600;
+    color: var(--lcars-sky);
+    width: 9em;
+    text-align: right;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
 .sta-utils-ms-controls {
@@ -1820,7 +1963,10 @@ input.selector.attribute.sta-fatigued-attribute {
   display: inline-block;
   min-width: 1.8em;
   text-align: center;
-  font-weight: bold;
+  font-family: var(--lcars-font);
+  font-weight: 700;
+  font-size: 1.05em;
+  color: var(--lcars-text);
 }
 
 .sta-utils-ms-minus,
@@ -1831,23 +1977,60 @@ input.selector.attribute.sta-fatigued-attribute {
   font-weight: bold;
   line-height: 1;
   border-radius: 50%;
-  border: 2px solid #666;
-  background: #eee;
-  color: #222;
+  border: 2px solid var(--lcars-lavender);
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--lcars-lavender);
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
 .sta-utils-ms-minus:hover:not(:disabled),
 .sta-utils-ms-plus:hover:not(:disabled) {
-  background: #ccc;
-  color: #000;
+  background: rgba(197, 163, 217, 0.2);
+  border-color: var(--lcars-orange);
+  color: var(--lcars-orange);
 }
 
 .sta-utils-ms-minus:disabled,
 .sta-utils-ms-plus:disabled {
-  opacity: 0.4;
+  opacity: 0.3;
   cursor: default;
+}
+
+/* ---- Checkbox LCARS styling ---- */
+
+.sta-utils-ms-checkbox,
+.sta-utils-ms-dual-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.6em;
+  height: 1.6em;
+  border: 2px solid var(--lcars-lilac);
+  border-radius: 5px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  flex-shrink: 0;
+  box-shadow: none;
+}
+
+.sta-utils-ms-checkbox:hover,
+.sta-utils-ms-dual-checkbox:hover {
+  border-color: var(--lcars-orange);
+}
+
+.sta-utils-ms-checkbox:checked,
+.sta-utils-ms-dual-checkbox:checked {
+  background: var(--lcars-orange);
+  border-color: var(--lcars-orange);
+  box-shadow: 0 0 6px rgba(241, 164, 60, 0.5),
+              inset 0 0 0 3px var(--lcars-bg, #000);
+}
+
+.sta-utils-ms-checkbox:checked::after,
+.sta-utils-ms-dual-checkbox:checked::after {
+  content: none;
 }
 
 /* ---- Dual controls for immediate (Momentum / Threat) spends ---- */
@@ -1867,19 +2050,21 @@ input.selector.attribute.sta-fatigued-attribute {
 }
 
 .sta-utils-ms-ctrl-label {
-  font-weight: bold;
+  font-family: var(--lcars-font);
+  font-weight: 700;
   font-size: 0.75em;
-  color: #aaa;
+  color: var(--lcars-sky);
   min-width: 1em;
   text-align: center;
 }
 
 .sta-utils-ms-ctrl-threat {
-  color: #d44;
+  color: var(--lcars-red);
 }
 
 .sta-utils-ms-threat-cost {
-  color: #d44;
+  color: var(--lcars-red);
+  font-family: var(--lcars-font);
   font-weight: bold;
 }
 
@@ -1900,27 +2085,50 @@ input.selector.attribute.sta-fatigued-attribute {
 .sta-utils-ms-summary {
   display: flex;
   justify-content: space-between;
+  font-family: var(--lcars-font);
   font-size: 0.95em;
-  padding: 0.2em 0;
+  font-weight: 600;
+  padding: 0.25em 0.4em;
+  color: 'Roboto Condensed';
+  letter-spacing: 0.3px;
+}
+
+.sta-utils-ms-summary strong {
+  color: var(--lcars-text);
 }
 
 .sta-utils-ms-over {
-  color: #d33;
+  color: var(--lcars-red);
   font-weight: bold;
 }
 
+.sta-utils-ms-over strong {
+  color: var(--lcars-red);
+}
+
 .sta-utils-ms-warning {
-  color: #d33;
+  color: var(--lcars-red);
+  font-family: var(--lcars-font);
   font-size: 0.9em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   text-align: center;
   margin-top: 0.25em;
+  padding: 0.3em 0.5em;
+  background: rgba(208, 80, 80, 0.12);
+  border-radius: 6px;
+  border: 1px solid rgba(208, 80, 80, 0.3);
 }
 
 .sta-utils-ms-readonly-notice {
   text-align: center;
+  font-family: var(--lcars-font);
   font-size: 0.85em;
-  color: #888;
-  font-style: italic;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--lcars-lilac);
   margin-top: 0.5em;
 }
 
@@ -2782,6 +2990,7 @@ input.selector.attribute.sta-fatigued-attribute {
   position: relative;
   min-height: 60px;
   justify-content: center;
+  overflow: hidden;
 }
 
 .sta-reserve-power--inactive .sta-reserve-power__indicator {
@@ -3063,3 +3272,784 @@ input.selector.attribute.sta-fatigued-attribute {
   display: none;
 }
 
+/* =============================================================================
+ * STARSHIP SHEET — Reserve Power routed-system glow
+ * ============================================================================= */
+
+.sta-utils-reserve-power-routed {
+  position: relative;
+  border-radius: 4px;
+  outline: 2px solid var(--lcars-orange, #f1a43c);
+  outline-offset: 1px;
+  box-shadow:
+    0 0 6px rgba(241, 164, 60, 0.5),
+    0 0 12px rgba(241, 164, 60, 0.25),
+    inset 0 0 6px rgba(241, 164, 60, 0.15);
+  animation: sta-utils-reserve-power-pulse 2s ease-in-out infinite;
+}
+
+@keyframes sta-utils-reserve-power-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 6px rgba(241, 164, 60, 0.5),
+      0 0 12px rgba(241, 164, 60, 0.25),
+      inset 0 0 6px rgba(241, 164, 60, 0.15);
+  }
+  50% {
+    box-shadow:
+      0 0 10px rgba(241, 164, 60, 0.7),
+      0 0 18px rgba(241, 164, 60, 0.35),
+      inset 0 0 8px rgba(241, 164, 60, 0.2);
+  }
+}
+
+/* =============================================================================
+ * SHAKEN — Minor Damage chat card
+ * ============================================================================= */
+
+.sta-utils-shaken-card {
+  padding: 0.6em 0.75em;
+  border-left: 4px solid #e04040;
+  background: rgba(224, 64, 64, 0.06);
+  border-radius: 4px;
+}
+
+.sta-utils-shaken-title {
+  margin: 0 0 0.3em;
+  font-size: 1.3em;
+  font-weight: 700;
+  color: #e04040;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sta-utils-shaken-title i {
+  margin-right: 0.3em;
+}
+
+.sta-utils-shaken-flavour {
+  margin: 0 0 0.6em;
+  font-size: 0.9em;
+  color: #ccc;
+}
+
+.sta-utils-shaken-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+}
+
+.sta-utils-shaken-btn {
+  text-align: left;
+  padding: 0.45em 0.7em;
+  border: 1px solid rgba(224, 64, 64, 0.3);
+  border-radius: 4px;
+  background: rgba(224, 64, 64, 0.08);
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.sta-utils-shaken-btn:hover {
+  background: rgba(224, 64, 64, 0.18);
+  border-color: rgba(224, 64, 64, 0.5);
+}
+
+.sta-utils-shaken-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.sta-utils-shaken-btn i {
+  margin-right: 0.3em;
+  width: 1.1em;
+  text-align: center;
+}
+
+.sta-utils-shaken-btn--roll {
+  border-color: rgba(241, 164, 60, 0.4);
+  background: rgba(241, 164, 60, 0.08);
+}
+
+.sta-utils-shaken-btn--roll:hover {
+  background: rgba(241, 164, 60, 0.18);
+  border-color: rgba(241, 164, 60, 0.6);
+}
+
+/* ---- Resolved state ---- */
+
+.sta-utils-shaken-card--resolved .sta-utils-shaken-title {
+  margin-bottom: 0.4em;
+}
+
+.sta-utils-shaken-result {
+  padding: 0.4em 0;
+}
+
+.sta-utils-shaken-result-label {
+  margin: 0 0 0.2em;
+  font-size: 1.05em;
+}
+
+.sta-utils-shaken-result-desc {
+  margin: 0;
+  font-size: 0.9em;
+  color: #ccc;
+}
+
+.sta-utils-shaken-roll-summary {
+  margin: 0 0 0.5em;
+  font-size: 0.85em;
+  color: #aaa;
+}
+
+.sta-utils-shaken-roll-summary i {
+  margin-right: 0.2em;
+  color: #f1a43c;
+}
+
+.sta-utils-shaken-roll-item {
+  white-space: nowrap;
+}
+
+
+/* =============================================================================
+ * CHARACTER SHEET — Combat Turn Indicator
+ * ============================================================================= */
+
+.image-field.sta-utils-active-turn {
+  position: relative;
+}
+
+.image-field.sta-utils-active-turn .profile-img {
+  box-shadow:
+    0 0 10px 3px rgba(245, 166, 35, 0.7),
+    0 0 22px 6px rgba(245, 166, 35, 0.35);
+  border: 2px solid #f5a623;
+  animation: sta-utils-turn-glow 2.5s ease-in-out infinite;
+}
+
+@keyframes sta-utils-turn-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 10px 3px rgba(245, 166, 35, 0.7),
+      0 0 22px 6px rgba(245, 166, 35, 0.35);
+  }
+  50% {
+    box-shadow:
+      0 0 16px 5px rgba(245, 166, 35, 0.9),
+      0 0 32px 10px rgba(245, 166, 35, 0.45);
+  }
+}
+
+.sta-utils-turn-indicator {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%) scale(1);
+  background: rgba(0, 0, 0, 0.82);
+  color: #f5a623;
+  font-family: var(--lcars-font, 'Antonio', sans-serif);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 3px;
+  border: 1.5px solid #f5a623;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 0 4px rgba(245, 166, 35, 0.6);
+  animation: sta-utils-turn-badge-pulse 2s ease-in-out infinite;
+}
+
+@keyframes sta-utils-turn-badge-pulse {
+  0%, 100% {
+    transform: translateX(-50%) scale(1);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+    border-color: #f5a623;
+    text-shadow: 0 0 4px rgba(245, 166, 35, 0.6);
+  }
+  50% {
+    transform: translateX(-50%) scale(1.08);
+    box-shadow:
+      0 1px 6px rgba(0, 0, 0, 0.6),
+      0 0 10px rgba(245, 166, 35, 0.5);
+    border-color: #ffd080;
+    text-shadow: 0 0 8px rgba(245, 166, 35, 0.9);
+  }
+}
+
+.sta-utils-turn-indicator i {
+  margin-right: 3px;
+  font-size: inherit;
+}
+
+
+/* =============================================================================
+ * TIDY CHARACTER SHEET MODE
+ * Scoped under .character-sheet.sta-tidy — collapsible sections and
+ * right-click context menus only, no other layout/sizing changes.
+ * ============================================================================= */
+
+/* Section title gets a pointer cursor and chevron */
+.character-sheet.sta-tidy .sta-tidy-section > .title {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+/* Info buttons inside tidy titles stay tight against the label text */
+.character-sheet.sta-tidy .sta-tidy-section > .title > a[class*='info-btn'] {
+  margin-left: 4px;
+  margin-right: 10px;
+}
+
+/* Chevron rotates when collapsed */
+.character-sheet.sta-tidy .sta-tidy-chevron {
+  font-size: 0.6rem;
+  transition: transform 0.15s ease;
+  margin-right: 2px;
+  flex-shrink: 0;
+}
+
+.character-sheet.sta-tidy .sta-tidy-chevron.sta-collapsed {
+  transform: rotate(-90deg);
+}
+
+/* Wrapper for collapsible content */
+.character-sheet.sta-tidy .sta-tidy-items {
+  overflow: hidden;
+}
+
+.character-sheet.sta-tidy .sta-tidy-items.sta-collapsed {
+  display: none;
+}
+
+/* Sections shrink to content when collapsed */
+.character-sheet.sta-tidy .sta-tidy-section {
+  min-height: 0 !important;
+  flex-shrink: 0;
+  flex-grow: 0;
+}
+
+/* Create button relocated into title bar */
+.character-sheet.sta-tidy .sta-tidy-create-btn {
+  margin-left: auto;
+  font-size: 0.75rem;
+  padding: 0 4px;
+}
+
+/* Hide header rows (the create button has been moved into the title) */
+.character-sheet.sta-tidy .section .header.row {
+  display: none;
+}
+
+/* Hide edit/delete controls — replaced by right-click context menu */
+.character-sheet.sta-tidy .section .row.entry > .control {
+  display: none;
+}
+
+/* Prevent columns from stretching sections */
+.character-sheet.sta-tidy .items-column-left,
+.character-sheet.sta-tidy .items-column-right {
+  align-content: flex-start;
+}
+
+.character-sheet.sta-tidy .tab[data-tab='traits'] > .split-section {
+  align-items: flex-start;
+}
+
+
+/* =============================================================================
+ * COMPACT CHARACTER SHEET MODE
+ * All rules scoped under .character-sheet.sta-compact so they only apply
+ * when the user opts in via the client setting.
+ *
+ * Design goals:
+ *   1. Collapsible sections (click title bar to toggle)
+ *   2. Shrink item icons & hide header rows
+ *   3. Hide edit/delete controls (right-click context menu instead)
+ *   4. Force tight row height (~22px) and spacing
+ *   5. Compact top area (tracks, name field)
+ * ============================================================================= */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * COLLAPSIBLE SECTIONS
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Section title gets a pointer cursor and chevron */
+.character-sheet.sta-compact .sta-compact-section > .title {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Chevron rotates when collapsed */
+.character-sheet.sta-compact .sta-compact-chevron {
+  font-size: 0.6rem;
+  transition: transform 0.15s ease;
+  margin-right: 2px;
+  flex-shrink: 0;
+}
+
+.character-sheet.sta-compact .sta-compact-chevron.sta-collapsed {
+  transform: rotate(-90deg);
+}
+
+/* The wrapper div around items under a section title */
+.character-sheet.sta-compact .sta-compact-items {
+  overflow: hidden;
+  transition: none;
+}
+
+.character-sheet.sta-compact .sta-compact-items.sta-collapsed {
+  display: none;
+}
+
+/* Sections shrink to content when collapsed, don't stretch to fill column */
+.character-sheet.sta-compact .sta-compact-section {
+  min-height: 0 !important;
+  flex-shrink: 0;
+  flex-grow: 0;
+}
+
+/* Create button relocated into title bar */
+.character-sheet.sta-compact .sta-compact-create-btn {
+  margin-left: auto;
+  font-size: 0.7rem;
+  padding: 0 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * HIDE HEADER ROWS — they are redundant when icons & controls are hidden
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-compact .section .header.row {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * ITEM ICONS — keep visible but shrink to fit tight rows
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-compact .section .row.entry > .image {
+  flex: 0 0 18px;
+  margin: 0 3px 0 0;
+}
+
+.character-sheet.sta-compact .section .row.entry > .image img {
+  height: 18px;
+  width: 18px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * HIDE EDIT / DELETE CONTROLS — replaced by right-click context menu
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-compact .section .row.entry > .control {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * ITEM ROWS — tight spacing, full width
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-compact .section .row.entry {
+  min-height: 0;
+  max-height: 22px;
+  height: 22px;
+  padding: 1px 4px;
+  line-height: 20px;
+  margin: 0;
+  align-items: center;
+}
+
+/* Alternate row shading for readability without icons */
+.character-sheet.sta-compact .section li.row.entry:nth-child(even) {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* Item names fill remaining width (controls hidden, image kept but small) */
+.character-sheet.sta-compact .item-name {
+  font-size: 0.82rem;
+  line-height: 20px;
+  padding: 0;
+  height: 20px;
+}
+
+/* Fix column widths — controls (40px) are hidden */
+.character-sheet.sta-compact .section .row .one-column-with-roll {
+  width: calc(100% - 22px);
+}
+
+.character-sheet.sta-compact .section .row .two-column-with-roll-primary {
+  width: calc(100% - 58px);
+}
+
+.character-sheet.sta-compact .section .row .two-column-with-roll-secondary {
+  font-size: 0.82rem;
+  width: 36px;
+  text-align: center;
+}
+
+.character-sheet.sta-compact .item-quantity {
+  width: 32px;
+  height: 18px;
+  font-size: 0.8rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * VALUE ROWS — keep toggle & use-value button visible
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-compact .value-used {
+  font-size: 0.8rem;
+}
+
+.character-sheet.sta-compact .sta-use-value-btn {
+  font-size: 0.72rem;
+  padding: 0 1em;
+  min-width: 1em;
+  height: 1.2rem;
+  line-height: 1.1rem;
+}
+
+.character-sheet.sta-compact .sta-inline-sheet-btn {
+  font-size: 0.72rem;
+  padding: 0 1em;
+  min-width: 1em;
+  height: 1.2rem;
+  line-height: 1.1rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * PORTRAIT & NAME — inline name beside portrait
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-compact .top-left-column {
+  flex: 0 0 80px !important;
+  padding-right: 4px;
+}
+
+.character-sheet.sta-compact .image-field {
+  width: 70px !important;
+  height: 70px !important;
+  justify-self: center;
+}
+
+/* Hide redundant "Name" label */
+.character-sheet.sta-compact .name-field .title {
+  display: none;
+}
+
+/* Name field becomes a compact single-line inline with tracks */
+.character-sheet.sta-compact .name-field {
+  margin-bottom: 0;
+}
+
+.character-sheet.sta-compact .name-field .text-entry {
+  font-size: 1.1rem;
+  height: 1.5rem;
+  margin-top: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * COMPACT TRACKS — fraction display replacing bar boxes
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Hide original separate track title elements (fallback if JS hasn't run yet) */
+.character-sheet.sta-compact .top-right-column > .tracktitle,
+.character-sheet.sta-compact .top-right-column > .sta-tracktitle-with-button {
+  display: none;
+}
+
+/* All three fractions on one line, evenly spaced */
+.character-sheet.sta-compact .sta-compact-tracks-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+  width: 100%;
+  margin: 2px 0;
+  padding: 0 2px;
+}
+
+/* Individual fraction: Label [input] / max */
+.character-sheet.sta-compact .sta-compact-track-frac {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.78rem;
+}
+
+.character-sheet.sta-compact .sta-compact-track-frac-label {
+  font-weight: bold;
+  font-size: 0.72rem;
+  color: var(--color-text-dark-secondary, #ccc);
+  margin-right: 1px;
+}
+
+.character-sheet.sta-compact .sta-compact-track-frac-label .fa-circle-info {
+  font-size: 0.55rem;
+  margin-left: 2px;
+}
+
+.character-sheet.sta-compact .sta-compact-track-frac-input {
+  width: 28px;
+  height: 18px;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: bold;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.15);
+  color: inherit;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.character-sheet.sta-compact .sta-compact-track-frac-input::-webkit-inner-spin-button,
+.character-sheet.sta-compact .sta-compact-track-frac-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.character-sheet.sta-compact .sta-compact-track-frac-sep {
+  font-size: 0.7rem;
+  opacity: 0.6;
+}
+
+.character-sheet.sta-compact .sta-compact-track-frac-max {
+  font-size: 0.72rem;
+  opacity: 0.7;
+}
+
+/* +/- stepper buttons */
+.character-sheet.sta-compact .sta-compact-track-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  margin: 0 1px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.2);
+  color: inherit;
+  font-size: 0.55rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.character-sheet.sta-compact .sta-compact-track-step:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.character-sheet.sta-compact .sta-compact-track-step:active {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.character-sheet.sta-compact .top-right-column {
+  gap: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * TOP SPLIT-SECTION — shrink to content, give space to bottom
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+/* The character-sheet uses two .split-section divs: top (portrait+tracks)
+   and bottom (attributes+tabs). Make the top shrink so the bottom expands. */
+.character-sheet.sta-compact > .split-section:first-child {
+  flex: 0 0 auto;
+}
+
+.character-sheet.sta-compact > .split-section:last-child {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * ATTRIBUTES & DISCIPLINES — tighter rows
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-compact .attribute-block,
+.character-sheet.sta-compact .discipline-block {
+  margin-bottom: 3px;
+}
+
+.character-sheet.sta-compact .attribute-block .title,
+.character-sheet.sta-compact .discipline-block .title {
+  height: 1.1rem;
+  font-size: 0.72rem;
+  margin-top: 2px;
+}
+
+.character-sheet.sta-compact .row-right {
+  margin-top: 0;
+}
+
+.character-sheet.sta-compact .row-right .list-entry {
+  font-size: 0.82rem;
+}
+
+.character-sheet.sta-compact .row-right .numeric-entry {
+  height: 20px;
+  width: 36px;
+  font-size: 0.82rem;
+}
+
+.character-sheet.sta-compact .row-right .selector {
+  width: 13px;
+  height: 13px;
+  margin: 0 10px 0 10px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * BUTTONS & MISC BELOW ATTRIBUTES
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-compact .rollrepnotdis {
+  font-size: 0.72rem;
+  margin: 2px 0;
+}
+
+.character-sheet.sta-compact .buttons {
+  gap: 3px;
+}
+
+.character-sheet.sta-compact .buttons .check-button {
+  font-size: 0.72rem;
+  padding: 2px 4px;
+}
+
+.character-sheet.sta-compact .stressmod {
+  font-size: 0.72rem;
+  margin-top: 2px;
+}
+
+.character-sheet.sta-compact .stressmod .text-entry {
+  height: 1.4rem;
+  font-size: 0.8rem;
+  width: 40px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * TAB NAVIGATION
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-compact nav.sheet-tabs.tabs {
+  padding-left: 40px;
+}
+
+.character-sheet.sta-compact nav.sheet-tabs .item {
+  font-size: 0.78rem;
+  width: auto;
+  padding: 2px 7px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * SECTION TITLE BARS — slightly smaller, tighter
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-compact .section .title,
+.character-sheet.sta-compact .tab .title {
+  height: auto;
+  min-height: 1.1rem;
+  font-size: 0.72rem;
+  margin-top: 2px;
+  margin-bottom: 0;
+  padding: 1px 4px;
+}
+
+.character-sheet.sta-compact .sta-values-title-with-button {
+  font-size: 0.72rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * ITEM COLUMN CONTAINERS
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-compact .items-column-left,
+.character-sheet.sta-compact .items-column-right {
+  padding-left: 2px;
+  padding-right: 2px;
+  align-content: flex-start;
+}
+
+/* Prevent column containers from stretching sections to fill height */
+.character-sheet.sta-compact .tab[data-tab='traits'] > .split-section {
+  align-items: flex-start;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * BIOGRAPHY TAB
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-compact .tab[data-tab="biography"] .column .title {
+  font-size: 0.68rem;
+  height: auto;
+  margin-top: 1px;
+  margin-bottom: 0;
+}
+
+.character-sheet.sta-compact .tab[data-tab="biography"] .column .text-entry {
+  font-size: 0.82rem;
+  height: 1.8rem;
+}
+
+.character-sheet.sta-compact .tab[data-tab="biography"] .amiklingon {
+  font-size: 0.72rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * DEVELOPMENT TAB
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-compact .two-col .row {
+  font-size: 0.78rem;
+  gap: 3px;
+}
+
+.character-sheet.sta-compact .two-col .row input[type="checkbox"] {
+  width: 13px;
+  height: 13px;
+}
+
+.character-sheet.sta-compact .item-list-scrollable {
+  max-height: 120px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * NOTES TAB
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-compact .tab[data-tab="notes"] .note {
+  height: auto;
+  flex: 1;
+  min-height: 200px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * LOG & ARC TITLES IN DEVELOPMENT
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-compact .sta-log-inline-actions {
+  font-size: 0.72rem;
+}
+
+.character-sheet.sta-compact .sta-callbacks-arc-title {
+  font-size: 0.72rem;
+  padding: 1px 4px;
+}

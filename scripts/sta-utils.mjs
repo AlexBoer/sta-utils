@@ -9,8 +9,6 @@ import {
 
 // Features
 import {
-  initTraitTokens,
-  initTraitTokenClick,
   initTraitVisibility,
   initSceneConfig,
   getOrCreateProxyActor,
@@ -29,6 +27,7 @@ import {
   isFatigueEnabled,
   isStyleEnhanceEnabled,
   _toggleStyleEnhance,
+  getWorldTraitsActorUuid,
 } from "./core/settings.mjs";
 
 import { openDicePoolMonitor } from "./dice-pool-monitor/index.mjs";
@@ -72,8 +71,11 @@ import {
   installChatHeaderMergeRenderHook,
 } from "./chat-header-merge/index.mjs";
 
+import { installShakenHook } from "./shaken/index.mjs";
+
 import {
   isBacklinksEnabled,
+  isDicePoolOverrideEnabled,
   isTalentAutomationsEnabled,
   isMomentumSpendEnabled,
   isMomentumMergerEnabled,
@@ -112,22 +114,14 @@ Hooks.once("init", () => {
 
   // --- Trait Tokens (gated) ---
   const traitTokensEnabled = game.settings.get(MODULE_ID, "enableTraitTokens");
-  const useDrawings = game.settings.get(MODULE_ID, "traitTokensAsDrawings");
 
   if (traitTokensEnabled) {
-    if (useDrawings) {
-      initTraitDrawings();
-      initTraitDrawingClick();
-      initTraitDrawingSettingsHook();
-    } else {
-      initTraitTokens();
-      initTraitTokenClick();
-    }
+    initTraitDrawings();
+    initTraitDrawingClick();
+    initTraitDrawingSettingsHook();
     initTraitVisibility();
     initSceneConfig();
-    console.log(
-      `${MODULE_ID} | Trait Tokens feature enabled (mode: ${useDrawings ? "drawings" : "tokens"})`,
-    );
+    console.log(`${MODULE_ID} | Trait Tokens feature enabled (drawings mode)`);
   }
 
   // --- Style Enhancements (dynamic, can toggle at runtime) ---
@@ -199,7 +193,19 @@ Hooks.on("getSceneControlButtons", (controls) => {
     button: true,
     visible: game.user.isGM,
     onChange: async () => {
-      const actor = await getOrCreateWorldTraitActor();
+      const uuid = getWorldTraitsActorUuid();
+      let actor;
+      if (uuid) {
+        actor = await fromUuid(uuid);
+        if (!actor) {
+          ui.notifications.warn(
+            `World Traits actor not found for UUID: ${uuid}`,
+          );
+          return;
+        }
+      } else {
+        actor = await getOrCreateWorldTraitActor();
+      }
       actor.sheet.render(true);
     },
   };
@@ -238,6 +244,9 @@ Hooks.once("ready", async () => {
     console.log(`${MODULE_ID} | Chat Header Merge feature enabled`);
   }
 
+  // --- Shaken (Minor Damage on Group Ship) ---
+  installShakenHook();
+
   // --- Flag migration (GM only) ---
   if (game.user.isGM) {
     await runMigrations();
@@ -248,11 +257,16 @@ Hooks.once("ready", async () => {
     game.journalBacklinks.checkInitialSync();
   }
 
-  // --- Dice Pool Override (needed by talent automations) ---
-  if (isTalentAutomationsEnabled()) {
-    registerAllMiddleware();
+  // --- Dice Pool Override (independent feature) ---
+  if (isDicePoolOverrideEnabled()) {
     installDicePoolOverride();
     installRerollOverride();
+    console.log(`${MODULE_ID} | Dice Pool Override feature enabled`);
+  }
+
+  // --- Talent Automation Middleware (requires dice pool override) ---
+  if (isTalentAutomationsEnabled() && isDicePoolOverrideEnabled()) {
+    registerAllMiddleware();
   }
 
   // --- Public API ---

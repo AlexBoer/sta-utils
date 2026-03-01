@@ -13,18 +13,24 @@ const ENABLE_TALENT_AUTOMATIONS_SETTING = "enableTalentAutomations";
 const DISABLE_TOOLTIPS_SETTING = "disableTooltips";
 const ENABLE_ACTION_CHOOSER_SETTING = "enableActionChooser";
 const ACTION_CHOOSER_AS_TAB_SETTING = "actionChooserAsTab";
+const ENABLE_DICE_POOL_OVERRIDE_SETTING = "enableDicePoolOverride";
 const ENABLE_MOMENTUM_SPEND_SETTING = "enableMomentumSpend";
 const AUTO_DEDUCT_MOMENTUM_SETTING = "autoDeductMomentum";
 const ENABLE_MOMENTUM_MERGER_SETTING = "enableMomentumMerger";
 const ENABLE_CHAT_HEADER_MERGE_SETTING = "enableChatHeaderMerge";
 const SETTING_TRAIT_TOKENS = "enableTraitTokens";
-const SETTING_TRAIT_DRAWINGS = "traitTokensAsDrawings";
+const SETTING_WORLD_TRAITS_ACTOR_UUID = "worldTraitsActorUuid";
 const SETTING_BACKLINKS_REBUILD_ON_SAVE = "backlinksRebuildOnSave";
 const SETTING_BACKLINKS_HEADING_TAG = "backlinksHeadingTag";
 const SETTING_BACKLINKS_MIN_PERMISSION = "backlinksMinPermission";
 const SETTING_BACKLINKS_DEBUG = "backlinksDebug";
 const SETTING_BACKLINKS_LAST_SYNCED = "backlinksLastSyncedVersion";
 const SETTING_BACKLINKS_SYNC_BUTTON = "backlinksSyncButton";
+const GROUP_SHIP_ACTOR_SETTING = "groupShipActorId";
+const COMPACT_CHARACTER_SHEET_SETTING = "compactCharacterSheet";
+const TIDY_CHARACTER_SHEET_SETTING = "tidyCharacterSheet";
+
+const OFFICERS_LOG_MODULE_ID = "sta-officers-log";
 
 /** Localized group labels for the settings menu. */
 const GROUP_WORLD = "sta-utils.settings.groups.world";
@@ -36,7 +42,7 @@ const GROUP_CLIENT = "sta-utils.settings.groups.client";
  */
 const SUBGROUPS = [
   {
-    firstKey: ENABLE_MOMENTUM_SPEND_SETTING,
+    firstKey: ENABLE_DICE_POOL_OVERRIDE_SETTING,
     label: "sta-utils.settings.subgroups.dicePoolMomentum",
   },
   {
@@ -50,6 +56,10 @@ const SUBGROUPS = [
   {
     firstKey: SETTING_TRAIT_TOKENS,
     label: "sta-utils.settings.subgroups.traitTokens",
+  },
+  {
+    firstKey: GROUP_SHIP_ACTOR_SETTING,
+    label: "sta-utils.settings.subgroups.groupShip",
   },
   {
     firstKey: ENABLE_CHAT_HEADER_MERGE_SETTING,
@@ -74,6 +84,17 @@ export function registerSettings() {
   // =====================================================
 
   // ----- Dice Pool & Momentum -----
+
+  game.settings.register(MODULE_ID, ENABLE_DICE_POOL_OVERRIDE_SETTING, {
+    name: t("sta-utils.settings.enableDicePoolOverride.name"),
+    hint: t("sta-utils.settings.enableDicePoolOverride.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+    group: GROUP_WORLD,
+  });
 
   game.settings.register(MODULE_ID, ENABLE_MOMENTUM_SPEND_SETTING, {
     name: t("sta-utils.settings.enableMomentumSpend.name"),
@@ -211,14 +232,50 @@ export function registerSettings() {
     group: GROUP_WORLD,
   });
 
-  game.settings.register(MODULE_ID, SETTING_TRAIT_DRAWINGS, {
-    name: t("sta-utils.settings.traitTokensAsDrawings.name"),
-    hint: t("sta-utils.settings.traitTokensAsDrawings.hint"),
+  game.settings.register(MODULE_ID, SETTING_WORLD_TRAITS_ACTOR_UUID, {
+    name: t("sta-utils.settings.worldTraitsActorUuid.name"),
+    hint: t("sta-utils.settings.worldTraitsActorUuid.hint"),
     scope: "world",
     config: true,
-    type: Boolean,
-    default: false,
-    requiresReload: true,
+    type: String,
+    default: "",
+    group: GROUP_WORLD,
+  });
+
+  // ----- Group Ship -----
+
+  const officersLogActive = game.modules.get(OFFICERS_LOG_MODULE_ID)?.active;
+
+  game.settings.register(MODULE_ID, GROUP_SHIP_ACTOR_SETTING, {
+    name: t("sta-utils.settings.groupShipActorId.name"),
+    hint: officersLogActive
+      ? t("sta-utils.settings.groupShipActorId.hintOfficersLog")
+      : t("sta-utils.settings.groupShipActorId.hint"),
+    scope: "world",
+    config: !officersLogActive,
+    type: String,
+    default: "",
+    choices: () => {
+      const out = { "": t("sta-utils.settings.groupShipActorId.none") };
+      const actors = game.actors
+        ? Array.from(game.actors.values?.() ?? game.actors)
+        : [];
+      for (const a of actors) {
+        const type = String(a?.type ?? "");
+        const hasShields =
+          typeof a?.system?.shields?.max !== "undefined" ||
+          typeof a?.system?.shields?.value !== "undefined";
+        const shipLike =
+          type === "starship" ||
+          type === "ship" ||
+          type === "smallCraft" ||
+          type === "smallcraft" ||
+          (type && type !== "character" && hasShields);
+        if (!shipLike) continue;
+        out[a.id] = a.name ?? a.id;
+      }
+      return out;
+    },
     group: GROUP_WORLD,
   });
 
@@ -430,6 +487,28 @@ export function registerSettings() {
     default: false,
     group: GROUP_CLIENT,
   });
+
+  game.settings.register(MODULE_ID, COMPACT_CHARACTER_SHEET_SETTING, {
+    name: t("sta-utils.settings.compactCharacterSheet.name"),
+    hint: t("sta-utils.settings.compactCharacterSheet.hint"),
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+    group: GROUP_CLIENT,
+  });
+
+  game.settings.register(MODULE_ID, TIDY_CHARACTER_SHEET_SETTING, {
+    name: t("sta-utils.settings.tidyCharacterSheet.name"),
+    hint: t("sta-utils.settings.tidyCharacterSheet.hint"),
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+    group: GROUP_CLIENT,
+  });
 }
 
 /* ------------------------------------------------------------------ */
@@ -511,6 +590,17 @@ export function isTooltipsDisabled() {
 }
 
 /** @returns {boolean} */
+export function isDicePoolOverrideEnabled() {
+  try {
+    return Boolean(
+      game.settings.get(MODULE_ID, ENABLE_DICE_POOL_OVERRIDE_SETTING),
+    );
+  } catch (_) {
+    return false;
+  }
+}
+
+/** @returns {boolean} */
 export function isMomentumSpendEnabled() {
   try {
     return Boolean(game.settings.get(MODULE_ID, ENABLE_MOMENTUM_SPEND_SETTING));
@@ -550,6 +640,70 @@ export function isMomentumMergerEnabled() {
   }
 }
 
+/** @returns {boolean} */
+export function isCompactCharacterSheetEnabled() {
+  try {
+    return Boolean(
+      game.settings.get(MODULE_ID, COMPACT_CHARACTER_SHEET_SETTING),
+    );
+  } catch (_) {
+    return false;
+  }
+}
+
+/** @returns {boolean} */
+export function isTidyCharacterSheetEnabled() {
+  try {
+    // Mutually exclusive: compact takes priority.
+    if (isCompactCharacterSheetEnabled()) return false;
+    return Boolean(game.settings.get(MODULE_ID, TIDY_CHARACTER_SHEET_SETTING));
+  } catch (_) {
+    return false;
+  }
+}
+
+/**
+ * Returns the configured World Traits actor UUID, or empty string.
+ * @returns {string}
+ */
+export function getWorldTraitsActorUuid() {
+  try {
+    return String(
+      game.settings.get(MODULE_ID, SETTING_WORLD_TRAITS_ACTOR_UUID) ?? "",
+    );
+  } catch (_) {
+    return "";
+  }
+}
+
+/**
+ * Returns the actor ID of the configured Group Ship.
+ * If sta-officers-log is active, delegates to its setting instead.
+ * @returns {string} Actor ID, or empty string if none set.
+ */
+export function getGroupShipActorId() {
+  try {
+    if (game.modules.get(OFFICERS_LOG_MODULE_ID)?.active) {
+      return String(
+        game.settings.get(OFFICERS_LOG_MODULE_ID, "groupShipActorId") ?? "",
+      );
+    }
+    return String(game.settings.get(MODULE_ID, GROUP_SHIP_ACTOR_SETTING) ?? "");
+  } catch (_) {
+    return "";
+  }
+}
+
+/**
+ * Returns the Actor document for the configured Group Ship, or null.
+ * @returns {Actor|null}
+ */
+export function getGroupShipActor() {
+  const id = getGroupShipActorId();
+  if (!id) return null;
+  return game.actors?.get?.(id) ?? null;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Settings group headers (renderSettingsConfig hook)                 */
 /* ------------------------------------------------------------------ */
@@ -560,8 +714,15 @@ export function isMomentumMergerEnabled() {
  */
 const SETTING_DEPENDENCIES = [
   {
+    parent: ENABLE_DICE_POOL_OVERRIDE_SETTING,
+    children: [
+      ENABLE_MOMENTUM_SPEND_SETTING,
+      ENABLE_TALENT_AUTOMATIONS_SETTING,
+    ],
+  },
+  {
     parent: ENABLE_MOMENTUM_SPEND_SETTING,
-    children: [AUTO_DEDUCT_MOMENTUM_SETTING, ENABLE_MOMENTUM_MERGER_SETTING],
+    children: [AUTO_DEDUCT_MOMENTUM_SETTING],
   },
   {
     parent: ENABLE_ACTION_CHOOSER_SETTING,
@@ -576,10 +737,6 @@ const SETTING_DEPENDENCIES = [
       SETTING_BACKLINKS_SYNC_BUTTON,
       SETTING_BACKLINKS_DEBUG,
     ],
-  },
-  {
-    parent: SETTING_TRAIT_TOKENS,
-    children: [SETTING_TRAIT_DRAWINGS],
   },
 ];
 

@@ -132,7 +132,10 @@ export async function runMiddleware(
  * @param {Actor}   [opts.starship]   - The starship being used (for ship assist or if actor is a ship)
  * @returns {Promise<void>}
  */
-export async function executeTaskRoll(taskData, { isShipAssist, actor, starship }) {
+export async function executeTaskRoll(
+  taskData,
+  { isShipAssist, actor, starship },
+) {
   const STARoll = window.STARoll;
   const staRoll = new STARoll();
 
@@ -186,15 +189,23 @@ export async function executeTaskRoll(taskData, { isShipAssist, actor, starship 
 
   /* ---- Consume Reserve Power ---- */
   // After successfully executing the roll, if reserve power was used,
-  // set the ship's system.reservepower to false.
+  // set the ship's system.reservepower to false and clear the routing flag.
   if (taskData.usingReservePower) {
-    const shipToUpdate = isShipAssist 
-      ? starship 
-      : (actor?.type === "starship" || actor?.type === "smallcraft" ? actor : null);
-    
+    const shipToUpdate = isShipAssist
+      ? starship
+      : actor?.type === "starship" || actor?.type === "smallcraft"
+        ? actor
+        : null;
+
     if (shipToUpdate && shipToUpdate.system?.reservepower) {
       try {
         await shipToUpdate.update({ "system.reservepower": false });
+        // Also clear the routing flag (which system power was assigned to).
+        // The action-chooser's updateActor hook does this too, but we clear
+        // it here as well for robustness when the chooser isn't open.
+        if (shipToUpdate.getFlag(MODULE_ID, "reservePowerSystem") != null) {
+          await shipToUpdate.setFlag(MODULE_ID, "reservePowerSystem", null);
+        }
       } catch (err) {
         console.warn(
           `${MODULE_ID} | Failed to consume reserve power on ${shipToUpdate.name}:`,

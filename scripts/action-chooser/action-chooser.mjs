@@ -48,13 +48,22 @@ const actionSetRegistry = new Map();
 let _pendingMomentumTab = null;
 
 /**
+ * When the Regain Power action is rolled, holds the selected starship's ID
+ * so that the preCreateChatMessage hook can stamp it on the roll's chat
+ * message.  The renderChatMessageHTML hook then uses that flag to inject
+ * a "Regain Power" button.
+ * @type {string|null}
+ */
+let _pendingRegainPowerShipId = null;
+
+/**
  * Tracks the actor performing the current action so that all chat messages
  * created during the flow (weapon cards, rolls, announcements) receive a
  * proper `speaker` matching the character — not the logged-in user.
  *
- * Set at the top of `_handleAction` / `sendActionChat` and cleared in the
- * corresponding `finally` block.  A safety timer also clears it after 15 s
- * in case un-awaited `sendToChat()` calls from the STA system fire late.
+ * Set at the top of `_handleAction` and cleared by a safety timer
+ * (STA system calls sendToChat without await, so messages may arrive
+ * after the JS flow completes).
  * @type {Actor|null}
  */
 let _pendingActionActor = null;
@@ -62,7 +71,6 @@ let _pendingActionActorTimer = null;
 
 /**
  * Set the pending action actor and start a safety-clear timer.
- * The preCreateChatMessage hook reads this to stamp the speaker.
  * @param {Actor|null} actor
  */
 function _setActionActor(actor) {
@@ -79,17 +87,6 @@ function _setActionActor(actor) {
 }
 
 /**
- * Clear the pending action actor (called in finally blocks).
- */
-function _clearActionActor() {
-  _pendingActionActor = null;
-  if (_pendingActionActorTimer) {
-    clearTimeout(_pendingActionActorTimer);
-    _pendingActionActorTimer = null;
-  }
-}
-
-/**
  * Map an action-set ID to the momentum-spend tab that should open by default.
  * @param {string} setId  The action-set ID (e.g. "personal-conflict").
  * @returns {string} One of "common", "personalConflict", "starshipCombat".
@@ -100,16 +97,20 @@ function _actionSetToMomentumTab(setId) {
   return "starshipCombat";
 }
 
-// Stamp every chat message created while _pendingMomentumTab or
-// _pendingActionActor is set.
+// Stamp every chat message created while _pendingMomentumTab,
+// _pendingRegainPowerShipId, or _pendingActionActor is set.
 Hooks.on("preCreateChatMessage", (doc) => {
-  // --- Momentum-spend tab flag ---
+  const extraFlags = {};
   if (_pendingMomentumTab) {
+    extraFlags.momentumTab = _pendingMomentumTab;
+  }
+  if (_pendingRegainPowerShipId) {
+    extraFlags.regainPowerShipId = _pendingRegainPowerShipId;
+  }
+  if (Object.keys(extraFlags).length) {
     doc.updateSource({
       flags: {
-        [MODULE_ID]: {
-          momentumTab: _pendingMomentumTab,
-        },
+        [MODULE_ID]: extraFlags,
       },
     });
   }
@@ -142,6 +143,90 @@ Hooks.on("preCreateChatMessage", (doc) => {
   }
 });
 
+/* ------------------------------------------------------------------ */
+/*  Regain Power — chat button injection                               */
+/* ------------------------------------------------------------------ */
+
+/**
+ * When a task-roll chat message carries the regainPowerShipId flag,
+ * append a "Regain Power" button.  Clicking it sets the ship's
+ * system.reservepower to true.
+ */
+Hooks.on("renderChatMessageHTML", (message, html) => {
+  try {
+    const root = html instanceof HTMLElement ? html : (html[0] ?? html);
+    if (!root?.querySelector) return;
+
+    const shipId = message.flags?.[MODULE_ID]?.regainPowerShipId;
+    if (!shipId) return;
+
+    const card =
+      root.querySelector(".chatcard") ??
+      root.querySelector(".sta.roll.chat.card");
+    if (!card) return;
+
+    // Avoid double-injection
+    if (card.querySelector(".sta-utils-regain-power-btn")) return;
+
+    const ship = game.actors.get(shipId);
+    const shipName = ship?.name ?? "Unknown Ship";
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className =
+      "sta-utils-momentum-spend-btn-small sta-utils-regain-power-btn";
+    btn.innerHTML = `<i class="fas fa-bolt"></i> Regain Power (${shipName})`;
+
+    // If reserve power is already true, show as done
+    if (ship?.system?.reservepower) {
+      btn.innerHTML = `<i class="fas fa-check"></i> Reserve Power Active`;
+      btn.disabled = true;
+    }
+
+    btn.addEventListener("click", async (ev) => {
+      ev.preventDefault();
+
+      // Only the message author or GM may click
+      if (!(message.author?.id === game.user?.id || game.user.isGM)) {
+        ui.notifications.warn("Only the roller or GM may use this.");
+        return;
+      }
+
+      btn.disabled = true;
+
+      try {
+        const targetShip = game.actors.get(shipId);
+        if (!targetShip) {
+          ui.notifications.error("Ship no longer exists.");
+          return;
+        }
+
+        await targetShip.update({ "system.reservepower": true });
+
+        btn.innerHTML = `<i class="fas fa-check"></i> Reserve Power Active`;
+
+        // Announce in chat
+        await ChatMessage.create({
+          content: `<div class="sta-utils-momentum-spend-result">
+            <strong><i class="fas fa-bolt"></i> Regain Power</strong><br>
+            <span class="greentext">${targetShip.name} has regained Reserve Power.</span>
+          </div>`,
+          speaker: ChatMessage.getSpeaker({ actor: targetShip }),
+        });
+      } catch (err) {
+        btn.disabled = false;
+        console.warn(`${MODULE_ID} | Regain Power: failed`, err);
+        ui.notifications.error("Failed to regain reserve power.");
+      }
+    });
+
+    const footer = card.querySelector(".chat-card-actions") ?? card;
+    footer.appendChild(btn);
+  } catch (err) {
+    console.warn(`${MODULE_ID} | Regain Power render error`, err);
+  }
+});
+
 function registerActionSet(id, importFn) {
   actionSetRegistry.set(id, importFn);
 }
@@ -149,11 +234,10 @@ function registerActionSet(id, importFn) {
 /**
  * Wait for the next chat message to be committed to `game.messages`.
  *
- * The STA system's `sendToChat()` calls `ChatMessage.create()` **without
- * await**, so the returned Promise from `performWeaponRoll2e` /
- * `rollTask` resolves before the message is actually saved.  This helper
- * listens for the `createChatMessage` hook and resolves once the message
- * exists, ensuring sequential ordering for header-merge comparisons.
+ * The STA system's `sendToChat()` calls `ChatMessage.create()` without
+ * await, so the Promise from `performWeaponRoll2e` / `rollTask` resolves
+ * before the message is actually saved.  This helper listens for the
+ * `createChatMessage` hook and resolves once the message exists.
  *
  * @param {number} [timeout=5000] Safety timeout in ms.
  * @returns {Promise<void>}
@@ -219,6 +303,23 @@ class ActionChooserApp extends BaseApp {
     this.selectedStarship = actionSet.showStarship
       ? this._resolveStarship()
       : null;
+    this._warnIfUnlinkedToken();
+    // DEBUG: log starship state at construction time
+    if (this.selectedStarship) {
+      const ss = this.selectedStarship;
+      console.log(
+        `%c[sta-utils DEBUG] Constructor — starship: ${ss.name}`,
+        "color: orange; font-weight: bold",
+      );
+      console.log(`  system.reservepower:`, ss.system?.reservepower);
+      console.log(`  system.shields:`, ss.system?.shields);
+      console.log(`  typeof system:`, typeof ss.system);
+      console.log(`  system keys:`, ss.system ? Object.keys(ss.system) : "N/A");
+      console.log(
+        `  reservePowerSystem flag:`,
+        ss.getFlag?.("sta-utils", "reservePowerSystem"),
+      );
+    }
     this._actorUpdateHookId = null;
     this._savedActiveActions = null; // Track active action tabs during re-renders
   }
@@ -346,6 +447,39 @@ class ActionChooserApp extends BaseApp {
     // Extract ship status information (shields, reserve power, breaches)
     let shipStatus = null;
     if (showStarship && starship) {
+      // DEBUG: log starship state at _prepareContext time
+      console.log(
+        `%c[sta-utils DEBUG] _prepareContext — starship: ${starship.name}`,
+        "color: cyan; font-weight: bold",
+      );
+      console.log(`  system.reservepower:`, starship.system?.reservepower);
+      console.log(
+        `  typeof system.reservepower:`,
+        typeof starship.system?.reservepower,
+      );
+      console.log(
+        `  system.shields:`,
+        JSON.stringify(starship.system?.shields),
+      );
+      console.log(
+        `  reservePowerSystem flag:`,
+        starship.getFlag?.("sta-utils", "reservePowerSystem"),
+      );
+      console.log(`  actionSet:`, this.actionSet?.id);
+      console.log(
+        `  this.selectedStarship === starship:`,
+        this.selectedStarship === starship,
+      );
+      // Also log the raw source data for comparison
+      console.log(
+        `  _source.system.reservepower:`,
+        starship._source?.system?.reservepower,
+      );
+      console.log(
+        `  toObject().system.reservepower:`,
+        starship.toObject?.()?.system?.reservepower,
+      );
+
       const shields = starship.system?.shields ?? { value: 0, max: 0 };
       const shieldsValue = shields.value ?? 0;
       const shieldsMax = shields.max ?? 0;
@@ -363,9 +497,17 @@ class ActionChooserApp extends BaseApp {
       );
       const hasAssignedSystem = reservePowerSystem != null;
 
-      // Reserve power is only available if the flag is true AND not assigned to a system (location is null)
-      const isReservePowerAvailable =
-        hasReservePowerFlag && reservePowerSystem == null;
+      // Reserve power is available whenever the ship has it, regardless of assignment
+      const isReservePowerAvailable = hasReservePowerFlag;
+
+      // DEBUG: log final computed reserve power availability
+      console.log(
+        `%c[sta-utils DEBUG] Reserve power computation result:`,
+        "color: #ff9900",
+      );
+      console.log(
+        `  hasReservePowerFlag: ${hasReservePowerFlag}, reservePowerSystem: ${reservePowerSystem}, isReservePowerAvailable: ${isReservePowerAvailable}`,
+      );
 
       // Extract breaches for each system
       const systemNames = [
@@ -789,8 +931,8 @@ class ActionChooserApp extends BaseApp {
                   actor: this.selectedStarship,
                 }),
               });
-              // Re-render to update active button state
-              this._rerender();
+              // No explicit _rerender() — the setFlag above triggers updateActor,
+              // which already saves active actions and re-renders.
             });
           });
         } else {
@@ -1125,6 +1267,7 @@ class ActionChooserApp extends BaseApp {
         const picked = game.actors.get(shipId);
         if (picked) {
           this.selectedStarship = picked;
+          this._warnIfUnlinkedToken();
           this._rerender();
         }
       });
@@ -1152,6 +1295,23 @@ class ActionChooserApp extends BaseApp {
           this.selectedStarship = newSet.showStarship
             ? this._resolveStarship()
             : null;
+          this._warnIfUnlinkedToken();
+          // DEBUG: log action set switch
+          console.log(
+            `%c[sta-utils DEBUG] Action set switched to: ${setId}`,
+            "color: magenta; font-weight: bold",
+          );
+          console.log(`  showStarship:`, newSet.showStarship);
+          console.log(
+            `  selectedStarship:`,
+            this.selectedStarship?.name ?? "null",
+          );
+          if (this.selectedStarship) {
+            console.log(
+              `  starship.system.reservepower:`,
+              this.selectedStarship.system?.reservepower,
+            );
+          }
           this._rerender();
         }
       });
@@ -1307,25 +1467,36 @@ class ActionChooserApp extends BaseApp {
         return;
       }
 
-      // Send the action announcement first (fully awaitable) so the
-      // roll message that follows can have its header merged.
+      // Send the action announcement first so subsequent roll messages
+      // can have their headers merged.
       if (typeof action.callback === "function") {
         await action.callback(actor, action);
       }
 
       if (action.roll) {
+        // For regain-power, stamp the ship ID so the chat button can find it
+        if (action.id === "regain-power" && this.selectedStarship) {
+          _pendingRegainPowerShipId = this.selectedStarship.id;
+        }
+
         const result = await buildTaskData(actor, action.roll, {
           defaultStarshipId: this.selectedStarship?.id,
         });
-        if (!result) return;
-
-        const rollDone = _waitForChatMessage();
-        await executeTaskRoll(result.taskData, {
-          isShipAssist: result.isShipAssist,
-          actor,
-          starship: result.starship,
-        });
-        await rollDone;
+        if (!result) {
+          _pendingRegainPowerShipId = null;
+          return;
+        }
+        try {
+          const rollDone = _waitForChatMessage();
+          await executeTaskRoll(result.taskData, {
+            isShipAssist: result.isShipAssist,
+            actor,
+            starship: result.starship,
+          });
+          await rollDone;
+        } finally {
+          _pendingRegainPowerShipId = null;
+        }
 
         // Spend the value via sta-officers-log after the roll
         if (result.determinationValueId) {
@@ -1345,10 +1516,6 @@ class ActionChooserApp extends BaseApp {
       }
     } finally {
       _pendingMomentumTab = null;
-      // Don't clear _pendingActionActor here — the STA system's
-      // sendToChat() calls are un-awaited, so ChatMessage.create() may
-      // fire AFTER this finally block runs.  The safety timer in
-      // _setActionActor handles cleanup instead.
     }
   }
 
@@ -1382,17 +1549,17 @@ class ActionChooserApp extends BaseApp {
     const { STARoll } = await loadSTARoll();
     const roller = new STARoll();
 
-    // 1. Action announcement (fully awaitable — uses ChatMessage.create)
+    // 1. Action announcement (fully awaitable)
     if (typeof action.callback === "function") {
       await action.callback(actor, action);
     }
 
-    // 2. Weapon card (STA fires sendToChat without await — wait for it)
+    // 2. Weapon card (wait for STA's un-awaited sendToChat)
     const weaponDone = _waitForChatMessage();
     await roller.performWeaponRoll2e(weapon, actor);
     await weaponDone;
 
-    // 3. Task roll (STA fires sendToChat without await — wait for it)
+    // 3. Task roll (wait for STA's un-awaited sendToChat)
     const rollDone = _waitForChatMessage();
     await executeTaskRoll(result.taskData, {
       isShipAssist: result.isShipAssist,
@@ -1440,6 +1607,7 @@ class ActionChooserApp extends BaseApp {
     });
     if (!result) return;
 
+    // Send the starship weapon chat card
     const { STARoll } = await loadSTARoll();
     const roller = new STARoll();
 
@@ -1628,6 +1796,19 @@ class ActionChooserApp extends BaseApp {
       )
       .sort((a, b) => (b.system?.scale || 0) - (a.system?.scale || 0));
   }
+
+  /**
+   * Show a UI warning if the selected starship has an unlinked prototype token.
+   * Unlinked tokens create synthetic actors whose changes don't propagate back
+   * to the world actor, which causes the action chooser to get out of sync.
+   */
+  _warnIfUnlinkedToken() {
+    const ship = this.selectedStarship;
+    if (!ship) return;
+    if (ship.prototypeToken?.actorLink === false) {
+      ui.notifications.warn(t("sta-utils.actionChooser.unlinkedTokenWarning"));
+    }
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1638,7 +1819,6 @@ class ActionChooserApp extends BaseApp {
  * A frameless, non-positioned variant of ActionChooserApp designed to render
  * inside another application's DOM (e.g. a character sheet tab pane).
  *
- * Uses the official Foundry v13 ApplicationV2 API:
  * - `window.frame: false` — no window chrome (header, drag, resize, close)
  * - `window.positioned: false` — element flows with its container, no absolute positioning
  * - `_insertElement` override — appends into the target container instead of document.body
@@ -1985,6 +2165,21 @@ async function renderActionChooserEmbed(container, actor) {
     // losing the player's selected actions / state.
     app._targetContainer = container;
 
+    // DEBUG: log reuse path
+    console.log(
+      `%c[sta-utils DEBUG] renderActionChooserEmbed — REUSING cached app for ${actorId}`,
+      "color: yellow; font-weight: bold",
+    );
+    console.log(`  has element:`, !!app.element);
+    console.log(`  current actionSet:`, app.actionSet?.id);
+    console.log(`  selectedStarship:`, app.selectedStarship?.name ?? "null");
+    if (app.selectedStarship) {
+      console.log(
+        `  starship.system.reservepower:`,
+        app.selectedStarship.system?.reservepower,
+      );
+    }
+
     if (app.element) {
       // The element is still a live DOM node; just re-parent it.
       container.appendChild(app.element);
@@ -2003,6 +2198,10 @@ async function renderActionChooserEmbed(container, actor) {
   }
 
   // Create a new embedded instance
+  console.log(
+    `%c[sta-utils DEBUG] renderActionChooserEmbed — CREATING new app for ${actorId}`,
+    "color: lime; font-weight: bold",
+  );
   const actionSet = await loadActionSet("personal-conflict");
   app = new EmbeddedActionChooserApp(actionSet, { actor });
   app._targetContainer = container;

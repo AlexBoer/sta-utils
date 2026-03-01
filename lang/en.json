@@ -11,16 +11,23 @@
         "actionChooser": "Action Chooser",
         "journalBacklinks": "Journal Backlinks",
         "traitTokens": "Trait Tokens",
+        "groupShip": "Group Ship",
         "chatUi": "Chat & UI",
         "standalone": "Other Features"
       },
+      "groupShipActorId": {
+        "name": "Group Ship",
+        "hint": "Select a starship or small craft actor to serve as the party's group ship. This setting is available for other features to reference.",
+        "hintOfficersLog": "This setting is managed by the STA Officer's Log module. Configure it there.",
+        "none": "— None —"
+      },
       "enableTraitTokens": {
         "name": "Enable Trait Tokens",
-        "hint": "Drag trait items onto the canvas to create post-it note tokens. Requires a world reload when changed."
+        "hint": "Drag trait items onto the canvas to create trait drawings. Requires a world reload when changed."
       },
-      "traitTokensAsDrawings": {
-        "name": "Trait Tokens as Drawings",
-        "hint": "Create trait items as canvas drawings on the drawing layer instead of as actor tokens. Only affects newly created traits. Requires a world reload when changed."
+      "worldTraitsActorUuid": {
+        "name": "World Traits Actor",
+        "hint": "UUID of the Scene Traits actor to open from the World Traits tool button. Supports compendium actors. Leave blank to auto-create a world-level actor."
       },
       "showInfoButtons": {
         "name": "Show Info Buttons",
@@ -58,6 +65,10 @@
         "name": "Action Chooser as Sheet Tab",
         "hint": "Embed the action chooser as a tab on the character sheet instead of opening it as a separate window."
       },
+      "enableDicePoolOverride": {
+        "name": "Enable Dice Pool Override",
+        "hint": "Replace the system's dice pool dialog with an enhanced version that supports a middleware pipeline for talent automations, momentum spend, and other features. Requires a world reload when changed."
+      },
       "enableMomentumSpend": {
         "name": "Enable Momentum Spend",
         "hint": "Add a 'Spend Momentum' button to task roll chat messages that opens a momentum spend dialog. Requires a world reload when changed."
@@ -73,6 +84,14 @@
       "enableChatHeaderMerge": {
         "name": "Enable Chat Header Merge",
         "hint": "Hide the message header (avatar, name, timestamp) on consecutive chat messages from the same sender. Requires a world reload when changed."
+      },
+      "compactCharacterSheet": {
+        "name": "Compact Character Sheet",
+        "hint": "Reduce padding, font sizes, and image sizes on the character sheet for a denser layout. Edit and delete buttons are moved to a right-click context menu. Mutually exclusive with Tidy Sheets. Requires a world reload when changed."
+      },
+      "tidyCharacterSheet": {
+        "name": "Tidy Character Sheet",
+        "hint": "Add collapsible sections and move edit/delete buttons to a right-click context menu, without any other layout changes. Mutually exclusive with Compact Sheets. Requires a world reload when changed."
       }
     },
     "traits": {
@@ -166,6 +185,10 @@
     "dicePool": {
       "useReservePower": "Use Reserve Power",
       "useValue": "Use Value"
+    },
+    "reservePowerMenu": {
+      "routeHere": "Route Reserve Power Here",
+      "clearRouting": "Clear Reserve Power Routing"
     },
     "dicePoolMonitor": {
       "title": "Dice Pool Monitor",
@@ -427,9 +450,11 @@
       "noStarshipWeapons": "This starship has no weapons.",
       "noStarship": "Select a starship before using this action.",
       "noStarshipSelected": "No Starship",
+      "unlinkedTokenWarning": "The selected starship has an unlinked prototype token. Changes made via unlinked tokens may not sync properly with the Action Chooser. Consider linking the token in the prototype token settings.",
       "changeStarship": "Change Starship",
       "selectStarship": "Select Starship",
       "popOut": "Pop out to separate window",
+      "yourTurn": "It's your turn!",
       "chooseStarshipWeapon": "Weapon",
       "suggestedMomentumSpends": "Suggested Momentum Spends",
       "momentumSpendReduced": "Repeatable, {cost} Momentum ({reason})",
@@ -1001,7 +1026,7 @@
         },
         "attack": {
           "name": "Attack",
-          "description": "Attack an enemy or other viable target and attempt to injure them. Ranged attacks use <strong>Control + Security</strong> at <strong>Difficulty 2</strong>. Melee attacks use <strong>Daring + Security</strong> at <strong>Difficulty 1</strong>.<br><br>Attack tasks are opposed if the Enemy is able to defend themselves in melee or have cover. On a success, the target must take stress equal to the weapon's severity or suffer an Injury and become Defeated.",
+          "description": "Attack an enemy or other viable target and attempt to injure them. Ranged attacks use <strong>Control + Security</strong> at <strong>Difficulty 2</strong>. Melee attacks use <strong>Daring + Security</strong> at <strong>Difficulty 1</strong>.<br><br>Attack tasks are opposed if the Enemy is able to defend themselves in melee or has cover at range. On a success, the target must take stress equal to the weapon's severity or suffer an Injury and become Defeated.",
           "chatSummary": "Attack an enemy to injure them or deal stress equal to the weapon's severity."
         },
         "createTrait": {
@@ -1078,6 +1103,35 @@
         "spread": "Attacks with this weapon reduce the cost of the Devastating Attack Momentum spend to 1. This is Repeatable.",
         "versatile": "If an attack with this weapon is successful, it gains bonus Momentum points. Bonus Momentum cannot be saved."
       }
+    },
+    "shaken": {
+      "title": "SHAKEN!",
+      "flavour": "The ship's shields have dropped to half! Choose a minor damage effect:",
+      "rollForIt": "Roll for it!",
+      "rollForItHint": "Roll a d20 on the Minor Damage table to determine the effect.",
+      "rollAgain": "Roll Again",
+      "rollPrefix": "Rolled",
+      "breachTitle": "POSSIBLE BREACH!",
+      "breachDescription": "If the ship was shaken this turn, the ship gains a breach.",
+      "results": {
+        "brace": {
+          "label": "Brace for Impact!",
+          "description": "On the next turn this ship (or a character aboard this ship) takes, they may not take a major action."
+        },
+        "losingPower": {
+          "label": "Losing Power!",
+          "description": "If you have Reserve Power, lose the use of Reserve Power. The next time you attempt to Regain Power, the Difficulty is increased by 1."
+        },
+        "casualties": {
+          "label": "Casualties and Minor Damage",
+          "description": "The ship suffers a complication."
+        }
+      }
+    },
+    "compactMenu": {
+      "editItem": "Edit",
+      "deleteItem": "Delete",
+      "chatItem": "Send to Chat"
     }
   }
 }

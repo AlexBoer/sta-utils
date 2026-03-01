@@ -125,6 +125,53 @@ function _refreshAutomationsSection(dialogEl, baseCtx) {
 }
 
 /**
+ * Read the currently checked system from a starship actor's open sheet.
+ * Returns the system key (e.g. "sensors") or null.
+ *
+ * @param {Actor|null} actor
+ * @returns {string|null}
+ */
+function _getSelectedSystemFromSheet(actor) {
+  const sheetEl = actor?.sheet?.element;
+  if (!sheetEl) return null;
+  for (const cb of sheetEl.querySelectorAll(
+    ".systems-block .selector.system",
+  )) {
+    if (cb.checked) return cb.id.replace(".selector", "");
+  }
+  return null;
+}
+
+/**
+ * Compute the desired checked/disabled state of the Reserve Power checkbox
+ * based on the ship's reserve power flag and the routed system.
+ *
+ * @param {Actor|null} ship           - The ship actor
+ * @param {string|null} selectedSystem - Currently selected system in the dropdown
+ * @returns {{ checked: boolean, disabled: boolean }}
+ */
+function _computeReservePowerState(ship, selectedSystem = null) {
+  const hasReservePower = ship?.system?.reservepower ?? false;
+  if (!hasReservePower) return { checked: false, disabled: true };
+
+  const reservePowerSystem =
+    ship?.getFlag?.(MODULE_ID, "reservePowerSystem") ?? null;
+
+  if (reservePowerSystem) {
+    // Power is routed to a specific system
+    if (selectedSystem === reservePowerSystem) {
+      // Matching system → forced on, user cannot uncheck
+      return { checked: true, disabled: true };
+    }
+    // Different system → cannot use reserve power here
+    return { checked: false, disabled: true };
+  }
+
+  // Power available but not routed → user's choice
+  return { checked: false, disabled: false };
+}
+
+/**
  * Inject the "Use Reserve Power" checkbox.
  *
  * • hasShipAssistUI=true  → inside .starshipAssisting (visible when ship assist is on)
@@ -133,19 +180,23 @@ function _refreshAutomationsSection(dialogEl, baseCtx) {
  * @param {HTMLElement} dialogEl - The dialog element
  * @param {boolean} hasShipAssistUI - Whether the dialog has ship assist UI
  * @param {Actor|null} ship - The ship to check for reserve power availability
+ * @param {string|null} selectedSystem - Currently selected system in the dropdown
  */
-function _injectReservePowerCheckbox(dialogEl, hasShipAssistUI, ship = null) {
+function _injectReservePowerCheckbox(
+  dialogEl,
+  hasShipAssistUI,
+  ship = null,
+  selectedSystem = null,
+) {
   if (dialogEl.querySelector("#usingReservePower")) return;
 
-  // Check if reserve power is available on the ship
-  const hasReservePower = ship?.system?.reservepower ?? false;
-  const disabled = !hasReservePower ? "disabled" : "";
+  const { checked, disabled } = _computeReservePowerState(ship, selectedSystem);
 
   const label = game.i18n.localize("sta-utils.dicePool.useReservePower");
   const rowHtml = `
       <div class="row">
         <div class="tracktitle">${label}</div>
-        <input type="checkbox" name="usingReservePower" id="usingReservePower" ${disabled}>
+        <input type="checkbox" name="usingReservePower" id="usingReservePower" ${disabled ? "disabled" : ""} ${checked ? "checked" : ""}>
       </div>`;
 
   if (hasShipAssistUI) {
@@ -168,22 +219,24 @@ function _injectReservePowerCheckbox(dialogEl, hasShipAssistUI, ship = null) {
 }
 
 /**
- * Update the Reserve Power checkbox disabled state based on the current ship.
+ * Update the Reserve Power checkbox checked/disabled state based on the
+ * current ship and the selected system.
  *
- * @param {HTMLElement} dialogEl - The dialog element
- * @param {Actor|null} ship - The ship to check for reserve power availability
+ * When reserve power is routed to a specific system (via the
+ * reservePowerSystem flag), the checkbox is forced checked+disabled when
+ * that system is selected and forced unchecked+disabled otherwise.
+ *
+ * @param {HTMLElement}  dialogEl       - The dialog element
+ * @param {Actor|null}   ship           - The ship to check for reserve power
+ * @param {string|null}  selectedSystem - Currently selected system in the dropdown
  */
-function _updateReservePowerCheckbox(dialogEl, ship) {
+function _updateReservePowerCheckbox(dialogEl, ship, selectedSystem = null) {
   const checkbox = dialogEl.querySelector("#usingReservePower");
   if (!checkbox) return;
 
-  const hasReservePower = ship?.system?.reservepower ?? false;
-  checkbox.disabled = !hasReservePower;
-
-  // Uncheck if disabled
-  if (!hasReservePower && checkbox.checked) {
-    checkbox.checked = false;
-  }
+  const { checked, disabled } = _computeReservePowerState(ship, selectedSystem);
+  checkbox.checked = checked;
+  checkbox.disabled = disabled;
 }
 
 function _getMomentumThreatText(dicePoolValue) {
@@ -435,8 +488,23 @@ export async function showDicePoolDialog(opts) {
       }
 
       // --- Reserve Power checkbox ---
+      // Prefer the dialog's #system dropdown; fall back to the pre-selected
+      // system from the sheet (starship sheet path has no #system dropdown).
+      const initialSystem =
+        el.querySelector("#system")?.value ??
+        applicabilityContext?.selectedSystem ??
+        _getSelectedSystemFromSheet(applicabilityContext?.actor) ??
+        null;
       if (injectReservePower) {
-        _injectReservePowerCheckbox(el, hasShipAssistUI, currentShip);
+        _injectReservePowerCheckbox(
+          el,
+          hasShipAssistUI,
+          currentShip,
+          initialSystem,
+        );
+      } else {
+        // Checkbox already in template — sync its state with routing
+        _updateReservePowerCheckbox(el, currentShip, initialSystem);
       }
 
       dialog.setPosition({ height: "auto" });
@@ -461,9 +529,10 @@ export async function showDicePoolDialog(opts) {
           if (checkbox.checked) {
             const shipId = el.querySelector("#starship")?.value;
             const ship = shipId ? game.actors.get(shipId) : null;
-            _updateReservePowerCheckbox(el, ship);
+            const selSys = el.querySelector("#system")?.value ?? null;
+            _updateReservePowerCheckbox(el, ship, selSys);
           } else {
-            _updateReservePowerCheckbox(el, null);
+            _updateReservePowerCheckbox(el, null, null);
           }
 
           dialog.setPosition({ height: "auto" });
@@ -477,11 +546,26 @@ export async function showDicePoolDialog(opts) {
           dropdown.addEventListener("change", () => {
             _refreshAutomationsSection(el, applicabilityContext);
 
-            // Update reserve power checkbox when ship selection changes
-            if (sel === "#starship") {
-              const shipId = dropdown.value;
-              const ship = shipId ? game.actors.get(shipId) : null;
-              _updateReservePowerCheckbox(el, ship);
+            // Update reserve power checkbox when ship or system changes
+            if (sel === "#starship" || sel === "#system") {
+              let ship = null;
+              if (hasShipAssistUI) {
+                const shipId =
+                  sel === "#starship"
+                    ? dropdown.value
+                    : el.querySelector("#starship")?.value;
+                if (shipId) ship = game.actors.get(shipId);
+              } else if (
+                applicabilityContext.actor?.type === "starship" ||
+                applicabilityContext.actor?.type === "smallcraft"
+              ) {
+                ship = applicabilityContext.actor;
+              }
+              const selSys =
+                sel === "#system"
+                  ? dropdown.value
+                  : (el.querySelector("#system")?.value ?? null);
+              _updateReservePowerCheckbox(el, ship, selSys);
             }
 
             dialog.setPosition({ height: "auto" });
@@ -491,6 +575,41 @@ export async function showDicePoolDialog(opts) {
 
       // --- Attribute/discipline ↔ sheet checkbox sync ---
       _wireAttributeDialogSync(el, applicabilityContext.actor);
+
+      // --- Live-update reserve power checkbox on external actor changes ---
+      // Registered here so that editing the ship while the dialog is open
+      // updates the checkbox without re-rendering the dialog or losing state.
+      dialog._reservePowerHookId = Hooks.on("updateActor", (actor, changes) => {
+        // Only care about reservepower or the routing flag
+        const rpChanged =
+          changes.system?.reservepower !== undefined ||
+          changes.flags?.[MODULE_ID]?.reservePowerSystem !== undefined;
+        if (!rpChanged) return;
+
+        // Resolve the currently relevant ship
+        let ship = null;
+        if (hasShipAssistUI) {
+          const assistOn =
+            el.querySelector("#starshipAssisting")?.checked ?? false;
+          if (assistOn) {
+            const shipId = el.querySelector("#starship")?.value;
+            if (shipId) ship = game.actors.get(shipId);
+          }
+        } else if (
+          applicabilityContext.actor?.type === "starship" ||
+          applicabilityContext.actor?.type === "smallcraft"
+        ) {
+          ship = applicabilityContext.actor;
+        }
+
+        if (!ship || actor.id !== ship.id) return;
+
+        const selSys =
+          el.querySelector("#system")?.value ??
+          _getSelectedSystemFromSheet(applicabilityContext.actor) ??
+          null;
+        _updateReservePowerCheckbox(el, ship, selSys);
+      });
     },
     buttons: [
       {
@@ -513,12 +632,32 @@ export async function showDicePoolDialog(opts) {
             _determinationValueId = deterSelect.value || "";
           }
 
+          // Temporarily enable the reserve-power checkbox so its value
+          // is included in the FormData (disabled inputs are excluded
+          // per the HTML spec).
+          const rpCheckbox = dialog.element.querySelector("#usingReservePower");
+          const rpWasDisabled = rpCheckbox?.disabled;
+          if (rpCheckbox) rpCheckbox.disabled = false;
+
           const form = dialog.element.querySelector("form");
-          return form ? new FormData(form) : null;
+          const fd = form ? new FormData(form) : null;
+
+          // Restore disabled state (the dialog is about to close, but
+          // keep it tidy for any other code that inspects the DOM).
+          if (rpCheckbox && rpWasDisabled) rpCheckbox.disabled = true;
+
+          return fd;
         },
       },
     ],
-    close: () => null,
+    close: (event, dialog) => {
+      // Clean up the updateActor hook registered during render
+      if (dialog._reservePowerHookId != null) {
+        Hooks.off("updateActor", dialog._reservePowerHookId);
+        dialog._reservePowerHookId = null;
+      }
+      return null;
+    },
   });
 
   if (!formData) return null;

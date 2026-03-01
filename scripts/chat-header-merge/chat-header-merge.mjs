@@ -141,18 +141,26 @@ function _maybeHideHeader(message, html) {
  *
  * Priority: speaker.actor → speaker.alias → character name from content → author/user ID.
  *
- * System rolls (e.g. STA dice rolls) often arrive with an all-null
- * speaker, so we try to extract the character name from the chat card
- * content and fall back to the user/author who created the message.
+ * When only a name/alias is available, we attempt to resolve it to an
+ * actor ID so that keys stay consistent with messages that *do* carry a
+ * speaker.actor (e.g. `actor:5BJjxTxIbEb5HOXu` will match regardless
+ * of whether the original message had the actor field populated).
  */
 function _getSpeakerKey(msg) {
   const speaker = msg.speaker;
   if (speaker?.actor) return `actor:${speaker.actor}`;
-  if (speaker?.alias) return `alias:${speaker.alias}`;
 
-  // Try to extract character name from STA chat card content.
-  const name = _extractCharacterName(msg.content);
-  if (name) return `alias:${name}`;
+  // Determine alias — either from speaker, or extracted from content.
+  const alias = speaker?.alias || _extractCharacterName(msg.content);
+
+  if (alias) {
+    // Try to resolve the alias to an actor ID for a stable key.
+    const actor = game.actors?.find(
+      (a) => a.name === alias || a.name?.trim() === alias,
+    );
+    if (actor) return `actor:${actor.id}`;
+    return `alias:${alias}`;
+  }
 
   // Fall back to the message author / user.
   const authorId =

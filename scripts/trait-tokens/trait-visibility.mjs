@@ -104,25 +104,8 @@ async function _onUpdateItemVisibility(item, changes, _options, _userId) {
   const embeddedItemId = item.id;
   const proxyActorId = actor.id;
 
-  // Update tokens across all scenes
+  // Update trait drawings across all scenes
   for (const scene of game.scenes) {
-    const tokenUpdates = [];
-    for (const tokenDoc of scene.tokens) {
-      const flags = tokenDoc.flags?.[MODULE_ID];
-      if (
-        flags?.isTraitToken &&
-        flags.proxyActorId === proxyActorId &&
-        flags.embeddedItemId === embeddedItemId &&
-        tokenDoc.hidden !== shouldHide
-      ) {
-        tokenUpdates.push({ _id: tokenDoc.id, hidden: shouldHide });
-      }
-    }
-    if (tokenUpdates.length) {
-      await scene.updateEmbeddedDocuments("Token", tokenUpdates);
-    }
-
-    // Also update trait drawings on the same scene
     const drawingUpdates = [];
     for (const drawingDoc of scene.drawings) {
       const flags = drawingDoc.flags?.[MODULE_ID];
