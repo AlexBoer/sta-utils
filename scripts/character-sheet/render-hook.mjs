@@ -539,7 +539,9 @@ function _installItemContextMenu(sheetApp, root) {
  * @param {HTMLElement} root - The root element of the character sheet.
  */
 function installCompactMode(sheetApp, root) {
-  console.debug(`[sta-utils] installCompactMode called at ${performance.now().toFixed(1)}ms`);
+  console.debug(
+    `[sta-utils] installCompactMode called at ${performance.now().toFixed(1)}ms`,
+  );
   const sheet = root?.querySelector?.(".character-sheet");
   if (!sheet) return;
 
@@ -570,7 +572,9 @@ function installCompactMode(sheetApp, root) {
  * @param {HTMLElement} root - The root element of the character sheet.
  */
 function installTidyMode(sheetApp, root) {
-  console.debug(`[sta-utils] installTidyMode called at ${performance.now().toFixed(1)}ms`);
+  console.debug(
+    `[sta-utils] installTidyMode called at ${performance.now().toFixed(1)}ms`,
+  );
   const sheet = root?.querySelector?.(".character-sheet");
   if (!sheet) return;
 
