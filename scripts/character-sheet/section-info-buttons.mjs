@@ -148,7 +148,7 @@ async function showDeterminationDialog() {
 }
 
 /**
- * Install the values info button next to the Values section title.
+ * Install the values info button after the Values section title text.
  *
  * @param {HTMLElement} root - The root element of the character sheet.
  */
@@ -166,23 +166,6 @@ export function installValuesInfoButton(root) {
     return;
   }
 
-  // Create a left container for "Values" text and info button
-  let leftContainer = titleEl.querySelector(".sta-values-title-left");
-  if (!leftContainer) {
-    leftContainer = document.createElement("span");
-    leftContainer.className = "sta-values-title-left";
-
-    // Move the existing text content into the container
-    const textNode = titleEl.firstChild;
-    if (textNode && textNode.nodeType === Node.TEXT_NODE) {
-      leftContainer.appendChild(textNode.cloneNode(true));
-      textNode.remove();
-    }
-
-    // Insert at the beginning of the title
-    titleEl.insertBefore(leftContainer, titleEl.firstChild);
-  }
-
   const btn = document.createElement("a");
   btn.className = "sta-values-info-btn";
   btn.title = t("sta-utils.valuesInfo.infoTooltip");
@@ -195,8 +178,22 @@ export function installValuesInfoButton(root) {
     showValuesDialog();
   });
 
-  // Append the info button to the left container
-  leftContainer.appendChild(btn);
+  // Insert immediately after the title text node (e.g. "Values").
+  // Walk all childNodes to find the last non-empty text node, then insert
+  // the button as the next sibling — putting it right after the text and
+  // before any element siblings (Use Directive btn, chevron overflows, etc.).
+  let anchorNode = null;
+  for (const child of Array.from(titleEl.childNodes)) {
+    if (child.nodeType === Node.TEXT_NODE && child.textContent.trim()) {
+      anchorNode = child;
+      break;
+    }
+  }
+  if (anchorNode?.nextSibling) {
+    titleEl.insertBefore(btn, anchorNode.nextSibling);
+  } else {
+    titleEl.appendChild(btn);
+  }
 }
 
 /**
@@ -268,7 +265,13 @@ function installSectionInfoButton(
     dialogFn();
   });
 
-  titleEl.appendChild(btn);
+  // Insert before any existing control (e.g. the "+" button from sta-officers-log)
+  const existingControl = titleEl.querySelector(".control");
+  if (existingControl) {
+    titleEl.insertBefore(btn, existingControl);
+  } else {
+    titleEl.appendChild(btn);
+  }
 }
 
 /**
@@ -457,7 +460,13 @@ export function installMilestonesInfoButton(root) {
     showMilestonesDialog();
   });
 
-  titleEl.appendChild(btn);
+  // Insert before any existing control (e.g. the "+" button from sta-officers-log)
+  const existingControl = titleEl.querySelector(".control");
+  if (existingControl) {
+    titleEl.insertBefore(btn, existingControl);
+  } else {
+    titleEl.appendChild(btn);
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

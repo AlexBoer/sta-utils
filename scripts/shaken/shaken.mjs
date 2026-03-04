@@ -224,9 +224,9 @@ function _onActorUpdateBreach(actor, changes) {
 async function _postBreachWarning(ship) {
   try {
     const content = `
-<div class="sta-utils-shaken-card sta-utils-shaken-card--breach">
-  <h3 class="sta-utils-shaken-title"><i class="fas fa-circle-exclamation"></i> ${t("sta-utils.shaken.breachTitle")}</h3>
-  <p class="sta-utils-shaken-breach-desc">${t("sta-utils.shaken.breachDescription")}</p>
+<div class="sta-utils-chat-card sta-utils-chat-card--red">
+  <h3><i class="fas fa-circle-exclamation"></i> ${t("sta-utils.shaken.breachTitle")}</h3>
+  <p>${t("sta-utils.shaken.breachDescription")}</p>
 </div>`;
     await ChatMessage.create({
       content,
@@ -260,9 +260,9 @@ async function _postShakenMessage(ship) {
  */
 function _buildChoiceHTML() {
   return `
-<div class="sta-utils-shaken-card">
-  <h3 class="sta-utils-shaken-title"><i class="fas fa-burst"></i> ${t("sta-utils.shaken.title")}</h3>
-  <p class="sta-utils-shaken-flavour">${t("sta-utils.shaken.flavour")}</p>
+<div class="sta-utils-chat-card sta-utils-chat-card--red sta-utils-shaken-card">
+  <h3><i class="fas fa-burst"></i> ${t("sta-utils.shaken.title")}</h3>
+  <p>${t("sta-utils.shaken.flavour")}</p>
   <div class="sta-utils-shaken-buttons">
     <button type="button" class="sta-utils-shaken-btn" data-shaken-choice="brace" title="${RESULTS.brace.description()}">
       <i class="${RESULTS.brace.icon}"></i> ${RESULTS.brace.label()}
@@ -351,8 +351,8 @@ async function _resolveChoice(message, choice) {
   }
 
   const content = `
-<div class="sta-utils-shaken-card sta-utils-shaken-card--resolved">
-  <h3 class="sta-utils-shaken-title"><i class="fas fa-burst"></i> ${t("sta-utils.shaken.title")}</h3>
+<div class="sta-utils-chat-card sta-utils-chat-card--red sta-utils-shaken-card sta-utils-shaken-card--resolved">
+  <h3><i class="fas fa-burst"></i> ${t("sta-utils.shaken.title")}</h3>
   <div class="sta-utils-shaken-result">
     ${rollHTML}
     <p class="sta-utils-shaken-result-label"><i class="${res.icon}"></i> <strong>${res.label()}</strong></p>

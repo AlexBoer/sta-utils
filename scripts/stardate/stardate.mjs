@@ -146,7 +146,7 @@ function computeResults(mode, stardateValue, dateValue, timeValue) {
  */
 function sendResultsToChat(resultsHtml) {
   const content = `
-    <div class="sta-stardate-calculator-chat">
+    <div class="sta-utils-chat-card sta-utils-chat-card--blue">
       <h3><i class="fas fa-calendar"></i> ${t("sta-utils.stardateCalculator.title")}</h3>
       ${resultsHtml}
     </div>

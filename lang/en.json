@@ -37,6 +37,10 @@
         "name": "Enable Fatigue Management",
         "hint": "Enable automatic fatigue trait creation when stress is maxed, fatigue notices in chat and dice pool dialogs, and fatigued attribute display on character sheets. Requires a world reload when changed."
       },
+      "enableExtendedTaskTracker": {
+        "name": "Enable Extended Task Tracker",
+        "hint": "Display bar-style extended task trackers on the canvas with breakthrough markers at 50% and 75%. GM can add, edit, and remove trackers. Requires a world reload when changed."
+      },
       "playerAmbientAudioSelectionOnly": {
         "name": "Player Ambient Audio Uses Selected Tokens",
         "hint": "If enabled, non-GM users only hear ambient audio near tokens they currently have selected/controlled (matching GM behavior). If disabled, Foundry's default behavior applies (players hear audio near all owned tokens)."
@@ -92,6 +96,39 @@
       "tidyCharacterSheet": {
         "name": "Tidy Character Sheet",
         "hint": "Add collapsible sections and move edit/delete buttons to a right-click context menu, without any other layout changes. Mutually exclusive with Compact Sheets. Requires a world reload when changed."
+      },
+      "lcarsCharacterSheet": {
+        "name": "LCARS Sheet",
+        "hint": "Apply an LCARS (Library Computer Access/Retrieval System) visual theme to character sheets, with distinctive rounded panel borders, Trek-style color palette, and futuristic typography. Mutually exclusive with Compact Sheets. Requires a world reload when changed."
+      },
+      "lcarsColorScheme": {
+        "name": "LCARS Color Scheme",
+        "hint": "Choose a color palette for the LCARS theme. Each scheme is inspired by a different Star Trek era. Only applies when LCARS Sheet is enabled.",
+        "choices": {
+          "tng": "TNG — The Next Generation",
+          "voyager": "Voyager",
+          "ds9": "DS9 — Deep Space Nine",
+          "tos": "TOS — The Original Series",
+          "enterprise": "Enterprise NX-01",
+          "kelvin": "Kelvin Timeline",
+          "picard": "Picard",
+          "lowerDecks": "Lower Decks",
+          "prodigy": "Prodigy",
+          "academy": "Starfleet Academy",
+          "redAlert": "Red Alert"
+        }
+      },
+      "mobileSheetTheme": {
+        "name": "Mobile Sheet Theme",
+        "hint": "Choose a color palette for the mobile character sheet. Only applies to Character (2e) Mobile sheets.",
+        "choices": {
+          "blue": "Blue — Federation",
+          "red": "Red — Command",
+          "gold": "Gold — Operations",
+          "teal": "Teal — Sciences",
+          "purple": "Purple — Nebula",
+          "green": "Green — Borg"
+        }
       }
     },
     "traits": {
@@ -1132,6 +1169,88 @@
       "editItem": "Edit",
       "deleteItem": "Delete",
       "chatItem": "Send to Chat"
+    },
+    "extendedTaskTracker": {
+      "add": "+ Tracker",
+      "breakthrough": "Breakthrough",
+      "breakthroughDialog": {
+        "title": "Breakthrough Effect",
+        "breakthroughsTab": "Breakthroughs",
+        "setbacksTab": "Setbacks"
+      },
+      "breakthroughOptions": {
+        "difficulty": {
+          "label": "Difficulty",
+          "desc": "The extended task's Difficulty is increased or reduced by 1."
+        },
+        "hindrance": {
+          "label": "Hindrance",
+          "desc": "The extended task's Resistance is increased or reduced by 1, to a minimum of 0."
+        },
+        "progress": {
+          "label": "Progress",
+          "desc": "The next roll made against the problem gains +2 Impact."
+        },
+        "sceneEffect": {
+          "label": "Effect on the Scene",
+          "desc": "The problem reduces the Difficulty of tasks elsewhere in the scene, or increases the Difficulty of an enemy's tasks."
+        },
+        "createTrait": {
+          "label": "Create a Trait",
+          "desc": "A trait is created, removed, or changed. A trait created or altered by an extended task is more persistent and more difficult to affect than one created by an ordinary task or by Momentum."
+        },
+        "event": {
+          "label": "Event",
+          "desc": "The problem is tied to specific occurrences in the scene, with each breakthrough altering the state of the scene. Perhaps enemies grow more numerous, desperate, or dangerous with each breakthrough until the problem is overcome."
+        }
+      },
+      "setbackOptions": {
+        "uncertainty": {
+          "label": "Uncertainty",
+          "desc": "Some tasks associated with the consequence increase their complication range by 1 (i.e., from 20, to 19–20)."
+        },
+        "difficulty": {
+          "label": "Difficulty",
+          "desc": "Some tasks associated with the consequence become more difficult, adding 1 to their Difficulty."
+        },
+        "instability": {
+          "label": "Instability",
+          "desc": "The consequence grows more precarious. This may reduce the consequence's Resistance (if any) by 2 or add 2 to the Trouble rating."
+        },
+        "escalation": {
+          "label": "Escalation",
+          "desc": "The setback adds 2 Threat, to be used immediately or saved for some later problem."
+        },
+        "createTrait": {
+          "label": "Create Trait",
+          "desc": "The setback creates a trait which hinders the player characters or helps the enemy."
+        },
+        "event": {
+          "label": "Event",
+          "desc": "The setback triggers some activity or change in the scene, such as the arrival or departure of specific individuals, a change in enemy tactics, a new danger, or even inflicting Stress on a player character."
+        }
+      },
+      "dialog": {
+        "title": "Create Extended Task Tracker",
+        "editTitle": "Edit Extended Task Tracker",
+        "name": "Name",
+        "value": "Current Value",
+        "size": "Work Track Size (max 30)",
+        "difficulty": "Difficulty (1–10)",
+        "resistance": "Resistance (0–5)",
+        "color": "Color",
+        "private": "Private (GM only)"
+      },
+      "deleteDialog": {
+        "title": "Delete Tracker",
+        "message": "Delete the tracker \"{name}\"?"
+      },
+      "warnings": {
+        "noActiveGM": "No active GM is available to process this update."
+      },
+      "errors": {
+        "sizeTooBig": "Maximum tracker size is {maxSize}."
+      }
     }
   }
 }

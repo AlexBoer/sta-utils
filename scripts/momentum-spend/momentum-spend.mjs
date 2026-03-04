@@ -679,8 +679,8 @@ async function _submitSpend(message, selections) {
   if (cost.threat > 0) totalParts.push(`${cost.threat} ${tLabel}`);
 
   const summaryHtml = `
-    <div class="sta-utils-momentum-spend-result">
-      <strong><i class="fas fa-coins"></i> ${t("sta-utils.momentumSpend.spendMomentum")}</strong>
+    <div class="sta-utils-chat-card sta-utils-chat-card--orange">
+      <h3><i class="fas fa-coins"></i> ${t("sta-utils.momentumSpend.spendMomentum")}</h3>
       <ul>${lines.map((l) => `<li>${l}</li>`).join("")}</ul>
       <span class="sta-utils-ms-total">${totalParts.join(" | ")}</span>
     </div>`;

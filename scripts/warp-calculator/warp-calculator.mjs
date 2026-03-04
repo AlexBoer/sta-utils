@@ -558,7 +558,7 @@ function computeResults(warp, distance, time, formulaType = "tng") {
  */
 function sendResultsToChat(resultsHtml) {
   const content = `
-    <div class="sta-warp-calculator-chat">
+    <div class="sta-utils-chat-card sta-utils-chat-card--blue">
       <h3><i class="fas fa-rocket"></i> ${t("sta-utils.warpCalculator.title")}</h3>
       ${resultsHtml}
     </div>

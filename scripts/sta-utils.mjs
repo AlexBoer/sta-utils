@@ -27,12 +27,17 @@ import {
   isFatigueEnabled,
   isStyleEnhanceEnabled,
   _toggleStyleEnhance,
+  injectSheetVariantCss,
+  isCompactCharacterSheetEnabled,
+  isTidyCharacterSheetEnabled,
+  isLcarsCharacterSheetEnabled,
   getWorldTraitsActorUuid,
 } from "./core/settings.mjs";
 
 import { openDicePoolMonitor } from "./dice-pool-monitor/index.mjs";
 
 import { installRenderApplicationV2Hook } from "./character-sheet/index.mjs";
+import { syncOfficersLogLcars } from "./character-sheet/lcars/officers-log-sync.mjs";
 
 import { registerNoteStylerHooks, noteStyler } from "./note-styler/index.mjs";
 
@@ -73,6 +78,8 @@ import {
 
 import { installShakenHook } from "./shaken/index.mjs";
 
+import { initExtendedTaskTracker } from "./extended-task-tracker/index.mjs";
+
 import {
   isBacklinksEnabled,
   isDicePoolOverrideEnabled,
@@ -80,9 +87,12 @@ import {
   isMomentumSpendEnabled,
   isMomentumMergerEnabled,
   isChatHeaderMergeEnabled,
+  isExtendedTaskTrackerEnabled,
 } from "./core/settings.mjs";
 
 import { isActionChooserEnabled } from "./core/settings.mjs";
+
+import { MobileCharacterSheet2e } from "./mobile-sheet/mobile-character-sheet2e.mjs";
 
 const MODULE_ID = "sta-utils";
 
@@ -98,7 +108,20 @@ Hooks.once("init", () => {
     `modules/${MODULE_ID}/templates/dice-pool-monitor-player.hbs`,
     `modules/${MODULE_ID}/templates/action-chooser.hbs`,
     `modules/${MODULE_ID}/templates/dice-pool-selectors.hbs`,
+    `modules/${MODULE_ID}/templates/extended-task-tracker.hbs`,
+    `modules/${MODULE_ID}/templates/extended-task-dialog.hbs`,
+    `modules/${MODULE_ID}/templates/breakthrough-dialog.hbs`,
+    `modules/${MODULE_ID}/templates/character-sheet2e-mobile.hbs`,
+    `modules/${MODULE_ID}/templates/character-sheet2e-mobile-limited.hbs`,
   ]);
+
+  // --- Mobile sheet registration ---
+  foundry.applications.apps.DocumentSheetConfig.registerSheet(
+    Actor,
+    MODULE_ID,
+    MobileCharacterSheet2e,
+    { types: ["character"], label: "Character (2e) Mobile" },
+  );
 
   // --- Register settings ---
   registerSettings();
@@ -129,6 +152,33 @@ Hooks.once("init", () => {
     _toggleStyleEnhance(true);
   }
 
+  // --- Sheet Variant CSS Injection ---
+  injectSheetVariantCss(
+    "sta-utils-compact",
+    "styles/sheet-variants/sta-compact.css",
+    isCompactCharacterSheetEnabled(),
+  );
+  injectSheetVariantCss(
+    "sta-utils-tidy",
+    "styles/sheet-variants/sta-tidy.css",
+    isTidyCharacterSheetEnabled(),
+  );
+  injectSheetVariantCss(
+    "sta-utils-lcars",
+    "styles/sheet-variants/sta-lcars.css",
+    isLcarsCharacterSheetEnabled(),
+  );
+  // Mobile sheet CSS is always injected — it is scoped to .character-sheet--mobile
+  // and only takes effect when the mobile sheet type is explicitly selected.
+  injectSheetVariantCss(
+    "sta-utils-mobile",
+    "styles/sheet-variants/sta-mobile-sheet.css",
+    true,
+  );
+  if (isLcarsCharacterSheetEnabled()) {
+    syncOfficersLogLcars(true);
+  }
+
   // Flag for CSS: mark if Character Chat Selector is active
   if (game.modules.get("character-chat-selector")?.active) {
     document.body.classList.add("ccs-active");
@@ -157,6 +207,11 @@ Hooks.once("init", () => {
   if (isBacklinksEnabled()) {
     backlinks.registerHooks();
     console.log(`${MODULE_ID} | Journal Backlinks feature enabled`);
+  }
+
+  // --- Extended Task Tracker ---
+  if (isExtendedTaskTrackerEnabled()) {
+    initExtendedTaskTracker();
   }
 });
 

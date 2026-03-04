@@ -1,0 +1,3011 @@
+@import url("https://fonts.googleapis.com/css2?family=Antonio:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap");
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+ *  LCARS CHARACTER SHEET THEME
+ *  Activated when the `.sta-lcars` class is added to `.character-sheet`
+ * ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * CSS CUSTOM PROPERTIES
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars {
+  --lcars-orange: #f1a43c;
+  --lcars-peach: #f0b872;
+  --lcars-lavender: #c5a3d9;
+  --lcars-lilac: #9b8fc2;
+  --lcars-blue: #6688cc;
+  --lcars-sky: #88aaff;
+  --lcars-red: #d05050;
+  --lcars-tan: #e8c57a;
+  --lcars-bg: #0e0e16be;
+  --lcars-bg-panel: #0e0e16be;
+  --lcars-text-light: #f0b872;
+  --lcars-text-dark: #000;
+  --lcars-font-heading: "Antonio", "Helvetica Neue", sans-serif;
+  --lcars-font-body: "Roboto Condensed", "Helvetica Neue", sans-serif;
+  --lcars-radius: 20px;
+  --lcars-radius-lg: 30px;
+  --lcars-border-thick: 16px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * OVERALL LAYOUT & BACKGROUND
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars {
+  background: var(--lcars-bg) !important;
+  color: var(--lcars-text-light);
+  font-family: var(--lcars-font-body);
+  border: none !important;
+  padding: 0 !important;
+  overflow: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Blanket override: kill the STA system blue background on ALL .title elements */
+.character-sheet.sta-lcars .title {
+  background: transparent !important;
+  color: var(--lcars-text-light);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * TOP SECTION — image, name, tracks
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars .split-section {
+  display: flex;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.character-sheet.sta-lcars .split-section:first-child {
+  background: transparent;
+  border: none;
+}
+
+.character-sheet.sta-lcars .split-section:last-child {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.character-sheet.sta-lcars .top-left-column {
+  background: transparent;
+  border: none;
+  flex: 0 0 155px;
+}
+
+.character-sheet.sta-lcars .image-field {
+  border: 2px solid var(--lcars-orange);
+  border-radius: 8px;
+  overflow: hidden;
+  width: 150px;
+  height: 150px;
+}
+
+.character-sheet.sta-lcars .top-right-column {
+  background: transparent;
+  border: none;
+  overflow: hidden;
+  min-width: 485px;
+}
+
+.character-sheet.sta-lcars .top-right-column > .name-field > .title {
+  display: none !important;
+}
+
+.character-sheet.sta-lcars .name-field .text-entry {
+  height: 2.3rem;
+}
+
+.character-sheet.sta-lcars .name-field input {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-text-light);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--lcars-orange);
+  font-size: 1.2rem;
+  text-transform: uppercase;
+}
+
+.character-sheet.sta-lcars .name-field input:focus {
+  border-bottom-color: var(--lcars-sky);
+  box-shadow: none;
+  outline: none;
+}
+
+.character-sheet.sta-lcars .tracktitle {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-lavender);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.7rem;
+}
+
+.character-sheet.sta-lcars .track .bar div {
+  border-radius: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * BOTTOM-LEFT COLUMN — attributes, disciplines, buttons
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars .bottom-left-column {
+  background: var(--lcars-bg-panel);
+  border: none;
+  padding: 6px 8px;
+}
+
+.character-sheet.sta-lcars .attribute-block .title,
+.character-sheet.sta-lcars .discipline-block .title {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-text-dark) !important;
+  background: var(--lcars-lilac) !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.75rem;
+  border-radius: var(--lcars-radius) 8px 8px var(--lcars-radius);
+  padding: 2px 10px;
+  margin-bottom: 4px;
+  border: none;
+}
+
+.character-sheet.sta-lcars .attribute-block .row-right,
+.character-sheet.sta-lcars .discipline-block .row-right {
+  border: none;
+}
+
+.character-sheet.sta-lcars .attribute-block .list-entry,
+.character-sheet.sta-lcars .discipline-block .list-entry {
+  font-family: var(--lcars-font-body);
+  color: var(--lcars-text-light);
+  font-size: 0.8rem;
+}
+
+.character-sheet.sta-lcars .attribute-block .numeric-entry,
+.character-sheet.sta-lcars .discipline-block .numeric-entry {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-sky);
+  background: transparent;
+  border: 1px solid var(--lcars-lilac);
+  border-radius: 4px;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.character-sheet.sta-lcars .attribute-block .numeric-entry:focus,
+.character-sheet.sta-lcars .discipline-block .numeric-entry:focus {
+  border-color: var(--lcars-orange);
+  box-shadow: none;
+  outline: none;
+}
+
+.character-sheet.sta-lcars .selector {
+  accent-color: var(--lcars-orange);
+}
+
+.character-sheet.sta-lcars .rollrepnotdis {
+  font-family: var(--lcars-font-body);
+  color: var(--lcars-lavender);
+  font-size: 0.75rem;
+}
+
+.character-sheet.sta-lcars .rollrepnotdis .checkbox {
+  accent-color: var(--lcars-orange);
+}
+
+.character-sheet.sta-lcars .buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  padding: 4px 0;
+}
+
+.character-sheet.sta-lcars .buttons .check-button {
+  font-family: var(--lcars-font-heading);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 20px 8px 8px 20px;
+  max-width: none;
+  width: auto;
+  padding: 6px 24px;
+  margin: 0;
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+
+/* Perform Task — lavender capsule */
+.character-sheet.sta-lcars .buttons .check-button.btn {
+  background: var(--lcars-lavender) !important;
+  color: var(--lcars-text-dark);
+  border-width: 0 !important;
+}
+.character-sheet.sta-lcars .buttons .check-button.btn:hover {
+  filter: brightness(1.2);
+  transform: scale(1.03);
+}
+
+/* Roll Reputation — tan/gold capsule */
+.character-sheet.sta-lcars .buttons .check-button.btn3 {
+  background: var(--lcars-tan) !important;
+  color: var(--lcars-text-dark);
+  border-width: 0 !important;
+}
+.character-sheet.sta-lcars .buttons .check-button.btn3:hover {
+  filter: brightness(1.15);
+  transform: scale(1.03);
+}
+
+.character-sheet.sta-lcars .stressmod {
+  font-family: var(--lcars-font-body);
+  color: var(--lcars-lavender);
+  font-size: 0.75rem;
+}
+
+.character-sheet.sta-lcars .stressmod input {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-sky);
+  background: transparent;
+  border: 1px solid var(--lcars-lilac);
+  border-radius: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * BOTTOM-RIGHT COLUMN — tabs area
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars .bottom-right-column {
+    background: var(--lcars-bg-panel);
+    border: none;
+    border-top-left-radius: var(--lcars-border-thick) !important;
+    border-left: 16px solid var(--lcars-orange);
+    border-top-left-radius: 16px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * TABS NAVIGATION
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars .sheet-tabs.tabs {
+  background: var(--lcars-bg-panel);
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  gap: 4px;
+  display: flex;
+}
+
+.character-sheet.sta-lcars .sheet-tabs.tabs .item {
+  font-family: var(--lcars-font-heading);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--lcars-text-dark);
+  background: var(--lcars-orange);
+  border: none;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  transition: background 0.15s ease;
+  flex: 1;
+  text-align: center;
+  min-width: 90px;
+}
+
+.character-sheet.sta-lcars .sheet-tabs.tabs .item:hover {
+  background: var(--lcars-peach);
+}
+
+.character-sheet.sta-lcars .sheet-tabs.tabs .item.active {
+  background: var(--lcars-bg-panel);
+  color: var(--lcars-orange);
+  font-weight: bold;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * SHEET BODY — tab content area
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars .sheet-body {
+  background: var(--lcars-bg-panel);
+  border: none;
+  color: var(--lcars-text-light);
+}
+
+.character-sheet.sta-lcars .sheet-body .tab {
+  color: var(--lcars-text-light);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * SECTION TITLES
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars .section > .title {
+  font-family: var(--lcars-font-heading);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.8rem;
+  padding: 2px 10px;
+  border-radius: var(--lcars-radius) 8px 8px var(--lcars-radius);
+  margin-bottom: 4px;
+}
+
+.character-sheet.sta-lcars .section.values > .title {
+  background: var(--lcars-lavender) !important;
+  color: var(--lcars-text-dark) !important;
+}
+
+.character-sheet.sta-lcars .section.talents > .title {
+  background: var(--lcars-lilac) !important;
+  color: var(--lcars-text-dark) !important;
+}
+
+.character-sheet.sta-lcars .section.focuses > .title {
+  background: var(--lcars-blue) !important;
+  color: var(--lcars-text-dark) !important;
+}
+
+.character-sheet.sta-lcars .section.traits > .title {
+  background: var(--lcars-tan) !important;
+  color: var(--lcars-text-dark) !important;
+}
+
+.character-sheet.sta-lcars .section.injuries > .title {
+  background: var(--lcars-red) !important;
+  color: var(--lcars-text-dark) !important;
+}
+
+.character-sheet.sta-lcars .section.belongings > .title {
+  background: var(--lcars-peach) !important;
+  color: var(--lcars-text-dark) !important;
+}
+
+.character-sheet.sta-lcars .section.milestones > .title {
+  background: var(--lcars-sky) !important;
+  color: var(--lcars-text-dark) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * ROW ENTRIES — item rows
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars .row.entry {
+  border: none;
+  border-bottom: 1px solid rgba(241, 164, 60, 0.15);
+  padding: 2px 4px;
+  height: 30px;
+  min-height: 30px;
+  max-height: 30px;
+}
+
+.character-sheet.sta-lcars .row.entry:hover {
+  background: rgba(241, 164, 60, 0.08);
+}
+
+.character-sheet.sta-lcars .row.entry .item-name {
+  font-family: var(--lcars-font-body);
+  color: var(--lcars-text-light);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+}
+
+.character-sheet.sta-lcars .row.entry .item-name:focus {
+  border-bottom-color: var(--lcars-orange);
+  box-shadow: none;
+  outline: none;
+}
+
+.character-sheet.sta-lcars .row.entry .item-quantity {
+  font-family: var(--lcars-font-body);
+  color: var(--lcars-sky);
+  background: transparent;
+  border: 1px solid var(--lcars-lilac);
+  border-radius: 4px;
+  width: 32px !important;
+  max-width: 32px;
+  height: 22px;
+  font-size: 0.75rem;
+  padding: 0 2px;
+  flex-shrink: 0;
+  margin-right: 43px;
+}
+
+.character-sheet.sta-lcars .row.entry .sta-inline-sheet-btn {
+  font-size: 0.8rem;
+  padding: 1px 6px;
+  height: 25px;
+  line-height: 22px;
+  min-width: unset;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * CONTROLS — edit, delete buttons
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars .control a,
+.character-sheet.sta-lcars .control i {
+  color: black;
+  transition: color 0.15s ease;
+}
+
+.character-sheet.sta-lcars .control a:hover,
+.character-sheet.sta-lcars .control i:hover {
+  color: var(--lcars-orange);
+}
+
+.character-sheet.sta-lcars .control.create i {
+  color: var(--lcars-text-dark) !important;
+}
+
+.character-sheet.sta-lcars .control.create i:hover {
+  color: var(--lcars-text-dark) !important;
+  opacity: 0.7;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * NOTES TAB — prose mirror styling
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars .tab[data-tab="notes"] .note {
+  color: var(--lcars-text-light);
+  font-family: var(--lcars-font-body);
+}
+
+.character-sheet.sta-lcars .tab[data-tab="notes"] prose-mirror {
+  color: var(--lcars-text-light);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * DEVELOPMENT TAB
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars .item-list-scrollable {
+  scrollbar-color: var(--lcars-orange) transparent;
+}
+
+.character-sheet.sta-lcars .two-col input[type="checkbox"] {
+  accent-color: var(--lcars-orange);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * COLLAPSIBLE SECTIONS — reuse shared infrastructure with LCARS styling
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars .sta-lcars-section > .title {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.character-sheet.sta-lcars .sta-lcars-chevron {
+  font-size: 0.6rem;
+  transition: transform 0.15s ease;
+  margin-right: 2px;
+  flex-shrink: 0;
+  color: var(--lcars-text-dark);
+}
+
+.character-sheet.sta-lcars .sta-lcars-chevron.sta-collapsed {
+  transform: rotate(-90deg);
+}
+
+.character-sheet.sta-lcars .sta-lcars-items {
+  overflow: hidden;
+  transition: none;
+}
+
+.character-sheet.sta-lcars .sta-lcars-items.sta-collapsed {
+  display: none;
+}
+
+.character-sheet.sta-lcars .sta-lcars-section {
+  min-height: 0 !important;
+  flex-shrink: 1;
+  flex-grow: 0;
+}
+
+.character-sheet.sta-lcars .sta-lcars-create-btn {
+  margin-left: auto;
+  font-size: 0.75rem;
+  padding: 0 4px;
+}
+
+/* Hide header rows — the create button has been moved into the title */
+.character-sheet.sta-lcars .section .header.row {
+  display: none !important;
+}
+
+/* Show header rows under belongings (needed for quantity columns) */
+.character-sheet.sta-lcars .section.belongings .header.row {
+  display: flex !important;
+}
+
+/* Hide edit/delete controls — replaced by right-click context menu */
+.character-sheet.sta-lcars .section .row.entry > .control {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * BIOGRAPHY TAB
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars .tab[data-tab="biography"] .title {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-text-dark) !important;
+  background: var(--lcars-peach) !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.7rem;
+  border-radius: var(--lcars-radius) 8px 8px var(--lcars-radius);
+  padding: 2px 10px;
+}
+
+.character-sheet.sta-lcars .tab[data-tab="biography"] input.text-entry {
+  font-family: var(--lcars-font-body);
+  color: var(--lcars-text-light);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--lcars-lilac);
+}
+
+.character-sheet.sta-lcars .tab[data-tab="biography"] input.text-entry:focus {
+  border-bottom-color: var(--lcars-orange);
+  box-shadow: none;
+  outline: none;
+}
+
+.character-sheet.sta-lcars .tab[data-tab="biography"] .description {
+  color: var(--lcars-text-light);
+  font-family: var(--lcars-font-body);
+}
+
+.character-sheet.sta-lcars .tab[data-tab="biography"] prose-mirror {
+  color: var(--lcars-text-light);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * TRAITS TAB — split-section columns
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars .tab[data-tab="traits"] .split-section {
+  border: none;
+  background: transparent;
+}
+
+.character-sheet.sta-lcars .tab[data-tab="traits"] .items-column-left,
+.character-sheet.sta-lcars .tab[data-tab="traits"] .items-column-right {
+  border: none;
+  background: transparent;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * DEVELOPMENT TAB — checkboxes and split sections
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars .tab[data-tab="development"] .split-section {
+  border: none;
+  background: transparent;
+}
+
+.character-sheet.sta-lcars .tab[data-tab="development"] .items-column-left,
+.character-sheet.sta-lcars .tab[data-tab="development"] .items-column-right {
+  border: none;
+  background: transparent;
+}
+
+.character-sheet.sta-lcars .tab[data-tab="development"] .title {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-text-dark) !important;
+  background: var(--lcars-lavender) !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.7rem;
+  border-radius: var(--lcars-radius) 8px 8px var(--lcars-radius);
+  padding: 2px 10px;
+}
+
+.character-sheet.sta-lcars .tab[data-tab="development"] .row {
+  font-family: var(--lcars-font-body);
+  color: var(--lcars-text-light);
+  font-size: 0.8rem;
+}
+
+.character-sheet.sta-lcars .tab[data-tab="development"] .row input[type="checkbox"] {
+  accent-color: var(--lcars-orange);
+}
+
+.character-sheet.sta-lcars .section.milestones .row.entry input[type="checkbox"].item-quantity {
+  border: none !important;
+  outline: none;
+  box-shadow: none;
+  margin-right: 8px;
+  accent-color: var(--lcars-orange);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * TOGGLE CONTROLS (used/unused)
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars .value-used .control.toggle i {
+  color: var(--lcars-lavender);
+}
+
+.character-sheet.sta-lcars .value-used .control.toggle i:hover {
+  color: var(--lcars-orange);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * LCARS FRAME ELEMENTS — top-bar and footer-bar
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+/* --- Top decorative bar --- */
+.character-sheet.sta-lcars .sta-lcars-top-bar {
+  display: flex;
+  gap: 4px;
+  height: 8px;
+  margin-bottom: 4px;
+  padding: 0 4px;
+  width: 100%;
+}
+
+.character-sheet.sta-lcars .sta-lcars-top-segment {
+  flex: 1;
+  border-radius: 4px;
+}
+
+.character-sheet.sta-lcars .sta-lcars-seg-0 {
+  background: var(--lcars-lavender);
+}
+
+.character-sheet.sta-lcars .sta-lcars-seg-1 {
+  background: var(--lcars-blue);
+  flex: 2;
+}
+
+.character-sheet.sta-lcars .sta-lcars-seg-2 {
+  background: var(--lcars-lilac);
+}
+
+/* --- Footer decorative bar --- */
+.character-sheet.sta-lcars .sta-lcars-footer-bar {
+  display: flex;
+  gap: 4px;
+  height: 8px;
+  padding: 0 4px;
+  width: 100%;
+  flex-shrink: 0;
+  margin-top: auto;
+}
+
+.character-sheet.sta-lcars .sta-lcars-footer-segment {
+  flex: 1;
+  border-radius: 4px;
+}
+
+.character-sheet.sta-lcars .sta-lcars-fseg-0 {
+  background: var(--lcars-orange);
+}
+
+.character-sheet.sta-lcars .sta-lcars-fseg-1 {
+  background: var(--lcars-peach);
+  flex: 2;
+}
+
+.character-sheet.sta-lcars .sta-lcars-fseg-2 {
+  background: var(--lcars-tan);
+}
+
+.character-sheet.sta-lcars .sta-lcars-fseg-3 {
+  background: var(--lcars-lavender);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * SCROLLBAR STYLING
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars ::-webkit-scrollbar {
+  width: 6px;
+}
+
+.character-sheet.sta-lcars ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.character-sheet.sta-lcars ::-webkit-scrollbar-thumb {
+  background: var(--lcars-orange);
+  border-radius: 3px;
+}
+
+.character-sheet.sta-lcars ::-webkit-scrollbar-thumb:hover {
+  background: var(--lcars-peach);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * GENERAL INPUT STYLING
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars input[type="text"],
+.character-sheet.sta-lcars input[type="number"] {
+  color: var(--lcars-text-light);
+  background: transparent;
+  border-color: var(--lcars-lilac);
+}
+
+.character-sheet.sta-lcars input[type="text"]:focus,
+.character-sheet.sta-lcars input[type="number"]:focus {
+  border-color: var(--lcars-orange);
+  box-shadow: none;
+  outline: none;
+}
+
+.character-sheet.sta-lcars select {
+  font-family: var(--lcars-font-body);
+  color: var(--lcars-text-light);
+  background: rgba(12, 12, 12, 0.8);
+  border: 1px solid var(--lcars-lilac);
+  border-radius: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * BELONGINGS HEADER ROW (visible exception)
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars .section.belongings .header.row {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-text-dark);
+  background: var(--lcars-peach);
+  border-radius: 4px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * DAMAGE COLUMN in belongings
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars .damage {
+    font-family: var(--lcars-font-heading);
+    color: var(--lcars-red);
+    margin-right: 43px;
+}
+
+.character-sheet.sta-lcars .section .row.entry .two-column-with-roll-secondary {
+    margin-right: 43px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * STRIKE-THROUGH (used values/logs)
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars .strike-through {
+  color: rgba(240, 184, 114, 0.4);
+  text-decoration: line-through;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * SECONDARY TITLE (column subheader in header rows)
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.character-sheet.sta-lcars .secondary-title {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-text-dark);
+}
+
+
+/* ╔═══════════════════════════════════════════════════════════════════════════╗
+ * ║                                                                         ║
+ * ║              STARSHIP / SMALL CRAFT SHEET — LCARS THEME                 ║
+ * ║                                                                         ║
+ * ╚═══════════════════════════════════════════════════════════════════════════╝ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * CSS CUSTOM PROPERTIES (shared palette for non-character sheets)
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.starship-sheet.sta-lcars,
+.extended-tasks.sta-lcars,
+.item-sheet.sta-lcars,
+.scenetraits-sheet.sta-lcars,
+.dialogue.sta-lcars {
+  --lcars-orange: #f1a43c;
+  --lcars-peach: #f0b872;
+  --lcars-lavender: #c5a3d9;
+  --lcars-lilac: #9b8fc2;
+  --lcars-blue: #6688cc;
+  --lcars-sky: #88aaff;
+  --lcars-red: #d05050;
+  --lcars-tan: #e8c57a;
+  --lcars-bg: rgba(11, 10, 19, 0.9);
+  --lcars-bg-panel: rgba(11, 10, 19, 0.9);
+  --lcars-text-light: #f0b872;
+  --lcars-text-dark: #000;
+  --lcars-font-heading: "Antonio", "Helvetica Neue", sans-serif;
+  --lcars-font-body: "Roboto Condensed", "Helvetica Neue", sans-serif;
+  --lcars-radius: 20px;
+  --lcars-radius-lg: 30px;
+  --lcars-border-thick: 16px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * STARSHIP — OVERALL LAYOUT & BACKGROUND
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.starship-sheet.sta-lcars {
+  background: var(--lcars-bg) !important;
+  color: var(--lcars-text-light);
+  font-family: var(--lcars-font-body);
+  border: none !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.starship-sheet.sta-lcars .title {
+  background: var(--lcars-lilac) !important;
+  color: var(--lcars-text-dark) !important;
+  font-family: var(--lcars-font-heading);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.8rem;
+  border-radius: var(--lcars-radius) 8px 8px var(--lcars-radius);
+  padding: 2px 10px;
+}
+
+.starship-sheet.sta-lcars .tracktitle {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-lavender);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.7rem;
+}
+
+.starship-sheet.sta-lcars .track .bar div {
+  border-radius: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * STARSHIP — SPLIT SECTION & COLUMNS
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.starship-sheet.sta-lcars .split-section {
+  background: transparent;
+  border: none;
+}
+
+.starship-sheet.sta-lcars .left-column {
+  background: var(--lcars-bg-panel);
+  border: none;
+  padding: 6px 8px;
+}
+
+.starship-sheet.sta-lcars .right-column {
+  background: var(--lcars-bg-panel);
+  border: none;
+  padding-left: 20px;
+}
+
+.starship-sheet.sta-lcars .right-column::before {
+  background-color: var(--lcars-orange) !important;
+  border-top-left-radius: var(--lcars-border-thick);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * STARSHIP — IMAGE & NAME FIELD
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.starship-sheet.sta-lcars .image-field {
+  border: 2px solid var(--lcars-orange);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.starship-sheet.sta-lcars .name-field .text-entry {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-text-light);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--lcars-orange);
+  text-transform: uppercase;
+}
+
+.starship-sheet.sta-lcars .name-field .text-entry:focus {
+  border-bottom-color: var(--lcars-sky);
+  box-shadow: none;
+  outline: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * STARSHIP — SYSTEMS & DEPARTMENTS BLOCKS
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.starship-sheet.sta-lcars .systems-block .stat.header.row {
+  background-color: var(--lcars-lavender) !important;
+  color: var(--lcars-text-dark);
+  font-family: var(--lcars-font-heading);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: 4px;
+}
+
+.starship-sheet.sta-lcars .systems-block .stat.header.row .text.secondary-title,
+.starship-sheet.sta-lcars .systems-block .stat.header.row .field.secondary-title {
+  color: var(--lcars-text-dark);
+  font-family: var(--lcars-font-heading);
+}
+
+.starship-sheet.sta-lcars .systems-block .stat.row {
+  border-bottom: 1px solid rgba(241, 164, 60, 0.12);
+}
+
+.starship-sheet.sta-lcars .systems-block .text.list-entry {
+  color: var(--lcars-text-light);
+  font-family: var(--lcars-font-body);
+}
+
+.starship-sheet.sta-lcars .systems-block .selector {
+  accent-color: var(--lcars-orange);
+}
+
+.starship-sheet.sta-lcars .departments-block .stat.row {
+  border-bottom: 1px solid rgba(241, 164, 60, 0.12);
+}
+
+.starship-sheet.sta-lcars .departments-block .text.list-entry {
+  color: var(--lcars-text-light);
+  font-family: var(--lcars-font-body);
+}
+
+.starship-sheet.sta-lcars .numeric-entry {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-sky) !important;
+  background: transparent;
+  border: 1px solid var(--lcars-lilac) !important;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.starship-sheet.sta-lcars .numeric-entry:focus {
+  border-color: var(--lcars-orange) !important;
+  box-shadow: none;
+  outline: none;
+}
+
+.starship-sheet.sta-lcars .systems-block .field.breaches {
+  color: var(--lcars-red);
+  border-color: var(--lcars-lilac) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * STARSHIP — DAMAGE HIGHLIGHTS
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.starship-sheet.sta-lcars .highlight-damaged {
+  background-color: var(--lcars-orange) !important;
+  color: var(--lcars-text-dark) !important;
+}
+
+.starship-sheet.sta-lcars .highlight-disabled {
+  background-color: var(--lcars-lilac) !important;
+  color: var(--lcars-text-dark) !important;
+}
+
+.starship-sheet.sta-lcars .highlight-destroyed {
+  background-color: var(--lcars-red) !important;
+  color: #fff !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * STARSHIP — BUTTONS
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.starship-sheet.sta-lcars .buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  padding: 4px 0;
+}
+
+.starship-sheet.sta-lcars .buttons .check-button {
+  font-family: var(--lcars-font-heading);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 20px 8px 8px 20px;
+  max-width: none;
+  width: auto;
+  padding: 6px 16px;
+  margin: 0;
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+
+.starship-sheet.sta-lcars .buttons .check-button.btn {
+  background: var(--lcars-lavender) !important;
+  color: var(--lcars-text-dark);
+  border-width: 0 !important;
+}
+
+.starship-sheet.sta-lcars .buttons .check-button.btn:hover {
+  filter: brightness(1.2);
+  transform: scale(1.03);
+}
+
+.starship-sheet.sta-lcars .buttons .check-button.btn2 {
+  background: var(--lcars-blue) !important;
+  color: var(--lcars-text-dark);
+  border-width: 0 !important;
+}
+
+.starship-sheet.sta-lcars .buttons .check-button.btn2:hover {
+  filter: brightness(1.2);
+  transform: scale(1.03);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * STARSHIP — SHIELD / CREW MODS
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.starship-sheet.sta-lcars .shieldmod,
+.starship-sheet.sta-lcars .crwmod {
+  font-family: var(--lcars-font-body);
+  color: var(--lcars-lavender);
+  font-size: 0.75rem;
+}
+
+.starship-sheet.sta-lcars .shieldmod .text-entry,
+.starship-sheet.sta-lcars .crwmod .text-entry {
+  color: var(--lcars-sky);
+  background: transparent;
+  border: 1px solid var(--lcars-lilac);
+  border-radius: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * STARSHIP — BIG ROW (scale, resistance)
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.starship-sheet.sta-lcars .big-row {
+  border-bottom: 1px solid rgba(241, 164, 60, 0.15);
+  padding-bottom: 8px;
+}
+
+.starship-sheet.sta-lcars .big-row .big-row-column .tracktitle {
+  font-size: 0.65rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * STARSHIP — BIO FIELDS (designation, spaceframe, etc.)
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.starship-sheet.sta-lcars .designation .title,
+.starship-sheet.sta-lcars .spaceframe .title,
+.starship-sheet.sta-lcars .servicedate .title,
+.starship-sheet.sta-lcars .missionprofile .title,
+.starship-sheet.sta-lcars .refit .title,
+.starship-sheet.sta-lcars .traits .title,
+.starship-sheet.sta-lcars .values .title {
+  background: var(--lcars-peach) !important;
+  color: var(--lcars-text-dark) !important;
+  font-size: 0.7rem;
+}
+
+.starship-sheet.sta-lcars .text-entry {
+  font-family: var(--lcars-font-body);
+  color: var(--lcars-text-light);
+  background: transparent;
+  border-color: var(--lcars-lilac);
+}
+
+.starship-sheet.sta-lcars .text-entry:focus {
+  border-color: var(--lcars-orange);
+  box-shadow: none;
+  outline: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * STARSHIP — SECTION TITLES
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.starship-sheet.sta-lcars .section.values > .title {
+  background: var(--lcars-lavender) !important;
+  color: var(--lcars-text-dark) !important;
+}
+
+.starship-sheet.sta-lcars .section.talents > .title {
+  background: var(--lcars-lilac) !important;
+  color: var(--lcars-text-dark) !important;
+}
+
+.starship-sheet.sta-lcars .section.traits > .title {
+  background: var(--lcars-tan) !important;
+  color: var(--lcars-text-dark) !important;
+}
+
+.starship-sheet.sta-lcars .section.belongings > .title {
+  background: var(--lcars-peach) !important;
+  color: var(--lcars-text-dark) !important;
+}
+
+.starship-sheet.sta-lcars .section.launchbay > .title {
+  background: var(--lcars-blue) !important;
+  color: var(--lcars-text-dark) !important;
+}
+
+.starship-sheet.sta-lcars .section.injuries > .title {
+  background: var(--lcars-red) !important;
+  color: var(--lcars-text-dark) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * STARSHIP — ITEM ROWS
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.starship-sheet.sta-lcars .row.entry {
+  border: none;
+  border-bottom: 1px solid rgba(241, 164, 60, 0.15);
+  padding: 2px 4px;
+}
+
+.starship-sheet.sta-lcars .row.entry:hover {
+  background: rgba(241, 164, 60, 0.08);
+}
+
+.starship-sheet.sta-lcars .row.entry .item-name {
+  font-family: var(--lcars-font-body);
+  color: var(--lcars-text-light);
+  background: transparent;
+  border: none;
+}
+
+.starship-sheet.sta-lcars .row.entry .item-name:focus {
+  border-bottom: 1px solid var(--lcars-orange);
+  box-shadow: none;
+  outline: none;
+}
+
+.starship-sheet.sta-lcars .section .header.row {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-text-dark);
+  background: var(--lcars-peach);
+  border-radius: 4px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * STARSHIP — CONTROLS
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.starship-sheet.sta-lcars .control a,
+.starship-sheet.sta-lcars .control i {
+  color: var(--lcars-lavender);
+  transition: color 0.15s ease;
+}
+
+.starship-sheet.sta-lcars .control a:hover,
+.starship-sheet.sta-lcars .control i:hover {
+  color: var(--lcars-orange);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * STARSHIP — ITEMS COLUMNS
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.starship-sheet.sta-lcars .items-column-left,
+.starship-sheet.sta-lcars .items-column-right {
+  border: none;
+  background: transparent;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * STARSHIP — NOTES
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.starship-sheet.sta-lcars .note {
+  color: var(--lcars-text-light);
+  font-family: var(--lcars-font-body);
+}
+
+.starship-sheet.sta-lcars .note .editor,
+.starship-sheet.sta-lcars .note prose-mirror {
+  color: var(--lcars-text-light);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * STARSHIP — CHECKBOXES & SELECTS
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.starship-sheet.sta-lcars input[type="checkbox"] {
+  accent-color: var(--lcars-orange);
+}
+
+.starship-sheet.sta-lcars select {
+  font-family: var(--lcars-font-body);
+  color: var(--lcars-text-light);
+  background: rgba(12, 12, 12, 0.8);
+  border: 1px solid var(--lcars-lilac);
+  border-radius: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * STARSHIP — SCROLLBAR
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.starship-sheet.sta-lcars {
+  scrollbar-color: var(--lcars-orange) transparent;
+}
+
+.starship-sheet.sta-lcars ::-webkit-scrollbar {
+  width: 6px;
+}
+
+.starship-sheet.sta-lcars ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.starship-sheet.sta-lcars ::-webkit-scrollbar-thumb {
+  background: var(--lcars-orange);
+  border-radius: 3px;
+}
+
+.starship-sheet.sta-lcars ::-webkit-scrollbar-thumb:hover {
+  background: var(--lcars-peach);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * STARSHIP — RESERVE POWER GLOW (integration w/ sta-utils reserve power)
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.starship-sheet.sta-lcars .sta-utils-reserve-power-routed {
+  box-shadow: 0 0 6px var(--lcars-sky), inset 0 0 4px rgba(136, 170, 255, 0.15);
+  border-radius: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * STARSHIP — LCARS FRAME ELEMENTS
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.starship-sheet.sta-lcars .sta-lcars-top-bar {
+  display: flex;
+  gap: 4px;
+  height: 8px;
+  margin-bottom: 4px;
+  padding: 0 4px;
+}
+
+.starship-sheet.sta-lcars .sta-lcars-top-segment {
+  flex: 1;
+  border-radius: 4px;
+}
+
+.starship-sheet.sta-lcars .sta-lcars-seg-0 { background: var(--lcars-blue); }
+.starship-sheet.sta-lcars .sta-lcars-seg-1 { background: var(--lcars-lilac); flex: 2; }
+.starship-sheet.sta-lcars .sta-lcars-seg-2 { background: var(--lcars-lavender); }
+
+.starship-sheet.sta-lcars .sta-lcars-footer-bar {
+  display: flex;
+  gap: 4px;
+  height: 8px;
+  margin-top: 4px;
+  padding: 0 4px;
+}
+
+.starship-sheet.sta-lcars .sta-lcars-footer-segment {
+  flex: 1;
+  border-radius: 4px;
+}
+
+.starship-sheet.sta-lcars .sta-lcars-fseg-0 { background: var(--lcars-orange); }
+.starship-sheet.sta-lcars .sta-lcars-fseg-1 { background: var(--lcars-peach); flex: 2; }
+.starship-sheet.sta-lcars .sta-lcars-fseg-2 { background: var(--lcars-tan); }
+.starship-sheet.sta-lcars .sta-lcars-fseg-3 { background: var(--lcars-lavender); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * STARSHIP — STRIKE-THROUGH / VALUE-USED
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.starship-sheet.sta-lcars .strike-through {
+  color: rgba(240, 184, 114, 0.4);
+  text-decoration: line-through;
+}
+
+.starship-sheet.sta-lcars .value-used .control.toggle i {
+  color: var(--lcars-lavender);
+}
+
+.starship-sheet.sta-lcars .value-used .control.toggle i:hover {
+  color: var(--lcars-orange);
+}
+
+
+/* ╔═══════════════════════════════════════════════════════════════════════════╗
+ * ║                                                                         ║
+ * ║                   EXTENDED TASK SHEET — LCARS THEME                     ║
+ * ║                                                                         ║
+ * ╚═══════════════════════════════════════════════════════════════════════════╝ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * EXTENDED TASK — OVERALL LAYOUT
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.extended-tasks.sta-lcars {
+  background: var(--lcars-bg) !important;
+  color: var(--lcars-text-light);
+  font-family: var(--lcars-font-body);
+  border: none !important;
+}
+
+.extended-tasks.sta-lcars .title {
+  background: var(--lcars-lilac) !important;
+  color: var(--lcars-text-dark) !important;
+  font-family: var(--lcars-font-heading);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.8rem;
+  border-radius: var(--lcars-radius) 8px 8px var(--lcars-radius);
+  padding: 2px 10px;
+}
+
+.extended-tasks.sta-lcars .tracktitle {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-lavender);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.7rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * EXTENDED TASK — IMAGE & NAME
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.extended-tasks.sta-lcars .image-field {
+  border: 2px solid var(--lcars-orange);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.extended-tasks.sta-lcars .name-field .text-entry {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-text-light);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--lcars-orange);
+  text-transform: uppercase;
+}
+
+.extended-tasks.sta-lcars .name-field .text-entry:focus {
+  border-bottom-color: var(--lcars-sky);
+  box-shadow: none;
+  outline: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * EXTENDED TASK — INPUTS
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.extended-tasks.sta-lcars .text-entry {
+  font-family: var(--lcars-font-body);
+  color: var(--lcars-text-light);
+  background: transparent;
+  border-color: var(--lcars-lilac);
+}
+
+.extended-tasks.sta-lcars .text-entry:focus {
+  border-color: var(--lcars-orange);
+  box-shadow: none;
+  outline: none;
+}
+
+.extended-tasks.sta-lcars .numeric-entry {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-sky);
+  background: transparent;
+  border: 1px solid var(--lcars-lilac) !important;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.extended-tasks.sta-lcars .numeric-entry:focus {
+  border-color: var(--lcars-orange) !important;
+  box-shadow: none;
+  outline: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * EXTENDED TASK — PROGRESS TRACK
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.extended-tasks.sta-lcars .track .bar div {
+  border-radius: 4px;
+}
+
+.extended-tasks.sta-lcars .track .bar .box.extendedtask {
+  border-color: var(--lcars-lilac);
+}
+
+.extended-tasks.sta-lcars .track .bar .box.extendedtask.selected {
+  background-color: var(--lcars-orange) !important;
+  color: var(--lcars-text-dark) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * EXTENDED TASK — NOTES
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.extended-tasks.sta-lcars .note {
+  color: var(--lcars-text-light);
+  font-family: var(--lcars-font-body);
+}
+
+.extended-tasks.sta-lcars .note .editor,
+.extended-tasks.sta-lcars .note prose-mirror {
+  color: var(--lcars-text-light);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * EXTENDED TASK — LCARS FRAME
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.extended-tasks.sta-lcars .sta-lcars-top-bar {
+  display: flex;
+  gap: 4px;
+  height: 8px;
+  margin-bottom: 4px;
+  padding: 0 4px;
+}
+
+.extended-tasks.sta-lcars .sta-lcars-top-segment {
+  flex: 1;
+  border-radius: 4px;
+}
+
+.extended-tasks.sta-lcars .sta-lcars-seg-0 { background: var(--lcars-orange); }
+.extended-tasks.sta-lcars .sta-lcars-seg-1 { background: var(--lcars-tan); flex: 2; }
+.extended-tasks.sta-lcars .sta-lcars-seg-2 { background: var(--lcars-peach); }
+
+.extended-tasks.sta-lcars .sta-lcars-footer-bar {
+  display: flex;
+  gap: 4px;
+  height: 8px;
+  margin-top: 4px;
+  padding: 0 4px;
+}
+
+.extended-tasks.sta-lcars .sta-lcars-footer-segment {
+  flex: 1;
+  border-radius: 4px;
+}
+
+.extended-tasks.sta-lcars .sta-lcars-fseg-0 { background: var(--lcars-lavender); }
+.extended-tasks.sta-lcars .sta-lcars-fseg-1 { background: var(--lcars-lilac); flex: 2; }
+.extended-tasks.sta-lcars .sta-lcars-fseg-2 { background: var(--lcars-blue); }
+.extended-tasks.sta-lcars .sta-lcars-fseg-3 { background: var(--lcars-orange); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * EXTENDED TASK — SCROLLBAR
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.extended-tasks.sta-lcars ::-webkit-scrollbar { width: 6px; }
+.extended-tasks.sta-lcars ::-webkit-scrollbar-track { background: transparent; }
+.extended-tasks.sta-lcars ::-webkit-scrollbar-thumb { background: var(--lcars-orange); border-radius: 3px; }
+.extended-tasks.sta-lcars ::-webkit-scrollbar-thumb:hover { background: var(--lcars-peach); }
+
+
+/* ╔═══════════════════════════════════════════════════════════════════════════╗
+ * ║                                                                         ║
+ * ║                      ITEM SHEET — LCARS THEME                           ║
+ * ║                                                                         ║
+ * ╚═══════════════════════════════════════════════════════════════════════════╝ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * ITEM SHEET — OVERALL LAYOUT
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.item-sheet.sta-lcars {
+  background: var(--lcars-bg) !important;
+  color: var(--lcars-text-light);
+  font-family: var(--lcars-font-body);
+  border: none !important;
+}
+
+.item-sheet.sta-lcars .title {
+  background: var(--lcars-peach) !important;
+  color: var(--lcars-text-dark) !important;
+  font-family: var(--lcars-font-heading);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.8rem;
+  border-radius: var(--lcars-radius) 8px 8px var(--lcars-radius);
+  padding: 2px 10px;
+}
+
+.item-sheet.sta-lcars .tracktitle {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-lavender);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.7rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * ITEM SHEET — IMAGE & NAME
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.item-sheet.sta-lcars .image-field {
+  overflow: hidden;
+}
+
+.item-sheet.sta-lcars .img {
+  border-radius: 6px;
+}
+
+.item-sheet.sta-lcars .name-field .text-entry,
+.item-sheet.sta-lcars .row:first-child .text-entry {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-text-light);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--lcars-orange);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+}
+
+.item-sheet.sta-lcars .name-field .text-entry:focus,
+.item-sheet.sta-lcars .row:first-child .text-entry:focus {
+  border-bottom-color: var(--lcars-sky);
+  box-shadow: none;
+  outline: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * ITEM SHEET — INPUTS
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.item-sheet.sta-lcars .text-entry {
+  font-family: var(--lcars-font-body);
+  color: var(--lcars-text-light);
+  background: transparent;
+  border-color: var(--lcars-lilac);
+}
+
+.item-sheet.sta-lcars .text-entry:focus {
+  border-color: var(--lcars-orange);
+  box-shadow: none;
+  outline: none;
+}
+
+.item-sheet.sta-lcars .numeric-entry {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-sky);
+  background: transparent;
+  border: 1px solid var(--lcars-lilac) !important;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.item-sheet.sta-lcars .numeric-entry:focus {
+  border-color: var(--lcars-orange) !important;
+  box-shadow: none;
+  outline: none;
+}
+
+.item-sheet.sta-lcars input[type="text"],
+.item-sheet.sta-lcars input[type="number"] {
+  color: var(--lcars-text-light);
+  background: transparent;
+  border-color: var(--lcars-lilac);
+}
+
+.item-sheet.sta-lcars input[type="text"]:focus,
+.item-sheet.sta-lcars input[type="number"]:focus {
+  border-color: var(--lcars-orange);
+  box-shadow: none;
+  outline: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * ITEM SHEET — GRID LAYOUT & LABELS
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.item-sheet.sta-lcars .grid,
+.item-sheet.sta-lcars .grid-numbers {
+  color: var(--lcars-text-light);
+  font-family: var(--lcars-font-body);
+  font-size: 0.8rem;
+}
+
+.item-sheet.sta-lcars .col-name {
+  color: var(--lcars-text-light);
+  font-family: var(--lcars-font-body);
+}
+
+.item-sheet.sta-lcars .col-radio {
+  color: var(--lcars-text-light);
+}
+
+.item-sheet.sta-lcars .value-name {
+  color: var(--lcars-text-light);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * ITEM SHEET — CHECKBOXES, RADIOS & SELECTS
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.item-sheet.sta-lcars input[type="checkbox"],
+.item-sheet.sta-lcars input[type="radio"] {
+  accent-color: var(--lcars-orange);
+}
+
+.item-sheet.sta-lcars select {
+  font-family: var(--lcars-font-body);
+  color: var(--lcars-text-light);
+  background: rgba(12, 12, 12, 0.8);
+  border: 1px solid var(--lcars-lilac);
+  border-radius: 4px;
+}
+
+.item-sheet.sta-lcars select option {
+  background: #1a1a2e;
+  color: #eee;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * ITEM SHEET — INLINE CONTAINERS (talent type selectors, etc.)
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.item-sheet.sta-lcars .inline-container {
+  color: var(--lcars-text-light);
+}
+
+.item-sheet.sta-lcars .inline-container select,
+.item-sheet.sta-lcars .inline-container input[type="number"] {
+  color: var(--lcars-text-light);
+  background: rgba(12, 12, 12, 0.8);
+  border-color: var(--lcars-lilac);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * ITEM SHEET — NOTES
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.item-sheet.sta-lcars .note {
+  color: var(--lcars-text-light);
+  font-family: var(--lcars-font-body);
+}
+
+.item-sheet.sta-lcars .note .editor,
+.item-sheet.sta-lcars .note prose-mirror {
+  color: var(--lcars-text-light);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * ITEM SHEET — MILESTONE VARIANT
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.item-sheet.milestones.sta-lcars {
+  scrollbar-color: var(--lcars-orange) transparent;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * ITEM SHEET — LCARS FRAME (subtle, for item popups)
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.item-sheet.sta-lcars .sta-lcars-top-bar {
+  display: flex;
+  gap: 4px;
+  height: 6px;
+  margin-bottom: 4px;
+  padding: 0 4px;
+}
+
+.item-sheet.sta-lcars .sta-lcars-top-segment {
+  flex: 1;
+  border-radius: 3px;
+}
+
+.item-sheet.sta-lcars .sta-lcars-seg-0 { background: var(--lcars-peach); }
+.item-sheet.sta-lcars .sta-lcars-seg-1 { background: var(--lcars-orange); flex: 2; }
+.item-sheet.sta-lcars .sta-lcars-seg-2 { background: var(--lcars-tan); }
+
+.item-sheet.sta-lcars .sta-lcars-footer-bar {
+  display: flex;
+  gap: 4px;
+  height: 6px;
+  margin-top: 4px;
+  padding: 0 4px;
+}
+
+.item-sheet.sta-lcars .sta-lcars-footer-segment {
+  flex: 1;
+  border-radius: 3px;
+}
+
+.item-sheet.sta-lcars .sta-lcars-fseg-0 { background: var(--lcars-lavender); }
+.item-sheet.sta-lcars .sta-lcars-fseg-1 { background: var(--lcars-lilac); flex: 2; }
+.item-sheet.sta-lcars .sta-lcars-fseg-2 { background: var(--lcars-blue); }
+.item-sheet.sta-lcars .sta-lcars-fseg-3 { background: var(--lcars-peach); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * ITEM SHEET — SCROLLBAR
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.item-sheet.sta-lcars ::-webkit-scrollbar { width: 6px; }
+.item-sheet.sta-lcars ::-webkit-scrollbar-track { background: transparent; }
+.item-sheet.sta-lcars ::-webkit-scrollbar-thumb { background: var(--lcars-orange); border-radius: 3px; }
+.item-sheet.sta-lcars ::-webkit-scrollbar-thumb:hover { background: var(--lcars-peach); }
+
+
+/* ╔═══════════════════════════════════════════════════════════════════════════╗
+ * ║                                                                         ║
+ * ║                  SCENE TRAITS SHEET — LCARS THEME                       ║
+ * ║                                                                         ║
+ * ╚═══════════════════════════════════════════════════════════════════════════╝ */
+
+.scenetraits-sheet.sta-lcars {
+  background: var(--lcars-bg) !important;
+  color: var(--lcars-text-light);
+  font-family: var(--lcars-font-body);
+  border: none !important;
+}
+
+.scenetraits-sheet.sta-lcars .title {
+  background: var(--lcars-tan) !important;
+  color: var(--lcars-text-dark) !important;
+  font-family: var(--lcars-font-heading);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.8rem;
+  border-radius: var(--lcars-radius) 8px 8px var(--lcars-radius);
+  padding: 2px 10px;
+}
+
+.scenetraits-sheet.sta-lcars .image-field {
+  border: 2px solid var(--lcars-orange);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.scenetraits-sheet.sta-lcars .row.entry {
+  border: none;
+  border-bottom: 1px solid rgba(241, 164, 60, 0.15);
+  padding: 2px 4px;
+}
+
+.scenetraits-sheet.sta-lcars .row.entry:hover {
+  background: rgba(241, 164, 60, 0.08);
+}
+
+.scenetraits-sheet.sta-lcars .row.entry .item-name {
+  font-family: var(--lcars-font-body);
+  color: var(--lcars-text-light);
+  background: transparent;
+  border: none;
+}
+
+.scenetraits-sheet.sta-lcars .row.entry .item-name:focus {
+  border-bottom: 1px solid var(--lcars-orange);
+  box-shadow: none;
+  outline: none;
+}
+
+.scenetraits-sheet.sta-lcars .section .header.row {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-text-dark);
+  background: var(--lcars-tan);
+  border-radius: 4px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.scenetraits-sheet.sta-lcars .control a,
+.scenetraits-sheet.sta-lcars .control i {
+  color: var(--lcars-lavender);
+  transition: color 0.15s ease;
+}
+
+.scenetraits-sheet.sta-lcars .control a:hover,
+.scenetraits-sheet.sta-lcars .control i:hover {
+  color: var(--lcars-orange);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * SCENE TRAITS — LCARS FRAME
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.scenetraits-sheet.sta-lcars .sta-lcars-top-bar {
+  display: flex;
+  gap: 4px;
+  height: 6px;
+  margin-bottom: 4px;
+  padding: 0 4px;
+}
+
+.scenetraits-sheet.sta-lcars .sta-lcars-top-segment {
+  flex: 1;
+  border-radius: 3px;
+}
+
+.scenetraits-sheet.sta-lcars .sta-lcars-seg-0 { background: var(--lcars-tan); }
+.scenetraits-sheet.sta-lcars .sta-lcars-seg-1 { background: var(--lcars-peach); flex: 2; }
+.scenetraits-sheet.sta-lcars .sta-lcars-seg-2 { background: var(--lcars-orange); }
+
+.scenetraits-sheet.sta-lcars .sta-lcars-footer-bar {
+  display: flex;
+  gap: 4px;
+  height: 6px;
+  margin-top: 4px;
+  padding: 0 4px;
+}
+
+.scenetraits-sheet.sta-lcars .sta-lcars-footer-segment {
+  flex: 1;
+  border-radius: 3px;
+}
+
+.scenetraits-sheet.sta-lcars .sta-lcars-fseg-0 { background: var(--lcars-lavender); }
+.scenetraits-sheet.sta-lcars .sta-lcars-fseg-1 { background: var(--lcars-lilac); flex: 2; }
+.scenetraits-sheet.sta-lcars .sta-lcars-fseg-2 { background: var(--lcars-orange); }
+.scenetraits-sheet.sta-lcars .sta-lcars-fseg-3 { background: var(--lcars-tan); }
+
+
+/* ╔═══════════════════════════════════════════════════════════════════════════╗
+ * ║                                                                         ║
+ * ║                     DIALOGUE (DICE POOL) — LCARS THEME                  ║
+ * ║                                                                         ║
+ * ╚═══════════════════════════════════════════════════════════════════════════╝ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * DIALOGUE — OVERALL LAYOUT
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.dialogue.sta-lcars {
+  background: var(--lcars-bg) !important;
+  color: var(--lcars-text-light);
+  font-family: var(--lcars-font-body);
+}
+
+.dialogue.sta-lcars::before {
+  background-color: var(--lcars-orange) !important;
+}
+
+.dialogue.sta-lcars .window-header {
+  background-color: var(--lcars-orange) !important;
+}
+
+.dialogue.sta-lcars .window-header .window-title {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-text-dark);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.dialogue.sta-lcars .window-header .header-control {
+  color: var(--lcars-text-dark);
+}
+
+.dialogue.sta-lcars .window-header a,
+.dialogue.sta-lcars .window-header button {
+  color: var(--lcars-text-dark);
+}
+
+.dialogue.sta-lcars .window-header a:hover,
+.dialogue.sta-lcars .window-header button:hover {
+  color: #fff;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * DIALOGUE — TITLES & LABELS
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.dialogue.sta-lcars .title {
+  background: var(--lcars-lilac) !important;
+  color: var(--lcars-text-dark) !important;
+  font-family: var(--lcars-font-heading);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 1rem;
+  border-radius: 0 var(--lcars-radius) var(--lcars-radius) 0;
+  box-shadow: -6px 0 0 var(--lcars-lilac) !important;
+}
+
+.dialogue.sta-lcars .tracktitle {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-lavender);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.7rem;
+}
+
+.dialogue.sta-lcars label {
+  color: var(--lcars-lavender);
+  font-family: var(--lcars-font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.85rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * DIALOGUE — INPUTS
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.dialogue.sta-lcars .text-entry {
+  font-family: var(--lcars-font-body);
+  color: var(--lcars-text-light);
+  background: transparent;
+  border-color: var(--lcars-lilac);
+}
+
+.dialogue.sta-lcars .text-entry:focus {
+  border-color: var(--lcars-orange);
+  box-shadow: none;
+  outline: none;
+}
+
+.dialogue.sta-lcars .numeric-entry {
+  font-family: var(--lcars-font-heading);
+  color: var(--lcars-sky);
+  background: transparent;
+  border: 1px solid var(--lcars-lilac) !important;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.dialogue.sta-lcars .numeric-entry:focus {
+  border-color: var(--lcars-orange) !important;
+  box-shadow: none;
+  outline: none;
+}
+
+.dialogue.sta-lcars input[type="text"],
+.dialogue.sta-lcars input[type="number"] {
+  color: var(--lcars-text-light);
+  background: transparent;
+  border-color: var(--lcars-lilac);
+}
+
+.dialogue.sta-lcars input[type="text"]:focus,
+.dialogue.sta-lcars input[type="number"]:focus {
+  border-color: var(--lcars-orange);
+  box-shadow: none;
+  outline: none;
+}
+
+.dialogue.sta-lcars input[type="checkbox"],
+.dialogue.sta-lcars input[type="radio"] {
+  accent-color: var(--lcars-orange);
+}
+
+.dialogue.sta-lcars select {
+  font-family: var(--lcars-font-body);
+  color: var(--lcars-text-light);
+  background: rgba(12, 12, 12, 0.8);
+  border: 1px solid var(--lcars-lilac);
+  border-radius: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * DIALOGUE — TABS (cheat sheet, etc.)
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.dialogue.sta-lcars nav.sheet-tabs.tabs {
+  background-color: var(--lcars-lilac) !important;
+  box-shadow: -6px 0 0 var(--lcars-lilac) !important;
+  border: none;
+  gap: 2px;
+}
+
+.dialogue.sta-lcars nav.sheet-tabs.tabs a.item {
+  font-family: var(--lcars-font-heading);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--lcars-text-dark);
+  border-color: var(--lcars-bg) !important;
+  font-size: 0.85rem;
+}
+
+.dialogue.sta-lcars nav.sheet-tabs.tabs a.item:first-child {
+  border-left-color: var(--lcars-bg) !important;
+}
+
+.dialogue.sta-lcars nav.sheet-tabs.tabs a.item.active {
+  background-color: var(--lcars-bg-panel) !important;
+  color: var(--lcars-lavender);
+  text-shadow: none;
+}
+
+.dialogue.sta-lcars nav.sheet-tabs.tabs a.item:hover {
+  text-shadow: 0 0 8px var(--lcars-sky);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * DIALOGUE — DICE ROLLS
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.dialogue.sta-lcars .dice-rolls .roll {
+  filter: brightness(1.3);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * DIALOGUE — BUTTONS
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.dialogue.sta-lcars .btn,
+.dialogue.sta-lcars .btn2,
+.dialogue.sta-lcars .btn3 {
+  font-family: var(--lcars-font-heading);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: none;
+  border-radius: 20px 8px 8px 20px;
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+
+.dialogue.sta-lcars .btn {
+  background: var(--lcars-lavender) !important;
+  color: var(--lcars-text-dark) !important;
+}
+
+.dialogue.sta-lcars .btn:hover {
+  filter: brightness(1.2);
+  transform: scale(1.03);
+}
+
+.dialogue.sta-lcars .btn2 {
+  background: var(--lcars-blue) !important;
+  color: var(--lcars-text-dark) !important;
+}
+
+.dialogue.sta-lcars .btn2:hover {
+  filter: brightness(1.2);
+  transform: scale(1.03);
+}
+
+.dialogue.sta-lcars .btn3 {
+  background: var(--lcars-tan) !important;
+  color: var(--lcars-text-dark) !important;
+}
+
+.dialogue.sta-lcars .btn3:hover {
+  filter: brightness(1.15);
+  transform: scale(1.03);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * DIALOGUE — SCROLLBAR
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+.dialogue.sta-lcars ::-webkit-scrollbar { width: 6px; }
+.dialogue.sta-lcars ::-webkit-scrollbar-track { background: transparent; }
+.dialogue.sta-lcars ::-webkit-scrollbar-thumb { background: var(--lcars-orange); border-radius: 3px; }
+.dialogue.sta-lcars ::-webkit-scrollbar-thumb:hover { background: var(--lcars-peach); }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * STA OFFICERS LOG — LCARS DIALOG STYLES
+ * Consolidated here so a single sta-utils LCARS toggle styles both the
+ * character sheet and all Officers Log dialogs/popups.
+ * All rules are gated behind `body.sta-officers-lcars-active` (set by
+ * syncOfficersLogLcars() in officers-log-sync.mjs when LCARS is enabled).
+ *
+ * Organised by concern — shared rules first, then per-dialog overrides.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── LCARS Custom Properties (on body for dialog inheritance) ────────────── */
+
+body.sta-officers-lcars-active {
+  --lcars-orange: #f1a43c;
+  --lcars-peach: #f0b872;
+  --lcars-lavender: #c5a3d9;
+  --lcars-lilac: #9b8fc2;
+  --lcars-blue: #6688cc;
+  --lcars-sky: #88aaff;
+  --lcars-red: #d05050;
+  --lcars-tan: #e8c57a;
+  --lcars-bg: rgba(11, 10, 19, 0.9);
+  --lcars-text: #ff9900;
+  --lcars-text-dark: #000;
+  --lcars-font: "Antonio", "Roboto Condensed", sans-serif;
+  --lcars-font-body: "Roboto Condensed", "Helvetica Neue", sans-serif;
+  --lcars-radius: 24px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * A.  Window Chrome (shared by .sta-officers-log and .officers-log-dialog)
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+body.sta-officers-lcars-active .sta-officers-log.application,
+body.sta-officers-lcars-active .officers-log-dialog.application {
+  background: var(--lcars-bg) !important;
+  border-radius: var(--lcars-radius) !important;
+  overflow: hidden;
+}
+
+body.sta-officers-lcars-active .sta-officers-log .window-header,
+body.sta-officers-lcars-active .officers-log-dialog .window-header {
+  background: var(--lcars-orange);
+  color: var(--lcars-text-dark);
+  font-family: var(--lcars-font);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 0.1rem 0.75rem;
+  border-radius: 0;
+  border-bottom: none;
+  min-height: unset;
+  gap: 0.25rem;
+}
+
+body.sta-officers-lcars-active .sta-officers-log .window-header .window-title,
+body.sta-officers-lcars-active .officers-log-dialog .window-header .window-title {
+  font-family: var(--lcars-font);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--lcars-text-dark);
+  margin: 0;
+  padding: 0;
+  line-height: 1.4;
+}
+
+body.sta-officers-lcars-active .sta-officers-log .window-header .header-control,
+body.sta-officers-lcars-active .officers-log-dialog .window-header .header-control {
+  font-size: 0.75rem;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+body.sta-officers-lcars-active .sta-officers-log .window-header a,
+body.sta-officers-lcars-active .sta-officers-log .window-header button,
+body.sta-officers-lcars-active .officers-log-dialog .window-header a,
+body.sta-officers-lcars-active .officers-log-dialog .window-header button {
+  color: var(--lcars-text-dark);
+}
+
+body.sta-officers-lcars-active .sta-officers-log .window-header a:hover,
+body.sta-officers-lcars-active .sta-officers-log .window-header button:hover,
+body.sta-officers-lcars-active .officers-log-dialog .window-header a:hover,
+body.sta-officers-lcars-active .officers-log-dialog .window-header button:hover {
+  color: #fff;
+}
+
+body.sta-officers-lcars-active .sta-officers-log .window-content,
+body.sta-officers-lcars-active .officers-log-dialog .window-content {
+  background: var(--lcars-bg);
+  color: var(--lcars-peach);
+  padding: 0.75rem;
+  font-family: var(--lcars-font-body);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * B.  Buttons (dialog buttons + chat card buttons share one treatment)
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+body.sta-officers-lcars-active .sta-officers-log .dialog-buttons {
+  border-top: 2px solid rgba(241, 164, 60, 0.3);
+  padding-top: 0.5rem;
+}
+
+body.sta-officers-lcars-active .sta-officers-log .dialog-buttons button,
+body.sta-officers-lcars-active .sta-officers-log .dialog-button,
+body.sta-officers-lcars-active .sta-officers-log button.dialog-button,
+body.sta-officers-lcars-active .sta-gm-spend-message button {
+  font-family: var(--lcars-font-body);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: 12px;
+  border: 2px solid var(--lcars-orange);
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--lcars-orange);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+body.sta-officers-lcars-active .sta-officers-log .dialog-buttons button:hover,
+body.sta-officers-lcars-active .sta-officers-log .dialog-button:hover,
+body.sta-officers-lcars-active .sta-officers-log button.dialog-button:hover,
+body.sta-officers-lcars-active .sta-gm-spend-message button:hover {
+  background: rgba(241, 164, 60, 0.15);
+  color: #fff;
+}
+
+body.sta-officers-lcars-active .sta-officers-log .dialog-buttons button:disabled,
+body.sta-officers-lcars-active .sta-officers-log .dialog-button:disabled,
+body.sta-officers-lcars-active .sta-officers-log button.dialog-button:disabled,
+body.sta-officers-lcars-active .sta-officers-log .dialog-button.is-disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+body.sta-officers-lcars-active .sta-officers-log.choose-benefit .form-footer .dialog-button,
+body.sta-officers-lcars-active .choose-benefit .form-footer .dialog-button {
+  border-color: var(--lcars-orange);
+  border-width: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * C.  Form Inputs (shared)
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+body.sta-officers-lcars-active .sta-officers-log input[type="text"],
+body.sta-officers-lcars-active .sta-officers-log input[type="number"],
+body.sta-officers-lcars-active .sta-officers-log input[type="search"],
+body.sta-officers-lcars-active .sta-officers-log select,
+body.sta-officers-lcars-active .sta-officers-log textarea {
+  background: rgba(155, 143, 194, 0.1);
+  border: 1px solid rgba(155, 143, 194, 0.4);
+  border-radius: 6px;
+  color: var(--lcars-peach);
+  font-family: var(--lcars-font-body);
+}
+
+body.sta-officers-lcars-active .sta-officers-log input[type="text"]:focus,
+body.sta-officers-lcars-active .sta-officers-log input[type="number"]:focus,
+body.sta-officers-lcars-active .sta-officers-log input[type="search"]:focus,
+body.sta-officers-lcars-active .sta-officers-log select:focus,
+body.sta-officers-lcars-active .sta-officers-log textarea:focus {
+  border-color: var(--lcars-orange);
+  box-shadow: 0 0 4px rgba(241, 164, 60, 0.4);
+  outline: none;
+}
+
+body.sta-officers-lcars-active .sta-officers-log select option {
+  background: #1a1a2e;
+  color: #eee;
+}
+
+body.sta-officers-lcars-active .sta-officers-log input[type="checkbox"],
+body.sta-officers-lcars-active .sta-officers-log input[type="radio"] {
+  accent-color: var(--lcars-orange);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * D.  Text & Content Styling (shared)
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+body.sta-officers-lcars-active .sta-officers-log .window-content p {
+  color: var(--lcars-peach);
+}
+
+body.sta-officers-lcars-active .sta-officers-log .window-content label {
+  color: var(--lcars-peach);
+  font-family: var(--lcars-font-body);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.85rem;
+}
+
+body.sta-officers-lcars-active .sta-officers-log .window-content strong {
+  color: var(--lcars-orange);
+}
+
+/* h1/h2 — primary headings: orange, wider spacing */
+body.sta-officers-lcars-active .sta-officers-log .window-content h1,
+body.sta-officers-lcars-active .sta-officers-log .window-content h2 {
+  font-family: var(--lcars-font);
+  color: var(--lcars-orange);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* h3/h4 — section sub-headings: lavender, tighter spacing */
+body.sta-officers-lcars-active .sta-officers-log .window-content h3,
+body.sta-officers-lcars-active .sta-officers-log .window-content h4 {
+  font-family: var(--lcars-font);
+  color: var(--lcars-lavender);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+body.sta-officers-lcars-active .sta-officers-log .window-content a {
+  color: var(--lcars-sky);
+}
+
+body.sta-officers-lcars-active .sta-officers-log .window-content a:hover {
+  color: #fff;
+}
+
+body.sta-officers-lcars-active .sta-officers-log .window-content hr {
+  border-color: rgba(241, 164, 60, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * E.  Panels / Cards (shared)
+ *     Consistent treatment for bordered content panels across dialogs.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+body.sta-officers-lcars-active .sta-officers-log .sta-use-value-card,
+body.sta-officers-lcars-active .sta-officers-log .sta-ship-talent-swap-column,
+body.sta-officers-lcars-active .sta-officers-log .sta-pending-ship-benefit {
+  border-color: rgba(241, 164, 60, 0.25);
+  background: rgba(155, 143, 194, 0.04);
+  border-radius: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * F.  Selectable List Items (shared)
+ *     Consistent row, hover, and selection styles for picker lists.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+body.sta-officers-lcars-active .sta-officers-log .sta-focus-picker-list li,
+body.sta-officers-lcars-active .sta-officers-log .sta-ship-talent-swap-list li,
+body.sta-officers-lcars-active .sta-officers-log .sta-callbacks-loglist li,
+body.sta-officers-lcars-active .sta-officers-log .sta-acclaim-survey-question,
+body.sta-officers-lcars-active .sta-cheatsheet-chat-row {
+  border-bottom-color: rgba(241, 164, 60, 0.12);
+  color: var(--lcars-peach);
+}
+
+body.sta-officers-lcars-active .sta-officers-log .sta-focus-picker-list li:hover,
+body.sta-officers-lcars-active .sta-officers-log .sta-ship-talent-swap-list li:hover {
+  background: rgba(241, 164, 60, 0.08);
+}
+
+body.sta-officers-lcars-active .sta-officers-log .sta-focus-picker-list li.selected,
+body.sta-officers-lcars-active .sta-officers-log .sta-ship-talent-swap-list li.selected {
+  background: rgba(241, 164, 60, 0.15);
+  color: #fff;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * G.  Chat Cards (shared)
+ *     Consistent treatment for styled chat messages.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+body.sta-officers-lcars-active .sta-spend-chat-result,
+body.sta-officers-lcars-active .sta-gm-spend-message {
+  background: rgba(241, 164, 60, 0.06);
+  border: 2px solid rgba(241, 164, 60, 0.4);
+  border-radius: 8px;
+  color: var(--lcars-peach);
+  font-family: var(--lcars-font-body);
+}
+
+body.sta-officers-lcars-active .sta-spend-chat-result strong {
+  color: var(--lcars-orange);
+}
+
+body.sta-officers-lcars-active .sta-cheatsheet-chat-title {
+  font-family: var(--lcars-font);
+  color: var(--lcars-orange);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * H.  Use Value Dialog
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+body.sta-officers-lcars-active .sta-officers-log.use-value .sta-use-value-card-title {
+  color: var(--lcars-lavender);
+  font-family: var(--lcars-font);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * I.  Callback Request Dialog
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+body.sta-officers-lcars-active .sta-officers-log.callback-request .sta-callbacks-loglist {
+  border-color: rgba(241, 164, 60, 0.25);
+}
+
+body.sta-officers-lcars-active .sta-officers-log.callback-request .sta-callbacks-countdown {
+  color: var(--lcars-sky);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * J.  Focus Picker — top actions
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+body.sta-officers-lcars-active .sta-officers-log.focus-picker .sta-focus-picker-top-actions .dialog-button {
+  border-color: var(--lcars-orange);
+  color: var(--lcars-orange);
+}
+
+body.sta-officers-lcars-active .sta-officers-log.focus-picker .sta-focus-picker-top-actions .dialog-button:hover {
+  background: rgba(241, 164, 60, 0.15);
+  color: #fff;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * K.  Talent Preview
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+body.sta-officers-lcars-active .sta-officers-log .sta-talent-preview-dialog img {
+  border: 2px solid var(--lcars-lilac);
+  border-radius: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * L.  Milestone / Arc Benefit Dialog (Tabbed)
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+body.sta-officers-lcars-active .sta-officers-log.choose-benefit .sta-new-milestone-tabs .sta-new-milestone-tab {
+  font-family: var(--lcars-font-body);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 2px solid var(--lcars-lilac);
+  border-radius: var(--lcars-radius) 8px 8px var(--lcars-radius);
+  background: rgba(155, 143, 194, 0.12);
+  color: var(--lcars-lilac);
+}
+
+body.sta-officers-lcars-active .sta-officers-log.choose-benefit .sta-new-milestone-tabs .sta-new-milestone-tab.active {
+  background: var(--lcars-lilac);
+  color: var(--lcars-text-dark);
+  filter: brightness(1.2);
+  outline: 2px solid #fff;
+  outline-offset: -2px;
+}
+
+body.sta-officers-lcars-active .sta-officers-log.choose-benefit .sta-new-milestone-tabs .sta-new-milestone-tab:hover:not(.active) {
+  background: rgba(155, 143, 194, 0.2);
+  color: #fff;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * M.  Flowchart Sidebar
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+body.sta-officers-lcars-active .sta-officers-log.sta-flowchart-window .sta-flowchart-sidebar {
+  background: rgba(14, 14, 22, 0.95);
+  border-left: 3px solid var(--lcars-orange);
+  color: var(--lcars-peach);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * N.  Acclaim Survey
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+body.sta-officers-lcars-active .sta-officers-log .sta-acclaim-tally {
+  color: var(--lcars-sky);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * O.  Reputation Spend Dialog
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+body.sta-officers-lcars-active .sta-officers-log .sta-spend-total {
+  border-top-color: rgba(241, 164, 60, 0.3);
+  color: var(--lcars-orange);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * P.  GM Survey Monitor
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+body.sta-officers-lcars-active .sta-officers-log .sta-gm-monitor-player-header {
+  font-family: var(--lcars-font);
+  color: var(--lcars-orange);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+body.sta-officers-lcars-active .sta-officers-log .sta-gm-monitor-status-done {
+  color: var(--lcars-tan);
+}
+
+body.sta-officers-lcars-active .sta-officers-log .sta-gm-monitor-status-pending {
+  color: var(--lcars-lilac);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * Q.  Log Metadata Collapsible (on character sheet)
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+body.sta-officers-lcars-active .sta-log-meta-toggle {
+  color: var(--lcars-lilac);
+  font-family: var(--lcars-font-body);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.75rem;
+}
+
+body.sta-officers-lcars-active .sta-log-meta-toggle:hover {
+  color: var(--lcars-orange);
+}
+
+body.sta-officers-lcars-active .sta-log-meta-content {
+  border-left-color: var(--lcars-lilac);
+  color: var(--lcars-peach);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * R.  Scrollbars
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+body.sta-officers-lcars-active .sta-officers-log ::-webkit-scrollbar {
+  width: 6px;
+}
+
+body.sta-officers-lcars-active .sta-officers-log ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body.sta-officers-lcars-active .sta-officers-log ::-webkit-scrollbar-thumb {
+  background: var(--lcars-orange);
+  border-radius: 3px;
+}
+
+body.sta-officers-lcars-active .sta-officers-log ::-webkit-scrollbar-thumb:hover {
+  background: var(--lcars-peach);
+}
+
+body.sta-officers-lcars-active .sta-officers-log {
+  scrollbar-color: var(--lcars-orange) transparent;
+  scrollbar-width: thin;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * S.  Tables
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+body.sta-officers-lcars-active .sta-officers-log table {
+  border-collapse: collapse;
+}
+
+body.sta-officers-lcars-active .sta-officers-log table th {
+  font-family: var(--lcars-font);
+  color: var(--lcars-lavender);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.8rem;
+  border-bottom: 2px solid var(--lcars-lilac);
+}
+
+body.sta-officers-lcars-active .sta-officers-log table td {
+  color: var(--lcars-peach);
+  border-bottom: 1px solid rgba(241, 164, 60, 0.12);
+}
+
+body.sta-officers-lcars-active .sta-officers-log table tr:hover td {
+  background: rgba(241, 164, 60, 0.06);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * T.  Hints / Muted Text
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+body.sta-officers-lcars-active .sta-officers-log .hint,
+body.sta-officers-lcars-active .sta-officers-log p.hint,
+body.sta-officers-lcars-active .sta-officers-log .notes {
+  color: var(--lcars-lilac);
+  font-size: 0.8rem;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * LCARS COLOR SCHEMES
+ *
+ * Each scheme overrides the `--lcars-*` palette variables declared above.
+ * The class `lcars-scheme-<key>` is added alongside `sta-lcars` by
+ * lcars-mode.mjs.  The default TNG scheme uses the base values already
+ * defined, so it needs no additional class.
+ *
+ * For every scheme we target all six sheet roots plus the Officers Log
+ * body class to ensure consistent theming everywhere.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Shared selector mixin (repeated per scheme) ─────────────────────────── */
+
+/* ----------------------------------------------------------------------- */
+/*  VOYAGER                                                                 */
+/* ----------------------------------------------------------------------- */
+.character-sheet.sta-lcars.lcars-scheme-voyager,
+.starship-sheet.sta-lcars.lcars-scheme-voyager,
+.extended-tasks.sta-lcars.lcars-scheme-voyager,
+.item-sheet.sta-lcars.lcars-scheme-voyager,
+.scenetraits-sheet.sta-lcars.lcars-scheme-voyager,
+.dialogue.sta-lcars.lcars-scheme-voyager,
+body.sta-officers-lcars-active.lcars-scheme-voyager {
+  --lcars-orange: #4fa8a8;
+  --lcars-peach: #6fc4b8;
+  --lcars-lavender: #88aacc;
+  --lcars-lilac: #6688aa;
+  --lcars-blue: #4a90d0;
+  --lcars-sky: #70b8d8;
+  --lcars-red: #d06060;
+  --lcars-tan: #8cb8a0;
+  --lcars-text-light: #6fc4b8;
+}
+
+/* ----------------------------------------------------------------------- */
+/*  DS9 — DEEP SPACE NINE                                                   */
+/* ----------------------------------------------------------------------- */
+.character-sheet.sta-lcars.lcars-scheme-ds9,
+.starship-sheet.sta-lcars.lcars-scheme-ds9,
+.extended-tasks.sta-lcars.lcars-scheme-ds9,
+.item-sheet.sta-lcars.lcars-scheme-ds9,
+.scenetraits-sheet.sta-lcars.lcars-scheme-ds9,
+.dialogue.sta-lcars.lcars-scheme-ds9,
+body.sta-officers-lcars-active.lcars-scheme-ds9 {
+  --lcars-orange: #c8a050;
+  --lcars-peach: #d4b870;
+  --lcars-lavender: #a08860;
+  --lcars-lilac: #887050;
+  --lcars-blue: #6a7888;
+  --lcars-sky: #7a98a8;
+  --lcars-red: #c05040;
+  --lcars-tan: #b89860;
+  --lcars-text-light: #d4b870;
+}
+
+/* ----------------------------------------------------------------------- */
+/*  TOS — THE ORIGINAL SERIES                                               */
+/* ----------------------------------------------------------------------- */
+.character-sheet.sta-lcars.lcars-scheme-tos,
+.starship-sheet.sta-lcars.lcars-scheme-tos,
+.extended-tasks.sta-lcars.lcars-scheme-tos,
+.item-sheet.sta-lcars.lcars-scheme-tos,
+.scenetraits-sheet.sta-lcars.lcars-scheme-tos,
+.dialogue.sta-lcars.lcars-scheme-tos,
+body.sta-officers-lcars-active.lcars-scheme-tos {
+  --lcars-orange: #c84040;   /* command red */
+  --lcars-peach: #d86858;
+  --lcars-lavender: #3868c0; /* sciences blue */
+  --lcars-lilac: #5888d8;
+  --lcars-blue: #2858b0;
+  --lcars-sky: #5080d8;
+  --lcars-red: #c02020;
+  --lcars-tan: #c89808;      /* operations gold */
+  --lcars-text-light: #e8c860; /* warm gold on dark bg */
+}
+
+/* ----------------------------------------------------------------------- */
+/*  ENTERPRISE NX-01                                                        */
+/* ----------------------------------------------------------------------- */
+.character-sheet.sta-lcars.lcars-scheme-enterprise,
+.starship-sheet.sta-lcars.lcars-scheme-enterprise,
+.extended-tasks.sta-lcars.lcars-scheme-enterprise,
+.item-sheet.sta-lcars.lcars-scheme-enterprise,
+.scenetraits-sheet.sta-lcars.lcars-scheme-enterprise,
+.dialogue.sta-lcars.lcars-scheme-enterprise,
+body.sta-officers-lcars-active.lcars-scheme-enterprise {
+  --lcars-orange: #5878a0;
+  --lcars-peach: #7898b8;
+  --lcars-lavender: #90a8b8;
+  --lcars-lilac: #607888;
+  --lcars-blue: #486888;
+  --lcars-sky: #6890a8;
+  --lcars-red: #c06050;
+  --lcars-tan: #7090a0;
+  --lcars-text-light: #7898b8;
+}
+
+/* ----------------------------------------------------------------------- */
+/*  KELVIN TIMELINE                                                         */
+/* ----------------------------------------------------------------------- */
+.character-sheet.sta-lcars.lcars-scheme-kelvin,
+.starship-sheet.sta-lcars.lcars-scheme-kelvin,
+.extended-tasks.sta-lcars.lcars-scheme-kelvin,
+.item-sheet.sta-lcars.lcars-scheme-kelvin,
+.scenetraits-sheet.sta-lcars.lcars-scheme-kelvin,
+.dialogue.sta-lcars.lcars-scheme-kelvin,
+body.sta-officers-lcars-active.lcars-scheme-kelvin {
+  --lcars-orange: #2080d8;   /* JJ-verse blue */
+  --lcars-peach: #40a8f0;
+  --lcars-lavender: #80c8f0;
+  --lcars-lilac: #90b8e0;
+  --lcars-blue: #1068c0;
+  --lcars-sky: #50a0e8;
+  --lcars-red: #e03030;
+  --lcars-tan: #60a8e0;
+  --lcars-text-light: #50b0e8; /* bright blue on dark bg */
+}
+
+/* ----------------------------------------------------------------------- */
+/*  PICARD                                                                  */
+/* ----------------------------------------------------------------------- */
+.character-sheet.sta-lcars.lcars-scheme-picard,
+.starship-sheet.sta-lcars.lcars-scheme-picard,
+.extended-tasks.sta-lcars.lcars-scheme-picard,
+.item-sheet.sta-lcars.lcars-scheme-picard,
+.scenetraits-sheet.sta-lcars.lcars-scheme-picard,
+.dialogue.sta-lcars.lcars-scheme-picard,
+body.sta-officers-lcars-active.lcars-scheme-picard {
+  --lcars-orange: #3a5a8c;
+  --lcars-peach: #5878a8;
+  --lcars-lavender: #a0b8d0;
+  --lcars-lilac: #7090b0;
+  --lcars-blue: #2a4a7c;
+  --lcars-sky: #5080c0;
+  --lcars-red: #c04050;
+  --lcars-tan: #6888a8;
+  --lcars-text-light: #a0b8d0;
+}
+
+/* ----------------------------------------------------------------------- */
+/*  LOWER DECKS                                                             */
+/* ----------------------------------------------------------------------- */
+.character-sheet.sta-lcars.lcars-scheme-lowerDecks,
+.starship-sheet.sta-lcars.lcars-scheme-lowerDecks,
+.extended-tasks.sta-lcars.lcars-scheme-lowerDecks,
+.item-sheet.sta-lcars.lcars-scheme-lowerDecks,
+.scenetraits-sheet.sta-lcars.lcars-scheme-lowerDecks,
+.dialogue.sta-lcars.lcars-scheme-lowerDecks,
+body.sta-officers-lcars-active.lcars-scheme-lowerDecks {
+  --lcars-orange: #c030c8;   /* vibrant magenta */
+  --lcars-peach: #e060d0;
+  --lcars-lavender: #20b8b8; /* bright teal */
+  --lcars-lilac: #5080e0;
+  --lcars-blue: #3858d8;
+  --lcars-sky: #40a8e8;
+  --lcars-red: #e02858;
+  --lcars-tan: #d070c8;
+  --lcars-text-light: #e060d0; /* light pink on dark bg */
+}
+
+/* ----------------------------------------------------------------------- */
+/*  PRODIGY                                                                 */
+/* ----------------------------------------------------------------------- */
+.character-sheet.sta-lcars.lcars-scheme-prodigy,
+.starship-sheet.sta-lcars.lcars-scheme-prodigy,
+.extended-tasks.sta-lcars.lcars-scheme-prodigy,
+.item-sheet.sta-lcars.lcars-scheme-prodigy,
+.scenetraits-sheet.sta-lcars.lcars-scheme-prodigy,
+.dialogue.sta-lcars.lcars-scheme-prodigy,
+body.sta-officers-lcars-active.lcars-scheme-prodigy {
+  --lcars-orange: #f08030;
+  --lcars-peach: #f8a050;
+  --lcars-lavender: #30c8a0;
+  --lcars-lilac: #40a8d8;
+  --lcars-blue: #3080d0;
+  --lcars-sky: #50b0f0;
+  --lcars-red: #e04050;
+  --lcars-tan: #f0a860;
+  --lcars-text-light: #f8a050;
+}
+
+/* ----------------------------------------------------------------------- */
+/*  STARFLEET ACADEMY                                                       */
+/* ----------------------------------------------------------------------- */
+.character-sheet.sta-lcars.lcars-scheme-academy,
+.starship-sheet.sta-lcars.lcars-scheme-academy,
+.extended-tasks.sta-lcars.lcars-scheme-academy,
+.item-sheet.sta-lcars.lcars-scheme-academy,
+.scenetraits-sheet.sta-lcars.lcars-scheme-academy,
+.dialogue.sta-lcars.lcars-scheme-academy,
+body.sta-officers-lcars-active.lcars-scheme-academy {
+  --lcars-orange: #c02838;   /* Academy red */
+  --lcars-peach: #d84858;
+  --lcars-lavender: #d0b030; /* Academy gold */
+  --lcars-lilac: #2858a8;    /* navy blue */
+  --lcars-blue: #1848a0;
+  --lcars-sky: #3878d0;
+  --lcars-red: #b82028;
+  --lcars-tan: #9098a8;      /* metallic silver */
+  --lcars-text-light: #d84858; /* scarlet on dark bg */
+}
+
+/* ----------------------------------------------------------------------- */
+/*  RED ALERT                                                               */
+/* ----------------------------------------------------------------------- */
+.character-sheet.sta-lcars.lcars-scheme-redAlert,
+.starship-sheet.sta-lcars.lcars-scheme-redAlert,
+.extended-tasks.sta-lcars.lcars-scheme-redAlert,
+.item-sheet.sta-lcars.lcars-scheme-redAlert,
+.scenetraits-sheet.sta-lcars.lcars-scheme-redAlert,
+.dialogue.sta-lcars.lcars-scheme-redAlert,
+body.sta-officers-lcars-active.lcars-scheme-redAlert {
+  --lcars-orange: #cc3030;
+  --lcars-peach: #e05050;
+  --lcars-lavender: #ff6666;
+  --lcars-lilac: #992222;
+  --lcars-blue: #884444;
+  --lcars-sky: #cc6666;
+  --lcars-red: #ff2020;
+  --lcars-tan: #cc5544;
+  --lcars-text-light: #e05050;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ *  LIGHT THEME
+ *  Foundry applies .theme-light to the sheet application element when the
+ *  user selects Theme: Light (or Theme: Auto with OS light preference) in
+ *  Configure Sheet.  These blocks override the dark defaults above.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ----------------------------------------------------------------------- */
+/*  Base / TNG (no scheme class — also the cascade base for all schemes)   */
+/* ----------------------------------------------------------------------- */
+.theme-light .character-sheet.sta-lcars,
+.theme-light .starship-sheet.sta-lcars,
+.theme-light .extended-tasks.sta-lcars,
+.theme-light .item-sheet.sta-lcars,
+.theme-light .scenetraits-sheet.sta-lcars,
+.theme-light .dialogue.sta-lcars,
+body.theme-light.sta-officers-lcars-active {
+  --lcars-bg: #f5f2e8;
+  --lcars-bg-panel: #ede8d8;
+  --lcars-text-light: #1a0e04;
+  --lcars-text-dark: #000;
+}
+
+/* ----------------------------------------------------------------------- */
+/*  VOYAGER light                                                           */
+/* ----------------------------------------------------------------------- */
+.theme-light .character-sheet.sta-lcars.lcars-scheme-voyager,
+.theme-light .starship-sheet.sta-lcars.lcars-scheme-voyager,
+.theme-light .extended-tasks.sta-lcars.lcars-scheme-voyager,
+.theme-light .item-sheet.sta-lcars.lcars-scheme-voyager,
+.theme-light .scenetraits-sheet.sta-lcars.lcars-scheme-voyager,
+.theme-light .dialogue.sta-lcars.lcars-scheme-voyager,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-voyager {
+  --lcars-bg: #edf4f4;
+  --lcars-bg-panel: #e0ecec;
+  --lcars-text-light: #0a2020;
+  --lcars-text-dark: #000;
+}
+
+/* ----------------------------------------------------------------------- */
+/*  DS9 light                                                               */
+/* ----------------------------------------------------------------------- */
+.theme-light .character-sheet.sta-lcars.lcars-scheme-ds9,
+.theme-light .starship-sheet.sta-lcars.lcars-scheme-ds9,
+.theme-light .extended-tasks.sta-lcars.lcars-scheme-ds9,
+.theme-light .item-sheet.sta-lcars.lcars-scheme-ds9,
+.theme-light .scenetraits-sheet.sta-lcars.lcars-scheme-ds9,
+.theme-light .dialogue.sta-lcars.lcars-scheme-ds9,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-ds9 {
+  --lcars-bg: #f6f0e0;
+  --lcars-bg-panel: #ede8d0;
+  --lcars-text-light: #251808;
+  --lcars-text-dark: #000;
+}
+
+/* ----------------------------------------------------------------------- */
+/*  TOS light — parchment / division-colour accents darkened for contrast  */
+/* ----------------------------------------------------------------------- */
+.theme-light .character-sheet.sta-lcars.lcars-scheme-tos,
+.theme-light .starship-sheet.sta-lcars.lcars-scheme-tos,
+.theme-light .extended-tasks.sta-lcars.lcars-scheme-tos,
+.theme-light .item-sheet.sta-lcars.lcars-scheme-tos,
+.theme-light .scenetraits-sheet.sta-lcars.lcars-scheme-tos,
+.theme-light .dialogue.sta-lcars.lcars-scheme-tos,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-tos {
+  --lcars-bg: #f0e8d0;
+  --lcars-bg-panel: #e8ddc4;
+  --lcars-text-light: #281808;
+  --lcars-text-dark: #000;
+  --lcars-orange: #b02828;
+  --lcars-red: #901818;
+  --lcars-tan: #907000;
+}
+
+/* ----------------------------------------------------------------------- */
+/*  ENTERPRISE NX-01 light — muted blues/greys deepened for white bg       */
+/* ----------------------------------------------------------------------- */
+.theme-light .character-sheet.sta-lcars.lcars-scheme-enterprise,
+.theme-light .starship-sheet.sta-lcars.lcars-scheme-enterprise,
+.theme-light .extended-tasks.sta-lcars.lcars-scheme-enterprise,
+.theme-light .item-sheet.sta-lcars.lcars-scheme-enterprise,
+.theme-light .scenetraits-sheet.sta-lcars.lcars-scheme-enterprise,
+.theme-light .dialogue.sta-lcars.lcars-scheme-enterprise,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-enterprise {
+  --lcars-bg: #f0f2f5;
+  --lcars-bg-panel: #e4e8ef;
+  --lcars-text-light: #0a1420;
+  --lcars-text-dark: #000;
+  --lcars-orange: #486090;
+  --lcars-peach: #607898;
+  --lcars-lavender: #7090a0;
+  --lcars-lilac: #506070;
+  --lcars-blue: #385870;
+  --lcars-sky: #5878a0;
+  --lcars-tan: #507080;
+}
+
+/* ----------------------------------------------------------------------- */
+/*  KELVIN TIMELINE light — ice white, red slightly deepened               */
+/* ----------------------------------------------------------------------- */
+.theme-light .character-sheet.sta-lcars.lcars-scheme-kelvin,
+.theme-light .starship-sheet.sta-lcars.lcars-scheme-kelvin,
+.theme-light .extended-tasks.sta-lcars.lcars-scheme-kelvin,
+.theme-light .item-sheet.sta-lcars.lcars-scheme-kelvin,
+.theme-light .scenetraits-sheet.sta-lcars.lcars-scheme-kelvin,
+.theme-light .dialogue.sta-lcars.lcars-scheme-kelvin,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-kelvin {
+  --lcars-bg: #f0f5fa;
+  --lcars-bg-panel: #e4edf5;
+  --lcars-text-light: #0a1828;
+  --lcars-text-dark: #000;
+  --lcars-red: #c02020;
+}
+
+/* ----------------------------------------------------------------------- */
+/*  PICARD light — admiral white, navy tones                               */
+/* ----------------------------------------------------------------------- */
+.theme-light .character-sheet.sta-lcars.lcars-scheme-picard,
+.theme-light .starship-sheet.sta-lcars.lcars-scheme-picard,
+.theme-light .extended-tasks.sta-lcars.lcars-scheme-picard,
+.theme-light .item-sheet.sta-lcars.lcars-scheme-picard,
+.theme-light .scenetraits-sheet.sta-lcars.lcars-scheme-picard,
+.theme-light .dialogue.sta-lcars.lcars-scheme-picard,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-picard {
+  --lcars-bg: #f0f2f8;
+  --lcars-bg-panel: #e4e8f4;
+  --lcars-text-light: #0a0e28;
+  --lcars-text-dark: #000;
+}
+
+/* ----------------------------------------------------------------------- */
+/*  LOWER DECKS light — bright white, vivid magenta/teal pops              */
+/* ----------------------------------------------------------------------- */
+.theme-light .character-sheet.sta-lcars.lcars-scheme-lowerDecks,
+.theme-light .starship-sheet.sta-lcars.lcars-scheme-lowerDecks,
+.theme-light .extended-tasks.sta-lcars.lcars-scheme-lowerDecks,
+.theme-light .item-sheet.sta-lcars.lcars-scheme-lowerDecks,
+.theme-light .scenetraits-sheet.sta-lcars.lcars-scheme-lowerDecks,
+.theme-light .dialogue.sta-lcars.lcars-scheme-lowerDecks,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-lowerDecks {
+  --lcars-bg: #f8f8fc;
+  --lcars-bg-panel: #f0f0f8;
+  --lcars-text-light: #18082a;
+  --lcars-text-dark: #000;
+}
+
+/* ----------------------------------------------------------------------- */
+/*  PRODIGY light — warm off-white                                         */
+/* ----------------------------------------------------------------------- */
+.theme-light .character-sheet.sta-lcars.lcars-scheme-prodigy,
+.theme-light .starship-sheet.sta-lcars.lcars-scheme-prodigy,
+.theme-light .extended-tasks.sta-lcars.lcars-scheme-prodigy,
+.theme-light .item-sheet.sta-lcars.lcars-scheme-prodigy,
+.theme-light .scenetraits-sheet.sta-lcars.lcars-scheme-prodigy,
+.theme-light .dialogue.sta-lcars.lcars-scheme-prodigy,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-prodigy {
+  --lcars-bg: #f8f4ee;
+  --lcars-bg-panel: #f0e8e0;
+  --lcars-text-light: #1a0a04;
+  --lcars-text-dark: #000;
+}
+
+/* ----------------------------------------------------------------------- */
+/*  ACADEMY light — warm academic white; gold darkened for contrast        */
+/* ----------------------------------------------------------------------- */
+.theme-light .character-sheet.sta-lcars.lcars-scheme-academy,
+.theme-light .starship-sheet.sta-lcars.lcars-scheme-academy,
+.theme-light .extended-tasks.sta-lcars.lcars-scheme-academy,
+.theme-light .item-sheet.sta-lcars.lcars-scheme-academy,
+.theme-light .scenetraits-sheet.sta-lcars.lcars-scheme-academy,
+.theme-light .dialogue.sta-lcars.lcars-scheme-academy,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-academy {
+  --lcars-bg: #f4f0ea;
+  --lcars-bg-panel: #ece8e0;
+  --lcars-text-light: #1e0808;
+  --lcars-text-dark: #000;
+  --lcars-lavender: #9a8020;
+}
+
+/* ----------------------------------------------------------------------- */
+/*  RED ALERT light — stark pinkish white                                  */
+/* ----------------------------------------------------------------------- */
+.theme-light .character-sheet.sta-lcars.lcars-scheme-redAlert,
+.theme-light .starship-sheet.sta-lcars.lcars-scheme-redAlert,
+.theme-light .extended-tasks.sta-lcars.lcars-scheme-redAlert,
+.theme-light .item-sheet.sta-lcars.lcars-scheme-redAlert,
+.theme-light .scenetraits-sheet.sta-lcars.lcars-scheme-redAlert,
+.theme-light .dialogue.sta-lcars.lcars-scheme-redAlert,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-redAlert {
+  --lcars-bg: #faf0f0;
+  --lcars-bg-panel: #f5e0e0;
+  --lcars-text-light: #280808;
+  --lcars-text-dark: #000;
+}

@@ -207,9 +207,9 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
 
         // Announce in chat
         await ChatMessage.create({
-          content: `<div class="sta-utils-momentum-spend-result">
-            <strong><i class="fas fa-bolt"></i> Regain Power</strong><br>
-            <span class="greentext">${targetShip.name} has regained Reserve Power.</span>
+          content: `<div class="sta-utils-chat-card sta-utils-chat-card--orange">
+            <h3><i class="fas fa-bolt"></i> Regain Power</h3>
+            <p><span class="greentext">${targetShip.name} has regained Reserve Power.</span></p>
           </div>`,
           speaker: ChatMessage.getSpeaker({ actor: targetShip }),
         });
@@ -926,7 +926,10 @@ class ActionChooserApp extends BaseApp {
                 `sta.actor.starship.system.${system}`,
               );
               await ChatMessage.create({
-                content: `<p><strong>${this.selectedStarship.name}</strong> rerouted Reserve Power to <strong>${systemLabel}</strong>.</p>`,
+                content: `<div class="sta-utils-chat-card sta-utils-chat-card--orange">
+                  <h3><i class="fas fa-bolt"></i> Reroute Power</h3>
+                  <p><strong>${this.selectedStarship.name}</strong> rerouted Reserve Power to <strong>${systemLabel}</strong>.</p>
+                </div>`,
                 speaker: ChatMessage.getSpeaker({
                   actor: this.selectedStarship,
                 }),
@@ -1894,7 +1897,10 @@ function actionAnnouncementMessage(actor, action) {
   const summary = action.chatSummary
     ? t(action.chatSummary)
     : t(action.description);
-  return `<p><strong>${actor.name}</strong>: <em>${t(action.name)}</em>: ${summary}</p>`;
+  return `<div class="sta-utils-chat-card sta-utils-chat-card--orange">
+    <h3><i class="fas fa-crosshairs"></i> ${t(action.name)}</h3>
+    <p><strong>${actor.name}</strong>: ${summary}</p>
+  </div>`;
 }
 
 export async function sendActionChat(actor, action) {

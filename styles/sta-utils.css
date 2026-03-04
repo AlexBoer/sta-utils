@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Antonio:wght@400;700&display=swap");
+
 /* -------------------------------------------- */
 /*  STA Utilities — Module Styles               */
 /* -------------------------------------------- */
@@ -46,10 +48,115 @@
   letter-spacing: 0.04em;
 }
 
+/* =============================================================================
+ * SHARED CHAT CARD — unified style for all sta-utils chat messages
+ * ============================================================================= */
+
+.sta-utils-chat-card {
+  --card-accent: #f1a43c;
+  --card-bg: rgba(241, 164, 60, 0.08);
+  --card-text: #f0b872;
+
+  font-family: "Antonio", "Roboto Condensed", sans-serif;
+  background: var(--card-bg);
+  border: 2px solid var(--card-accent);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.sta-utils-chat-card h3 {
+  font-family: "Antonio", "Roboto Condensed", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--card-accent);
+  margin: 0 0 4px 0;
+  border: none;
+}
+
+.sta-utils-chat-card h3 i {
+  margin-right: 6px;
+}
+
+.sta-utils-chat-card p {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--card-text);
+  margin: 0;
+  font-family: "Roboto Condensed", sans-serif;
+}
+
+.sta-utils-chat-card ul {
+  margin: 0.3em 0 0.3em 1.2em;
+  padding: 0;
+}
+
+.sta-utils-chat-card li {
+  margin-bottom: 0.15em;
+  font-size: 0.85rem;
+  color: var(--card-text);
+  font-family: "Roboto Condensed", sans-serif;
+}
+
+/* ---- Colour variants ---- */
+
+.sta-utils-chat-card--orange {
+  --card-accent: #f1a43c;
+  --card-bg: rgba(241, 164, 60, 0.08);
+  --card-text: #f0b872;
+}
+
+.sta-utils-chat-card--red {
+  --card-accent: #e04040;
+  --card-bg: rgba(224, 64, 64, 0.06);
+  --card-text: #ccc;
+}
+
+.sta-utils-chat-card--blue {
+  --card-accent: #89CFF0;
+  --card-bg: rgba(137, 207, 240, 0.08);
+  --card-text: rgba(255, 255, 255, 0.8);
+}
+
+.sta-utils-chat-card--green {
+  --card-accent: #4caf50;
+  --card-bg: rgba(76, 175, 80, 0.08);
+  --card-text: #a5d6a7;
+}
+
 /* Disabled dependent settings */
 .form-group.sta-utils-disabled {
   opacity: 0.45;
   pointer-events: none;
+}
+
+/* LCARS color scheme — swatch preview row */
+.sta-utils-lcars-swatches {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 0.1em 2px 0.6em;
+  margin-top: -0.35em;
+}
+
+.sta-utils-lcars-swatch {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  cursor: default;
+  flex-shrink: 0;
+}
+
+.sta-utils-lcars-swatch:hover {
+  transform: scale(1.2);
+  border-color: rgba(0, 0, 0, 0.6);
+  z-index: 1;
+  position: relative;
 }
 
 /* =============================================================================
@@ -555,10 +662,11 @@ li.row.entry.sta-utils-trait-hidden .item-name {
 .sta-values-info-btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   cursor: pointer;
   opacity: 0.7;
   font-size: 0.9em;
+  flex-grow: 1;
 }
 
 .sta-values-info-btn:hover {
@@ -585,6 +693,7 @@ li.row.entry.sta-utils-trait-hidden .item-name {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
+  flex-grow: 1;
 }
 
 /* Generic section info button styling */
@@ -596,7 +705,7 @@ li.row.entry.sta-utils-trait-hidden .item-name {
 .sta-milestones-info-btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  flex-grow: 1;
   cursor: pointer;
   opacity: 0.7;
   font-size: 0.9em;
@@ -815,60 +924,50 @@ input.selector.attribute.sta-fatigued-attribute {
   font-weight: 500;
 }
 
-/* Chat message styling - designed for STA system's dark chat backgrounds */
-.sta-warp-calculator-chat {
-  padding: 0.5rem;
-  color: rgba(255, 255, 255, 0.9);
-}
+/* Chat message styling — now uses shared .sta-utils-chat-card + --blue variant.
+   Only feature-specific inner grid styles remain here. */
 
-.sta-warp-calculator-chat h3 {
-  margin: 0 0 0.75rem 0;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #89CFF0;
-  font-size: 1.1rem;
-  color: #89CFF0;
-}
-
-.sta-warp-calculator-chat h3 i {
-  margin-right: 0.5rem;
-}
-
-.sta-warp-calculator-chat .sta-warp-results-grid {
+.sta-utils-chat-card .sta-warp-results-grid {
   gap: 0.3rem;
 }
 
-.sta-warp-calculator-chat .sta-warp-result-row {
+.sta-utils-chat-card .sta-warp-result-row {
   padding: 0.2rem 0.4rem;
 }
 
-.sta-warp-calculator-chat .sta-warp-result-label {
-  color: rgba(255, 255, 255, 0.8);
+.sta-utils-chat-card .sta-warp-result-label {
+  color: var(--card-text);
   font-weight: 600;
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 0.85rem;
 }
 
-.sta-warp-calculator-chat .sta-warp-result-value {
+.sta-utils-chat-card .sta-warp-result-value {
   color: rgba(255, 255, 255, 0.95);
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 0.85rem;
 }
 
-.sta-warp-calculator-chat .sta-warp-calculated {
+.sta-utils-chat-card .sta-warp-calculated {
   background: rgba(100, 200, 255, 0.15);
-  border-left: 3px solid #89CFF0;
+  border-left: 3px solid var(--card-accent);
+  border-radius: 4px;
 }
 
-.sta-warp-calculator-chat .sta-warp-calculated .sta-warp-result-value {
+.sta-utils-chat-card .sta-warp-calculated .sta-warp-result-value {
   color: rgba(100, 220, 255, 1);
   font-weight: 700;
 }
 
-.sta-warp-calculator-chat .sta-warp-divider {
+.sta-utils-chat-card .sta-warp-divider {
   border-top-color: rgba(255, 255, 255, 0.2);
 }
 
-.sta-warp-calculator-chat .sta-warp-derived .sta-warp-result-label {
+.sta-utils-chat-card .sta-warp-derived .sta-warp-result-label {
   color: rgba(255, 255, 255, 0.6);
 }
 
-.sta-warp-calculator-chat .sta-warp-derived .sta-warp-result-value {
+.sta-utils-chat-card .sta-warp-derived .sta-warp-result-value {
   color: rgba(255, 255, 255, 0.7);
 }
 
@@ -1161,47 +1260,37 @@ input.selector.attribute.sta-fatigued-attribute {
   font-weight: 700;
 }
 
-/* Chat message styling - designed for STA system's dark chat backgrounds */
-.sta-stardate-calculator-chat {
-  padding: 0.5rem;
-  color: rgba(255, 255, 255, 0.9);
-}
+/* Chat message styling — now uses shared .sta-utils-chat-card + --blue variant.
+   Only feature-specific inner grid styles remain here. */
 
-.sta-stardate-calculator-chat h3 {
-  margin: 0 0 0.75rem 0;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #89CFF0;
-  font-size: 1.1rem;
-  color: #89CFF0;
-}
-
-.sta-stardate-calculator-chat h3 i {
-  margin-right: 0.5rem;
-}
-
-.sta-stardate-calculator-chat .sta-stardate-results-grid {
+.sta-utils-chat-card .sta-stardate-results-grid {
   gap: 0.3rem;
 }
 
-.sta-stardate-calculator-chat .sta-stardate-result-row {
+.sta-utils-chat-card .sta-stardate-result-row {
   padding: 0.2rem 0.4rem;
 }
 
-.sta-stardate-calculator-chat .sta-stardate-result-label {
-  color: rgba(255, 255, 255, 0.8);
+.sta-utils-chat-card .sta-stardate-result-label {
+  color: var(--card-text);
   font-weight: 600;
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 0.85rem;
 }
 
-.sta-stardate-calculator-chat .sta-stardate-result-value {
+.sta-utils-chat-card .sta-stardate-result-value {
   color: rgba(255, 255, 255, 0.95);
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 0.85rem;
 }
 
-.sta-stardate-calculator-chat .sta-stardate-calculated {
+.sta-utils-chat-card .sta-stardate-calculated {
   background: rgba(100, 200, 255, 0.15);
-  border-left: 3px solid #89CFF0;
+  border-left: 3px solid var(--card-accent);
+  border-radius: 4px;
 }
 
-.sta-stardate-calculator-chat .sta-stardate-calculated .sta-stardate-result-value {
+.sta-utils-chat-card .sta-stardate-calculated .sta-stardate-result-value {
   color: rgba(100, 220, 255, 1);
   font-weight: 700;
 }
@@ -2139,7 +2228,8 @@ input.selector.attribute.sta-fatigued-attribute {
   opacity: 0.6;
 }
 
-/* ---- Result block appended to chat ---- */
+/* ---- Result block appended to chat — now uses shared .sta-utils-chat-card ---- */
+/* (kept for backward compat with any old messages still in the log) */
 
 .sta-utils-momentum-spend-result {
   margin-top: 0.5em;
@@ -2168,8 +2258,6 @@ input.selector.attribute.sta-fatigued-attribute {
  * ACTION CHOOSER — LCARS Theme
  * ============================================================================= */
 
-@import url("https://fonts.googleapis.com/css2?family=Antonio:wght@400;700&display=swap");
-
 /* ---- LCARS colour palette ---- */
 .sta-action-chooser {
   --lcars-orange: #f1a43c;
@@ -2190,7 +2278,6 @@ input.selector.attribute.sta-fatigued-attribute {
 /* ---- Window frame override ---- */
 .sta-action-chooser.application {
   background: var(--lcars-bg);
-  border: 3px solid var(--lcars-orange);
   border-radius: var(--lcars-radius) var(--lcars-radius) var(--lcars-radius) var(--lcars-radius);
   overflow: hidden;
 }
@@ -3307,30 +3394,11 @@ input.selector.attribute.sta-fatigued-attribute {
  * SHAKEN — Minor Damage chat card
  * ============================================================================= */
 
-.sta-utils-shaken-card {
-  padding: 0.6em 0.75em;
-  border-left: 4px solid #e04040;
-  background: rgba(224, 64, 64, 0.06);
-  border-radius: 4px;
-}
+/* Shaken card — now uses shared .sta-utils-chat-card + --red variant.
+   .sta-utils-shaken-card is kept as a JS hook for button binding. */
 
-.sta-utils-shaken-title {
-  margin: 0 0 0.3em;
-  font-size: 1.3em;
-  font-weight: 700;
-  color: #e04040;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.sta-utils-shaken-title i {
-  margin-right: 0.3em;
-}
-
-.sta-utils-shaken-flavour {
+.sta-utils-shaken-card p {
   margin: 0 0 0.6em;
-  font-size: 0.9em;
-  color: #ccc;
 }
 
 .sta-utils-shaken-buttons {
@@ -3379,10 +3447,6 @@ input.selector.attribute.sta-fatigued-attribute {
 
 /* ---- Resolved state ---- */
 
-.sta-utils-shaken-card--resolved .sta-utils-shaken-title {
-  margin-bottom: 0.4em;
-}
-
 .sta-utils-shaken-result {
   padding: 0.4em 0;
 }
@@ -3395,7 +3459,7 @@ input.selector.attribute.sta-fatigued-attribute {
 .sta-utils-shaken-result-desc {
   margin: 0;
   font-size: 0.9em;
-  color: #ccc;
+  color: var(--card-text, #ccc);
 }
 
 .sta-utils-shaken-roll-summary {
@@ -3488,568 +3552,749 @@ input.selector.attribute.sta-fatigued-attribute {
   font-size: inherit;
 }
 
-
 /* =============================================================================
- * TIDY CHARACTER SHEET MODE
- * Scoped under .character-sheet.sta-tidy — collapsible sections and
- * right-click context menus only, no other layout/sizing changes.
+ * EXTENDED TASK CLOCKS — breakthrough markers
  * ============================================================================= */
 
-/* Section title gets a pointer cursor and chevron */
-.character-sheet.sta-tidy .sta-tidy-section > .title {
-  cursor: pointer;
-  user-select: none;
-  display: flex;
-  align-items: center;
-  gap: 0;
-}
-
-/* Info buttons inside tidy titles stay tight against the label text */
-.character-sheet.sta-tidy .sta-tidy-section > .title > a[class*='info-btn'] {
-  margin-left: 4px;
-  margin-right: 10px;
-}
-
-/* Chevron rotates when collapsed */
-.character-sheet.sta-tidy .sta-tidy-chevron {
-  font-size: 0.6rem;
-  transition: transform 0.15s ease;
-  margin-right: 2px;
+/**
+ * Gap spacer inserted between segments at the 50 % and 75 % boundary.
+ * Lives inside .tracker-slashes alongside .slash elements.
+ */
+.sta-utils-breakthrough-gap {
   flex-shrink: 0;
+  width: 10px;        /* extra space between the two segment groups */
+  height: 100%;
+  pointer-events: none;
 }
 
-.character-sheet.sta-tidy .sta-tidy-chevron.sta-collapsed {
-  transform: rotate(-90deg);
+/**
+ * The visible breakthrough line — angled, dotted, red.
+ * Absolutely positioned inside .tracker-element over the gap.
+ */
+.sta-utils-breakthrough-line {
+  position: absolute;
+  top: -2px;
+  height: calc(100% + 4px);
+  width: 0;
+  border-left: 3px dotted rgba(220, 40, 40, 0.9);
+  z-index: 10;
+  pointer-events: auto;
+  cursor: default;
+  /* shift left half the border width so it's centered */
+  margin-left: -1.5px;
 }
 
-/* Wrapper for collapsible content */
-.character-sheet.sta-tidy .sta-tidy-items {
-  overflow: hidden;
-}
-
-.character-sheet.sta-tidy .sta-tidy-items.sta-collapsed {
-  display: none;
-}
-
-/* Sections shrink to content when collapsed */
-.character-sheet.sta-tidy .sta-tidy-section {
-  min-height: 0 !important;
-  flex-shrink: 0;
-  flex-grow: 0;
-}
-
-/* Create button relocated into title bar */
-.character-sheet.sta-tidy .sta-tidy-create-btn {
-  margin-left: auto;
-  font-size: 0.75rem;
-  padding: 0 4px;
-}
-
-/* Hide header rows (the create button has been moved into the title) */
-.character-sheet.sta-tidy .section .header.row {
-  display: none;
-}
-
-/* Hide edit/delete controls — replaced by right-click context menu */
-.character-sheet.sta-tidy .section .row.entry > .control {
-  display: none;
-}
-
-/* Prevent columns from stretching sections */
-.character-sheet.sta-tidy .items-column-left,
-.character-sheet.sta-tidy .items-column-right {
-  align-content: flex-start;
-}
-
-.character-sheet.sta-tidy .tab[data-tab='traits'] > .split-section {
-  align-items: flex-start;
-}
-
-
-/* =============================================================================
- * COMPACT CHARACTER SHEET MODE
- * All rules scoped under .character-sheet.sta-compact so they only apply
- * when the user opts in via the client setting.
- *
- * Design goals:
- *   1. Collapsible sections (click title bar to toggle)
- *   2. Shrink item icons & hide header rows
- *   3. Hide edit/delete controls (right-click context menu instead)
- *   4. Force tight row height (~22px) and spacing
- *   5. Compact top area (tracks, name field)
- * ============================================================================= */
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * COLLAPSIBLE SECTIONS
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-/* Section title gets a pointer cursor and chevron */
-.character-sheet.sta-compact .sta-compact-section > .title {
-  cursor: pointer;
-  user-select: none;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* Chevron rotates when collapsed */
-.character-sheet.sta-compact .sta-compact-chevron {
-  font-size: 0.6rem;
-  transition: transform 0.15s ease;
-  margin-right: 2px;
-  flex-shrink: 0;
-}
-
-.character-sheet.sta-compact .sta-compact-chevron.sta-collapsed {
-  transform: rotate(-90deg);
-}
-
-/* The wrapper div around items under a section title */
-.character-sheet.sta-compact .sta-compact-items {
-  overflow: hidden;
-  transition: none;
-}
-
-.character-sheet.sta-compact .sta-compact-items.sta-collapsed {
-  display: none;
-}
-
-/* Sections shrink to content when collapsed, don't stretch to fill column */
-.character-sheet.sta-compact .sta-compact-section {
-  min-height: 0 !important;
-  flex-shrink: 0;
-  flex-grow: 0;
-}
-
-/* Create button relocated into title bar */
-.character-sheet.sta-compact .sta-compact-create-btn {
-  margin-left: auto;
-  font-size: 0.7rem;
-  padding: 0 4px;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * HIDE HEADER ROWS — they are redundant when icons & controls are hidden
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-.character-sheet.sta-compact .section .header.row {
-  display: none;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * ITEM ICONS — keep visible but shrink to fit tight rows
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-.character-sheet.sta-compact .section .row.entry > .image {
-  flex: 0 0 18px;
-  margin: 0 3px 0 0;
-}
-
-.character-sheet.sta-compact .section .row.entry > .image img {
-  height: 18px;
-  width: 18px;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * HIDE EDIT / DELETE CONTROLS — replaced by right-click context menu
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-.character-sheet.sta-compact .section .row.entry > .control {
-  display: none;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * ITEM ROWS — tight spacing, full width
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-.character-sheet.sta-compact .section .row.entry {
-  min-height: 0;
-  max-height: 22px;
-  height: 22px;
-  padding: 1px 4px;
-  line-height: 20px;
-  margin: 0;
-  align-items: center;
-}
-
-/* Alternate row shading for readability without icons */
-.character-sheet.sta-compact .section li.row.entry:nth-child(even) {
-  background: rgba(0, 0, 0, 0.03);
-}
-
-/* Item names fill remaining width (controls hidden, image kept but small) */
-.character-sheet.sta-compact .item-name {
-  font-size: 0.82rem;
-  line-height: 20px;
-  padding: 0;
-  height: 20px;
-}
-
-/* Fix column widths — controls (40px) are hidden */
-.character-sheet.sta-compact .section .row .one-column-with-roll {
-  width: calc(100% - 22px);
-}
-
-.character-sheet.sta-compact .section .row .two-column-with-roll-primary {
-  width: calc(100% - 58px);
-}
-
-.character-sheet.sta-compact .section .row .two-column-with-roll-secondary {
-  font-size: 0.82rem;
-  width: 36px;
-  text-align: center;
-}
-
-.character-sheet.sta-compact .item-quantity {
-  width: 32px;
-  height: 18px;
-  font-size: 0.8rem;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * VALUE ROWS — keep toggle & use-value button visible
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-.character-sheet.sta-compact .value-used {
-  font-size: 0.8rem;
-}
-
-.character-sheet.sta-compact .sta-use-value-btn {
-  font-size: 0.72rem;
-  padding: 0 1em;
-  min-width: 1em;
-  height: 1.2rem;
-  line-height: 1.1rem;
-}
-
-.character-sheet.sta-compact .sta-inline-sheet-btn {
-  font-size: 0.72rem;
-  padding: 0 1em;
-  min-width: 1em;
-  height: 1.2rem;
-  line-height: 1.1rem;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * PORTRAIT & NAME — inline name beside portrait
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-.character-sheet.sta-compact .top-left-column {
-  flex: 0 0 80px !important;
-  padding-right: 4px;
-}
-
-.character-sheet.sta-compact .image-field {
-  width: 70px !important;
-  height: 70px !important;
-  justify-self: center;
-}
-
-/* Hide redundant "Name" label */
-.character-sheet.sta-compact .name-field .title {
-  display: none;
-}
-
-/* Name field becomes a compact single-line inline with tracks */
-.character-sheet.sta-compact .name-field {
-  margin-bottom: 0;
-}
-
-.character-sheet.sta-compact .name-field .text-entry {
-  font-size: 1.1rem;
-  height: 1.5rem;
-  margin-top: 0;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * COMPACT TRACKS — fraction display replacing bar boxes
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-/* Hide original separate track title elements (fallback if JS hasn't run yet) */
-.character-sheet.sta-compact .top-right-column > .tracktitle,
-.character-sheet.sta-compact .top-right-column > .sta-tracktitle-with-button {
-  display: none;
-}
-
-/* All three fractions on one line, evenly spaced */
-.character-sheet.sta-compact .sta-compact-tracks-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-evenly;
-  flex-wrap: wrap;
-  width: 100%;
-  margin: 2px 0;
-  padding: 0 2px;
-}
-
-/* Individual fraction: Label [input] / max */
-.character-sheet.sta-compact .sta-compact-track-frac {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  font-size: 0.78rem;
-}
-
-.character-sheet.sta-compact .sta-compact-track-frac-label {
-  font-weight: bold;
-  font-size: 0.72rem;
-  color: var(--color-text-dark-secondary, #ccc);
-  margin-right: 1px;
-}
-
-.character-sheet.sta-compact .sta-compact-track-frac-label .fa-circle-info {
-  font-size: 0.55rem;
-  margin-left: 2px;
-}
-
-.character-sheet.sta-compact .sta-compact-track-frac-input {
-  width: 28px;
-  height: 18px;
-  text-align: center;
-  font-size: 0.78rem;
-  font-weight: bold;
-  padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-  background: rgba(0, 0, 0, 0.15);
-  color: inherit;
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
-
-.character-sheet.sta-compact .sta-compact-track-frac-input::-webkit-inner-spin-button,
-.character-sheet.sta-compact .sta-compact-track-frac-input::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.character-sheet.sta-compact .sta-compact-track-frac-sep {
-  font-size: 0.7rem;
-  opacity: 0.6;
-}
-
-.character-sheet.sta-compact .sta-compact-track-frac-max {
-  font-size: 0.72rem;
-  opacity: 0.7;
-}
-
-/* +/- stepper buttons */
-.character-sheet.sta-compact .sta-compact-track-step {
+/**
+ * Linked-tracker icon (for future live-sync feature).
+ */
+.sta-utils-tracker-linked-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  margin: 0 1px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-  background: rgba(0, 0, 0, 0.2);
-  color: inherit;
-  font-size: 0.55rem;
-  cursor: pointer;
-  line-height: 1;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  font-size: 0.75em;
+  opacity: 0.8;
+  margin-right: 4px;
+  order: 0;
 }
 
-.character-sheet.sta-compact .sta-compact-track-step:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.4);
+.sta-utils-tracker-linked-icon i {
+  color: var(--control-icon-color, #ccc);
 }
 
-.character-sheet.sta-compact .sta-compact-track-step:active {
-  background: rgba(255, 255, 255, 0.25);
+/* ================================================================== */
+/*  Extended Task Tracker — LCARS Theme                               */
+/* ================================================================== */
+
+#extended-task-panel {
+  --ext-entry-height: 34px;
+  --ext-entry-width: 130px;
+  --ext-max-entry-width: 180px;
+  --ext-private-color: rgba(138, 80, 255);
+
+  /* LCARS palette */
+  --lcars-orange: #f1a43c;
+  --lcars-peach: #f0b872;
+  --lcars-lavender: #c5a3d9;
+  --lcars-lilac: #9b8fc2;
+  --lcars-blue: #6688cc;
+  --lcars-sky: #88aaff;
+  --lcars-red: #d05050;
+  --lcars-tan: #e8c57a;
+  --lcars-bg: #000;
+  --lcars-text: #ff9900;
+  --lcars-text-dark: #000;
+  --lcars-font: "Antonio", "Roboto Condensed", sans-serif;
+  --lcars-radius: 20px;
+
+  opacity: max(var(--ui-fade-opacity, 1), 0.9);
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+  overflow: visible;
+  margin-top: 8px;
+  font-family: var(--lcars-font);
+
+  .ext-tracker-list,
+  button {
+    pointer-events: all;
+  }
 }
 
-.character-sheet.sta-compact .top-right-column {
-  gap: 0;
-}
+/* ── Extended task tracker in #ui-top ─────────────────────────────────────── */
 
-/* ═══════════════════════════════════════════════════════════════════════════
- * TOP SPLIT-SECTION — shrink to content, give space to bottom
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-/* The character-sheet uses two .split-section divs: top (portrait+tracks)
-   and bottom (attributes+tabs). Make the top shrink so the bottom expands. */
-.character-sheet.sta-compact > .split-section:first-child {
-  flex: 0 0 auto;
-}
-
-.character-sheet.sta-compact > .split-section:last-child {
-  flex: 1 1 auto;
-  min-height: 0;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * ATTRIBUTES & DISCIPLINES — tighter rows
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-.character-sheet.sta-compact .attribute-block,
-.character-sheet.sta-compact .discipline-block {
-  margin-bottom: 3px;
-}
-
-.character-sheet.sta-compact .attribute-block .title,
-.character-sheet.sta-compact .discipline-block .title {
-  height: 1.1rem;
-  font-size: 0.72rem;
-  margin-top: 2px;
-}
-
-.character-sheet.sta-compact .row-right {
+#ui-top #extended-task-panel {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  pointer-events: none;
+  /* Sit alongside the scene navigation cards */
+  align-self: flex-end;
+  /* Fill the full width of #ui-top (a flex column) so the inner flex
+     row container has room to lay out trackers before wrapping.
+     Overrides the base width: fit-content rule. */
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   margin-top: 0;
+  /* Prevent Foundry's UI-fade from causing blur when clicking the canvas */
+  opacity: 1 !important;
+  /* Pre-promote to a stable GPU compositing layer to avoid repaint blur */
+  transform: translateZ(0);
+  will-change: transform;
 }
 
-.character-sheet.sta-compact .row-right .list-entry {
-  font-size: 0.82rem;
+#ui-top .ext-task-tracker-display {
+  /* Single non-wrapping row: [tracker list][buttons] */
+  flex-direction: row;
+  align-items: flex-end;
+  flex-wrap: nowrap;
+  max-height: none;
+  gap: 6px;
 }
 
-.character-sheet.sta-compact .row-right .numeric-entry {
-  height: 20px;
-  width: 36px;
-  font-size: 0.82rem;
-}
-
-.character-sheet.sta-compact .row-right .selector {
-  width: 13px;
-  height: 13px;
-  margin: 0 10px 0 10px;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * BUTTONS & MISC BELOW ATTRIBUTES
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-.character-sheet.sta-compact .rollrepnotdis {
-  font-size: 0.72rem;
-  margin: 2px 0;
-}
-
-.character-sheet.sta-compact .buttons {
-  gap: 3px;
-}
-
-.character-sheet.sta-compact .buttons .check-button {
-  font-size: 0.72rem;
-  padding: 2px 4px;
-}
-
-.character-sheet.sta-compact .stressmod {
-  font-size: 0.72rem;
-  margin-top: 2px;
-}
-
-.character-sheet.sta-compact .stressmod .text-entry {
-  height: 1.4rem;
-  font-size: 0.8rem;
-  width: 40px;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * TAB NAVIGATION
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-.character-sheet.sta-compact nav.sheet-tabs.tabs {
-  padding-left: 40px;
-}
-
-.character-sheet.sta-compact nav.sheet-tabs .item {
-  font-size: 0.78rem;
-  width: auto;
-  padding: 2px 7px;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * SECTION TITLE BARS — slightly smaller, tighter
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-.character-sheet.sta-compact .section .title,
-.character-sheet.sta-compact .tab .title {
-  height: auto;
-  min-height: 1.1rem;
-  font-size: 0.72rem;
-  margin-top: 2px;
-  margin-bottom: 0;
-  padding: 1px 4px;
-}
-
-.character-sheet.sta-compact .sta-values-title-with-button {
-  font-size: 0.72rem;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * ITEM COLUMN CONTAINERS
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-.character-sheet.sta-compact .items-column-left,
-.character-sheet.sta-compact .items-column-right {
-  padding-left: 2px;
-  padding-right: 2px;
+#ui-top .ext-tracker-list {
+  /* Fill all space left of the buttons, wrap trackers internally downward */
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   align-content: flex-start;
+  gap: 6px;
+  overflow: visible;
 }
 
-/* Prevent column containers from stretching sections to fill height */
-.character-sheet.sta-compact .tab[data-tab='traits'] > .split-section {
+#ui-top .ext-tracker-main-controls {
+  flex-shrink: 0;
+  flex-direction: column;
+  align-self: flex-end;
+  justify-content: flex-end;
+}
+
+#ui-top .ext-tracker-entry {
+  flex-shrink: 0;
+}
+
+#ui-top .ext-tracker-entry,
+#ui-top button,
+#ui-top .ext-tracker-entry a {
+  pointer-events: all;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+.ext-task-tracker-display {
+  align-content: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: unset;
+  max-height: 100%;
+  min-width: var(--ext-entry-width);
+
+  &.editable {
+    .ext-tracker-list.editable,
+    a {
+      pointer-events: initial;
+    }
+  }
+
+  .ext-tracker-list {
+    align-items: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: auto;
+    scrollbar-gutter: stable;
+  }
+
+  .ext-tracker-main-controls {
+    display: flex;
+    gap: 4px;
+    padding: 0 2px;
+    justify-content: flex-end;
+
+    button {
+      font-family: var(--lcars-font);
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-radius: var(--lcars-radius) 8px 8px var(--lcars-radius);
+      border: 2px solid var(--lcars-orange);
+      background: var(--lcars-bg);
+      color: var(--lcars-orange);
+      padding: 0.25rem 0.75rem;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    button:hover {
+      background: rgba(241, 164, 60, 0.2);
+      color: #fff;
+    }
+  }
+
+  button.ui-control {
+    width: auto;
+    flex: 1 1 0;
+  }
+
+  button.breakthrough-btn {
+    border-color: var(--lcars-lavender, #c5a3d9);
+    color: var(--lcars-lavender, #c5a3d9);
+  }
+
+  button.breakthrough-btn:hover {
+    background: rgba(197, 163, 217, 0.2);
+    color: #fff;
+  }
+}
+
+/* ── Compact (icon-only) controls at smaller screen widths ─────────────────── */
+
+@media (max-width: 1100px) {
+  #ui-top #extended-task-panel .ext-tracker-main-controls button {
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    min-width: 0;
+    letter-spacing: 0;
+  }
+
+  #ui-top #extended-task-panel .ext-tracker-main-controls .btn-label {
+    display: none;
+  }
+}
+
+/* --- Individual tracker entry --- */
+
+.ext-task-tracker-display .ext-tracker-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  justify-content: flex-end;
+  min-width: var(--ext-entry-width);
+  max-width: var(--ext-max-entry-width);
+  color: var(--lcars-peach);
+  border: 2px solid black;
+  border-radius: var(--lcars-radius, 20px);
+
+  &.hidden {
+    display: none;
+  }
+
+  /* --- Name row --- */
+  .ext-tracker-name {
+    align-items: center;
+    background: var(--lcars-lilac);
+    border-radius: var(--lcars-radius) var(--lcars-radius) 0 0;
+    border: none;
+    box-shadow: none;
+    color: var(--lcars-text-dark);
+    display: flex;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    gap: 8px;
+    justify-content: space-between;
+    max-width: none;
+    padding: 2px 10px 2px 16px;
+    position: relative;
+    white-space: nowrap;
+    width: 100%;
+    flex: 0 0 auto;
+    min-height: 1.6rem;
+    box-sizing: border-box;
+
+    .value {
+      order: 2;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: right;
+      flex: 1;
+      cursor: initial;
+      font-family: var(--lcars-font);
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--lcars-text-dark);
+
+      i {
+        font-size: 0.8em;
+        margin-right: 0.25rem;
+        margin-top: -0.2em;
+        opacity: 0.7;
+      }
+    }
+
+    .ext-tracker-stats {
+      display: flex;
+      gap: 4px;
+      order: 1;
+      flex-shrink: 0;
+      align-items: center;
+
+      .ext-stat {
+        font-family: var(--lcars-font);
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        color: var(--lcars-text-dark);
+        background: rgba(0, 0, 0, 0.25);
+        padding: 1px 7px;
+        border-radius: 6px;
+        line-height: 1.5;
+      }
+
+      .ext-stat.resistance {
+        background: rgba(208, 80, 80, 0.35);
+      }
+    }
+
+    .ext-tracker-controls {
+      display: none;
+      order: 1;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      border-radius: inherit;
+      flex-shrink: 0;
+      font-size: 0.85em;
+
+      a {
+        color: var(--lcars-text-dark);
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.1s;
+      }
+
+      a:hover {
+        opacity: 1;
+      }
+    }
+
+    &:hover .ext-tracker-controls {
+      display: flex;
+    }
+  }
+
+  &.private .ext-tracker-name {
+    background: var(--lcars-lavender);
+    box-shadow: 0 0 6px inset rgba(138, 80, 255, 0.5);
+  }
+
+  &.editable .ext-tracker-bar {
+    cursor: pointer;
+  }
+
+  &:hover .ext-tracker-bar .ext-tracker-value {
+    opacity: 1;
+    transition: opacity 0s;
+  }
+}
+
+/* --- Bar element --- */
+
+.ext-tracker-bar {
+  background: var(--lcars-bg, #000);
+  overflow: hidden;
+  flex: 0 0 auto;
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid var(--lcars-lilac, #9b8fc2);
+  border-top: none;
+  border-radius: 0 0 var(--lcars-radius, 20px) var(--lcars-radius, 20px);
+  min-height: 28px;
+
+  /* Value overlay floats in the bottom-right corner over all rows */
+  .ext-tracker-value {
+    position: absolute;
+    bottom: 4px;
+    right: 8px;
+    font-family: var(--lcars-font);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--lcars-text, #ff9900);
+    z-index: 2;
+    padding: 0 5px;
+    background: rgba(0, 0, 0, 0.65);
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .ext-tracker-slashes {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 2px;
+    padding: 3px;
+    box-sizing: border-box;
+    pointer-events: none;
+  }
+
+  /* Each wrapped row of segments */
+  .ext-tracker-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 3px;
+    height: 22px;
+  }
+
+  .slash {
+    height: 85%;
+    flex: 1 1 0;
+    min-width: 0;
+    background: var(--entry-color, #c5a3d9);
+    opacity: 0.2;
+    /* overflow:hidden on the bar clips segments to the rounded corners */
+    border-radius: 4px;
+  }
+
+  /* Bottom corners of the last row match the bar's border-radius */
+  .ext-tracker-row:last-child .slash:first-child {
+    border-radius: 4px 4px 4px 12px;
+  }
+
+  .ext-tracker-row:last-child .slash:last-child {
+    border-radius: 4px 4px 12px 4px;
+  }
+
+  .slash.filled {
+    opacity: 1;
+  }
+
+  /* --- Breakthrough line --- */
+  .breakthrough-line {
+    position: relative;
+    width: 0;
+    height: 100%;
+    flex: 0 0 0px;
+    /* Extra margin creates a wider gap at breakthrough points */
+    margin-left: 2px;
+    margin-right: 2px;
+    z-index: 3;
+  }
+
+  .breakthrough-line::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -1px;
+    width: 3px;
+    height: 100%;
+    background: var(--lcars-orange, #f1a43c);
+    box-shadow: 0 0 6px rgba(241, 164, 60, 0.7);
+  }
+
+  .breakthrough-line::after {
+    content: attr(title);
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--lcars-font);
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--lcars-orange, #f1a43c);
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  &:hover .breakthrough-line::after {
+    opacity: 1;
+  }
+}
+
+/* --- Dialog — LCARS themed --- */
+
+.sta-tracker-dialog {
+  overflow: visible;
+  background: #000 !important;
+  border: 3px solid var(--lcars-orange, #f1a43c) !important;
+  border-radius: 20px !important;
+
+  .window-header {
+    background: var(--lcars-orange, #f1a43c);
+    color: #000;
+    font-family: "Antonio", "Roboto Condensed", sans-serif;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 0.3rem 1rem;
+    border-radius: 0;
+    border-bottom: none;
+  }
+
+  .window-header .window-title {
+    font-family: "Antonio", "Roboto Condensed", sans-serif;
+    font-weight: 700;
+    color: #000;
+  }
+
+  .window-header a,
+  .window-header button {
+    color: #000;
+  }
+
+  .window-content {
+    overflow: visible;
+    background: #000;
+    padding: 0.75rem;
+    font-family: "Antonio", "Roboto Condensed", sans-serif;
+    color: #f0b872;
+  }
+
+  .form-group {
+    margin-bottom: 8px;
+  }
+
+  .form-group label {
+    font-family: "Antonio", "Roboto Condensed", sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #f0b872;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  select {
+    background: rgba(155, 143, 194, 0.1);
+    border: 1px solid rgba(155, 143, 194, 0.4);
+    border-radius: 6px;
+    color: #f0b872;
+    font-family: "Antonio", "Roboto Condensed", sans-serif;
+  }
+
+  input[type="text"]:focus,
+  input[type="number"]:focus,
+  select:focus {
+    border-color: #f1a43c;
+    box-shadow: 0 0 4px rgba(241, 164, 60, 0.4);
+  }
+
+  .dialog-buttons button {
+    font-family: "Antonio", "Roboto Condensed", sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 12px;
+    border: 2px solid #f1a43c;
+    background: rgba(0, 0, 0, 0.2);
+    color: #f1a43c;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .dialog-buttons button:hover {
+    background: rgba(241, 164, 60, 0.15);
+    color: #fff;
+  }
+
+  .dropdown-wrapper {
+    &:focus-within {
+      box-shadow: 0 0 5px rgba(241, 164, 60, 0.4);
+    }
+
+    &:not(:focus-within) .dropdown {
+      display: none;
+    }
+
+    .dropdown {
+      margin: 2px 0 0 -4px;
+      padding: 0;
+      position: absolute;
+      width: 7rem;
+      background: #111;
+      color: #f0b872;
+      border-radius: 6px;
+      border: 1px solid rgba(155, 143, 194, 0.4);
+      list-style-type: none;
+
+      li {
+        border-bottom: 1px solid rgba(155, 143, 194, 0.2);
+        padding: 2px 0;
+        text-align: center;
+        font-family: "Antonio", "Roboto Condensed", sans-serif;
+
+        &:hover {
+          background: rgba(241, 164, 60, 0.15);
+        }
+
+        &:last-child {
+          border: 0;
+        }
+      }
+    }
+  }
+}
+
+/* --- Breakthrough menu dialog --- */
+
+.sta-breakthrough-dialog {
+  width: 520px;
+  overflow: hidden !important;
+  border-radius: 24px !important;
+}
+
+.sta-breakthrough-dialog .window-content {
+  padding: 8px !important;
+  overflow-y: auto !important;
+  background: #000;
+  border-radius: 0 0 21px 21px;
+}
+
+/* Tab bar */
+.sta-bt-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.sta-bt-tab {
+  flex: 1 1 0;
+  padding: 6px 12px;
+  font-family: "Antonio", "Roboto Condensed", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 2px solid rgba(155, 143, 194, 0.3);
+  border-radius: 10px;
+  background: transparent;
+  color: rgba(240, 184, 114, 0.5);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.sta-bt-tab:hover {
+  border-color: rgba(241, 164, 60, 0.5);
+  color: #f0b872;
+}
+
+.sta-bt-tab.active {
+  border-color: #f1a43c;
+  background: rgba(241, 164, 60, 0.12);
+  color: #f1a43c;
+}
+
+/* Tab panels */
+.sta-bt-panel {
+  display: none;
+}
+
+.sta-bt-panel.active {
+  display: block;
+}
+
+/* Setback item accent */
+.sta-bt-item--setback:hover {
+  background: rgba(208, 80, 80, 0.1);
+  border-left-color: #d05050;
+}
+
+.sta-bt-item--setback .sta-bt-icon {
+  color: #d05050;
+}
+
+.sta-bt-item--setback .sta-bt-label {
+  color: #d05050;
+}
+
+.sta-bt-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: block;
+}
+
+.sta-bt-item {
+  display: flex;
+  flex-direction: row;
   align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  margin-bottom: 4px;
+  border-left: 3px solid transparent;
+  border-radius: 0 8px 8px 0;
+  background: rgba(155, 143, 194, 0.04);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
- * BIOGRAPHY TAB
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-.character-sheet.sta-compact .tab[data-tab="biography"] .column .title {
-  font-size: 0.68rem;
-  height: auto;
-  margin-top: 1px;
+.sta-bt-item:last-child {
   margin-bottom: 0;
 }
 
-.character-sheet.sta-compact .tab[data-tab="biography"] .column .text-entry {
-  font-size: 0.82rem;
-  height: 1.8rem;
+.sta-bt-item:hover {
+  background: rgba(241, 164, 60, 0.1);
+  border-left-color: #f1a43c;
 }
 
-.character-sheet.sta-compact .tab[data-tab="biography"] .amiklingon {
-  font-size: 0.72rem;
+.sta-bt-icon {
+  flex: 0 0 20px;
+  font-size: 1rem;
+  color: #f1a43c;
+  text-align: center;
+  margin-top: 2px;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
- * DEVELOPMENT TAB
- * ═══════════════════════════════════════════════════════════════════════════ */
+.sta-bt-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
 
-.character-sheet.sta-compact .two-col .row {
+.sta-bt-label {
+  font-family: "Antonio", "Roboto Condensed", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #f1a43c;
+  margin-bottom: 2px;
+}
+
+.sta-bt-desc {
+  font-family: "Roboto Condensed", sans-serif;
   font-size: 0.78rem;
-  gap: 3px;
+  line-height: 1.4;
+  color: rgba(240, 184, 114, 0.65);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
-.character-sheet.sta-compact .two-col .row input[type="checkbox"] {
-  width: 13px;
-  height: 13px;
-}
-
-.character-sheet.sta-compact .item-list-scrollable {
-  max-height: 120px;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * NOTES TAB
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-.character-sheet.sta-compact .tab[data-tab="notes"] .note {
-  height: auto;
-  flex: 1;
-  min-height: 200px;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * LOG & ARC TITLES IN DEVELOPMENT
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-.character-sheet.sta-compact .sta-log-inline-actions {
-  font-size: 0.72rem;
-}
-
-.character-sheet.sta-compact .sta-callbacks-arc-title {
-  font-size: 0.72rem;
-  padding: 1px 4px;
-}

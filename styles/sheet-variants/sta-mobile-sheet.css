@@ -1,0 +1,1093 @@
+/* =============================================================================
+   STA-Utils: Mobile Character Sheet (2e)
+   Scoped entirely to .character-sheet--mobile — no desktop sheet is affected.
+   Visual goal: native mobile-app aesthetic (Material / iOS feel), not a TTRPG sheet.
+   ============================================================================= */
+
+/* ── Design tokens ────────────────────────────────────────────────────────── */
+
+.character-sheet--mobile {
+  /* Palette — dark mode (Blue / Federation — default) */
+  --mob-header-bg:     #070d1b;
+  --mob-header-text:   #e8ecf4;
+  --mob-accent:        #60a5fa;
+  --mob-accent-dark:   #3b82f6;
+  --mob-surface:       #0d1117;
+  --mob-surface-card:  #161d2e;
+  --mob-text:          #e2e8f0;
+  --mob-text-secondary:#7a90b0;
+  --mob-border:        #253451;
+  --mob-divider:       #111827;
+  --mob-selected:      #F2CC0D;   /* STA track selected colour — keep */
+
+  /* Typography */
+  --mob-font:          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                       "Helvetica Neue", Arial, sans-serif;
+  --mob-font-size:     14px;
+
+  /* Spacing */
+  --mob-tap:           44px;      /* minimum touch target height */
+  --mob-radius:        10px;
+  --mob-radius-sm:     6px;
+  --mob-radius-xs:     4px;
+
+  /* ── Base reset ─────────────────────────────────────────────────────────── */
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0;
+  gap: 0;
+
+  font-family: var(--mob-font);
+  font-size: var(--mob-font-size);
+  color: var(--mob-text);
+  background: var(--mob-surface);
+
+  /* Fill the fixed-height window content area so the body can scroll */
+  height: 100%;
+
+  /* Prevent inherited STA scroll-on-root */
+  overflow: hidden;
+
+  min-width: 320px;
+}
+
+/* ── Color theme overrides ──────────────────────────────────────────────── */
+
+/* Red — Command */
+.character-sheet--mobile.mob-theme-red {
+  --mob-header-bg:     #1a0808;
+  --mob-header-text:   #f4e8e8;
+  --mob-accent:        #f87171;
+  --mob-accent-dark:   #ef4444;
+  --mob-surface:       #130a0a;
+  --mob-surface-card:  #2a1418;
+  --mob-text:          #f0e2e2;
+  --mob-text-secondary:#b07a7a;
+  --mob-border:        #512525;
+  --mob-divider:       #271111;
+}
+
+/* Gold — Operations */
+.character-sheet--mobile.mob-theme-gold {
+  --mob-header-bg:     #1a1408;
+  --mob-header-text:   #f4f0e8;
+  --mob-accent:        #fbbf24;
+  --mob-accent-dark:   #f59e0b;
+  --mob-surface:       #131008;
+  --mob-surface-card:  #2a2414;
+  --mob-text:          #f0ece2;
+  --mob-text-secondary:#b0997a;
+  --mob-border:        #514825;
+  --mob-divider:       #271f11;
+}
+
+/* Teal — Sciences */
+.character-sheet--mobile.mob-theme-teal {
+  --mob-header-bg:     #081a18;
+  --mob-header-text:   #e8f4f2;
+  --mob-accent:        #2dd4bf;
+  --mob-accent-dark:   #14b8a6;
+  --mob-surface:       #0a1312;
+  --mob-surface-card:  #142a27;
+  --mob-text:          #e2f0ed;
+  --mob-text-secondary:#7ab0a5;
+  --mob-border:        #255149;
+  --mob-divider:       #112724;
+}
+
+/* Purple — Nebula */
+.character-sheet--mobile.mob-theme-purple {
+  --mob-header-bg:     #120a1e;
+  --mob-header-text:   #eee8f4;
+  --mob-accent:        #a78bfa;
+  --mob-accent-dark:   #8b5cf6;
+  --mob-surface:       #0e0a15;
+  --mob-surface-card:  #211830;
+  --mob-text:          #ebe2f0;
+  --mob-text-secondary:#9a7ab0;
+  --mob-border:        #3d2551;
+  --mob-divider:       #1e1127;
+}
+
+/* Green — Borg */
+.character-sheet--mobile.mob-theme-green {
+  --mob-header-bg:     #081a0d;
+  --mob-header-text:   #e8f4ec;
+  --mob-accent:        #4ade80;
+  --mob-accent-dark:   #22c55e;
+  --mob-surface:       #0a130c;
+  --mob-surface-card:  #142a1a;
+  --mob-text:          #e2f0e6;
+  --mob-text-secondary:#7ab08a;
+  --mob-border:        #25512f;
+  --mob-divider:       #112718;
+}
+
+/* ── Scrollbar overrides (Chromium / Webkit) ─────────────────────────────── */
+/* Thin, dark-blue scrollbars everywhere inside the mobile sheet.             */
+
+.character-sheet--mobile ::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.character-sheet--mobile ::-webkit-scrollbar-track {
+  background: transparent;
+}
+.character-sheet--mobile ::-webkit-scrollbar-thumb {
+  background: var(--mob-border);
+  border-radius: 4px;
+}
+.character-sheet--mobile ::-webkit-scrollbar-thumb:hover {
+  background: var(--mob-accent);
+}
+/* Firefox */
+.character-sheet--mobile * {
+    scrollbar-width: none;
+    scrollbar-color: var(--mob-border) transparent;
+}
+
+/* Override STA's body-level Roboto Condensed — exclude icon elements so
+   FontAwesome glyphs are not broken by the font substitution. */
+.character-sheet--mobile,
+.character-sheet--mobile *:not(i):not([class*="fa-"]) {
+  font-family: var(--mob-font) !important;
+}
+
+/* ── App header bar ───────────────────────────────────────────────────────── */
+
+.character-sheet--mobile .mobile-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px 8px;
+  background: var(--mob-header-bg);
+  color: var(--mob-header-text);
+  flex-shrink: 0;
+}
+
+/* Top row: avatar + name */
+
+.character-sheet--mobile .mobile-header-top {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.character-sheet--mobile .mobile-header-avatar {
+  flex-shrink: 0;
+}
+
+.character-sheet--mobile .mobile-header-avatar .profile-img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.35);
+  cursor: pointer;
+  display: block;
+}
+
+.character-sheet--mobile .name-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.character-sheet--mobile .mobile-name-input {
+  width: 100%;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(255,255,255,0.4) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: var(--mob-header-text) !important;
+  font-size: 1.15em !important;
+  font-weight: 700 !important;
+  padding: 2px 0 !important;
+  height: auto !important;
+  outline: none !important;
+  box-sizing: border-box;
+}
+
+.character-sheet--mobile .mobile-name-input:focus {
+  border-bottom-color: var(--mob-accent) !important;
+}
+
+/* Tracks row */
+
+.character-sheet--mobile .mobile-tracks {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+}
+
+.character-sheet--mobile .mobile-track-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  min-height: 20px;
+  width: 100%;
+}
+
+/* Stress label — right-click affordance */
+.character-sheet--mobile .mobile-stress-label {
+  cursor: context-menu;
+  user-select: none;
+}
+
+.character-sheet--mobile .mobile-tracktitle {
+  flex-shrink: 0;
+  font-size: 0.65em;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  width: 34px;
+  text-align: right;
+  color: rgba(255,255,255,0.65);
+  line-height: 1;
+}
+
+.character-sheet--mobile .mobile-track {
+  flex: 1;
+  min-width: 0;
+}
+
+.character-sheet--mobile .mobile-track .bar {
+  width: 100%;
+  padding-left: 0 !important;
+  gap: 2px;
+}
+
+/* Track box pip overrides — make them look like modern pills */
+.character-sheet--mobile .mobile-track .bar .box {
+  border-radius: 3px !important;
+  border-color: rgba(255,255,255,0.3) !important;
+  height: 12px !important;
+  flex: 1;
+}
+
+.character-sheet--mobile .mobile-track .bar .box.selected {
+  background-color: var(--mob-accent) !important;
+  border-color: var(--mob-accent) !important;
+  color: transparent !important;   /* hide the number inside tiny pips */
+}
+
+/* ── Section header rows (column labels) — hidden on mobile ───────────────── */
+
+.character-sheet--mobile .header.row.item {
+  display: none;
+}
+
+/* Belongings section: keep the header row visible because it carries the
+   per-type sub-label (Weapons / Armor / Items) and its own + create button. */
+.character-sheet--mobile .section.belongings .header.row.item {
+  display: flex;
+  min-height: 28px;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 0;
+}
+
+/* ── Edit / delete inline controls — hidden, replaced by context menu ─────── */
+
+.character-sheet--mobile .row.entry .control {
+  display: none;
+}
+
+/* ── Collapsible sections ─────────────────────────────────────────────────── */
+
+.character-sheet--mobile .sta-mobile-items.sta-collapsed {
+  display: none;
+}
+
+.character-sheet--mobile .sta-mobile-chevron {
+  margin-right: 2px;
+  transition: transform 0.15s ease;
+  display: inline-block;
+  cursor: pointer;
+  color: var(--mob-text-secondary);
+  font-size: 0.8em;
+}
+
+.character-sheet--mobile .sta-mobile-chevron.sta-collapsed {
+  transform: rotate(-90deg);
+}
+
+/* Create (+) button inside title bar */
+.character-sheet--mobile .sta-mobile-create-btn {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: var(--mob-accent);
+  font-size: 1em;
+  padding: 2px 4px;
+  cursor: pointer;
+  border-radius: var(--mob-radius-xs);
+  transition: background 0.1s;
+}
+
+.character-sheet--mobile .sta-mobile-create-btn:hover {
+  background: rgba(74, 144, 217, 0.12);
+}
+
+/* ── Tab navigation ───────────────────────────────────────────────────────── */
+
+.character-sheet--mobile .mobile-tabs {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-shrink: 0;
+  background: var(--mob-surface-card);
+  border-bottom: 1px solid var(--mob-border);
+  scrollbar-width: none;   /* hide scrollbar — wheel handler drives it */
+  gap: 0;
+  padding: 0;
+}
+
+.character-sheet--mobile .mobile-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+/* Override STA's tab styling (background-color: #003399, etc.) */
+.character-sheet--mobile nav.sheet-tabs.tabs {
+  background-color: var(--mob-surface-card) !important;
+  border-bottom: none !important;
+  border-top: none !important;
+  padding-left: 0 !important;
+  justify-content: flex-start !important;
+  gap: 0 !important;
+}
+
+.character-sheet--mobile .mobile-tabs .item,
+.character-sheet--mobile nav.sheet-tabs.tabs a.item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px !important;
+  height: 36px;
+  min-height: 36px;
+  font-size: 0.78em !important;
+  font-weight: 500 !important;
+  text-align: center;
+  white-space: nowrap;
+  text-decoration: none !important;
+  color: var(--mob-text-secondary) !important;
+  border-bottom: 2px solid transparent !important;
+  border-right: none !important;
+  border-left: none !important;
+  flex-shrink: 0;
+  cursor: pointer;
+  background: transparent !important;
+  text-shadow: none !important;
+  letter-spacing: 0.02em;
+  width: auto !important;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.character-sheet--mobile .mobile-tabs .item.active,
+.character-sheet--mobile nav.sheet-tabs.tabs a.item.active {
+  color: var(--mob-accent) !important;
+  border-bottom-color: var(--mob-accent) !important;
+  font-weight: 600 !important;
+  background: transparent !important;
+  text-shadow: none !important;
+}
+
+.character-sheet--mobile .mobile-tabs .item:hover,
+.character-sheet--mobile nav.sheet-tabs.tabs a.item:hover {
+  color: var(--mob-text) !important;
+  text-shadow: none !important;
+}
+
+/* ── Tab body ─────────────────────────────────────────────────────────────── */
+
+.character-sheet--mobile .mobile-sheet-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
+  background: var(--mob-surface);
+}
+
+/* Foundry's base CSS hides .tab:not(.active) {display:none}.
+   Our scoped rule must explicitly re-hide inactive panels and re-show active
+   ones, otherwise equal-specificity load-order means ALL panels stay visible. */
+.character-sheet--mobile .tab:not(.active) {
+  display: none !important;
+}
+
+.character-sheet--mobile .tab.active.mobile-tab-panel {
+  padding: 10px 8px;
+  box-sizing: border-box;
+  display: flex !important;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── Section cards ────────────────────────────────────────────────────────── */
+
+/* Override STA's blue-pill title style everywhere inside the mobile sheet */
+.character-sheet--mobile .title {
+  background-color: transparent !important;
+  border-radius: 0 !important;
+  margin-top: 0 !important;
+  padding: 0 4px !important;
+
+  /* Layout for collapsible chevron + create button */
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  /* Typography: small caps label */
+  font-size: 0.68em !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: var(--mob-text-secondary) !important;
+
+  min-height: 28px;
+  padding-top: 6px !important;
+  padding-bottom: 4px !important;
+  border-bottom: 1px solid var(--mob-border);
+}
+
+.character-sheet--mobile .section {
+  background: var(--mob-surface-card);
+  border-radius: var(--mob-radius);
+  border: 1px solid var(--mob-border);
+  overflow: hidden;
+  margin-bottom: 0;   /* gap set on .mobile-tab-panel */
+}
+
+/* Belongings sub-headers keep default flex but match our style */
+.character-sheet--mobile .section.belongings .header.row.item {
+  background: var(--mob-divider) !important;
+  border-radius: 0 !important;
+  border-bottom: 1px solid var(--mob-border);
+  font-size: 0.7em !important;
+  font-weight: 600 !important;
+  color: var(--mob-text-secondary) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  padding: 4px 8px !important;
+  min-height: 28px;
+  align-items: center;
+  display: flex;
+  gap: 4px;
+}
+
+/* ── Stats tab — two-column attribute/discipline grid ─────────────────────── */
+
+.character-sheet--mobile .mobile-stat-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.character-sheet--mobile .mobile-block {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Attribute / discipline rows */
+.character-sheet--mobile .attribute-block .row-right,
+.character-sheet--mobile .discipline-block .row-right {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    gap: 6px;
+    min-height: var(--mob-tap);
+    padding: 0 8px;
+    border-bottom: 1px solid var(--mob-divider);
+}
+
+/* Discipline numbers appear on the LEFT so both columns' badges meet at centre */
+.character-sheet--mobile .discipline-block .row-right {
+  flex-direction: row-reverse;
+}
+
+.character-sheet--mobile .attribute-block .row-right:last-child,
+.character-sheet--mobile .discipline-block .row-right:last-child {
+  border-bottom: none;
+}
+
+.character-sheet--mobile .attribute-block .list-entry,
+.character-sheet--mobile .discipline-block .list-entry {
+  flex: 1;
+  font-size: 0.88em;
+  min-width: 0;
+  color: var(--mob-text);
+}
+
+/* Selector dot */
+.character-sheet--mobile .attribute-block .selector,
+.character-sheet--mobile .discipline-block .selector {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--mob-accent);
+}
+
+/* Value badge */
+.character-sheet--mobile .attribute-block .numeric-entry,
+.character-sheet--mobile .discipline-block .numeric-entry {
+  flex-shrink: 0;
+  width: 36px !important;
+  height: 36px !important;
+  text-align: center !important;
+  font-weight: 700 !important;
+  font-size: 1em !important;
+  border-radius: 50% !important;
+  border: 2px solid var(--mob-accent) !important;
+  color: var(--mob-accent) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1 !important;
+}
+
+/* Roll buttons */
+.character-sheet--mobile .mobile-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  padding: 10px 8px 4px;
+}
+
+.character-sheet--mobile .mobile-buttons .check-button,
+.character-sheet--mobile .check-button {
+  flex: 1;
+  text-align: center;
+  font-size: 0.8em !important;
+  font-weight: 600 !important;
+  padding: 10px 6px !important;
+  cursor: pointer;
+  max-width: none !important;
+  /* Override STA .btn / .check-button styling */
+  background-color: var(--mob-accent) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 999px !important;
+  margin: 0 !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
+  transition: background-color 0.15s, box-shadow 0.15s;
+}
+
+.character-sheet--mobile .mobile-buttons .check-button:hover,
+.character-sheet--mobile .check-button:hover {
+  background-color: var(--mob-accent-dark) !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3) !important;
+  cursor: pointer;
+}
+
+/* rollrepnotdis */
+.character-sheet--mobile .rollrepnotdis {
+  padding: 6px 8px;
+  font-size: 0.8em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--mob-text-secondary);
+  border-top: 1px solid var(--mob-divider);
+}
+
+/* ── Biography tab — reputation row at top ────────────────────────────────── */
+
+.character-sheet--mobile .mobile-bio-rep {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--mob-divider);
+}
+
+.character-sheet--mobile .mobile-bio-rep .mobile-track-row {
+  flex: 1;
+  min-width: 0;
+}
+
+.character-sheet--mobile .mobile-bio-rep .acclaim {
+  flex-shrink: 0;
+  font-size: 0.75em !important;
+  padding: 4px 10px !important;
+  white-space: nowrap;
+}
+
+/* ── Biography tab — 2-column info grid ───────────────────────────────────── */
+
+.character-sheet--mobile .mobile-bio-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 8px;
+}
+
+/* STA sets percentage widths (.pronouns, .species, etc.) directly on .column
+   divs. Force all bio-grid columns to fill their grid cell. */
+.character-sheet--mobile .mobile-bio-grid .column {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100% !important;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Override STA .title inside bio grid */
+.character-sheet--mobile .mobile-bio-grid .column .title {
+  font-size: 0.65em !important;
+  text-transform: uppercase !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.07em !important;
+  color: var(--mob-text-secondary) !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  border-bottom: none !important;
+  padding: 0 !important;
+  min-height: unset !important;
+  margin-top: 0 !important;
+}
+
+.character-sheet--mobile .mobile-bio-grid .column input {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 0.88em;
+  border: none !important;
+  border-bottom: 1px solid var(--mob-border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding: 3px 0 !important;
+  color: var(--mob-text) !important;
+  outline: none;
+}
+
+.character-sheet--mobile .mobile-bio-grid.hidden {
+  display: none;
+}
+
+.character-sheet--mobile .amiklingon {
+  font-size: 0.8em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  color: var(--mob-text-secondary);
+  border-top: 1px solid var(--mob-divider);
+}
+
+/* ── Item rows (shared: traits, equipment, development) ───────────────────── */
+
+.character-sheet--mobile .row.entry {
+  min-height: var(--mob-tap);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--mob-divider);
+  background: var(--mob-surface-card);
+}
+
+.character-sheet--mobile .row.entry:last-child {
+  border-bottom: none;
+}
+
+/* Subtle press state */
+.character-sheet--mobile .row.entry:active {
+  background: var(--mob-divider);
+}
+
+.character-sheet--mobile .row.entry .image {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+}
+
+.character-sheet--mobile .row.entry .image img {
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+  border-radius: var(--mob-radius-xs);
+}
+
+.character-sheet--mobile .row.entry input.item-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9em;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  color: var(--mob-text);
+  padding: 0 !important;
+}
+
+/* Quantity / secondary value badges on item rows */
+.character-sheet--mobile .row.entry .item-quantity,
+.character-sheet--mobile .row.entry .two-column-with-roll-secondary {
+  flex-shrink: 0;
+  font-size: 0.78em;
+  font-weight: 600;
+  color: var(--mob-text-secondary);
+  background: var(--mob-divider);
+  border-radius: 999px;
+  padding: 1px 7px;
+  min-width: 22px;
+  text-align: center;
+  border: none !important;
+}
+
+/* Value-used (in talents/focuses) */
+.character-sheet--mobile .value-used {
+  font-size: 0.78em;
+  color: var(--mob-text-secondary);
+}
+
+.character-sheet--mobile .item-list-scrollable {
+  max-height: 150px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--mob-border) transparent;
+}
+
+/* ── Development tab — two-column milestone checkboxes ────────────────────── */
+
+.character-sheet--mobile .mobile-development-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  padding: 0;
+}
+
+.character-sheet--mobile .mobile-dev-col {
+  flex: 1;
+  min-width: 0;
+  border-right: 1px solid var(--mob-divider);
+}
+
+.character-sheet--mobile .mobile-dev-col:last-child {
+  border-right: none;
+}
+
+.character-sheet--mobile .mobile-dev-col .row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--mob-tap);
+  padding: 0 10px;
+  font-size: 0.85em;
+  border-bottom: 1px solid var(--mob-divider);
+  color: var(--mob-text);
+}
+
+.character-sheet--mobile .mobile-dev-col .row:last-child {
+  border-bottom: none;
+}
+
+.character-sheet--mobile .mobile-dev-col input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: var(--mob-accent);
+}
+
+/* ── Notes tab ────────────────────────────────────────────────────────────── */
+
+.character-sheet--mobile .note {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 200px;
+  padding: 8px !important;
+  border: none !important;
+  background: var(--mob-surface-card);
+}
+
+.character-sheet--mobile .note .editor {
+  height: 100%;
+  min-height: 200px;
+}
+
+/* ── Text inputs — borderless, bottom-line only ───────────────────────────── */
+
+.character-sheet--mobile .text-entry {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid var(--mob-border) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding: 2px 0 !important;
+  color: var(--mob-text) !important;
+}
+
+.character-sheet--mobile .text-entry:focus {
+  border-bottom-color: var(--mob-accent) !important;
+  box-shadow: none !important;
+}
+
+/* In the wide sidebar, stack buttons vertically and let rollrepnotdis wrap */
+.character-sheet--mobile.sta-wide .mobile-stats-sidebar .mobile-buttons {
+  flex-direction: column;
+  gap: 6px;
+}
+
+.character-sheet--mobile.sta-wide .mobile-stats-sidebar .mobile-buttons .check-button {
+  width: 100%;
+}
+
+.character-sheet--mobile.sta-wide .mobile-stats-sidebar .rollrepnotdis {
+  flex-wrap: wrap;
+  white-space: normal;
+}
+
+/* ── Wide-layout responsive sidebar (≥640px — toggled via .sta-wide class) ── */
+
+/* Body layout wrapper — narrow: normal flex column, fills remaining height */
+.character-sheet--mobile .mobile-body-layout {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Sidebar hidden by default */
+.character-sheet--mobile .mobile-stats-sidebar {
+  display: none;
+}
+
+/* Right pane is a transparent passthrough in narrow mode */
+.character-sheet--mobile .mobile-right-pane {
+  display: contents;
+}
+
+/* ─ Wide mode ─────────────────────────────────────────────────────────────── */
+
+.character-sheet--mobile.sta-wide .mobile-body-layout {
+  flex-direction: row;
+  align-items: stretch;
+}
+
+/* Stats sidebar column */
+.character-sheet--mobile.sta-wide .mobile-stats-sidebar {
+    display: flex;
+    flex-direction: column;
+    width: 150px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--mob-border);
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: var(--mob-surface-card);
+}
+
+/* Stats tab panel sitting inside the sidebar — always visible, never hidden */
+.character-sheet--mobile.sta-wide .mobile-stats-sidebar .tab[data-tab="stats"] {
+  display: flex !important;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+}
+
+/* Stats panel inner padding in wide mode */
+.character-sheet--mobile.sta-wide .mobile-stats-sidebar .mobile-stat-grid {
+  flex-direction: column;   /* stack attr + disc vertically in the narrow sidebar */
+  gap: 0;
+}
+
+.character-sheet--mobile.sta-wide .mobile-stats-sidebar .mobile-block {
+  border-bottom: 1px solid var(--mob-border);
+}
+
+.character-sheet--mobile.sta-wide .mobile-stats-sidebar .rollrepnotdis,
+.character-sheet--mobile.sta-wide .mobile-stats-sidebar .mobile-buttons {
+  padding: 6px 8px;
+}
+
+/* Right pane fills remaining width with nav + tabs */
+.character-sheet--mobile.sta-wide .mobile-right-pane {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Tab body fills the right pane */
+.character-sheet--mobile.sta-wide .mobile-sheet-body {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Hide the "Attributes" tab link — its content is always visible in the sidebar */
+.character-sheet--mobile.sta-wide .mobile-tabs a[data-tab="stats"] {
+  display: none !important;
+}
+
+/* ── Limited sheet ────────────────────────────────────────────────────────── */
+
+.character-sheet--mobile-limited .mobile-limited-notes {
+  padding: 8px;
+  font-family: var(--mob-font);
+}
+
+/* ── sta-officers-log injected elements ───────────────────────────────────── */
+/* These styles ensure that elements injected by sta-officers-log and the      */
+/* sta-utils fatigue feature look correct inside the mobile sheet.             */
+
+/* .sta-title-actions container — sits inside .title bars, holds sort/filter  */
+.character-sheet--mobile .sta-title-actions {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Sort, filter, and flowchart icon buttons in the log title bar */
+.character-sheet--mobile .sta-log-sort-btn,
+.character-sheet--mobile .sta-log-filter-unused-btn,
+.character-sheet--mobile .sta-flowchart-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 2px 6px;
+  font-size: 0.72em !important;
+  font-weight: 600;
+  color: var(--mob-accent) !important;
+  background: transparent;
+  border: 1px solid var(--mob-border);
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  line-height: 1.6;
+  transition: background 0.12s, color 0.12s;
+}
+
+.character-sheet--mobile .sta-log-sort-btn:hover,
+.character-sheet--mobile .sta-log-filter-unused-btn:hover,
+.character-sheet--mobile .sta-flowchart-btn:hover {
+  background: rgba(96, 165, 250, 0.12);
+  color: var(--mob-text) !important;
+}
+
+/* title-with-button has flex, so just make sure actions don't break layout */
+.character-sheet--mobile .sta-values-title-with-button {
+  display: flex !important;
+}
+
+/* Inline actions container inside log rows (milestone benefit, callback btns) */
+.character-sheet--mobile .sta-log-inline-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.character-sheet--mobile .sta-log-inline-actions > * {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--mob-accent);
+  font-size: 0.85em;
+  transition: background 0.1s;
+}
+
+.character-sheet--mobile .sta-log-inline-actions > *:hover {
+  background: rgba(96, 165, 250, 0.15);
+}
+
+/* Drag-resize bars between log/milestone lists */
+.character-sheet--mobile .staol-log-resizer,
+.character-sheet--mobile .staol-milestone-resizer {
+  height: 6px;
+  cursor: ns-resize;
+  background: var(--mob-border);
+  opacity: 0.5;
+  border-radius: 3px;
+  margin: 0 8px;
+  flex-shrink: 0;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.character-sheet--mobile .staol-log-resizer:hover,
+.character-sheet--mobile .staol-milestone-resizer:hover {
+  opacity: 1;
+  background: var(--mob-accent);
+}
+
+/* ── Fatigue display ──────────────────────────────────────────────────────── */
+
+/* Fatigued attribute checkbox — disabled + tinted red */
+.character-sheet--mobile .sta-fatigued-attribute {
+  accent-color: #f87171 !important;
+  opacity: 0.6;
+  cursor: not-allowed !important;
+}
+
+/* Fatigued attribute label text */
+.character-sheet--mobile .sta-fatigued-attribute-label {
+  color: #f87171 !important;
+  text-decoration: line-through;
+  opacity: 0.8;
+}
+
+/* "Choose Attribute" inline button on trait rows */
+.character-sheet--mobile .sta-choose-attribute-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 7px;
+  font-size: 0.72em !important;
+  font-weight: 600;
+  color: #f87171 !important;
+  background: transparent;
+  border: 1px solid #f87171;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  flex-shrink: 0;
+  transition: background 0.12s;
+}
+
+.character-sheet--mobile .sta-choose-attribute-btn:hover {
+  background: rgba(248, 113, 113, 0.15);
+}
+
+/* ── Actions tab (popup trigger, no page content) ─────────────────────── */
+
+/* Accent-coloured tab link to distinguish from content tabs */
+.character-sheet--mobile .mobile-tabs .sta-mobile-actions-tab {
+  color: var(--mob-accent) !important;
+  border-bottom-color: transparent !important;
+  position: relative;
+}
+
+.character-sheet--mobile .mobile-tabs .sta-mobile-actions-tab > i {
+  font-size: 0.7em;
+  margin-left: 3px;
+  opacity: 0.5;
+}
+
+.character-sheet--mobile .mobile-tabs .sta-mobile-actions-tab:hover {
+  color: var(--mob-text) !important;
+}

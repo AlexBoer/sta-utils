@@ -41,8 +41,7 @@ function _cardUsedDetermination(card) {
   const focusRow = card.querySelector(".focusrow");
   if (!focusRow) return false;
   const determinationLabel =
-    game.i18n?.format("sta.actor.character.determination") ??
-    "Determination";
+    game.i18n?.format("sta.actor.character.determination") ?? "Determination";
   return focusRow.textContent.includes(determinationLabel);
 }
 
@@ -102,9 +101,7 @@ function _appendVeteranButton(message, card) {
       // Resolve actor
       const actor =
         message.actor ??
-        game.actors.get(
-          message.data?.speaker?.actor ?? message.speaker?.actor,
-        );
+        game.actors.get(message.data?.speaker?.actor ?? message.speaker?.actor);
 
       // Roll 1d20 vs Control attribute
       const controlValue = actor?.system?.attributes?.control?.value ?? 0;
@@ -129,9 +126,9 @@ function _appendVeteranButton(message, card) {
       // Post result to chat so everyone sees it
       await ChatMessage.create({
         content: `
-          <div class="sta-utils-momentum-spend-result">
-            <strong><i class="fas fa-medal"></i> Veteran</strong><br>
-            ${outcome}
+          <div class="sta-utils-chat-card sta-utils-chat-card--orange">
+            <h3><i class="fas fa-medal"></i> Veteran</h3>
+            <p>${outcome}</p>
           </div>`,
         speaker: ChatMessage.getSpeaker({ actor }),
       });
@@ -169,9 +166,7 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
 
     const actor =
       message.actor ??
-      game.actors.get(
-        message.data?.speaker?.actor ?? message.speaker?.actor,
-      );
+      game.actors.get(message.data?.speaker?.actor ?? message.speaker?.actor);
     if (!_qualifiesForVeteran(actor, card)) return;
 
     _appendVeteranButton(message, card);

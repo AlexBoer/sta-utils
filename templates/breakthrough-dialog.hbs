@@ -1,0 +1,36 @@
+<div class="sta-bt-tabs">
+    <button class="sta-bt-tab active" data-tab="breakthroughs" type="button">
+        <i class="fas fa-bolt"></i> {{breakthroughsTab}}
+    </button>
+    <button class="sta-bt-tab" data-tab="setbacks" type="button">
+        <i class="fas fa-skull-crossbones"></i> {{setbacksTab}}
+    </button>
+</div>
+
+<div class="sta-bt-panel active" data-panel="breakthroughs">
+    <ul class="sta-bt-list">
+        {{#each breakthroughs as |opt|}}
+            <li class="sta-bt-item" data-id="{{opt.id}}" data-type="breakthrough">
+                <i class="sta-bt-icon {{opt.icon}}"></i>
+                <div class="sta-bt-body">
+                    <div class="sta-bt-label">{{opt.label}}</div>
+                    <div class="sta-bt-desc">{{opt.description}}</div>
+                </div>
+            </li>
+        {{/each}}
+    </ul>
+</div>
+
+<div class="sta-bt-panel" data-panel="setbacks">
+    <ul class="sta-bt-list">
+        {{#each setbacks as |opt|}}
+            <li class="sta-bt-item sta-bt-item--setback" data-id="{{opt.id}}" data-type="setback">
+                <i class="sta-bt-icon {{opt.icon}}"></i>
+                <div class="sta-bt-body">
+                    <div class="sta-bt-label">{{opt.label}}</div>
+                    <div class="sta-bt-desc">{{opt.description}}</div>
+                </div>
+            </li>
+        {{/each}}
+    </ul>
+</div>

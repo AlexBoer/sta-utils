@@ -1,0 +1,52 @@
+<section class="ext-task-tracker-display {{#if @root.options.editable}}editable{{/if}}">
+    {{#if trackers}}
+        <div class="ext-tracker-list">
+            {{#each trackers as |tracker|}}
+                <div
+                    class="ext-tracker-entry {{#if tracker.editable}}editable{{/if}} {{#if tracker.private}}private{{/if}} {{#unless tracker.visible}}hidden{{/unless}}"
+                    data-id="{{tracker.id}}"
+                    style="--max: {{tracker.max}}; --filled: {{tracker.value}}; --entry-color: {{tracker.color}}; --entry-background: {{tracker.backgroundColor}}"
+                >
+                    <div class="ext-tracker-name">
+                        <span class="value">{{#if tracker.private}}<i class="fas fa-eye-slash"></i> {{/if}}{{tracker.name}}</span>
+                        <span class="ext-tracker-stats">
+                            <span class="ext-stat" title="Difficulty">D{{tracker.difficulty}}</span>
+                            {{#if tracker.resistance}}<span class="ext-stat resistance" title="Resistance">R{{tracker.resistance}}</span>{{/if}}
+                        </span>
+                        {{#if @root.options.editable}}
+                            <div class="ext-tracker-controls">
+                                <a data-action="deleteEntry"><i class="fa-solid fa-fw fa-trash"></i></a>
+                                <a data-action="editEntry"><i class="fa-solid fa-fw fa-edit"></i></a>
+                            </div>
+                        {{/if}}
+                    </div>
+                    <div class="ext-tracker-bar graphic">
+                        <div class="ext-tracker-value">{{tracker.value}}/{{tracker.max}}</div>
+                        <div class="ext-tracker-slashes">
+                            {{#each tracker.rows as |row|}}
+                                <div class="ext-tracker-row">
+                                    {{#each row}}
+                                        <div class="slash {{#if this.filled}}filled{{/if}}"></div>
+                                        {{#if this.breakthrough}}
+                                            <div class="breakthrough-line" title="{{this.breakthroughLabel}}"></div>
+                                        {{/if}}
+                                    {{/each}}
+                                </div>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>
+            {{/each}}
+        </div>
+    {{/if}}
+    {{#if @root.options.editable}}
+        <div class="ext-tracker-main-controls">
+            <button class="ui-control" data-action="addTracker">
+                <i class="fas fa-plus"></i><span class="btn-label"> {{localize "sta-utils.extendedTaskTracker.add"}}</span>
+            </button>
+            <button class="ui-control breakthrough-btn" data-action="breakthroughMenu">
+                <i class="fas fa-bolt"></i><span class="btn-label"> {{localize "sta-utils.extendedTaskTracker.breakthrough"}}</span>
+            </button>
+        </div>
+    {{/if}}
+</section>

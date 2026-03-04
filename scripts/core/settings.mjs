@@ -27,14 +27,148 @@ const SETTING_BACKLINKS_DEBUG = "backlinksDebug";
 const SETTING_BACKLINKS_LAST_SYNCED = "backlinksLastSyncedVersion";
 const SETTING_BACKLINKS_SYNC_BUTTON = "backlinksSyncButton";
 const GROUP_SHIP_ACTOR_SETTING = "groupShipActorId";
+const ENABLE_EXTENDED_TASK_TRACKER_SETTING = "enableExtendedTaskTracker";
 const COMPACT_CHARACTER_SHEET_SETTING = "compactCharacterSheet";
 const TIDY_CHARACTER_SHEET_SETTING = "tidyCharacterSheet";
-
+const LCARS_CHARACTER_SHEET_SETTING = "lcarsCharacterSheet";
+const LCARS_COLOR_SCHEME_SETTING = "lcarsColorScheme";
+const MOBILE_THEME_SETTING = "mobileSheetTheme";
 const OFFICERS_LOG_MODULE_ID = "sta-officers-log";
 
 /** Localized group labels for the settings menu. */
 const GROUP_WORLD = "sta-utils.settings.groups.world";
 const GROUP_CLIENT = "sta-utils.settings.groups.client";
+
+/**
+ * LCARS color palette data for the scheme swatch preview.
+ * Each entry maps a scheme key to its 8 canonical CSS color values in order:
+ * [orange, peach, lavender, lilac, blue, sky, red, tan]
+ * These must stay in sync with the `--lcars-*` variables in sta-lcars.css.
+ */
+const LCARS_PALETTE_DATA = {
+  tng: [
+    "#f1a43c",
+    "#f0b872",
+    "#c5a3d9",
+    "#9b8fc2",
+    "#6688cc",
+    "#88aaff",
+    "#d05050",
+    "#e8c57a",
+  ],
+  voyager: [
+    "#4fa8a8",
+    "#6fc4b8",
+    "#88aacc",
+    "#6688aa",
+    "#4a90d0",
+    "#70b8d8",
+    "#d06060",
+    "#8cb8a0",
+  ],
+  ds9: [
+    "#c8a050",
+    "#d4b870",
+    "#a08860",
+    "#887050",
+    "#6a7888",
+    "#7a98a8",
+    "#c05040",
+    "#b89860",
+  ],
+  tos: [
+    "#c84040",
+    "#d86858",
+    "#3868c0",
+    "#5888d8",
+    "#2858b0",
+    "#5080d8",
+    "#c02020",
+    "#c89808",
+  ],
+  enterprise: [
+    "#5878a0",
+    "#7898b8",
+    "#90a8b8",
+    "#607888",
+    "#486888",
+    "#6890a8",
+    "#c06050",
+    "#7090a0",
+  ],
+  kelvin: [
+    "#2080d8",
+    "#40a8f0",
+    "#80c8f0",
+    "#90b8e0",
+    "#1068c0",
+    "#50a0e8",
+    "#e03030",
+    "#60a8e0",
+  ],
+  picard: [
+    "#3a5a8c",
+    "#5878a8",
+    "#a0b8d0",
+    "#7090b0",
+    "#2a4a7c",
+    "#5080c0",
+    "#c04050",
+    "#6888a8",
+  ],
+  lowerDecks: [
+    "#c030c8",
+    "#e060d0",
+    "#20b8b8",
+    "#5080e0",
+    "#3858d8",
+    "#40a8e8",
+    "#e02858",
+    "#d070c8",
+  ],
+  prodigy: [
+    "#f08030",
+    "#f8a050",
+    "#30c8a0",
+    "#40a8d8",
+    "#3080d0",
+    "#50b0f0",
+    "#e04050",
+    "#f0a860",
+  ],
+  academy: [
+    "#c02838",
+    "#d84858",
+    "#d0b030",
+    "#2858a8",
+    "#1848a0",
+    "#3878d0",
+    "#b82028",
+    "#9098a8",
+  ],
+  redAlert: [
+    "#cc3030",
+    "#e05050",
+    "#ff6666",
+    "#992222",
+    "#884444",
+    "#cc6666",
+    "#ff2020",
+    "#cc5544",
+  ],
+};
+
+/** Human-readable labels for each swatch slot, used as tooltip titles. */
+const LCARS_SWATCH_LABELS = [
+  "Primary (orange)",
+  "Secondary (peach)",
+  "Lavender",
+  "Lilac",
+  "Blue",
+  "Sky",
+  "Red / Alert",
+  "Tan",
+];
 
 /**
  * Subgroup definitions — each maps its first setting key to a localization
@@ -333,6 +467,17 @@ export function registerSettings() {
     group: GROUP_WORLD,
   });
 
+  game.settings.register(MODULE_ID, ENABLE_EXTENDED_TASK_TRACKER_SETTING, {
+    name: t("sta-utils.settings.enableExtendedTaskTracker.name"),
+    hint: t("sta-utils.settings.enableExtendedTaskTracker.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+    group: GROUP_WORLD,
+  });
+
   game.settings.register(MODULE_ID, AMBIENT_AUDIO_SELECTION_ONLY_SETTING, {
     name: t("sta-utils.settings.playerAmbientAudioSelectionOnly.name"),
     hint: t("sta-utils.settings.playerAmbientAudioSelectionOnly.hint"),
@@ -509,6 +654,59 @@ export function registerSettings() {
     requiresReload: true,
     group: GROUP_CLIENT,
   });
+
+  game.settings.register(MODULE_ID, LCARS_CHARACTER_SHEET_SETTING, {
+    name: t("sta-utils.settings.lcarsCharacterSheet.name"),
+    hint: t("sta-utils.settings.lcarsCharacterSheet.hint"),
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+    group: GROUP_CLIENT,
+  });
+
+  game.settings.register(MODULE_ID, LCARS_COLOR_SCHEME_SETTING, {
+    name: t("sta-utils.settings.lcarsColorScheme.name"),
+    hint: t("sta-utils.settings.lcarsColorScheme.hint"),
+    scope: "client",
+    config: true,
+    type: String,
+    default: "tng",
+    requiresReload: true,
+    choices: {
+      tng: t("sta-utils.settings.lcarsColorScheme.choices.tng"),
+      voyager: t("sta-utils.settings.lcarsColorScheme.choices.voyager"),
+      ds9: t("sta-utils.settings.lcarsColorScheme.choices.ds9"),
+      tos: t("sta-utils.settings.lcarsColorScheme.choices.tos"),
+      enterprise: t("sta-utils.settings.lcarsColorScheme.choices.enterprise"),
+      kelvin: t("sta-utils.settings.lcarsColorScheme.choices.kelvin"),
+      picard: t("sta-utils.settings.lcarsColorScheme.choices.picard"),
+      lowerDecks: t("sta-utils.settings.lcarsColorScheme.choices.lowerDecks"),
+      prodigy: t("sta-utils.settings.lcarsColorScheme.choices.prodigy"),
+      academy: t("sta-utils.settings.lcarsColorScheme.choices.academy"),
+      redAlert: t("sta-utils.settings.lcarsColorScheme.choices.redAlert"),
+    },
+    group: GROUP_CLIENT,
+  });
+
+  game.settings.register(MODULE_ID, MOBILE_THEME_SETTING, {
+    name: t("sta-utils.settings.mobileSheetTheme.name"),
+    hint: t("sta-utils.settings.mobileSheetTheme.hint"),
+    scope: "client",
+    config: true,
+    type: String,
+    default: "blue",
+    choices: {
+      blue: t("sta-utils.settings.mobileSheetTheme.choices.blue"),
+      red: t("sta-utils.settings.mobileSheetTheme.choices.red"),
+      gold: t("sta-utils.settings.mobileSheetTheme.choices.gold"),
+      teal: t("sta-utils.settings.mobileSheetTheme.choices.teal"),
+      purple: t("sta-utils.settings.mobileSheetTheme.choices.purple"),
+      green: t("sta-utils.settings.mobileSheetTheme.choices.green"),
+    },
+    group: GROUP_CLIENT,
+  });
 }
 
 /* ------------------------------------------------------------------ */
@@ -654,9 +852,60 @@ export function isCompactCharacterSheetEnabled() {
 /** @returns {boolean} */
 export function isTidyCharacterSheetEnabled() {
   try {
+    // Mutually exclusive: compact and LCARS take priority.
+    if (isCompactCharacterSheetEnabled()) return false;
+    if (isLcarsCharacterSheetEnabled()) return false;
+    return Boolean(game.settings.get(MODULE_ID, TIDY_CHARACTER_SHEET_SETTING));
+  } catch (_) {
+    return false;
+  }
+}
+
+/** @returns {boolean} */
+export function isLcarsCharacterSheetEnabled() {
+  try {
     // Mutually exclusive: compact takes priority.
     if (isCompactCharacterSheetEnabled()) return false;
-    return Boolean(game.settings.get(MODULE_ID, TIDY_CHARACTER_SHEET_SETTING));
+    return Boolean(game.settings.get(MODULE_ID, LCARS_CHARACTER_SHEET_SETTING));
+  } catch (_) {
+    return false;
+  }
+}
+
+/**
+ * Returns the selected LCARS color scheme key.
+ * Defaults to "tng" (the original palette) if unset or on error.
+ * @returns {string}
+ */
+export function getLcarsColorScheme() {
+  try {
+    return String(
+      game.settings.get(MODULE_ID, LCARS_COLOR_SCHEME_SETTING) ?? "tng",
+    );
+  } catch (_) {
+    return "tng";
+  }
+}
+
+/**
+ * Returns the selected mobile sheet color theme key.
+ * Defaults to "blue" if unset or on error.
+ * @returns {string}
+ */
+export function getMobileSheetTheme() {
+  try {
+    return String(game.settings.get(MODULE_ID, MOBILE_THEME_SETTING) ?? "blue");
+  } catch (_) {
+    return "blue";
+  }
+}
+
+/** @returns {boolean} */
+export function isExtendedTaskTrackerEnabled() {
+  try {
+    return Boolean(
+      game.settings.get(MODULE_ID, ENABLE_EXTENDED_TASK_TRACKER_SETTING),
+    );
   } catch (_) {
     return false;
   }
@@ -792,6 +1041,21 @@ export function installSettingsHeaderHook() {
 
     // --- Dependency enforcement ---
     _enforceDependencies(tab);
+
+    // --- LCARS color scheme swatches ---
+    const schemeSelect = tab.querySelector(
+      `select[name="${MODULE_ID}.${LCARS_COLOR_SCHEME_SETTING}"]`,
+    );
+    if (schemeSelect) {
+      const schemeFg = schemeSelect.closest(".form-group");
+      if (schemeFg) {
+        const swatchRow = _createLcarsSwatchRow(schemeSelect.value);
+        schemeFg.after(swatchRow);
+        schemeSelect.addEventListener("change", () => {
+          _updateLcarsSwatches(swatchRow, schemeSelect.value);
+        });
+      }
+    }
   });
 }
 
@@ -860,6 +1124,35 @@ function _setFormGroupDisabled(fg, disabled) {
 }
 
 /**
+ * Build the swatch preview row for the LCARS color scheme dropdown.
+ * @param {string} schemeKey  Initial scheme key.
+ * @returns {HTMLElement}
+ */
+function _createLcarsSwatchRow(schemeKey) {
+  const row = document.createElement("div");
+  row.className = "sta-utils-lcars-swatches";
+  _updateLcarsSwatches(row, schemeKey);
+  return row;
+}
+
+/**
+ * Populate (or repopulate) a swatch row element with the colors for a scheme.
+ * @param {HTMLElement} row       The swatch container element.
+ * @param {string}      schemeKey The scheme key to display.
+ */
+function _updateLcarsSwatches(row, schemeKey) {
+  row.innerHTML = "";
+  const colors = LCARS_PALETTE_DATA[schemeKey] ?? LCARS_PALETTE_DATA.tng;
+  for (let i = 0; i < colors.length; i++) {
+    const swatch = document.createElement("span");
+    swatch.className = "sta-utils-lcars-swatch";
+    swatch.style.background = colors[i];
+    swatch.title = `${LCARS_SWATCH_LABELS[i]}: ${colors[i]}`;
+    row.appendChild(swatch);
+  }
+}
+
+/**
  * Create a styled header element for a top-level settings group.
  * @param {string} label
  * @returns {HTMLElement}
@@ -904,6 +1197,25 @@ export function _toggleStyleEnhance(enabled) {
     link.id = STYLE_ENHANCE_LINK_ID;
     link.rel = "stylesheet";
     link.href = `modules/${MODULE_ID}/styles/sta-style-enhance.css`;
+    document.head.appendChild(link);
+  } else if (!enabled && existing) {
+    existing.remove();
+  }
+}
+
+/**
+ * Inject or remove a sheet-variant stylesheet.
+ * @param {string} linkId   Unique DOM id for the &lt;link&gt; element.
+ * @param {string} filename Path relative to `modules/${MODULE_ID}/` (e.g. "styles/sheet-variants/sta-compact.css").
+ * @param {boolean} enabled
+ */
+export function injectSheetVariantCss(linkId, filename, enabled) {
+  const existing = document.getElementById(linkId);
+  if (enabled && !existing) {
+    const link = document.createElement("link");
+    link.id = linkId;
+    link.rel = "stylesheet";
+    link.href = `modules/${MODULE_ID}/${filename}`;
     document.head.appendChild(link);
   } else if (!enabled && existing) {
     existing.remove();

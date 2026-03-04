@@ -1,0 +1,80 @@
+/* =============================================================================
+ * TIDY CHARACTER SHEET MODE
+ * Scoped under .character-sheet.sta-tidy — collapsible sections and
+ * right-click context menus only, no other layout/sizing changes.
+ * ============================================================================= */
+
+/* Section title gets a pointer cursor and chevron */
+.character-sheet.sta-tidy .sta-tidy-section > .title {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+/* Info buttons inside tidy titles stay tight against the label text */
+.character-sheet.sta-tidy .sta-tidy-section > .title > a[class*='info-btn'] {
+  margin-left: 4px;
+  margin-right: 10px;
+}
+
+/* Chevron rotates when collapsed */
+.character-sheet.sta-tidy .sta-tidy-chevron {
+  font-size: 0.6rem;
+  transition: transform 0.15s ease;
+  margin-right: 2px;
+  flex-shrink: 0;
+}
+
+.character-sheet.sta-tidy .sta-tidy-chevron.sta-collapsed {
+  transform: rotate(-90deg);
+}
+
+/* Wrapper for collapsible content */
+.character-sheet.sta-tidy .sta-tidy-items {
+  overflow: hidden;
+}
+
+.character-sheet.sta-tidy .sta-tidy-items.sta-collapsed {
+  display: none;
+}
+
+/* Sections shrink to content when collapsed */
+.character-sheet.sta-tidy .sta-tidy-section {
+  min-height: 0 !important;
+  flex-shrink: 0;
+  flex-grow: 0;
+}
+
+/* Create button relocated into title bar */
+.character-sheet.sta-tidy .sta-tidy-create-btn {
+  margin-left: auto;
+  font-size: 0.75rem;
+  padding: 0 4px;
+}
+
+/* Hide header rows (the create button has been moved into the title) */
+.character-sheet.sta-tidy .section .header.row {
+  display: none !important;
+}
+
+/* Show header rows under belongings (needed for quantity columns) */
+.character-sheet.sta-tidy .section.belongings .header.row {
+  display: flex !important;
+}
+
+/* Hide edit/delete controls — replaced by right-click context menu */
+.character-sheet.sta-tidy .section .row.entry > .control {
+  display: none;
+}
+
+/* Prevent columns from stretching sections */
+.character-sheet.sta-tidy .items-column-left,
+.character-sheet.sta-tidy .items-column-right {
+  align-content: flex-start;
+}
+
+.character-sheet.sta-tidy .tab[data-tab='traits'] > .split-section {
+  align-items: flex-start;
+}

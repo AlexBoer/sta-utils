@@ -61,11 +61,7 @@ body.system-sta .character-sheet .row {
 display: flex;
 align-items: center;
 padding-right: 0.3rem;
-height: 25px;
-}
-
-body.system-sta .character-sheet .section {
-flex-basis:100%;
+min-height: 25px;
 }
 
 body.system-sta .starship-sheet .section {
@@ -210,4 +206,10 @@ display: none;
     border: #f1a43c solid 1px;
     border-radius: 4px;
     margin: 1px;
+}
+
+.character-sheet nav.sheet-tabs.tabs a.item {
+    width:unset;
+    min-width: 100px;
+    flex: 1;
 }

@@ -1,0 +1,71 @@
+<form>
+    <div class="dialog-content">
+        <div class="form-group">
+            <label>{{localize "sta-utils.extendedTaskTracker.dialog.name"}}</label>
+            <div class="form-fields">
+                <input type="text" name="name" value="{{entry.name}}" {{#unless entry}}autofocus{{/unless}} />
+            </div>
+        </div>
+        {{#if entry}}
+            <div class="form-group">
+                <label>{{localize "sta-utils.extendedTaskTracker.dialog.value"}}</label>
+                <div class="form-fields">
+                    <input type="number" name="value" value="{{entry.value}}" autofocus />
+                </div>
+            </div>
+        {{/if}}
+        <div class="form-group">
+            <label>{{localize "sta-utils.extendedTaskTracker.dialog.size"}}</label>
+            <div class="form-fields">
+                <div class="dropdown-wrapper">
+                    {{ numberInput defaultSize name="max" step=1 min=1 max=maxSize }}
+                    <ul class="dropdown">
+                        {{#each presetSizes as |size|}}
+                            <li data-value={{size}}>{{size}}</li>
+                        {{/each}}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>{{localize "sta-utils.extendedTaskTracker.dialog.difficulty"}}</label>
+            <div class="form-fields">
+                {{ numberInput defaultDifficulty name="difficulty" step=1 min=1 max=10 }}
+            </div>
+        </div>
+        <div class="form-group">
+            <label>{{localize "sta-utils.extendedTaskTracker.dialog.resistance"}}</label>
+            <div class="form-fields">
+                {{ numberInput defaultResistance name="resistance" step=1 min=0 max=5 }}
+            </div>
+        </div>
+        <div class="form-group">
+            <label>{{localize "sta-utils.extendedTaskTracker.dialog.color"}}</label>
+            <div class="form-fields">
+                <select name="colorId">
+                    {{#select entry.colorId}}
+                        {{#each colorPresets as |preset|}}
+                            <option value="{{preset.id}}">{{preset.name}}</option>
+                        {{/each}}
+                    {{/select}}
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="tracker{{entry.id}}-add-private">{{localize "sta-utils.extendedTaskTracker.dialog.private"}}</label>
+            <div class="form-fields">
+                <input id="tracker{{entry.id}}-add-private" type="checkbox" name="private" {{checked entry.private}} />
+            </div>
+        </div>
+    </div>
+    <div class="dialog-buttons">
+        <button class="dialog-button" data-button="yes">
+            <i class="fas fa-check"></i>
+            {{localize "Confirm"}}
+        </button>
+        <button class="dialog-button" data-button="no">
+            <i class="fas fa-times"></i>
+            {{localize "Cancel"}}
+        </button>
+    </div>
+</form>

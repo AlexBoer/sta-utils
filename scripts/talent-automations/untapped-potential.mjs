@@ -115,9 +115,7 @@ function _appendButtonToCard(message, root) {
       // Resolve actor
       const actor =
         message.actor ??
-        game.actors.get(
-          message.data?.speaker?.actor ?? message.speaker?.actor,
-        );
+        game.actors.get(message.data?.speaker?.actor ?? message.speaker?.actor);
       const talentItem = _findUntappedTalent(actor);
       const chosen =
         _extractAttribute(talentItem?.name) ||
@@ -154,9 +152,9 @@ function _appendButtonToCard(message, root) {
       // Post result to chat so everyone sees it
       await ChatMessage.create({
         content: `
-          <div class="sta-utils-momentum-spend-result">
-            <strong><i class="fas fa-star"></i> Untapped Potential</strong><br>
-            ${outcome}
+          <div class="sta-utils-chat-card sta-utils-chat-card--orange">
+            <h3><i class="fas fa-star"></i> Untapped Potential</h3>
+            <p>${outcome}</p>
           </div>`,
         speaker: ChatMessage.getSpeaker({ actor }),
       });
@@ -194,9 +192,7 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
 
     const actor =
       message.actor ??
-      game.actors.get(
-        message.data?.speaker?.actor ?? message.speaker?.actor,
-      );
+      game.actors.get(message.data?.speaker?.actor ?? message.speaker?.actor);
     if (!_qualifiesForUntapped(actor, message)) return;
 
     _appendButtonToCard(message, root);
