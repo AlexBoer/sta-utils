@@ -48,8 +48,8 @@ export class MobileCharacterSheet2e extends STACharacterSheet2e {
   getTabs() {
     const tabGroup = "primary";
     if (!this.tabGroups[tabGroup]) {
-      // Wide mode (≥640px) defaults to the traits tab since stats live in the sidebar.
-      const isWide = (this.position?.width ?? 375) >= 640;
+      // Wide mode (≥500px) defaults to the traits tab since stats live in the sidebar.
+      const isWide = (this.position?.width ?? 375) >= 500;
       this.tabGroups[tabGroup] = isWide ? "traits" : "stats";
     }
     const tabs = {

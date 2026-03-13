@@ -1,0 +1,60 @@
+﻿/* ----------------------------------------------------------------------- */
+/*  PICARD                                                                  */
+/*  Slate blue-grey chrome; muted burgundy biography/belongings; steel     */
+/*  blue focuses. Restrained, sophisticated, monochromatic feeling.        */
+/* ----------------------------------------------------------------------- */
+.theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-picard,
+.theme-dark .sta-lcars-dialogue-app.lcars-scheme-picard,
+body.theme-dark.sta-officers-lcars-active.lcars-scheme-picard {
+  --lcars-primary-color:                 #4E5872; /* slate blue-grey */
+  --lcars-secondary-color:               #7A3A4C; /* muted burgundy */
+  --lcars-tertiary-color:                #5070A0; /* steel blue */
+  --lcars-titlebar-injuries:             #8A2030;
+  --lcars-titlebar-traits:               #5C5270; /* warm mauve */
+  --lcars-titlebar-belongings-colheader: #5C2A38;
+  --lcars-titlebar-launchbay:            #304878;
+  --lcars-chrome-hover:                  #5E6882;
+  --lcars-input-border:                  #4E5870;
+  --lcars-text-body:                     #C0C8D8;
+  --lcars-text-item:                     #C0C8D8;
+  --lcars-text-title:                    #f2f4f8;
+  --lcars-text-header:                   #f2f4f8;
+  --lcars-bg-panel:                      rgba(0, 0, 0, 0.25);          /* panel tint: slate darkening */
+}
+
+.theme-light :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-picard,
+.theme-light .sta-lcars-dialogue-app.lcars-scheme-picard,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-picard {
+  --lcars-bg:                            #ececef;
+  --lcars-bg-panel:                      rgba(245, 245, 252, 0.50); /* panel tint: slate-cool brightening */
+  --lcars-primary-color:                 #3A4258;
+  --lcars-secondary-color:               #621E30;
+  --lcars-tertiary-color:                #2C4870;
+  --lcars-titlebar-injuries:             #720818;
+  --lcars-titlebar-traits:               #3E3850;
+  --lcars-titlebar-belongings-colheader: #481828;
+  --lcars-titlebar-launchbay:            #1C3060;
+  --lcars-chrome-hover:                  #485268;
+  --lcars-input-border:                  #3E4858;
+  --lcars-text-body:                     #0E1018;
+  --lcars-text-item:                     #0E1018;
+  --lcars-text-title:                    #f2f4f8;
+  --lcars-text-header:                   #f2f4f8;
+  --lcars-orange:     var(--lcars-chrome);
+  --lcars-peach:      var(--lcars-chrome-hover);
+  --lcars-lavender:   var(--lcars-titlebar);
+  --lcars-lilac:      var(--lcars-input-border);
+  --lcars-blue:       var(--lcars-btn-secondary);
+  --lcars-sky:        var(--lcars-input-text);
+  --lcars-red:        var(--lcars-titlebar-injuries);
+  --lcars-tan:        var(--lcars-btn-reputation);
+  --lcars-text-light: var(--lcars-text-body);
+}
+
+/* ── Window-root background overrides (:has() targets the ancestor .application element) ── */
+.theme-light .sta-lcars-window.application:has(.lcars-scheme-picard) {
+  --lcars-bg: #ececef;
+}
+.sta-lcars-window.application.theme-light:has(.lcars-scheme-picard) {
+  --lcars-bg: #ececef;
+}

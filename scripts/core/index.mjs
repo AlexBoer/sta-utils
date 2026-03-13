@@ -18,5 +18,6 @@ export {
   getGroupShipActorId,
   getGroupShipActor,
   getWorldTraitsActorUuid,
+  isPersonalThreatEnabled,
 } from "./settings.mjs";
 export { getModuleSocket, initSocket } from "./socket.mjs";

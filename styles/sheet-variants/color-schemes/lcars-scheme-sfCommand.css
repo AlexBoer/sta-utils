@@ -1,0 +1,69 @@
+/* ----------------------------------------------------------------------- */
+/*  STARFLEET COMMAND DIVISION                                              */
+/*  Near-black bg with purple-red cast; cooler maroon-scarlet chrome;      */
+/*  deep maroon floating pills; metallic silver-gold pip accent. Injuries  */
+/*  uses vivid bright red — clearly lighter than the dark maroon chrome.   */
+/*  Distinguished from Red Alert by professional dark maroon vs vivid      */
+/*  alarm red, and from Klingon by cooler/purple hue vs warm blood crimson.*/
+/* ----------------------------------------------------------------------- */
+.theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-sfCommand,
+.theme-dark .sta-lcars-dialogue-app.lcars-scheme-sfCommand,
+body.theme-dark.sta-officers-lcars-active.lcars-scheme-sfCommand {
+  --lcars-bg:              rgba(8, 2, 4, 0.93);
+  --lcars-bg-panel:        rgba(10, 2, 6, 0.28);            /* panel tint: purple-red deep darkening */
+  --lcars-primary-color:   #8c1c2a; /* uniform maroon-scarlet */
+  --lcars-secondary-color: #661420; /* deep maroon */
+  --lcars-tertiary-color:  #c0b080; /* metallic silver-gold pips */
+  --lcars-titlebar-injuries:             #e01818; /* vivid bright red — lighter than maroon chrome */
+  --lcars-titlebar-belongings-colheader: #4e1018;
+  --lcars-titlebar-launchbay:            #60101c;
+  --lcars-chrome-hover:                  #a02838;
+  --lcars-input-border:                  #701828;
+  --lcars-text-body:                     #e8c0c8;
+  --lcars-text-item:                     #e8c0c8;
+  --lcars-text-title:                    #f8f0f2;
+  --lcars-text-header:                   #f8f0f2;
+}
+
+.theme-light :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-sfCommand,
+.theme-light .sta-lcars-dialogue-app.lcars-scheme-sfCommand,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-sfCommand {
+  --lcars-bg:              #f2e8ec; /* pale rose */
+  --lcars-bg-panel:        rgba(252, 238, 244, 0.50); /* panel tint: soft rose brightening */
+  --lcars-primary-color:   #6a1020; /* deep scarlet */
+  --lcars-secondary-color: #4e0c18; /* darkest maroon */
+  --lcars-tertiary-color:  #6a5a20; /* dark gold for readability on light bg */
+  --lcars-titlebar-injuries:             #c01010;
+  --lcars-titlebar-belongings-colheader: #3c0c14;
+  --lcars-titlebar-launchbay:            #4e0c18;
+  --lcars-chrome-hover:                  #7a1c2c;
+  --lcars-input-border:                  #580c1c;
+  --lcars-text-body:                     #180408;
+  --lcars-text-item:                     #180408;
+  --lcars-text-title:                    #fff0f4;
+  --lcars-text-header:                   #fff0f4;
+  /* ── Raw palette aliases (light mode) ── */
+  --lcars-orange:     var(--lcars-chrome);
+  --lcars-peach:      var(--lcars-chrome-hover);
+  --lcars-lavender:   var(--lcars-titlebar);
+  --lcars-lilac:      var(--lcars-input-border);
+  --lcars-blue:       var(--lcars-btn-secondary);
+  --lcars-sky:        var(--lcars-input-text);
+  --lcars-red:        var(--lcars-titlebar-injuries);
+  --lcars-tan:        var(--lcars-btn-reputation);
+  --lcars-text-light: var(--lcars-text-body);
+}
+
+/* ── Window-root background overrides (:has() targets the ancestor .application element) ── */
+.theme-dark .sta-lcars-window.application:has(.lcars-scheme-sfCommand) {
+  --lcars-bg: rgb(8 2 4 / 93%);
+}
+.theme-light .sta-lcars-window.application:has(.lcars-scheme-sfCommand) {
+  --lcars-bg: #f2e8ec;
+}
+.sta-lcars-window.application.theme-dark:has(.lcars-scheme-sfCommand) {
+  --lcars-bg: rgb(8 2 4 / 93%);
+}
+.sta-lcars-window.application.theme-light:has(.lcars-scheme-sfCommand) {
+  --lcars-bg: #f2e8ec;
+}

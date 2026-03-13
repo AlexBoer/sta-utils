@@ -385,3 +385,34 @@ export function _moveDevelopmentCreateButtons(sheet, cssPrefix) {
     }
   }
 }
+
+/**
+ * Move create buttons from hidden `.header.row` elements into the `.title`
+ * bars for the values, talents, traits, and injuries sections on the starship
+ * sheet.  Belongings (weapons/cargo) and launchbay header rows are intentionally
+ * left in place because they carry useful column labels.
+ *
+ * @param {HTMLElement} sheet - The `.starship-sheet` element.
+ * @param {string} cssPrefix - CSS class prefix (e.g. "sta-lcars", "sta-compact").
+ */
+export function _moveStarshipSectionCreateButtons(sheet, cssPrefix) {
+  const sections = sheet.querySelectorAll(
+    ".section.values, .section.talents, .section.traits, .section.injuries",
+  );
+  for (const section of sections) {
+    if (section.dataset.staShipSectionInit) continue;
+    section.dataset.staShipSectionInit = "1";
+
+    const titleEl = section.querySelector(":scope > .title");
+    const headerRow = section.querySelector(":scope > .header.row");
+    if (!titleEl || !headerRow) continue;
+
+    const createBtn = headerRow.querySelector(".control.create");
+    if (createBtn) {
+      createBtn.classList.add(`${cssPrefix}-create-btn`);
+      titleEl.style.display = "flex";
+      titleEl.style.alignItems = "center";
+      titleEl.appendChild(createBtn);
+    }
+  }
+}

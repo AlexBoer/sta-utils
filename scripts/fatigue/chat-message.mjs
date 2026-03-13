@@ -38,8 +38,7 @@ export function installCreateChatMessageHook() {
         if (isFatigued) {
           const characterName = actor.name ?? "Character";
           const fatigueNotice = `<div class="sta-fatigue-notice"><strong>${characterName} is Fatigued: +1 Difficulty.</strong></div>`;
-          message.content = html + fatigueNotice;
-          await message.update({ content: message.content });
+          await message.update({ content: html + fatigueNotice });
         }
       }
     } catch (err) {

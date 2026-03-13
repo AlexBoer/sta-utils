@@ -23,8 +23,19 @@ import { getMobileSheetTheme } from "../core/settings.mjs";
 // Collapse-state persistence  (mirrors the prefix used by compact / tidy)
 // ─────────────────────────────────────────────────────────────────────────────
 
+const MODULE_ID = "sta-utils";
 const _COLLAPSE_KEY_PREFIX = "sta-compact-collapse:";
 const CSS_PREFIX = "sta-mobile";
+
+// Theme swatches — colours match the CSS design-token values.
+const _THEMES = [
+  { key: "blue", color: "#60a5fa", label: "Blue \u2014 Federation" },
+  { key: "red", color: "#f87171", label: "Red \u2014 Command" },
+  { key: "gold", color: "#fbbf24", label: "Gold \u2014 Operations" },
+  { key: "teal", color: "#2dd4bf", label: "Teal \u2014 Sciences" },
+  { key: "purple", color: "#a78bfa", label: "Purple \u2014 Nebula" },
+  { key: "green", color: "#4ade80", label: "Green \u2014 Borg" },
+];
 
 function _isSectionCollapsed(actorId, sectionKey) {
   try {
@@ -130,13 +141,13 @@ function _installMobileCollapsibleSections(sheet, actorId) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Wide-layout responsive sidebar (≥640px)
+// Wide-layout responsive sidebar (≥500px)
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Watch the sheet root with a ResizeObserver. When the content width reaches
- * 640px the stats tab panel is physically moved into .mobile-stats-sidebar so
- * it becomes a permanent left column. Below 640px it is moved back into
+ * 500px the stats tab panel is physically moved into .mobile-stats-sidebar so
+ * it becomes a permanent left column. Below 500px it is moved back into
  * .mobile-sheet-body at its original position.
  *
  * Moving the live DOM node (not cloning it) means there is never more than one
@@ -180,7 +191,7 @@ function _installWideLayout(sheet) {
 
   // On every render, immediately re-apply whatever the current state is.
   const currentlyWide = sheet.classList.contains("sta-wide");
-  applyLayout(currentlyWide || sheet.offsetWidth >= 640);
+  applyLayout(currentlyWide || sheet.offsetWidth >= 500);
 
   // Install the ResizeObserver only once per sheet instance.
   if (sheet.dataset.staWideInit) return;
@@ -188,7 +199,7 @@ function _installWideLayout(sheet) {
 
   const ro = new ResizeObserver((entries) => {
     const width = entries[0]?.contentRect?.width ?? sheet.offsetWidth;
-    applyLayout(width >= 640);
+    applyLayout(width >= 500);
   });
   ro.observe(sheet);
 }
@@ -248,6 +259,94 @@ function _installStressModContextMenu(sheetApp, sheet) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Per-character theme picker
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Inject a small palette-icon button into the header-top row.
+ * Clicking it reveals a popover row of coloured swatches; choosing one stores
+ * the selection as an actor flag and triggers a sheet re-render.
+ *
+ * This re-runs on every render (the sheet DOM is rebuilt each time) so the
+ * simple presence-check guard is sufficient.
+ *
+ * @param {Application} sheetApp - The MobileCharacterSheet2e instance.
+ * @param {HTMLElement} sheet    - The .character-sheet--mobile root element.
+ */
+function _installThemePicker(sheetApp, sheet) {
+  if (sheet.querySelector(".sta-mobile-theme-btn")) return;
+  const header = sheet.querySelector(".mobile-header");
+  const headerTop = sheet.querySelector(".mobile-header-top");
+  if (!header || !headerTop) return;
+
+  // Palette toggle button appended to the header-top row
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "sta-mobile-theme-btn";
+  btn.innerHTML = '<i class="fas fa-palette"></i>';
+  btn.title = "Change color theme";
+  headerTop.appendChild(btn);
+
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Toggle: if the picker is already open, close it
+    const existing = header.querySelector(".sta-mobile-theme-picker");
+    if (existing) {
+      existing.remove();
+      return;
+    }
+
+    const current =
+      sheetApp?.document?.getFlag?.(MODULE_ID, "mobileSheetTheme") ??
+      getMobileSheetTheme();
+
+    const picker = document.createElement("div");
+    picker.className = "sta-mobile-theme-picker";
+
+    for (const { key, color, label } of _THEMES) {
+      const dot = document.createElement("button");
+      dot.type = "button";
+      dot.className = "sta-mobile-theme-dot";
+      dot.dataset.theme = key;
+      dot.style.setProperty("--dot-color", color);
+      dot.title = label;
+      if (key === (current || "blue")) dot.classList.add("active");
+
+      dot.addEventListener("click", async (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        picker.remove();
+        await sheetApp.document.setFlag(MODULE_ID, "mobileSheetTheme", key);
+      });
+
+      picker.appendChild(dot);
+    }
+
+    // Append below header-top, above tracks
+    header.insertBefore(picker, header.querySelector(".mobile-tracks"));
+
+    // Close on any pointer-down outside the picker or button
+    function outsideClose(ev) {
+      if (!picker.isConnected) {
+        document.removeEventListener("pointerdown", outsideClose, true);
+        return;
+      }
+      if (!picker.contains(ev.target) && ev.target !== btn) {
+        picker.remove();
+        document.removeEventListener("pointerdown", outsideClose, true);
+      }
+    }
+    // Delay so this very click doesn't immediately close the picker
+    setTimeout(
+      () => document.addEventListener("pointerdown", outsideClose, true),
+      50,
+    );
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Public installer
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -261,8 +360,10 @@ export function installMobileMode(sheetApp, root) {
   const sheet = root?.querySelector?.(".character-sheet--mobile");
   if (!sheet) return;
 
-  // ── Apply color theme ────────────────────────────────────────────────
-  const theme = getMobileSheetTheme();
+  // ── Apply color theme (actor flag, with client-setting fallback) ──────
+  const theme =
+    sheetApp?.document?.getFlag?.(MODULE_ID, "mobileSheetTheme") ??
+    getMobileSheetTheme();
   // Remove any previous theme class, then add the current one
   sheet.className = sheet.className.replace(/\bmob-theme-\S+/g, "").trim();
   if (theme && theme !== "blue") sheet.classList.add(`mob-theme-${theme}`);
@@ -283,6 +384,9 @@ export function installMobileMode(sheetApp, root) {
 
   // ── Stress modifier context menu ─────────────────────────────────────
   _installStressModContextMenu(sheetApp, sheet);
+
+  // ── Per-character color theme picker ─────────────────────────────────
+  _installThemePicker(sheetApp, sheet);
 
   // ── Wide-layout responsive sidebar (≥640px) ───────────────────────────
   _installWideLayout(sheet);

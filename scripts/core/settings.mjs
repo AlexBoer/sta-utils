@@ -28,8 +28,10 @@ const SETTING_BACKLINKS_LAST_SYNCED = "backlinksLastSyncedVersion";
 const SETTING_BACKLINKS_SYNC_BUTTON = "backlinksSyncButton";
 const GROUP_SHIP_ACTOR_SETTING = "groupShipActorId";
 const ENABLE_EXTENDED_TASK_TRACKER_SETTING = "enableExtendedTaskTracker";
-const COMPACT_CHARACTER_SHEET_SETTING = "compactCharacterSheet";
-const TIDY_CHARACTER_SHEET_SETTING = "tidyCharacterSheet";
+const NPC_BUILDER_SPECIAL_RULES_PACK_SETTING = "npcBuilderSpecialRulesPack";
+const ENABLE_PERSONAL_THREAT_SETTING = "enablePersonalThreat";
+const SHEET_VARIANT_SETTING = "sheetVariant";
+// Legacy key kept for migration only (config: false)
 const LCARS_CHARACTER_SHEET_SETTING = "lcarsCharacterSheet";
 const LCARS_COLOR_SCHEME_SETTING = "lcarsColorScheme";
 const MOBILE_THEME_SETTING = "mobileSheetTheme";
@@ -47,116 +49,171 @@ const GROUP_CLIENT = "sta-utils.settings.groups.client";
  */
 const LCARS_PALETTE_DATA = {
   tng: [
-    "#f1a43c",
-    "#f0b872",
-    "#c5a3d9",
-    "#9b8fc2",
-    "#6688cc",
-    "#88aaff",
-    "#d05050",
-    "#e8c57a",
+    "#f1a43c" /* orange/chrome */,
+    "#f0b872" /* peach */,
+    "#c5a3d9" /* lavender */,
+    "#9b8fc2" /* lilac */,
+    "#6688cc" /* blue */,
+    "#88aaff" /* sky */,
+    "#d05050" /* red */,
+    "#e8c57a" /* tan/gold */,
   ],
   voyager: [
-    "#4fa8a8",
-    "#6fc4b8",
-    "#88aacc",
-    "#6688aa",
-    "#4a90d0",
-    "#70b8d8",
-    "#d06060",
-    "#8cb8a0",
+    "#488888",
+    "#60a098",
+    "#7898a0",
+    "#587880",
+    "#507898",
+    "#6898a8",
+    "#a86868",
+    "#689088",
   ],
   ds9: [
-    "#c8a050",
-    "#d4b870",
-    "#a08860",
-    "#887050",
-    "#6a7888",
-    "#7a98a8",
-    "#c05040",
-    "#b89860",
+    "#b89848",
+    "#c8a868",
+    "#988868",
+    "#806848",
+    "#687888",
+    "#788898",
+    "#a84840",
+    "#a89050",
   ],
   tos: [
-    "#c84040",
-    "#d86858",
-    "#3868c0",
-    "#5888d8",
-    "#2858b0",
-    "#5080d8",
-    "#c02020",
-    "#c89808",
+    "#a84848",
+    "#b86858",
+    "#4868a0",
+    "#5878a0",
+    "#385888",
+    "#4870a0",
+    "#983030",
+    "#a88020",
   ],
   enterprise: [
-    "#5878a0",
-    "#7898b8",
-    "#90a8b8",
+    "#506888",
+    "#688098",
+    "#7890a0",
+    "#506878",
+    "#405868",
+    "#587888",
+    "#a05848",
     "#607888",
-    "#486888",
-    "#6890a8",
-    "#c06050",
-    "#7090a0",
   ],
   kelvin: [
-    "#2080d8",
-    "#40a8f0",
-    "#80c8f0",
-    "#90b8e0",
-    "#1068c0",
-    "#50a0e8",
-    "#e03030",
-    "#60a8e0",
+    "#2878b8",
+    "#4098c8",
+    "#78a8c0",
+    "#6898b0",
+    "#1860a8",
+    "#4890c0",
+    "#b84040",
+    "#5890b0",
   ],
   picard: [
-    "#3a5a8c",
-    "#5878a8",
-    "#a0b8d0",
-    "#7090b0",
-    "#2a4a7c",
-    "#5080c0",
-    "#c04050",
-    "#6888a8",
+    "#385878",
+    "#507090",
+    "#8098a8",
+    "#607888",
+    "#284870",
+    "#4870a0",
+    "#a04050",
+    "#587888",
   ],
   lowerDecks: [
-    "#c030c8",
-    "#e060d0",
-    "#20b8b8",
-    "#5080e0",
-    "#3858d8",
-    "#40a8e8",
-    "#e02858",
-    "#d070c8",
+    "#9838a0",
+    "#b058a8",
+    "#6878b0",
+    "#5868a8",
+    "#4858a0",
+    "#5878b0",
+    "#b03050",
+    "#a068a0",
   ],
   prodigy: [
-    "#f08030",
-    "#f8a050",
-    "#30c8a0",
-    "#40a8d8",
-    "#3080d0",
-    "#50b0f0",
-    "#e04050",
-    "#f0a860",
+    "#c87038",
+    "#d09050",
+    "#50a090",
+    "#4888a0",
+    "#3070a0",
+    "#4890b0",
+    "#b84848",
+    "#c89050",
   ],
   academy: [
-    "#c02838",
-    "#d84858",
-    "#d0b030",
-    "#2858a8",
-    "#1848a0",
-    "#3878d0",
-    "#b82028",
-    "#9098a8",
+    "#a03038",
+    "#b84850",
+    "#b09028",
+    "#304888",
+    "#203898",
+    "#3860a8",
+    "#902028",
+    "#808898",
   ],
   redAlert: [
-    "#cc3030",
-    "#e05050",
-    "#ff6666",
-    "#992222",
-    "#884444",
-    "#cc6666",
-    "#ff2020",
-    "#cc5544",
+    "#b03030",
+    "#c84848",
+    "#d06060",
+    "#882828",
+    "#784040",
+    "#a85858",
+    "#d82020",
+    "#b04840",
+  ],
+  sta: [
+    "#009dff",
+    "#4db3ff",
+    "#6699ff",
+    "#5577dd",
+    "#0055aa",
+    "#77bbff",
+    "#cc1111",
+    "#c8a800",
   ],
 };
+
+/** All valid LCARS scheme CSS classes. */
+const LCARS_SCHEME_CLASSES = [
+  "lcars-scheme-tng",
+  "lcars-scheme-sta",
+  "lcars-scheme-voyager",
+  "lcars-scheme-ds9",
+  "lcars-scheme-tos",
+  "lcars-scheme-enterprise",
+  "lcars-scheme-kelvin",
+  "lcars-scheme-picard",
+  "lcars-scheme-lowerDecks",
+  "lcars-scheme-prodigy",
+  "lcars-scheme-academy",
+  "lcars-scheme-romulan",
+  "lcars-scheme-klingon",
+  "lcars-scheme-sfCommand",
+  "lcars-scheme-sfSciences",
+  "lcars-scheme-sfOperations",
+  "lcars-scheme-redAlert",
+];
+
+/**
+ * Live-swap the LCARS color scheme CSS class on all open sheets and the body.
+ * This changes the visual appearance instantly without a re-render or reload.
+ * @param {string} scheme  The scheme key (e.g. "tng", "voyager", "ds9").
+ */
+function _applyLcarsSchemeToDOM(scheme) {
+  const newClass = scheme ? `lcars-scheme-${scheme}` : null;
+
+  // Swap scheme class on every open sheet that has sta-lcars applied
+  document.querySelectorAll(".sta-lcars").forEach((el) => {
+    el.classList.remove(...LCARS_SCHEME_CLASSES);
+    if (newClass) el.classList.add(newClass);
+  });
+
+  // Also update the body class for Officers Log styling
+  document.body.classList.remove(...LCARS_SCHEME_CLASSES);
+  if (
+    newClass &&
+    document.body.classList.contains("sta-officers-lcars-active")
+  ) {
+    document.body.classList.add(newClass);
+  }
+}
 
 /** Human-readable labels for each swatch slot, used as tooltip titles. */
 const LCARS_SWATCH_LABELS = [
@@ -202,6 +259,14 @@ const SUBGROUPS = [
   {
     firstKey: ENABLE_TALENT_AUTOMATIONS_SETTING,
     label: "sta-utils.settings.subgroups.standalone",
+  },
+  {
+    firstKey: NPC_BUILDER_SPECIAL_RULES_PACK_SETTING,
+    label: "sta-utils.settings.subgroups.npcBuilder",
+  },
+  {
+    firstKey: ENABLE_PERSONAL_THREAT_SETTING,
+    label: "sta-utils.settings.subgroups.personalThreat",
   },
 ];
 
@@ -478,6 +543,29 @@ export function registerSettings() {
     group: GROUP_WORLD,
   });
 
+  game.settings.register(MODULE_ID, NPC_BUILDER_SPECIAL_RULES_PACK_SETTING, {
+    name: t("sta-utils.settings.npcBuilderSpecialRulesPack.name"),
+    hint: t("sta-utils.settings.npcBuilderSpecialRulesPack.hint"),
+    scope: "world",
+    config: true,
+    type: String,
+    default: "",
+    group: GROUP_WORLD,
+  });
+
+  // ----- Personal Threat -----
+
+  game.settings.register(MODULE_ID, ENABLE_PERSONAL_THREAT_SETTING, {
+    name: t("sta-utils.settings.enablePersonalThreat.name"),
+    hint: t("sta-utils.settings.enablePersonalThreat.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+    group: GROUP_WORLD,
+  });
+
   game.settings.register(MODULE_ID, AMBIENT_AUDIO_SELECTION_ONLY_SETTING, {
     name: t("sta-utils.settings.playerAmbientAudioSelectionOnly.name"),
     hint: t("sta-utils.settings.playerAmbientAudioSelectionOnly.hint"),
@@ -633,38 +721,39 @@ export function registerSettings() {
     group: GROUP_CLIENT,
   });
 
-  game.settings.register(MODULE_ID, COMPACT_CHARACTER_SHEET_SETTING, {
-    name: t("sta-utils.settings.compactCharacterSheet.name"),
-    hint: t("sta-utils.settings.compactCharacterSheet.hint"),
-    scope: "client",
-    config: true,
-    type: Boolean,
-    default: false,
-    requiresReload: true,
-    group: GROUP_CLIENT,
-  });
-
-  game.settings.register(MODULE_ID, TIDY_CHARACTER_SHEET_SETTING, {
-    name: t("sta-utils.settings.tidyCharacterSheet.name"),
-    hint: t("sta-utils.settings.tidyCharacterSheet.hint"),
-    scope: "client",
-    config: true,
-    type: Boolean,
-    default: false,
-    requiresReload: true,
-    group: GROUP_CLIENT,
-  });
-
+  // Legacy boolean setting — hidden from UI, retained for migration
   game.settings.register(MODULE_ID, LCARS_CHARACTER_SHEET_SETTING, {
-    name: t("sta-utils.settings.lcarsCharacterSheet.name"),
-    hint: t("sta-utils.settings.lcarsCharacterSheet.hint"),
     scope: "client",
-    config: true,
+    config: false,
     type: Boolean,
     default: false,
+  });
+
+  game.settings.register(MODULE_ID, SHEET_VARIANT_SETTING, {
+    name: t("sta-utils.settings.sheetVariant.name"),
+    hint: t("sta-utils.settings.sheetVariant.hint"),
+    scope: "client",
+    config: true,
+    type: String,
+    default: "none",
     requiresReload: true,
+    choices: {
+      none: t("sta-utils.settings.sheetVariant.choices.none"),
+      lcars: t("sta-utils.settings.sheetVariant.choices.lcars"),
+    },
     group: GROUP_CLIENT,
   });
+
+  // Migrate legacy boolean setting → sheetVariant (runs once; no-ops once
+  // the legacy flag has been cleared).
+  try {
+    if (game.settings.get(MODULE_ID, LCARS_CHARACTER_SHEET_SETTING)) {
+      game.settings.set(MODULE_ID, SHEET_VARIANT_SETTING, "lcars");
+      game.settings.set(MODULE_ID, LCARS_CHARACTER_SHEET_SETTING, false);
+    }
+  } catch (_) {
+    // settings may not be accessible during very early init — safe to skip
+  }
 
   game.settings.register(MODULE_ID, LCARS_COLOR_SCHEME_SETTING, {
     name: t("sta-utils.settings.lcarsColorScheme.name"),
@@ -673,9 +762,9 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "tng",
-    requiresReload: true,
     choices: {
       tng: t("sta-utils.settings.lcarsColorScheme.choices.tng"),
+      sta: t("sta-utils.settings.lcarsColorScheme.choices.sta"),
       voyager: t("sta-utils.settings.lcarsColorScheme.choices.voyager"),
       ds9: t("sta-utils.settings.lcarsColorScheme.choices.ds9"),
       tos: t("sta-utils.settings.lcarsColorScheme.choices.tos"),
@@ -685,9 +774,17 @@ export function registerSettings() {
       lowerDecks: t("sta-utils.settings.lcarsColorScheme.choices.lowerDecks"),
       prodigy: t("sta-utils.settings.lcarsColorScheme.choices.prodigy"),
       academy: t("sta-utils.settings.lcarsColorScheme.choices.academy"),
+      romulan: t("sta-utils.settings.lcarsColorScheme.choices.romulan"),
+      klingon: t("sta-utils.settings.lcarsColorScheme.choices.klingon"),
+      sfCommand: t("sta-utils.settings.lcarsColorScheme.choices.sfCommand"),
+      sfSciences: t("sta-utils.settings.lcarsColorScheme.choices.sfSciences"),
+      sfOperations: t(
+        "sta-utils.settings.lcarsColorScheme.choices.sfOperations",
+      ),
       redAlert: t("sta-utils.settings.lcarsColorScheme.choices.redAlert"),
     },
     group: GROUP_CLIENT,
+    onChange: (newScheme) => _applyLcarsSchemeToDOM(newScheme),
   });
 
   game.settings.register(MODULE_ID, MOBILE_THEME_SETTING, {
@@ -839,34 +936,9 @@ export function isMomentumMergerEnabled() {
 }
 
 /** @returns {boolean} */
-export function isCompactCharacterSheetEnabled() {
-  try {
-    return Boolean(
-      game.settings.get(MODULE_ID, COMPACT_CHARACTER_SHEET_SETTING),
-    );
-  } catch (_) {
-    return false;
-  }
-}
-
-/** @returns {boolean} */
-export function isTidyCharacterSheetEnabled() {
-  try {
-    // Mutually exclusive: compact and LCARS take priority.
-    if (isCompactCharacterSheetEnabled()) return false;
-    if (isLcarsCharacterSheetEnabled()) return false;
-    return Boolean(game.settings.get(MODULE_ID, TIDY_CHARACTER_SHEET_SETTING));
-  } catch (_) {
-    return false;
-  }
-}
-
-/** @returns {boolean} */
 export function isLcarsCharacterSheetEnabled() {
   try {
-    // Mutually exclusive: compact takes priority.
-    if (isCompactCharacterSheetEnabled()) return false;
-    return Boolean(game.settings.get(MODULE_ID, LCARS_CHARACTER_SHEET_SETTING));
+    return game.settings.get(MODULE_ID, SHEET_VARIANT_SETTING) === "lcars";
   } catch (_) {
     return false;
   }
@@ -922,6 +994,17 @@ export function getWorldTraitsActorUuid() {
     );
   } catch (_) {
     return "";
+  }
+}
+
+/** @returns {boolean} */
+export function isPersonalThreatEnabled() {
+  try {
+    return Boolean(
+      game.settings.get(MODULE_ID, ENABLE_PERSONAL_THREAT_SETTING),
+    );
+  } catch (_) {
+    return false;
   }
 }
 
@@ -1042,7 +1125,7 @@ export function installSettingsHeaderHook() {
     // --- Dependency enforcement ---
     _enforceDependencies(tab);
 
-    // --- LCARS color scheme swatches ---
+    // --- LCARS color scheme swatches + Apply button ---
     const schemeSelect = tab.querySelector(
       `select[name="${MODULE_ID}.${LCARS_COLOR_SCHEME_SETTING}"]`,
     );
@@ -1054,6 +1137,19 @@ export function installSettingsHeaderHook() {
         schemeSelect.addEventListener("change", () => {
           _updateLcarsSwatches(swatchRow, schemeSelect.value);
         });
+
+        // "Apply" button — live-previews the selected scheme without saving
+        const applyBtn = document.createElement("button");
+        applyBtn.type = "button";
+        applyBtn.className = "sta-utils-lcars-apply-btn";
+        applyBtn.textContent = t(
+          "sta-utils.settings.lcarsColorScheme.applyPreview",
+        );
+        applyBtn.addEventListener("click", (ev) => {
+          ev.preventDefault();
+          _applyLcarsSchemeToDOM(schemeSelect.value);
+        });
+        swatchRow.appendChild(applyBtn);
       }
     }
   });

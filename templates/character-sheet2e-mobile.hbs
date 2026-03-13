@@ -46,10 +46,10 @@
   <div class="mobile-right-pane">
   <nav class="sheet-tabs tabs mobile-tabs">
     <a class="item {{tabs.stats.cssClass}}" data-group="primary" data-action="tab" data-tab="stats">{{localize 'sta.actor.character.attribute.title'}}</a>
-    <a class="item {{tabs.biography.cssClass}}" data-group="primary" data-action="tab" data-tab="biography">{{localize 'sta.actor.character.character'}}</a>
     <a class="item {{tabs.traits.cssClass}}" data-group="primary" data-action="tab" data-tab="traits">{{localize 'sta.actor.character.traits'}}</a>
     <a class="item {{tabs.equipment.cssClass}}" data-group="primary" data-action="tab" data-tab="equipment">{{localize 'sta.actor.belonging.title'}}</a>
     <a class="item {{tabs.development.cssClass}}" data-group="primary" data-action="tab" data-tab="development">{{localize 'sta.actor.character.development'}}</a>
+    <a class="item {{tabs.biography.cssClass}}" data-group="primary" data-action="tab" data-tab="biography">{{localize 'sta.actor.character.character'}}</a>
     <a class="item {{tabs.notes.cssClass}}" data-group="primary" data-action="tab" data-tab="notes">{{localize 'sta.actor.note.title'}}</a>
   </nav>
 
@@ -251,6 +251,8 @@
         {{/each}}
       </div>
 
+      <div class="mob-traits-row">
+
       <div class="section talents">
         <div class="title">{{localize 'sta.item.talent.title'}}</div>
         <div class="header row item">
@@ -292,6 +294,10 @@
           {{/if}}
         {{/each}}
       </div>
+
+      </div>{{!-- /.mob-traits-row (talents + focuses) --}}
+
+      <div class="mob-traits-row">
 
       <div class="section traits">
         <div class="title">{{localize 'sta.actor.character.traits'}}</div>
@@ -337,6 +343,8 @@
           {{/if}}
         {{/each}}
       </div>
+
+      </div>{{!-- /.mob-traits-row (traits + injuries) --}}
     </div>
 
     {{!-- ━━ EQUIPMENT TAB (Weapons · Armor · Items) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ --}}

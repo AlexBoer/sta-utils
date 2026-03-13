@@ -13,7 +13,9 @@
         "traitTokens": "Trait Tokens",
         "groupShip": "Group Ship",
         "chatUi": "Chat & UI",
-        "standalone": "Other Features"
+        "standalone": "Other Features",
+        "npcBuilder": "NPC Builder",
+        "personalThreat": "Personal Threat"
       },
       "groupShipActorId": {
         "name": "Group Ship",
@@ -40,6 +42,14 @@
       "enableExtendedTaskTracker": {
         "name": "Enable Extended Task Tracker",
         "hint": "Display bar-style extended task trackers on the canvas with breakthrough markers at 50% and 75%. GM can add, edit, and remove trackers. Requires a world reload when changed."
+      },
+      "npcBuilderSpecialRulesPack": {
+        "name": "NPC Builder — Special Rules Compendium",
+        "hint": "Pack ID of the compendium to use for special rules (e.g. \"world.my-talents\" or \"module.my-module.talents\"). When empty, the NPC Builder shows manual name/description fields instead."
+      },
+      "enablePersonalThreat": {
+        "name": "Enable Personal Threat Dots",
+        "hint": "Replace the resource bar on NPC tokens with a ring of red dots around the token edge — one dot per point of Bar 1 value. Requires a world reload when changed."
       },
       "playerAmbientAudioSelectionOnly": {
         "name": "Player Ambient Audio Uses Selected Tokens",
@@ -89,23 +99,21 @@
         "name": "Enable Chat Header Merge",
         "hint": "Hide the message header (avatar, name, timestamp) on consecutive chat messages from the same sender. Requires a world reload when changed."
       },
-      "compactCharacterSheet": {
-        "name": "Compact Character Sheet",
-        "hint": "Reduce padding, font sizes, and image sizes on the character sheet for a denser layout. Edit and delete buttons are moved to a right-click context menu. Mutually exclusive with Tidy Sheets. Requires a world reload when changed."
-      },
-      "tidyCharacterSheet": {
-        "name": "Tidy Character Sheet",
-        "hint": "Add collapsible sections and move edit/delete buttons to a right-click context menu, without any other layout changes. Mutually exclusive with Compact Sheets. Requires a world reload when changed."
-      },
-      "lcarsCharacterSheet": {
-        "name": "LCARS Sheet",
-        "hint": "Apply an LCARS (Library Computer Access/Retrieval System) visual theme to character sheets, with distinctive rounded panel borders, Trek-style color palette, and futuristic typography. Mutually exclusive with Compact Sheets. Requires a world reload when changed."
+      "sheetVariant": {
+        "name": "Character Sheet Style",
+        "hint": "Choose a visual style for character sheets. LCARS applies a futuristic Star Trek panel theme. Requires a world reload when changed.",
+        "choices": {
+          "none": "Default",
+          "lcars": "LCARS"
+        }
       },
       "lcarsColorScheme": {
         "name": "LCARS Color Scheme",
         "hint": "Choose a color palette for the LCARS theme. Each scheme is inspired by a different Star Trek era. Only applies when LCARS Sheet is enabled.",
+        "applyPreview": "Apply",
         "choices": {
-          "tng": "TNG — The Next Generation",
+          "tng": "The Next Generation",
+          "sta": "STA System — Original",
           "voyager": "Voyager",
           "ds9": "DS9 — Deep Space Nine",
           "tos": "TOS — The Original Series",
@@ -115,12 +123,17 @@
           "lowerDecks": "Lower Decks",
           "prodigy": "Prodigy",
           "academy": "Starfleet Academy",
+          "romulan": "Romulan Star Empire",
+          "klingon": "Klingon Empire",
+          "sfCommand": "SF — Command Division",
+          "sfSciences": "SF — Sciences Division",
+          "sfOperations": "SF — Operations Division",
           "redAlert": "Red Alert"
         }
       },
       "mobileSheetTheme": {
-        "name": "Mobile Sheet Theme",
-        "hint": "Choose a color palette for the mobile character sheet. Only applies to Character (2e) Mobile sheets.",
+        "name": "Mobile Sheet Theme (Default)",
+        "hint": "Default color palette for the mobile character sheet when no per-character theme has been chosen. Each character can override this individually via the palette icon in its sheet header. Only applies to Character (2e) Mobile sheets.",
         "choices": {
           "blue": "Blue — Federation",
           "red": "Red — Command",
@@ -336,7 +349,14 @@
         "name": "Sync backlinks",
         "label": "Sync now"
       },
-      "linkedFrom": "Linked from"
+      "linkedFrom": "Linked from",
+      "type": {
+        "Actor": "Characters",
+        "JournalEntryPage": "Journal Entries",
+        "Item": "Items",
+        "RollTable": "Roll Tables",
+        "Other": "Other"
+      }
     },
     "crewManifest": {
       "dialogTitle": "Crew Manifest Generator",
@@ -1115,22 +1135,25 @@
         "area": "When you succeed at an attack, additional targets in the same zone may be hit by spending 1 Momentum for each additional target (Repeatable). This attack may Succeed at Cost.",
         "charge": "If you perform the Prepare minor action before attacking with this weapon, you may add one of the following qualities to the attack: Area, Intense, or Piercing. If you choose Area, the attack's severity is reduced by 1.",
         "cumbersome": "You cannot attack with a cumbersome weapon unless you take the Prepare minor action on the same turn.",
+        "deadly": "This weapon can kill a target.",
         "debilitating": "The Difficulty to treat or to heal injuries caused by this weapon is increased by 1.",
+        "stun": "The weapon can incapacitate a target.",
         "grenade": "You can attack a target at up to Medium range and have enough grenades for three separate attacks.",
         "hiddenx": "You can use a minor action to conceal this weapon. Any search for the weapon requires an Insight or Reason + Security task with a Difficulty of X.",
         "inaccurate": "The weapon is imprecise and clumsy. You do not benefit from the Aim minor action when making an attack with this weapon.",
         "intense": "When making an attack with this weapon, you may increase the severity by spending 1 Momentum, rather than 2 (Repeatable).",
         "piercing": "A successful attack with this weapon ignores the target's Protection rating.",
+        "piercingx": "A successful attack with this weapon ignores the target's Protection rating.",
         "nonlethal": "This weapon deals non-lethal damage."
       },
       "starship": {
-        "area": "This weapon impacts a wider area and can affect several targets at once. When you succeed at an attack, additional targets in the same zone may be hit by spending 1 Momentum for each additional target (Repeatable). This attack may Succeed at Cost.",
+        "area": "This weapon impacts a wider area and can affect several targets at once. When you succeed at an attack, additional targets in the same zone may be hit by spending 1 Momentum for each additional target (Repeatable). This attack may Succeed at Cost (see page 259).",
         "calibration": "This weapon needs to be calibrated before firing. The weapon cannot be fired unless a Prepare minor action is performed before the Attack major action in the same turn.",
-        "cumbersome": "This weapon is difficult to bring to bear against a target, increasing the Difficulty of an attack made using it by 1. If this weapon is a torpedo, it cannot be fired as part of a salvo.",
+        "cumbersome": "This weapon is difficult to bring to bear against a target, increasing the Difficulty of an attack made using it by 1. If this weapon is a torpedo, it cannot be fired as part of a salvo (see page 229 for more information on salvos).",
         "dampening": "This attack drains the target's reserve power, causing widespread disruption. If the target has Reserve Power available, it loses Reserve Power.",
         "depleting": "This attack strips away the protective layers of deflector shields. The attack cannot cause the ship to be shaken, but the Momentum cost to increase damage is reduced to 1.",
         "devastating": "Tasks to repair breaches caused by this weapon increase in Difficulty by 1.",
-        "hiddenx": "This weapon system is concealed from scans. When the weapon is hidden, it cannot be detected unless a specific scan is attempted. This scan is a task with a Difficulty of X.",
+        "hiddenx": "This weapon system is concealed from scans. When the weapon is hidden, it cannot be detected unless a specific scan is attempted; this scan is a task with a Difficulty of X.",
         "highyield": "This weapon inflicts massive damage to energy vessels. If the attack inflicts one or more breaches to a system, it inflicts one additional breach (or steps up the Potency of a breach inflicted by 1—attacker's choice).",
         "intense": "When making an attack with this weapon, you may increase the damage by 1 by spending 1 Momentum, rather than 2. This is Repeatable.",
         "jamming": "This weapon sends out a scattering field, disrupting the target's sensors or communications systems. Until the end of the current round, the target increases the Difficulty for all tasks assisted by Communications and Sensors by 1.",
@@ -1138,7 +1161,8 @@
         "piercing": "The weapon is effective at cutting through layers of protection. When this weapon makes an attack, any Resistance the target has is ignored.",
         "slowing": "Until the end of the current round, characters aboard the target vessel cannot use the Keep the Initiative Momentum spend.",
         "spread": "Attacks with this weapon reduce the cost of the Devastating Attack Momentum spend to 1. This is Repeatable.",
-        "versatile": "If an attack with this weapon is successful, it gains bonus Momentum points. Bonus Momentum cannot be saved."
+        "versatile": "If an attack with this weapon is successful, it gains bonus Momentum points. Bonus Momentum cannot be saved.",
+        "versatilex": "If an attack with this weapon is successful, it gains X points of bonus Momentum. Bonus Momentum cannot be saved."
       }
     },
     "shaken": {
@@ -1244,6 +1268,11 @@
       "deleteDialog": {
         "title": "Delete Tracker",
         "message": "Delete the tracker \"{name}\"?"
+      },
+      "clearAll": "Clear",
+      "clearAllDialog": {
+        "title": "Clear All Trackers",
+        "message": "Delete all extended task trackers? This cannot be undone."
       },
       "warnings": {
         "noActiveGM": "No active GM is available to process this update."

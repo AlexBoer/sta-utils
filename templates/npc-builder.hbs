@@ -1,0 +1,288 @@
+<div class="npc-builder">
+
+  {{!-- ── Step: Info ──────────────────────────────────────────────── --}}
+  <div class="npc-builder-panel{{#if stepPanels.info}} active{{/if}}" data-panel="info">
+    <h3 class="npc-builder-panel-title">Character Info</h3>
+
+    <div class="npc-builder-field-row">
+      <label class="npc-builder-label">Name <span class="npc-required">*</span></label>
+      <input class="npc-builder-input" type="text" name="npc-name" value="{{name}}"
+        placeholder="NPC Name" autofocus>
+    </div>
+
+    <div class="npc-builder-field-row">
+      <label class="npc-builder-label">NPC Type</label>
+      <div class="npc-type-radios">
+        <label class="npc-radio-label{{#if isMinor}} active{{/if}}">
+          <input type="radio" name="npcType" value="minor" {{#if isMinor}}checked{{/if}}>
+          Minor
+        </label>
+        <label class="npc-radio-label{{#if isNotable}} active{{/if}}">
+          <input type="radio" name="npcType" value="notable" {{#if isNotable}}checked{{/if}}>
+          Notable
+        </label>
+      </div>
+    </div>
+
+    <div class="npc-builder-field-row">
+      <label class="npc-builder-label">
+        Species <span class="npc-hint">(becomes a trait)</span>
+      </label>
+      {{#if speciesFromCatalog}}
+      <div class="npc-species-combobox">
+        <input class="npc-builder-input" type="text" name="species" value="{{species}}"
+          placeholder="Search species…" autocomplete="off" role="combobox"
+          aria-expanded="false" aria-autocomplete="list">
+        <ul class="npc-species-dropdown" role="listbox">
+          {{#each speciesList}}
+          <li class="npc-species-option" role="option" data-value="{{name}}">
+            {{name}}{{#if hasTalent}} <span class="npc-species-talent-badge" title="Has species talent">✦</span>{{/if}}
+          </li>
+          {{/each}}
+        </ul>
+      </div>
+      {{else}}
+      <input class="npc-builder-input" type="text" name="species" value="{{species}}"
+        placeholder="e.g. Vulcan">
+      {{/if}}
+    </div>
+
+    <div class="npc-builder-field-row">
+      <label class="npc-builder-label">
+        Role / Career <span class="npc-hint">(becomes a trait)</span>
+      </label>
+      <input class="npc-builder-input" type="text" name="role" value="{{role}}"
+        placeholder="e.g. Security Officer">
+    </div>
+  </div>
+
+  {{!-- ── Step: Attributes ──────────────────────────────────────── --}}
+  <div class="npc-builder-panel{{#if stepPanels.attributes}} active{{/if}}" data-panel="attributes">
+    <h3 class="npc-builder-panel-title">Assign Attributes</h3>
+    <p class="npc-builder-hint">Drag numbers from the pool onto attribute rows. Drag a placed chip back to the pool to un-assign it.</p>
+
+    <div class="npc-chip-pool{{#if attrPoolEmpty}} done{{/if}}" id="npc-attr-pool">
+      {{#each availableAttrChips}}
+      <div class="npc-chip" draggable="true" data-value="{{this}}" data-source-key="">{{this}}</div>
+      {{/each}}
+      {{#if attrPoolEmpty}}<span class="npc-pool-done"><i class="fa-solid fa-check"></i> All assigned</span>{{/if}}
+    </div>
+
+    {{#if showBonusColumn}}
+    <p class="npc-builder-hint npc-bonus-hint">Species bonus:
+      {{#if needsAttributeBonusSelection}}choose 3 attributes to receive <strong>+1</strong> each{{else}}attributes marked <strong>+1</strong> include your species bonus{{/if}}
+    </p>
+    {{/if}}
+
+    <div class="npc-slot-grid{{#if showBonusColumn}} has-bonus-col{{/if}}">
+      {{#each attributeSlots}}
+      <div class="npc-slot-row">
+        <span class="npc-slot-label">{{label}}</span>
+        <div class="npc-drop-zone{{#unless value}} empty{{/unless}}" data-key="{{key}}">
+          {{#if value}}
+          <div class="npc-chip npc-chip--assigned" draggable="true"
+            data-value="{{value}}" data-source-key="{{key}}">{{value}}</div>
+          {{else}}
+          <span class="npc-slot-placeholder">—</span>
+          {{/if}}
+        </div>
+        {{#if ../showBonusColumn}}
+        <div class="npc-bonus-col">
+          {{#if fixedBonus}}
+          <span class="npc-bonus-fixed">+1</span>
+          {{else if choiceBonus}}
+          <input type="checkbox" class="npc-bonus-attr-cb" value="{{key}}"
+            {{#if choiceBonus.selected}}checked{{/if}}
+            {{#if choiceBonus.disabled}}disabled{{/if}}>
+          {{/if}}
+        </div>
+        {{/if}}
+      </div>
+      {{/each}}
+    </div>
+  </div>
+
+  {{!-- ── Step: Departments ──────────────────────────────────────── --}}
+  <div class="npc-builder-panel{{#if stepPanels.departments}} active{{/if}}" data-panel="departments">
+    <h3 class="npc-builder-panel-title">Assign Departments</h3>
+    <p class="npc-builder-hint">Assign all chips. Departments without a chip will default to 0.</p>
+
+    <div class="npc-chip-pool{{#if discPoolEmpty}} done{{/if}}" id="npc-disc-pool">
+      {{#each availableDiscChips}}
+      <div class="npc-chip" draggable="true" data-value="{{this}}" data-source-key="">{{this}}</div>
+      {{/each}}
+      {{#if discPoolEmpty}}<span class="npc-pool-done"><i class="fa-solid fa-check"></i> All assigned</span>{{/if}}
+    </div>
+
+    <div class="npc-slot-grid">
+      {{#each disciplineSlots}}
+      <div class="npc-slot-row">
+        <span class="npc-slot-label">{{label}}</span>
+        <div class="npc-drop-zone{{#unless value}} empty{{/unless}}" data-key="{{key}}">
+          {{#if value}}
+          <div class="npc-chip npc-chip--assigned" draggable="true"
+            data-value="{{value}}" data-source-key="{{key}}">{{value}}</div>
+          {{else}}
+          <span class="npc-slot-placeholder">0</span>
+          {{/if}}
+        </div>
+      </div>
+      {{/each}}
+    </div>
+  </div>
+
+  {{!-- ── Step: Details (Notable only) ────────────────────────── --}}
+  <div class="npc-builder-panel{{#if stepPanels.details}} active{{/if}}" data-panel="details">
+    <h3 class="npc-builder-panel-title">Focuses &amp; Value</h3>
+
+    <div class="npc-builder-section-label">
+      Focuses <span class="npc-hint">(up to 3, optional)</span>
+    </div>
+    {{#each focusList}}
+    <div class="npc-builder-field-row">
+      {{#if ../hasFocusSuggestions}}
+      <div class="npc-focus-combobox npc-species-combobox">
+        <input class="npc-builder-input" type="text" value="{{value}}"
+          placeholder="Focus {{num}}" autocomplete="off">
+        <ul class="npc-suggestion-dropdown npc-species-dropdown" role="listbox">
+          {{#each ../focusSuggestions}}
+          <li class="npc-suggestion-option npc-species-option" role="option">{{this}}</li>
+          {{/each}}
+        </ul>
+      </div>
+      {{else}}
+      <input class="npc-builder-input npc-focus-input" type="text" value="{{value}}"
+        placeholder="Focus {{num}}">
+      {{/if}}
+    </div>
+    {{/each}}
+
+    <div class="npc-builder-section-label npc-section-gap">
+      Value <span class="npc-hint">(optional)</span>
+    </div>
+    <div class="npc-builder-field-row">
+      {{#if hasValueSuggestions}}
+      <div class="npc-value-combobox npc-species-combobox">
+        <input class="npc-builder-input" type="text" value="{{value}}"
+          placeholder="e.g. Duty and Loyalty" autocomplete="off">
+        <ul class="npc-suggestion-dropdown npc-species-dropdown" role="listbox">
+          {{#each valueSuggestions}}
+          <li class="npc-suggestion-option npc-species-option" role="option">{{this}}</li>
+          {{/each}}
+        </ul>
+      </div>
+      {{else}}
+      <input class="npc-builder-input npc-value-input" type="text" value="{{value}}"
+        placeholder="e.g. Duty and Loyalty">
+      {{/if}}
+    </div>
+  </div>
+
+  {{!-- ── Step: Special Rules ────────────────────────────────── --}}
+  <div class="npc-builder-panel{{#if (lookup stepPanels 'special-rules')}} active{{/if}}" data-panel="special-rules">
+    <h3 class="npc-builder-panel-title">Special Rules</h3>
+
+    {{#if specialRulesAvailable}}
+      {{#if specialRulesItems.length}}
+      <p class="npc-builder-hint">Select talents to add as special rules.</p>
+      <ul class="npc-equip-list">
+        {{#each specialRulesItems}}
+        <li class="npc-equip-item">
+          <label class="npc-equip-label">
+            <input class="npc-special-rule-checkbox" type="checkbox" value="{{uuid}}"
+              {{#if checked}}checked{{/if}}>
+            <img class="npc-equip-img" src="{{img}}" alt="">
+            <span class="npc-equip-name">{{name}}</span>
+          </label>
+        </li>
+        {{/each}}
+      </ul>
+      {{else}}
+      <p class="npc-builder-hint">No items found in the special rules compendium.</p>
+      {{/if}}
+    {{else}}
+    <p class="npc-builder-hint">No compendium configured. Enter talents manually below.</p>
+    {{#each customTalents}}
+    <div class="npc-custom-talent npc-builder-field-row" style="flex-direction:column;gap:4px;margin-bottom:0.6rem;">
+      <input class="npc-builder-input npc-custom-talent-name" type="text"
+        value="{{name}}" placeholder="Talent name (optional)">
+      <textarea class="npc-builder-input npc-custom-talent-desc"
+        placeholder="Talent description (optional)" rows="2"
+        style="resize:vertical;font-family:inherit;font-size:inherit;">{{description}}</textarea>
+    </div>
+    {{/each}}
+    {{/if}}
+  </div>
+
+  {{!-- ── Step: Equipment ──────────────────────────────────────── --}}
+  <div class="npc-builder-panel{{#if stepPanels.equipment}} active{{/if}}" data-panel="equipment">
+    <h3 class="npc-builder-panel-title">Equipment</h3>
+
+    {{#if equipmentAvailable}}
+      {{#if equipmentItems.length}}
+      <p class="npc-builder-hint">Select items to add to the NPC.</p>
+      {{#if equipmentLoadouts.length}}
+      <div class="npc-loadout-presets">
+        {{#each equipmentLoadouts}}
+        <button class="npc-loadout-btn{{#if active}} active{{/if}}"
+          data-loadout="{{@index}}" type="button">{{name}}</button>
+        {{/each}}
+      </div>
+      {{/if}}
+      <ul class="npc-equip-list">
+        {{#each equipmentItems}}
+        <li class="npc-equip-item">
+          <label class="npc-equip-label">
+            <input class="npc-equip-checkbox" type="checkbox" value="{{uuid}}"
+              {{#if checked}}checked{{/if}}>
+            <img class="npc-equip-img" src="{{img}}" alt="">
+            <span class="npc-equip-name">{{name}}</span>
+          </label>
+        </li>
+        {{/each}}
+      </ul>
+      {{else}}
+      <p class="npc-builder-hint">No items found in the equipment compendium.</p>
+      {{/if}}
+    {{else}}
+    <div class="npc-equip-placeholder">
+      <i class="fa-solid fa-box-archive"></i>
+      <p>Equipment compendium not configured.</p>
+      <p class="npc-equip-placeholder-sub">Set <code>EQUIPMENT_COMPENDIUM_UUID</code> in
+        <code>scripts/npc-builder/npc-builder-data.mjs</code> to enable this step.</p>
+    </div>
+    {{/if}}
+  </div>
+
+  {{!-- ── Footer ──────────────────────────────────────────────── --}}
+  <div class="npc-builder-footer">
+    <div class="npc-builder-footer-left">
+      {{#unless isFirstStep}}
+      <button class="npc-builder-back npc-builder-btn npc-builder-btn--ghost">
+        <i class="fa-solid fa-chevron-left"></i> Back
+      </button>
+      {{/unless}}
+      <button class="npc-builder-randomize npc-builder-btn npc-builder-btn--ghost" type="button"
+        title="Randomize this step">
+        <i class="fa-solid fa-shuffle"></i>
+      </button>
+    </div>
+
+    <span class="npc-builder-step-label">{{stepLabel}}</span>
+
+    <div class="npc-builder-footer-right">
+      {{#if isLastStep}}
+      <button class="npc-builder-create npc-builder-btn npc-builder-btn--primary"
+        {{#unless canProceed}}disabled{{/unless}}>
+        <i class="fa-solid fa-user-plus"></i> Create NPC
+      </button>
+      {{else}}
+      <button class="npc-builder-next npc-builder-btn npc-builder-btn--primary"
+        {{#unless canProceed}}disabled{{/unless}}>
+        Next <i class="fa-solid fa-chevron-right"></i>
+      </button>
+      {{/if}}
+    </div>
+  </div>
+
+</div>

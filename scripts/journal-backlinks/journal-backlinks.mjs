@@ -52,6 +52,13 @@ export class JournalBacklinks {
 
       this.debug(`renderApplicationV2: class=${className}, id=${appId}`);
 
+      // Skip config/settings dialogs (e.g. DocumentSheetConfig) that happen to
+      // reference a document but are not content sheets.
+      if (className.includes("Config") || appId.startsWith("sheet-config-")) {
+        this.debug(`skipping config dialog: ${className} (${appId})`);
+        return;
+      }
+
       // Journal sheets — inject backlinks for the currently viewed page(s)
       if (
         appId.startsWith("JournalEntrySheet") ||
@@ -251,9 +258,10 @@ export class JournalBacklinks {
     this.debug(
       `found ${references.length} references: ${JSON.stringify(references)}`,
     );
-    const existing = entity.flags?.[FLAG_SCOPE]?.references || [];
+    const rawRefs = entity.flags?.[FLAG_SCOPE]?.references;
+    const existing = Array.isArray(rawRefs) ? rawRefs : [];
     this.debug(`existing references: ${JSON.stringify(existing)}`);
-    const updated = [];
+    const updated = new Set();
 
     // --- Add new references ---
     for (let reference of references) {
@@ -266,11 +274,11 @@ export class JournalBacklinks {
           reference;
       }
 
-      if (updated.includes(reference)) {
+      if (updated.has(reference)) {
         this.debug(`${reference} is already updated, skipping`);
         continue;
       }
-      updated.push(reference);
+      updated.add(reference);
 
       if (existing.includes(reference)) {
         this.debug(`${reference} is already referenced, skipping`);
@@ -303,7 +311,7 @@ export class JournalBacklinks {
     }
 
     // --- Remove outdated references ---
-    for (const outdated of existing.filter((v) => !updated.includes(v))) {
+    for (const outdated of existing.filter((v) => !updated.has(v))) {
       const target = fromUuidSync(outdated);
       if (!target) {
         this.debug(`outdated entity ${outdated} does not exist`);
@@ -337,14 +345,15 @@ export class JournalBacklinks {
       }
     }
 
-    this.debug(`final updated references: ${JSON.stringify(updated)}`);
+    const updatedArr = [...updated];
+    this.debug(`final updated references: ${JSON.stringify(updatedArr)}`);
 
     // Only write the references flag if the list actually changed
     const refsChanged =
-      updated.length !== existing.length ||
-      updated.some((r, i) => r !== existing[i]);
+      updatedArr.length !== existing.length ||
+      updatedArr.some((r, i) => r !== existing[i]);
     if (refsChanged) {
-      await entity.setFlag(FLAG_SCOPE, "references", updated);
+      await entity.setFlag(FLAG_SCOPE, "references", updatedArr);
     } else {
       this.debug(
         `references unchanged for ${entity.name}, skipping flag write`,
@@ -506,20 +515,63 @@ export class JournalBacklinks {
     heading.textContent = t("sta-utils.journalBacklinks.linkedFrom");
     linksDiv.appendChild(heading);
 
-    const linksList = document.createElement("ul");
+    // Type label lookup — known document types mapped to display sub-headings
+    const TYPE_LABELS = {
+      Actor: t("sta-utils.journalBacklinks.type.Actor"),
+      JournalEntryPage: t("sta-utils.journalBacklinks.type.JournalEntryPage"),
+      Item: t("sta-utils.journalBacklinks.type.Item"),
+      RollTable: t("sta-utils.journalBacklinks.type.RollTable"),
+    };
+    const KNOWN_TYPES = Object.keys(TYPE_LABELS);
 
-    for (const [type, values] of Object.entries(links)) {
-      for (const value of values) {
-        if (!value) continue;
+    // Helper: build a content-link <li> for one entity
+    const buildLi = (entity, uuid, type) => {
+      const link = document.createElement("a");
+      link.classList.add("content-link");
+      link.draggable = true;
+      link.dataset.type = type;
+      link.dataset.uuid = uuid;
+      link.dataset.link = "";
 
-        const entity = fromUuidSync(value);
+      const icon = document.createElement("i");
+      icon.classList.add("fas");
+      switch (type) {
+        case "JournalEntryPage":
+          icon.classList.add("fa-file-lines");
+          break;
+        case "Actor":
+          icon.classList.add("fa-user");
+          break;
+        case "Item":
+          icon.classList.add("fa-suitcase");
+          break;
+        case "RollTable":
+          icon.classList.add("fa-th-list");
+          break;
+        default:
+          icon.classList.add("fa-link");
+          break;
+      }
+      link.appendChild(icon);
+      link.append(` ${entity.name}`);
+
+      const li = document.createElement("li");
+      li.appendChild(link);
+      return li;
+    };
+
+    // Helper: resolve + permission-filter a list of UUIDs for one type
+    const resolveEntries = (type) => {
+      const entries = [];
+      for (const uuid of links[type] || []) {
+        if (!uuid) continue;
+        const entity = fromUuidSync(uuid);
         if (!entity) {
           this.log(
-            "WARNING: unable to find entity (try the sync button?): " + value,
+            "WARNING: unable to find entity (try the sync button?): " + uuid,
           );
           continue;
         }
-
         if (
           !entity.testUserPermission(
             game.user,
@@ -528,49 +580,119 @@ export class JournalBacklinks {
         ) {
           continue;
         }
+        entries.push({ entity, uuid });
+      }
+      return entries;
+    };
 
-        this.debug(`adding link from ${type} ${entity.name}`);
+    // Helper: append a type sub-heading element
+    const appendSubHeading = (label) => {
+      const subHeading = document.createElement("h4");
+      subHeading.classList.add("backlinks-type-heading");
+      subHeading.textContent = label;
+      linksDiv.appendChild(subHeading);
+    };
 
-        // For journal pages, prefix with the parent journal entry name
-        let displayName = entity.name;
-        if (type === "JournalEntryPage" && entity.parent?.name) {
-          displayName = `${entity.parent.name}: ${entity.name}`;
+    // Render known types first in a fixed order
+    const allTypes = Object.keys(links);
+    for (const type of KNOWN_TYPES.filter((k) => allTypes.includes(k))) {
+      const entries = resolveEntries(type);
+      if (!entries.length) continue;
+
+      appendSubHeading(TYPE_LABELS[type]);
+
+      if (type === "JournalEntryPage") {
+        // Two-level grouping: folder of the parent journal → parent journal name
+        const byFolder = new Map();
+        for (const entry of entries) {
+          const folderName = entry.entity.parent?.folder?.name ?? "";
+          if (!byFolder.has(folderName)) byFolder.set(folderName, new Map());
+          const byParent = byFolder.get(folderName);
+          const parentName = entry.entity.parent?.name ?? "";
+          if (!byParent.has(parentName)) byParent.set(parentName, []);
+          byParent.get(parentName).push(entry);
         }
+        // Folders alphabetically, un-foldered last
+        const sortedFolders = [...byFolder.keys()]
+          .filter((k) => k !== "")
+          .sort((a, b) => a.localeCompare(b));
+        if (byFolder.has("")) sortedFolders.push("");
 
-        const link = document.createElement("a");
-        link.classList.add("content-link");
-        link.draggable = true;
-        link.dataset.type = type;
-        link.dataset.uuid = value;
-        link.dataset.link = "";
-
-        const icon = document.createElement("i");
-        icon.classList.add("fas");
-        switch (type) {
-          case "JournalEntryPage":
-            icon.classList.add("fa-file-lines");
-            break;
-          case "Actor":
-            icon.classList.add("fa-user");
-            break;
-          case "Item":
-            icon.classList.add("fa-suitcase");
-            break;
-          case "RollTable":
-            icon.classList.add("fa-th-list");
-            break;
+        for (const folderName of sortedFolders) {
+          if (folderName) {
+            const folderLabel = document.createElement("div");
+            folderLabel.classList.add("backlinks-parent-label");
+            folderLabel.textContent = folderName;
+            linksDiv.appendChild(folderLabel);
+          }
+          const byParent = byFolder.get(folderName);
+          for (const [parentName, items] of [...byParent.entries()].sort(
+            ([a], [b]) => a.localeCompare(b),
+          )) {
+            if (parentName) {
+              const parentLabel = document.createElement("div");
+              parentLabel.classList.add("backlinks-journal-label");
+              parentLabel.textContent = parentName;
+              linksDiv.appendChild(parentLabel);
+            }
+            const ul = document.createElement("ul");
+            for (const { entity, uuid } of items) {
+              this.debug(`adding link from ${type} ${entity.name}`);
+              ul.appendChild(buildLi(entity, uuid, type));
+            }
+            linksDiv.appendChild(ul);
+          }
         }
+      } else {
+        // Sub-group by folder name (entries without a folder rendered last, unlabelled)
+        const byFolder = new Map();
+        for (const entry of entries) {
+          const folderName = entry.entity.folder?.name ?? "";
+          if (!byFolder.has(folderName)) byFolder.set(folderName, []);
+          byFolder.get(folderName).push(entry);
+        }
+        // Render named folders first, alphabetically, then the unlabelled group
+        const sortedFolders = [...byFolder.keys()]
+          .filter((k) => k !== "")
+          .sort((a, b) => a.localeCompare(b));
+        if (byFolder.has("")) sortedFolders.push("");
 
-        link.appendChild(icon);
-        link.append(` ${displayName}`);
-
-        const li = document.createElement("li");
-        li.appendChild(link);
-        linksList.appendChild(li);
+        for (const folderName of sortedFolders) {
+          if (folderName) {
+            const folderLabel = document.createElement("div");
+            folderLabel.classList.add("backlinks-parent-label");
+            folderLabel.textContent = folderName;
+            linksDiv.appendChild(folderLabel);
+          }
+          const ul = document.createElement("ul");
+          for (const { entity, uuid } of byFolder.get(folderName)) {
+            this.debug(`adding link from ${type} ${entity.name}`);
+            ul.appendChild(buildLi(entity, uuid, type));
+          }
+          linksDiv.appendChild(ul);
+        }
       }
     }
 
-    linksDiv.appendChild(linksList);
+    // Collect any unknown types into a single "Other" group
+    const otherTypes = allTypes.filter((k) => !KNOWN_TYPES.includes(k));
+    if (otherTypes.length) {
+      const otherEntries = [];
+      for (const type of otherTypes) {
+        for (const { entity, uuid } of resolveEntries(type)) {
+          otherEntries.push({ entity, uuid, type });
+        }
+      }
+      if (otherEntries.length) {
+        appendSubHeading(t("sta-utils.journalBacklinks.type.Other"));
+        const ul = document.createElement("ul");
+        for (const { entity, uuid, type } of otherEntries) {
+          this.debug(`adding link from ${type} ${entity.name}`);
+          ul.appendChild(buildLi(entity, uuid, type));
+        }
+        linksDiv.appendChild(ul);
+      }
+    }
 
     // Find the right element to inject into
     const element = this._getElementToModify(html);

@@ -20,6 +20,7 @@ import { getLcarsColorScheme } from "../../core/settings.mjs";
 
 /** List of all valid LCARS scheme CSS classes. */
 const SCHEME_CLASSES = [
+  "lcars-scheme-sta",
   "lcars-scheme-voyager",
   "lcars-scheme-ds9",
   "lcars-scheme-tos",
@@ -29,7 +30,13 @@ const SCHEME_CLASSES = [
   "lcars-scheme-lowerDecks",
   "lcars-scheme-prodigy",
   "lcars-scheme-academy",
+  "lcars-scheme-romulan",
+  "lcars-scheme-klingon",
+  "lcars-scheme-sfCommand",
+  "lcars-scheme-sfSciences",
+  "lcars-scheme-sfOperations",
   "lcars-scheme-redAlert",
+  "lcars-scheme-sta",
 ];
 
 /**

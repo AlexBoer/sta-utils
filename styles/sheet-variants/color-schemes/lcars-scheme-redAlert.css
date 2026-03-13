@@ -1,0 +1,79 @@
+﻿/* ----------------------------------------------------------------------- */
+/*  RED ALERT                                                               */
+/*  All reds on near-black; bright yellow used only as text accent on      */
+/*  track labels and input values — the single spark in the darkness.      */
+/* ----------------------------------------------------------------------- */
+.theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-redAlert,
+.theme-dark .sta-lcars-dialogue-app.lcars-scheme-redAlert,
+body.theme-dark.sta-officers-lcars-active.lcars-scheme-redAlert {
+  --lcars-bg:              #100808da; /* near-black with red warmth */
+  --lcars-bg-panel:        rgba(12, 0, 0, 0.25);           /* panel tint: red-black deepening */
+  --lcars-primary-color:   #8a1c1c; /* deep alarm red */
+  --lcars-secondary-color: #b82020; /* brighter red → biography/belongings */
+  --lcars-tertiary-color:  #c02020; /* vivid red → focuses */
+  /* traits/btn-reputation = darker red, not secondary */
+  --lcars-titlebar-traits:               #782020;
+  --lcars-btn-secondary:                 var(--lcars-tertiary-color);
+  --lcars-btn-reputation:                #782020;
+  /* yellow accent — the single spark in the darkness */
+  --lcars-tracktitle:                    #e8c020;
+  --lcars-input-text:                    #f0cc18;
+  --lcars-titlebar-injuries:             #e01010; /* maximum alert red */
+  --lcars-titlebar-belongings-colheader: #901818;
+  --lcars-titlebar-launchbay:            #601010;
+  --lcars-chrome-hover:                  var(--lcars-secondary-color);
+  --lcars-input-border:                  var(--lcars-primary-color);
+  --lcars-text-body:                     #e8a0a0;
+  --lcars-text-item:                     #e8a0a0;
+  --lcars-text-title:                    #fff0f0;
+  --lcars-text-header:                   #fff0f0;
+}
+.theme-light :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-redAlert,
+.theme-light .sta-lcars-dialogue-app.lcars-scheme-redAlert,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-redAlert {
+  --lcars-bg:              #f5e8e8; /* pale red-tinted */
+  --lcars-bg-panel:        rgba(255, 240, 240, 0.50); /* panel tint: warm pink-white brightening */
+  --lcars-primary-color:   #6a1010;
+  --lcars-secondary-color: #8a1818;
+  --lcars-tertiary-color:  #921a1a;
+  /* traits/btn-reputation = darker red */
+  --lcars-titlebar-traits:               #581010;
+  --lcars-btn-secondary:                 var(--lcars-tertiary-color);
+  --lcars-btn-reputation:                #581010;
+  /* yellow accent on light bg */
+  --lcars-tracktitle:                    #806000;
+  --lcars-input-text:                    #604800;
+  --lcars-titlebar-injuries:             #aa0808; /* maximum red */
+  --lcars-titlebar-belongings-colheader: #681010;
+  --lcars-titlebar-launchbay:            #480808;
+  --lcars-chrome-hover:                  var(--lcars-secondary-color);
+  --lcars-input-border:                  var(--lcars-primary-color);
+  --lcars-text-body:                     #1a0404;
+  --lcars-text-item:                     #220606;
+  --lcars-text-title:                    #fff0f0;
+  --lcars-text-header:                   #fff0f0;
+  /* ── Raw palette aliases (light mode) ── */
+  --lcars-orange:     var(--lcars-chrome);
+  --lcars-peach:      var(--lcars-chrome-hover);
+  --lcars-lavender:   var(--lcars-titlebar);
+  --lcars-lilac:      var(--lcars-input-border);
+  --lcars-blue:       var(--lcars-btn-secondary);
+  --lcars-sky:        var(--lcars-input-text);
+  --lcars-red:        var(--lcars-titlebar-injuries);
+  --lcars-tan:        var(--lcars-btn-reputation);
+  --lcars-text-light: var(--lcars-text-body);
+}
+
+/* ── Window-root background overrides (:has() targets the ancestor .application element) ── */
+.theme-dark .sta-lcars-window.application:has(.lcars-scheme-redAlert) {
+  --lcars-bg: #100808da;
+}
+.theme-light .sta-lcars-window.application:has(.lcars-scheme-redAlert) {
+  --lcars-bg: #f5e8e8;
+}
+.sta-lcars-window.application.theme-dark:has(.lcars-scheme-redAlert) {
+  --lcars-bg: #100808da;
+}
+.sta-lcars-window.application.theme-light:has(.lcars-scheme-redAlert) {
+  --lcars-bg: #f5e8e8;
+}

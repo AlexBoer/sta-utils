@@ -1,0 +1,62 @@
+﻿/* ----------------------------------------------------------------------- */
+/*  STA SYSTEM                                                              */
+/*  Mirrors the look of the native STA sheet: flat navy title bars,        */
+/*  STA blue/red/gold buttons, Foundry default transparent background.     */
+/*  Note: theme-neutral base — no .theme-dark prefix — so it applies       */
+/*  regardless of Foundry's active theme.                                  */
+/* ----------------------------------------------------------------------- */
+:is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-sta,
+.sta-lcars-dialogue-app.lcars-scheme-sta,
+body.sta-officers-lcars-active.lcars-scheme-sta {
+  --lcars-bg:              transparent; /* let Foundry bg show through */
+  --lcars-bg-panel:        transparent;
+  --lcars-primary-color:   #003399; /* STA navy — all titlebars uniform */
+  --lcars-secondary-color: #003399;
+  --lcars-tertiary-color:  #003399;
+  /* Buttons intentionally differ from titlebars — STA's three-colour scheme */
+  --lcars-btn-primary:     #009dff; /* STA blue */
+  --lcars-btn-secondary:   #cc1111; /* STA red */
+  --lcars-btn-reputation:  #F2CC0D; /* STA gold */
+  --lcars-tracktitle:      #009dff;
+  --lcars-input-text:      #009dff;
+  --lcars-titlebar-injuries: #660000; /* dark red — danger context */
+  --lcars-chrome-hover:    #3366cc;
+  --lcars-input-border:    #003399;
+  --lcars-text-body:       #e7d1b1;
+  --lcars-text-item:       #e7d1b1;
+  --lcars-text-title:      #efe6d8;
+  --lcars-text-header:     #efe6d8;
+  /* Raw palette aliases */
+  --lcars-orange:          var(--lcars-chrome);
+  --lcars-peach:           var(--lcars-chrome-hover);
+}
+/* Light Mode */
+.theme-light :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-sta,
+.theme-light .sta-lcars-dialogue-app.lcars-scheme-sta,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-sta {
+  --lcars-bg:         #f0f5ff;
+  --lcars-bg-panel:   rgba(255, 255, 255, 0.50); /* panel tint: neutral white brightening */
+  --lcars-text-light: #002266;
+  --lcars-text-dark:  #000;
+  --lcars-orange:     #006fcc;
+  --lcars-peach:      #3388dd;
+  --lcars-lavender:   #4466cc;
+  --lcars-lilac:      #3355bb;
+  --lcars-blue:       #003d88;
+  --lcars-sky:        #5599ee;
+  --lcars-red:        #aa0000;
+  --lcars-tan:        #957a00;
+}
+
+/* ── Window-root background overrides (:has() targets the ancestor .application element) ── */
+/* STA neutral/dark: window must be transparent to match the STA system default */
+.sta-lcars-window.application:has(.lcars-scheme-sta) {
+  --lcars-bg: transparent;
+}
+/* STA light mode: restore the light bg on the window */
+.theme-light .sta-lcars-window.application:has(.lcars-scheme-sta) {
+  --lcars-bg: #f0f5ff;
+}
+.sta-lcars-window.application.theme-light:has(.lcars-scheme-sta) {
+  --lcars-bg: #f0f5ff;
+}

@@ -1,0 +1,41 @@
+﻿/* ===========================================================================
+ * LCARS COLOR SCHEMES
+ *
+ * Each scheme overrides the `--lcars-*` palette variables declared above.
+ * The class `lcars-scheme-<key>` is added alongside `sta-lcars` by
+ * lcars-mode.mjs.  The default TNG scheme uses the base values already
+ * defined, so it needs no additional class.
+ *
+ * For every scheme we target all six sheet roots plus the Officers Log
+ * body class to ensure consistent theming everywhere.
+ * =========================================================================== */
+
+/* -- Shared derived vars — written once for every named scheme ------------ */
+:is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet,
+    .scenetraits-sheet, .dialogue).sta-lcars[class*="lcars-scheme-"],
+.sta-lcars-dialogue-app[class*="lcars-scheme-"],
+body.sta-officers-lcars-active[class*="lcars-scheme-"] {
+  --lcars-bg-default:              var(--lcars-bg);
+  --lcars-bg-supporting-character: var(--lcars-bg-default);
+  --lcars-bg-attrs:                var(--lcars-bg);
+  --lcars-titlebar:                var(--lcars-primary-color);
+  --lcars-titlebar-attributes:     var(--lcars-primary-color);
+  --lcars-titlebar-biography:      var(--lcars-secondary-color);
+  --lcars-titlebar-development:    var(--lcars-primary-color);
+  --lcars-titlebar-values:         var(--lcars-primary-color);
+  --lcars-titlebar-talents:        var(--lcars-primary-color);
+  --lcars-titlebar-focuses:        var(--lcars-primary-color);
+  --lcars-titlebar-detached:       var(--lcars-secondary-color); /* floating pill titlebars base */
+  --lcars-titlebar-traits:         var(--lcars-titlebar-detached);
+  --lcars-titlebar-belongings:     var(--lcars-titlebar-detached);
+  --lcars-titlebar-arc-starship:   var(--lcars-titlebar-detached);
+  --lcars-titlebar-milestones:     var(--lcars-secondary-color);
+  --lcars-titlebar-systems:        var(--lcars-primary-color);
+  --lcars-titlebar-bio-fields:     var(--lcars-secondary-color);
+  --lcars-btn-primary:             var(--lcars-primary-color);
+  --lcars-btn-secondary:           var(--lcars-secondary-color);
+  --lcars-btn-reputation:          var(--lcars-tertiary-color);
+  --lcars-chrome:                  var(--lcars-primary-color);
+  --lcars-tracktitle:              var(--lcars-tertiary-color);
+  --lcars-input-text:              var(--lcars-tertiary-color);
+}

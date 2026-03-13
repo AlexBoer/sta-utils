@@ -1,0 +1,67 @@
+/* ----------------------------------------------------------------------- */
+/*  STARFLEET OPERATIONS DIVISION                                           */
+/*  Near-black bg with amber cast; operations gold chrome; deep amber      */
+/*  floating pills; bright gold input text & track labels.                 */
+/*  Monochromatic gold — injuries uses red (fully contrasting hue).        */
+/* ----------------------------------------------------------------------- */
+.theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-sfOperations,
+.theme-dark .sta-lcars-dialogue-app.lcars-scheme-sfOperations,
+body.theme-dark.sta-officers-lcars-active.lcars-scheme-sfOperations {
+  --lcars-bg:              rgb(8 5 2 / 93%);
+  --lcars-bg-panel:        rgb(4 3 2 / 86%);            
+  --lcars-primary-color:   #a07c10; /* operations gold */
+  --lcars-secondary-color: #785a08; /* deep amber */
+  --lcars-tertiary-color:  #d8b020; /* bright gold */
+  --lcars-titlebar-injuries:             #b02020;
+  --lcars-titlebar-belongings-colheader: #5a4006;
+  --lcars-titlebar-launchbay:            #785a08;
+  --lcars-chrome-hover:                  #b89020;
+  --lcars-input-border:                  #806008;
+  --lcars-text-body:                     #e8d080;
+  --lcars-text-item:                     #e8d080;
+  --lcars-text-title:                    #000000;
+  --lcars-text-header:                   #000000;
+}
+
+.theme-light :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-sfOperations,
+.theme-light .sta-lcars-dialogue-app.lcars-scheme-sfOperations,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-sfOperations {
+  --lcars-bg:              #f8f0d8; /* warm cream */
+  --lcars-bg-panel:        rgba(255, 250, 224, 0.50); /* panel tint: warm gold-cream brightening */
+  --lcars-primary-color:   #706008; /* deep operations gold */
+  --lcars-secondary-color: #504400; /* darkest amber */
+  --lcars-tertiary-color:  #584800; /* dark amber for readability on light bg */
+  --lcars-titlebar-injuries:             #881818;
+  --lcars-titlebar-belongings-colheader: #3c3000;
+  --lcars-titlebar-launchbay:            #504400;
+  --lcars-chrome-hover:                  #806c10;
+  --lcars-input-border:                  #605000;
+  --lcars-text-body:                     #0c0800;
+  --lcars-text-item:                     #0c0800;
+  --lcars-text-title:                    #fffce8;
+  --lcars-text-header:                   #fffce8;
+  /* ── Raw palette aliases (light mode) ── */
+  --lcars-orange:     var(--lcars-chrome);
+  --lcars-peach:      var(--lcars-chrome-hover);
+  --lcars-lavender:   var(--lcars-titlebar);
+  --lcars-lilac:      var(--lcars-input-border);
+  --lcars-blue:       var(--lcars-btn-secondary);
+  --lcars-sky:        var(--lcars-input-text);
+  --lcars-red:        var(--lcars-titlebar-injuries);
+  --lcars-tan:        var(--lcars-btn-reputation);
+  --lcars-text-light: var(--lcars-text-body);
+}
+
+/* ── Window-root background overrides (:has() targets the ancestor .application element) ── */
+.theme-dark .sta-lcars-window.application:has(.lcars-scheme-sfOperations) {
+  --lcars-bg: rgb(8 5 2 / 93%);
+}
+.theme-light .sta-lcars-window.application:has(.lcars-scheme-sfOperations) {
+  --lcars-bg: #f8f0d8;
+}
+.sta-lcars-window.application.theme-dark:has(.lcars-scheme-sfOperations) {
+  --lcars-bg: rgb(8 5 2 / 93%);
+}
+.sta-lcars-window.application.theme-light:has(.lcars-scheme-sfOperations) {
+  --lcars-bg: #f8f0d8;
+}

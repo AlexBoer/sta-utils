@@ -38,6 +38,7 @@ export class TrackerPanel extends fapi.HandlebarsApplicationMixin(
       editEntry: TrackerPanel.#onEditEntry,
       deleteEntry: TrackerPanel.#onDeleteEntry,
       breakthroughMenu: TrackerPanel.#onBreakthroughMenu,
+      clearAll: TrackerPanel.#onClearAll,
     },
   };
 
@@ -224,5 +225,21 @@ export class TrackerPanel extends fapi.HandlebarsApplicationMixin(
 
   static async #onBreakthroughMenu() {
     new BreakthroughDialog().render({ force: true });
+  }
+
+  static async #onClearAll() {
+    const confirmed = await foundry.applications.api.Dialog.confirm({
+      window: {
+        title: game.i18n.localize(
+          "sta-utils.extendedTaskTracker.clearAllDialog.title",
+        ),
+      },
+      content: game.i18n.localize(
+        "sta-utils.extendedTaskTracker.clearAllDialog.message",
+      ),
+    });
+    if (confirmed) {
+      this.db.clearAll();
+    }
   }
 }

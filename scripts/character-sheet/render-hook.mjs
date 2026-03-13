@@ -14,8 +14,6 @@ import {
   isFatigueEnabled,
   isActionChooserEnabled,
   isActionChooserAsTabEnabled,
-  isCompactCharacterSheetEnabled,
-  isTidyCharacterSheetEnabled,
   isLcarsCharacterSheetEnabled,
 } from "../core/settings.mjs";
 import { MODULE_ID } from "../core/constants.mjs";
@@ -36,9 +34,9 @@ import { installTraitFatigueCheckbox } from "../fatigue/trait-fatigue-checkbox.m
 import { disableItemTooltips } from "../disable-tooltips/index.mjs";
 import { actionChooser } from "../action-chooser/index.mjs";
 import { t } from "../core/i18n.mjs";
-import { installCompactMode } from "./compact/compact-mode.mjs";
-import { installTidyMode } from "./tidy/tidy-mode.mjs";
+
 import { installMobileMode } from "../mobile-sheet/mobile-mode.mjs";
+import { installLcarsSheetMode } from "../lcars-sheet/lcars-mode.mjs";
 import {
   installLcarsMode,
   installLcarsStarshipMode,
@@ -139,9 +137,130 @@ function handleMobileSheetRender(app, root) {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Handler: LCARS Character Sheet (bespoke)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Handle LcarsCharacterSheet2e rendering.
+ * Installs collapsible listeners, context menus, and LCARS theme picker.
+ *
+ * @param {Application} app - The application being rendered.
+ * @param {HTMLElement} root - The root element.
+ */
+function handleLcarsSheetRender(app, root) {
+  if (
+    !app?.id?.startsWith("LcarsCharacterSheet2e") &&
+    !app?.id?.startsWith("LcarsSupportingSheet2e") &&
+    !app?.id?.startsWith("LcarsNPCSheet2e") &&
+    !app?.id?.startsWith("LcarsStarshipSheet2e") &&
+    !app?.id?.startsWith("LcarsSmallCraftSheet2e")
+  )
+    return;
+  try {
+    installLcarsSheetMode(app, root);
+  } catch (_) {
+    // ignore
+  }
+
+  const actor = app.actor;
+  if (!actor || (actor.type !== "character" && actor.type !== "npc")) return;
+
+  if (isFatigueEnabled()) {
+    try {
+      installFatiguedAttributeDisplay(root, actor);
+    } catch (_) {
+      // ignore
+    }
+    try {
+      installChooseAttributeButtons(root, actor, app);
+    } catch (_) {
+      // ignore
+    }
+  }
+
+  try {
+    installStressInfoButton(root);
+  } catch (_) {
+    // ignore
+  }
+  try {
+    installDeterminationInfoButton(root);
+  } catch (_) {
+    // ignore
+  }
+  try {
+    installValuesInfoButton(root);
+  } catch (_) {
+    // ignore
+  }
+  try {
+    installTalentsInfoButton(root);
+  } catch (_) {
+    // ignore
+  }
+  try {
+    installFocusesInfoButton(root);
+  } catch (_) {
+    // ignore
+  }
+  try {
+    installTraitsInfoButton(root);
+  } catch (_) {
+    // ignore
+  }
+  try {
+    installInjuriesInfoButton(root);
+  } catch (_) {
+    // ignore
+  }
+  try {
+    installLogsInfoButton(root);
+  } catch (_) {
+    // ignore
+  }
+  try {
+    installMilestonesInfoButton(root);
+  } catch (_) {
+    // ignore
+  }
+  try {
+    installDirectiveInfoButton(root);
+  } catch (_) {
+    // ignore
+  }
+
+  if (isFatigueEnabled()) {
+    try {
+      installChooseAttributeButtons(root, actor, app);
+    } catch (_) {
+      // ignore
+    }
+  }
+
+  if (isActionChooserEnabled()) {
+    if (isActionChooserAsTabEnabled()) {
+      try {
+        installActionChooserTab(app, root, actor);
+      } catch (_) {
+        // ignore
+      }
+    } else {
+      try {
+        installActionChooserButton(root, actor);
+      } catch (_) {
+        // ignore
+      }
+    }
+  }
+}
+
 function handleCharacterSheetRender(app, root) {
-  // MobileCharacterSheet2e has its own dedicated handler above.
+  // MobileCharacterSheet2e and LcarsCharacterSheet2e have their own handlers.
   if (app?.id?.startsWith("MobileCharacterSheet2e")) return;
+  if (app?.id?.startsWith("LcarsCharacterSheet2e")) return;
+  if (app?.id?.startsWith("LcarsSupportingSheet2e")) return;
+  if (app?.id?.startsWith("LcarsNPCSheet2e")) return;
 
   if (
     !app?.id?.startsWith("STACharacterSheet2e") &&
@@ -154,22 +273,10 @@ function handleCharacterSheetRender(app, root) {
   const actor = app.actor;
   if (!actor || (actor.type !== "character" && actor.type !== "npc")) return;
 
-  // Compact / LCARS / Tidy character sheet modes
-  if (isCompactCharacterSheetEnabled()) {
-    try {
-      installCompactMode(app, root);
-    } catch (_) {
-      // ignore
-    }
-  } else if (isLcarsCharacterSheetEnabled()) {
+  // LCARS character sheet mode
+  if (isLcarsCharacterSheetEnabled()) {
     try {
       installLcarsMode(app, root);
-    } catch (_) {
-      // ignore
-    }
-  } else if (isTidyCharacterSheetEnabled()) {
-    try {
-      installTidyMode(app, root);
     } catch (_) {
       // ignore
     }
@@ -491,8 +598,13 @@ function handleStarshipSheetRender(app, root) {
   if (!actor) return;
   if (actor.type !== "starship" && actor.type !== "smallcraft") return;
 
-  // LCARS mode for starship/smallcraft sheets
-  if (isLcarsCharacterSheetEnabled()) {
+  // LCARS mode for starship/smallcraft sheets (skip for bespoke LCARS sheets
+  // which bake the styling into the template and use per-actor color schemes)
+  if (
+    isLcarsCharacterSheetEnabled() &&
+    !app?.id?.startsWith("LcarsStarshipSheet2e") &&
+    !app?.id?.startsWith("LcarsSmallCraftSheet2e")
+  ) {
     try {
       installLcarsStarshipMode(app, root);
     } catch (_) {
@@ -771,6 +883,11 @@ export function installRenderApplicationV2Hook() {
       appId.startsWith("STATracker") ||
       appId.startsWith("sta-") ||
       appId.startsWith("MobileCharacterSheet2e") ||
+      appId.startsWith("LcarsCharacterSheet2e") ||
+      appId.startsWith("LcarsSupportingSheet2e") ||
+      appId.startsWith("LcarsNPCSheet2e") ||
+      appId.startsWith("LcarsStarshipSheet2e") ||
+      appId.startsWith("LcarsSmallCraftSheet2e") ||
       app?.constructor?.name?.startsWith?.("STA");
     const isDialog =
       app?.constructor?.name === "DialogV2" || appId.startsWith("dialog-");
@@ -787,6 +904,9 @@ export function installRenderApplicationV2Hook() {
 
     // Handle mobile character sheet.
     handleMobileSheetRender(app, root);
+
+    // Handle bespoke LCARS character sheet.
+    handleLcarsSheetRender(app, root);
 
     // Handle character sheet enhancements.
     handleCharacterSheetRender(app, root);

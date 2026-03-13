@@ -1,164 +1,146 @@
 
-body.system-sta .right-column {
-display: flex;
-flex-wrap: wrap;
-flex:1;
+body.system-sta {
+    .right-column:not(.sta-lcars *) {
+        display: flex;
+        flex-wrap: wrap;
+        flex: 1;
+    }
+
+    .top-right-column:not(.sta-lcars *) {
+        display: flex;
+        flex-wrap: wrap;
+        flex: 1;
+
+        .npc-block { flex-basis: 100%; }
+        .tracktitle { flex-basis: 100%; }
+        .track {
+            display: flex;
+            flex-basis: 100%;
+        }
+    }
+
+    .bottom-left-column:not(.sta-lcars *) {
+        display: flex;
+        flex-wrap: nowrap;
+        flex-direction: column;
+    }
+
+    .bottom-right-column:not(.sta-lcars *) {
+        display: flex;
+        flex-wrap: wrap;
+        flex: 1;
+        flex-direction: column;
+
+        .sheet-tabs { flex-basis: 100%; }
+    }
+
+    .name-field { flex-basis: 100%; }
+    .note2e { flex: 1; }
+
+    .character-sheet {
+        .big-row { display: flex; }
+
+        .row {
+            display: flex;
+            align-items: center;
+            padding-right: 0.3rem;
+            min-height: 25px;
+        }
+
+        .application.sheet { max-width: 90%; }
+
+        .title {
+            flex-basis: 100%;
+            height: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+    }
+
+    .starship-sheet {
+        .right-column .track { flex-basis: 100%; }
+        .section { flex-basis: 100%; }
+
+        .title {
+            height: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .right-column .section.values:has([data-type="value"]) { display: none; }
+    }
+
+    .big-row-column .checkbox { justify-content: flex-start; }
+
+    h4 {
+        > .chat-portrait-playerName-generic { font-size: 14px; }
+        > .chat-portrait-indicator-generic { font-size: 14px; }
+    }
+
+    .form-fields > textarea { resize: vertical; }
+
+    #roll-privacy > button.ui-control.icon.fa-solid.fa-user { display: none; }
+
+    .dice-rolls .checkbox-container > input[type=checkbox] {
+        padding: 2px 2px 0px 2px;
+        outline: 1px solid #1e5180;
+    }
+
+    .note .editor-content {
+        border: white 1px solid;
+        border-radius: 2%;
+        padding: 5px;
+        margin: 5px;
+    }
 }
 
-body.system-sta .top-right-column {
-display: flex;
-flex-wrap: wrap;
-flex:1;
-}
-
-body.system-sta .bottom-left-column {
-display: flex;
-flex-wrap:nowrap;
-flex-direction: column;
-}
-
-body.system-sta .bottom-right-column {
-display: flex;
-flex-wrap:wrap;
-flex:1;
-flex-direction: column;
-}
-
-body.system-sta .bottom-right-column .sheet-tabs {
-flex-basis:100%;
-}
-
-body.system-sta .name-field {
-flex-basis:100%;
-}
-
-body.system-sta .top-right-column .npc-block{
-flex-basis:100%;
-}
-
-body.system-sta .top-right-column .tracktitle{
-flex-basis:100%;
-}
-
-body.system-sta .starship-sheet .right-column .track{
-flex-basis:100%;
-}
-
-body.system-sta .top-right-column .track{
-display: flex;
-flex-basis:100%;
-}
-
-body.system-sta .character-sheet .big-row{
-display: flex;
-}
-
-body.system-sta .big-row-column .checkbox{
-justify-content: flex-start;
-}
-
-body.system-sta .character-sheet .row {
-display: flex;
-align-items: center;
-padding-right: 0.3rem;
-min-height: 25px;
-}
-
-body.system-sta .starship-sheet .section {
-flex-basis:100%;
-}
-
-body.system-sta .character-sheet .application.sheet {
-max-width:90%;
-}
-
-body.system-sta .character-sheet .title{
-flex-basis:100%;
-}
-
-body.system-sta .note2e {
-flex:1;
-}
-
-
-body.system-sta h4 > .chat-portrait-playerName-generic {
-font-size: 14px;
-}
-
-body.system-sta h4 > .chat-portrait-indicator-generic {
-font-size: 14px;
-}
-
-body.system-sta .form-fields > textarea {
-resize: vertical;
-}
-
-body.system-sta #roll-privacy > button.ui-control.icon.fa-solid.fa-user {
-display: none;
-}
-
-body.system-sta .dice-rolls .checkbox-container > input[type=checkbox]{
-padding: 2px 2px 0px 2px;
-outline: 1px solid #1e5180;
-}
-
-body.system-sta .note .editor-content {
-    border: white 1px solid;
-    border-radius: 2%;
-    padding: 5px;
-    margin: 5px;
-}
-
-.prosemirror button.toggle:disabled, prose-mirror button.toggle:disabled {
-    display: none;
-}
-
-.prosemirror button.toggle:not(:disabled), prose-mirror button.toggle:not(:disabled) {
-    top: 1rem;
-    right: 1rem;
-    display: block;
+:is(.prosemirror, prose-mirror) button.toggle {
+    &:disabled { display: none; }
+    &:not(:disabled) {
+        top: 1rem;
+        right: 1rem;
+        display: block;
+    }
 }
 
 .tracker-container .tracker .button-group {
     height: 34px;
 }
 
-body.system-sta .character-sheet .title,
-body.system-sta .starship-sheet .title {
-height: 1.5rem;
-display: flex;
-align-items: center;
-}
-
-body.system-sta .starship-sheet .right-column .section.values:has([data-type="value"]) {
-display: none;
-}
-
-/* NEW for STA 2.5.0 */
-
-.chat-message.message.flexcol .chatcard.tracker .threattext {
-    color: #ff5858;
-}
-
-.chat-message.message.flexcol .chatcard .greentext {
-    color: #64d363;
-}
-.chat-message.message.flexcol .chatcard .redtext {
-    color: #ff5858;
-}
-
-.chat-message.message.flexcol:has(.chatcard)  {
+.chat-message.message.flexcol {
     border: blue;
     border-radius: 6px;
     background: rgba(11, 10, 19, 0.9);
-    color: #ddd
-}
+    color: #ddd;
 
-.chat-message.message.flexcol  {
-    border: blue;
-    border-radius: 6px;
-    background: rgba(11, 10, 19, 0.9);
-    color: #ddd
+    .chatcard {
+        &.tracker .threattext { color: #ff5858; }
+        .greentext { color: #64d363; }
+        .redtext { color: #ff5858; }
+
+        .reroll-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            flex: 1;
+            cursor: pointer;
+            font-family: "Roboto Condensed", sans-serif;
+            font-weight: 700;
+            font-size: 0.8em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 8px 8px;
+            color: #f1a43c;
+            transition: background 0.15s ease, color 0.15s ease;
+            min-height: 10px;
+            --button-size: 1rem;
+            height: 15px;
+            border: #f1a43c solid 1px;
+            border-radius: 4px;
+            margin: 1px;
+        }
+    }
 }
 
 .message-header {
@@ -166,50 +148,14 @@ display: none;
     color: #ddd;
 }
 
-.chat-message h1, .chat-message h2, .chat-message h3, .chat-message h4, .chat-message h5, .chat-message h6 {
-    color: #ddd;
+.chat-message {
+    h1, h2, h3, h4, h5, h6 { color: #ddd; }
 }
 
-/* body.ccs-active .chat-message.message.flexcol:has(.chatcard) .chatcard .heading {
-    background: var(--ccs-chat-border-color);
-    color: oklch(from var(--ccs-chat-border-color) clamp(0, (0.6 - l) * 1000, 1) 0 0);
-}
-
-.chat-message.message.flexcol:has(.chatcard) .chatcard .heading .flavor.task {
-    background: var(--ccs-chat-border-color);
-    color: oklch(from var(--ccs-chat-border-color) clamp(0, (0.6 - l) * 1000, 1) 0 0);
-} */
-
-.chat-portrait-flexrow {
-    display: none;
-}
-
-.chat-message.message.flexcol:has(.chatcard) .chatcard .reroll-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    flex: 1;
-    cursor: pointer;
-    font-family: "Roboto Condensed", sans-serif;
-    font-weight: 700;
-    font-size: 0.8em;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 8px 8px;
-    border: none;
-    color: #f1a43c;
-    transition: background 0.15s ease, color 0.15s ease;
-    min-height: 10px;
-    --button-size: 1rem;
-    height: 15px;
-    border: #f1a43c solid 1px;
-    border-radius: 4px;
-    margin: 1px;
-}
+.chat-portrait-flexrow { display: none; }
 
 .character-sheet nav.sheet-tabs.tabs a.item {
-    width:unset;
+    width: unset;
     min-width: 100px;
     flex: 1;
 }

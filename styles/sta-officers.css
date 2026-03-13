@@ -1,4 +1,4 @@
-/* =============================================================================
+﻿/* =============================================================================
  * STA Officers Log — Styles
  * Organized by window / surface area
  * =============================================================================
@@ -304,268 +304,269 @@
   opacity: 1;
 }
 
-/* =============================================================================
- * STA SYSTEM TRACKER (injected buttons)
- * ============================================================================= */
-
-/* STA system tracker: Officers Log buttons injected by this module */
-.tracker-container .icon-container .sta-tracker-button-columns {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 0.25rem;
-  padding: 0.15rem 0.2rem;
+.tracker-container {
+  /* =============================================================================
+   * STA SYSTEM TRACKER (injected buttons)
+   * ============================================================================= */
+  
+  /* STA system tracker: Officers Log buttons injected by this module */
+  .icon-container .sta-tracker-button-columns {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.15rem 0.2rem;
+  }
+  
+  .icon-container .sta-tracker-button-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.25rem;
+    padding-top: 5px; /* slight vertical spacing so the injected group aligns nicely */
+  }
+  
+  .icon-container .sta-officers-log-divider {
+    width: 1px;
+    align-self: stretch;
+    height: auto;
+    margin: 0 0.15rem;
+    background: rgba(255, 255, 255, 0.55);
+  }
+  
+  /* Keep buttons visually consistent between both columns */
+  .icon-container .sta-tracker-button-group .button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    margin: 0;
+    line-height: 1;
+  }
+  
+  /* Match STA tracker icon styling (size + color) */
+  .icon-container .sta-officers-log-group .button i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #faf9f6;
+    font-size: 1.5em;
+    line-height: 1;
+    width: 1.25em;
+    height: 1em;
+  }
+  
+  .icon-container .sta-officers-log-group .button i:hover {
+    color:#89CFF0;
+  }
+  
+  /* Yellow highlight on 'New Mission' button when a mission is active */
+  .icon-container .sta-officers-log-group .button.sta-mission-active i {
+    color: #fadf47;
+  }
+  
+  .icon-container .sta-officers-log-group .button.sta-mission-active i:hover {
+    color: #ffe066;
+  }
+  
+  .combadge {
+      height: 1.3em;
+      width: 1.3em;
+  }
+  
+  /* STA system tracker: Momentum/Threat info buttons */
+  .sta-officers-log-info-btn {
+    margin-left: 0.25rem;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    font-size: 0.75rem;
+    line-height: 1;
+  }
+  
+  .sta-officers-log-info-btn:hover {
+    color: #89CFF0;
+  }
+  
+  /* STA system tracker: widen container slightly */
+  &[data-application-part="tracker"] {
+    width: 235px;
+  }
+  
+  &[data-application-part="tracker"] .tracker {
+    width: 150px;
+  }
+  
+  &[data-application-part="tracker"] .tracker .header,
+  &[data-application-part="tracker"] .tracker .button-group {
+    width: 150px;
+  }
+  
+  /* STA system tracker: Mission Directives section */
+  .sta-tracker-directives-section {
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--sidebar-background);
+    max-width: 235px;
+  }
+  
+  /* STA system tracker: align Momentum/Threat header text + info button */
+  .tracker .header {
+    position: relative;
+    display: block;
+    text-align: center;
+  }
+  
+  .tracker .header .sta-officers-log-info-btn {
+    position: absolute;
+    right: 0.15rem;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .sta-tracker-directives-header {
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  .sta-tracker-directives-edit-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    padding: 0.15rem 0.3rem;
+    font-size: 0.75rem;
+  }
+  
+  .sta-tracker-directives-edit-btn:hover {
+    color: #89CFF0;
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .sta-tracker-directives-edit {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  
+  .sta-tracker-directives-textarea {
+    width: 100%;
+    min-height: 80px;
+    max-height: 150px;
+    resize: none;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    color: #e0e0e0;
+    font-size: 0.8rem;
+    padding: 0.4rem;
+    font-family: inherit;
+    line-height: 1.4;
+  }
+  
+  .sta-tracker-directives-textarea:focus {
+    outline: none;
+    border-color: #89CFF0;
+  }
+  
+  .sta-tracker-directives-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+    font-style: italic;
+  }
+  
+  .sta-tracker-directives-save-btn {
+    background: #89CFF0;
+    border: none;
+    color: #1a1a2e;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: background-color 0.15s ease;
+  }
+  
+  .sta-tracker-directives-save-btn:hover {
+    background: #a8dbf5;
+  }
+  
+  .sta-tracker-directives-hint {
+    font-size: 0.65rem;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0.2rem 0;
+  }
+  
+  .sta-tracker-directives-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .sta-tracker-directive-item {
+    font-size: 0.8rem;
+    color: #e0e0e0;
+    padding: 0.15rem 0;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  .sta-tracker-directive-item::before {
+    content: "•";
+    color: #89CFF0;
+    margin-right: 0.4em;
+  }
+  
+  .sta-tracker-directive-empty {
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  .sta-tracker-directive-empty::before {
+    content: none;
+  }
+  
+  /* Header actions container (Use Directive + Edit buttons) */
+  .sta-tracker-directives-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    justify-content: space-between;
+    flex-direction: row;
+    justify-self: flex-start;
+    width: 100%;
+  }
+  
+  /* "Use Directive" button in the tracker directives header */
+  .sta-tracker-use-directive-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    padding: 0.1rem 0.4rem;
+    font-size: 0.7rem;
+    border-radius: 3px;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  
+  .sta-tracker-use-directive-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #89CFF0;
+    border-color: #89CFF0;
+  }
 }
-
-.tracker-container .icon-container .sta-tracker-button-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 0.25rem;
-  padding-top: 5px; /* slight vertical spacing so the injected group aligns nicely */
-}
-
-.tracker-container .icon-container .sta-officers-log-divider {
-  width: 1px;
-  align-self: stretch;
-  height: auto;
-  margin: 0 0.15rem;
-  background: rgba(255, 255, 255, 0.55);
-}
-
-/* Keep buttons visually consistent between both columns */
-.tracker-container .icon-container .sta-tracker-button-group .button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  margin: 0;
-  line-height: 1;
-}
-
-/* Match STA tracker icon styling (size + color) */
-.tracker-container .icon-container .sta-officers-log-group .button i {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #faf9f6;
-  font-size: 1.5em;
-  line-height: 1;
-  width: 1.25em;
-  height: 1em;
-}
-
-.tracker-container .icon-container .sta-officers-log-group .button i:hover {
-  color:#89CFF0;
-}
-
-/* Yellow highlight on 'New Mission' button when a mission is active */
-.tracker-container .icon-container .sta-officers-log-group .button.sta-mission-active i {
-  color: #fadf47;
-}
-
-.tracker-container .icon-container .sta-officers-log-group .button.sta-mission-active i:hover {
-  color: #ffe066;
-}
-
-.tracker-container .combadge {
-    height: 1.3em;
-    width: 1.3em;
-}
-
-/* STA system tracker: Momentum/Threat info buttons */
-.tracker-container .sta-officers-log-info-btn {
-  margin-left: 0.25rem;
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.7);
-  cursor: pointer;
-  font-size: 0.75rem;
-  line-height: 1;
-}
-
-.tracker-container .sta-officers-log-info-btn:hover {
-  color: #89CFF0;
-}
-
-/* STA system tracker: widen container slightly */
-.tracker-container[data-application-part="tracker"] {
-  width: 235px;
-}
-
-.tracker-container[data-application-part="tracker"] .tracker {
-  width: 150px;
-}
-
-.tracker-container[data-application-part="tracker"] .tracker .header,
-.tracker-container[data-application-part="tracker"] .tracker .button-group {
-  width: 150px;
-}
-
-/* STA system tracker: Mission Directives section */
-.tracker-container .sta-tracker-directives-section {
-  margin-top: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: var(--sidebar-background);
-  max-width: 235px;
-}
-
-/* STA system tracker: align Momentum/Threat header text + info button */
-.tracker-container .tracker .header {
-  position: relative;
-  display: block;
-  text-align: center;
-}
-
-.tracker-container .tracker .header .sta-officers-log-info-btn {
-  position: absolute;
-  right: 0.15rem;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.tracker-container .sta-tracker-directives-header {
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  display: flex;
-  align-items: center;
-  flex-direction: row;
-  flex-wrap: wrap;
-}
-
-.tracker-container .sta-tracker-directives-edit-btn {
-  background: transparent;
-  border: none;
-  color: rgba(255, 255, 255, 0.6);
-  cursor: pointer;
-  padding: 0.15rem 0.3rem;
-  font-size: 0.75rem;
-}
-
-.tracker-container .sta-tracker-directives-edit-btn:hover {
-  color: #89CFF0;
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.tracker-container .sta-tracker-directives-edit {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.tracker-container .sta-tracker-directives-textarea {
-  width: 100%;
-  min-height: 80px;
-  max-height: 150px;
-  resize: none;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-  color: #e0e0e0;
-  font-size: 0.8rem;
-  padding: 0.4rem;
-  font-family: inherit;
-  line-height: 1.4;
-}
-
-.tracker-container .sta-tracker-directives-textarea:focus {
-  outline: none;
-  border-color: #89CFF0;
-}
-
-.tracker-container .sta-tracker-directives-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.4);
-  font-style: italic;
-}
-
-.tracker-container .sta-tracker-directives-save-btn {
-  background: #89CFF0;
-  border: none;
-  color: #1a1a2e;
-  cursor: pointer;
-  font-size: 0.75rem;
-  font-weight: bold;
-  text-transform: uppercase;
-  transition: background-color 0.15s ease;
-}
-
-.tracker-container .sta-tracker-directives-save-btn:hover {
-  background: #a8dbf5;
-}
-
-.tracker-container .sta-tracker-directives-hint {
-  font-size: 0.65rem;
-  font-style: italic;
-  color: rgba(255, 255, 255, 0.5);
-  margin: 0.2rem 0;
-}
-
-.tracker-container .sta-tracker-directives-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.tracker-container .sta-tracker-directive-item {
-  font-size: 0.8rem;
-  color: #e0e0e0;
-  padding: 0.15rem 0;
-  line-height: 1.3;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
-.tracker-container .sta-tracker-directive-item::before {
-  content: "•";
-  color: #89CFF0;
-  margin-right: 0.4em;
-}
-
-.tracker-container .sta-tracker-directive-empty {
-  font-style: italic;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.tracker-container .sta-tracker-directive-empty::before {
-  content: none;
-}
-
-/* Header actions container (Use Directive + Edit buttons) */
-.tracker-container .sta-tracker-directives-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  justify-content: space-between;
-  flex-direction: row;
-  justify-self: flex-start;
-  width: 100%;
-}
-
-/* "Use Directive" button in the tracker directives header */
-.tracker-container .sta-tracker-use-directive-btn {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: rgba(255, 255, 255, 0.8);
-  cursor: pointer;
-  padding: 0.1rem 0.4rem;
-  font-size: 0.7rem;
-  border-radius: 3px;
-  white-space: nowrap;
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.tracker-container .sta-tracker-use-directive-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #89CFF0;
-  border-color: #89CFF0;
-}
-
 /* =============================================================================
  * DIALOGS (DialogV2 / ApplicationV2)
  * ============================================================================= */
@@ -1316,9 +1317,11 @@ div.section.character-log li.row.entry .sta-current-mission-indicator {
   margin-right: 0.25rem;
 }
 
-/* Chain-sort: visually nest subsequent logs in a callback chain */
+/* Chain-sort: visually nest subsequent logs in a callback chain.
+   Uses margin-left (not padding-left) so it cannot be overridden by
+   sheet-variant padding shorthands on .row.entry. */
 .sta-callbacks-chain-child {
-  padding-left: 20px;
+  margin-left: 20px;
 }
 
 /* Completed Arc visualization and collapse helpers on sheet log rows */
@@ -1416,193 +1419,195 @@ div.section.character-log li.row.entry[data-item-type="log"] .item-name a {
   white-space: nowrap;
 }
 
-/* =============================================================================
- * FOCUS PICKER WINDOW
- * ============================================================================= */
-
-/* Focus picker: searchable compendium list */
-.sta-officers-log.focus-picker .sta-focus-picker {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+.sta-ship-talent-swap {
+  .sta-officers-log.focus-picker {
+    /* =============================================================================
+     * FOCUS PICKER WINDOW
+     * ============================================================================= */
+    
+    /* Focus picker: searchable compendium list */
+    .sta-focus-picker {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .sta-focus-picker-top-actions {
+      display: flex;
+    }
+    
+    .sta-focus-picker-eligible {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-left: auto;
+      font-size: 0.85rem;
+      color: var(--color-fg-muted);
+    }
+    
+    .sta-focus-picker-eligible input {
+      width: auto;
+    }
+    
+    .sta-focus-picker-top-actions .dialog-button {
+      width: 100%;
+    }
+    
+    .sta-focus-picker-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    
+    .sta-focus-picker-groups {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 360px;
+      overflow: auto;
+      border: 1px solid var(--color-border-light-primary);
+      border-radius: 8px;
+      padding: 0.25rem;
+    }
+    
+    .sta-focus-picker-group-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.5rem;
+      font-weight: 600;
+      opacity: 0.9;
+    }
+    
+    .sta-focus-picker-group-img {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+    }
+    
+    .sta-focus-picker-item {
+      margin: 0;
+      padding: 0;
+    }
+    
+    .sta-focus-picker-choice {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.5rem;
+      text-align: left;
+    }
+    
+    .sta-focus-picker-choice.is-disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .sta-focus-picker-img {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+    }
+    
+    /* Mirror the focus-picker styles inside the ship talent swap dialog where we inject the picker markup */
+    & .sta-focus-picker {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    & .sta-focus-picker-top-actions {
+      display: flex;
+      gap: 0.35rem;
+    }
+    
+    & .sta-focus-picker-eligible {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-left: auto;
+      font-size: 0.85rem;
+      color: var(--color-fg-muted);
+    }
+    
+    & .sta-focus-picker-eligible input {
+      width: auto;
+    }
+    
+    & .sta-focus-picker-top-actions .dialog-button {
+      width: 100%;
+    }
+    
+    & .sta-focus-picker-groups {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 360px;
+      overflow: auto;
+      border: 1px solid var(--color-border-light-primary);
+      border-radius: 8px;
+      padding: 0.25rem;
+    }
+    
+    & .sta-focus-picker-group-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.5rem;
+      font-weight: 600;
+      opacity: 0.9;
+    }
+    
+    & .sta-focus-picker-group-img {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+    }
+    
+    & .sta-focus-picker-entry {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    
+    & .sta-focus-picker-choice {
+      flex: 1 1 0;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.5rem;
+      text-align: left;
+    }
+    
+    & .sta-focus-picker-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    
+    & .sta-focus-picker-img {
+      width: 26px;
+      height: 26px;
+      object-fit: contain;
+    }
+    
+    & .sta-focus-picker-preview {
+      border: none;
+      background: none;
+      padding: 0.35rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      color: var(--color-fg-muted);
+      cursor: pointer;
+      flex: 0 0 auto;
+    }
+    
+    & .sta-focus-picker-preview:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
 }
-
-.sta-officers-log.focus-picker .sta-focus-picker-top-actions {
-  display: flex;
-}
-
-.sta-officers-log.focus-picker .sta-focus-picker-eligible {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  margin-left: auto;
-  font-size: 0.85rem;
-  color: var(--color-fg-muted);
-}
-
-.sta-officers-log.focus-picker .sta-focus-picker-eligible input {
-  width: auto;
-}
-
-.sta-officers-log.focus-picker .sta-focus-picker-top-actions .dialog-button {
-  width: 100%;
-}
-
-.sta-officers-log.focus-picker .sta-focus-picker-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.sta-officers-log.focus-picker .sta-focus-picker-groups {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  max-height: 360px;
-  overflow: auto;
-  border: 1px solid var(--color-border-light-primary);
-  border-radius: 8px;
-  padding: 0.25rem;
-}
-
-.sta-officers-log.focus-picker .sta-focus-picker-group-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.35rem 0.5rem;
-  font-weight: 600;
-  opacity: 0.9;
-}
-
-.sta-officers-log.focus-picker .sta-focus-picker-group-img {
-  width: 22px;
-  height: 22px;
-  object-fit: contain;
-}
-
-.sta-officers-log.focus-picker .sta-focus-picker-item {
-  margin: 0;
-  padding: 0;
-}
-
-.sta-officers-log.focus-picker .sta-focus-picker-choice {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.35rem 0.5rem;
-  text-align: left;
-}
-
-.sta-officers-log.focus-picker .sta-focus-picker-choice.is-disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.sta-officers-log.focus-picker .sta-focus-picker-img {
-  width: 22px;
-  height: 22px;
-  object-fit: contain;
-}
-
-/* Mirror the focus-picker styles inside the ship talent swap dialog where we inject the picker markup */
-.sta-ship-talent-swap .sta-focus-picker {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.sta-ship-talent-swap .sta-focus-picker-top-actions {
-  display: flex;
-  gap: 0.35rem;
-}
-
-.sta-ship-talent-swap .sta-focus-picker-eligible {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  margin-left: auto;
-  font-size: 0.85rem;
-  color: var(--color-fg-muted);
-}
-
-.sta-ship-talent-swap .sta-focus-picker-eligible input {
-  width: auto;
-}
-
-.sta-ship-talent-swap .sta-focus-picker-top-actions .dialog-button {
-  width: 100%;
-}
-
-.sta-ship-talent-swap .sta-focus-picker-groups {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  max-height: 360px;
-  overflow: auto;
-  border: 1px solid var(--color-border-light-primary);
-  border-radius: 8px;
-  padding: 0.25rem;
-}
-
-.sta-ship-talent-swap .sta-focus-picker-group-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.35rem 0.5rem;
-  font-weight: 600;
-  opacity: 0.9;
-}
-
-.sta-ship-talent-swap .sta-focus-picker-group-img {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-}
-
-.sta-ship-talent-swap .sta-focus-picker-entry {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.sta-ship-talent-swap .sta-focus-picker-choice {
-  flex: 1 1 0;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.35rem 0.5rem;
-  text-align: left;
-}
-
-.sta-ship-talent-swap .sta-focus-picker-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.sta-ship-talent-swap .sta-focus-picker-img {
-  width: 26px;
-  height: 26px;
-  object-fit: contain;
-}
-
-.sta-ship-talent-swap .sta-focus-picker-preview {
-  border: none;
-  background: none;
-  padding: 0.35rem 0.5rem;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  color: var(--color-fg-muted);
-  cursor: pointer;
-  flex: 0 0 auto;
-}
-
-.sta-ship-talent-swap .sta-focus-picker-preview:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-
 /* =============================================================================
  * ITEM SHEETS (Log sheet injections)
  * ============================================================================= */
@@ -2092,80 +2097,80 @@ div.section.character-log li.row.entry[data-item-type="log"] .item-name a {
 }
 
 /* Use Value window: three option cards */
-.use-value .sta-use-value {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+.use-value {
+  .sta-use-value {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .sta-use-value-prompt {
+    margin: 0;
+  }
+  
+  .sta-use-value-grid {
+    display: flex;
+    flex-direction: row;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+  
+  .sta-use-value-card {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    border: 2px solid var(--color-border-light-primary);
+    border-radius: 8px;
+    padding: 0.75rem;
+    min-height: 240px;
+  }
+  
+  .sta-use-value-card-title {
+    margin: 0;
+    text-align: center;
+  }
+  
+  .sta-use-value-card-body {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .sta-use-value-card-desc {
+    font-size: var(--font-size-14);
+    line-height: 1.3;
+  }
+  
+  .sta-use-value-footer {
+    display: flex;
+    flex-direction: row;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+  
+  .sta-use-value-footer .dialog-button {
+    flex: 1 1 0;
+    width: 0;
+    font-size: var(--font-size-14);
+    line-height: 1.2;
+    color: var(--color-text-light-primary);
+    height: auto;
+  }
+  
+  .sta-use-value-footer .sta-use-value-btn-group {
+    flex: 1 1 0;
+    width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  
+  .sta-use-value-footer .sta-use-value-btn-group .dialog-button {
+    flex: 1 1 0;
+    width: 100%;
+  }
 }
-
-.use-value .sta-use-value-prompt {
-  margin: 0;
-}
-
-.use-value .sta-use-value-grid {
-  display: flex;
-  flex-direction: row;
-  gap: 0.75rem;
-  align-items: stretch;
-}
-
-.use-value .sta-use-value-card {
-  flex: 1 1 0;
-  display: flex;
-  flex-direction: column;
-  border: 2px solid var(--color-border-light-primary);
-  border-radius: 8px;
-  padding: 0.75rem;
-  min-height: 240px;
-}
-
-.use-value .sta-use-value-card-title {
-  margin: 0;
-  text-align: center;
-}
-
-.use-value .sta-use-value-card-body {
-  flex: 1 1 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.use-value .sta-use-value-card-desc {
-  font-size: var(--font-size-14);
-  line-height: 1.3;
-}
-
-.use-value .sta-use-value-footer {
-  display: flex;
-  flex-direction: row;
-  gap: 0.75rem;
-  align-items: stretch;
-}
-
-.use-value .sta-use-value-footer .dialog-button {
-  flex: 1 1 0;
-  width: 0;
-  font-size: var(--font-size-14);
-  line-height: 1.2;
-  color: var(--color-text-light-primary);
-  height: auto;
-}
-
-.use-value .sta-use-value-footer .sta-use-value-btn-group {
-  flex: 1 1 0;
-  width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.use-value .sta-use-value-footer .sta-use-value-btn-group .dialog-button {
-  flex: 1 1 0;
-  width: 100%;
-}
-
-
 .sta-officers-log-context-menu {
     border: solid white 1px;
     background: rgb(0, 0, 0);
@@ -2243,906 +2248,907 @@ div.section.character-log li.row.entry[data-item-type="log"] .item-name a {
   overflow: auto;
 }
 
-/* =============================================================================
- * MISSION LOG FLOWCHART
- * ============================================================================= */
-
-.sta-flowchart-window {
-  min-width: 600px;
-  min-height: 400px;
-}
-
-.sta-flowchart-window .window-content {
-  padding: 0;
-  overflow: hidden;
-}
-
-.sta-flowchart-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  background: var(--color-bg-option);
-}
-
-/* Toolbar */
-.sta-flowchart-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  background: var(--color-bg-lightest);
-  border-bottom: 1px solid var(--color-border-light-tertiary);
-  flex-shrink: 0;
-}
-
-.sta-flowchart-toolbar-left,
-.sta-flowchart-toolbar-right {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.sta-flowchart-toolbar-center {
-  flex: 1;
-  text-align: center;
-}
-
-.sta-flowchart-toolbar .sta-flowchart-title {
-  font-weight: 600;
-  font-size: var(--font-size-14);
-}
-
-.sta-flowchart-toolbar button {
-  padding: 0.35rem 0.75rem;
-  font-size: var(--font-size-12);
-}
-
-.sta-flowchart-toolbar button i {
-  margin-right: 0.25rem;
-}
-
-.sta-flowchart-toolbar .spacer {
-  flex: 1;
-}
-
-/* Main area with canvas and sidebar */
-.sta-flowchart-main {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-/* Canvas container */
-.sta-flowchart-canvas-container {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-}
-
-.sta-flowchart-canvas-container canvas {
-  display: block;
-  width: 100% !important;
-  height: 100% !important;
-}
-
-/* Empty state */
-.sta-flowchart-empty {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  color: var(--color-text-light-2);
-}
-
-.sta-flowchart-empty p {
-  margin: 0.5rem 0;
-  font-size: var(--font-size-14);
-}
-
-.sta-flowchart-empty button {
-  margin-top: 1rem;
-}
-
-/* Sidebar */
-.sta-flowchart-sidebar {
-  width: 220px;
-  background: var(--color-bg-lightest);
-  border-left: 1px solid var(--color-border-light-tertiary);
-  overflow-y: auto;
-  flex-shrink: 0;
-}
-
-.sta-flowchart-sidebar[hidden] {
-  display: none;
-}
-
-.sta-flowchart-sidebar-actions {
-  padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--color-border-light-tertiary);
-}
-
-.sta-flowchart-sidebar-actions .sta-flowchart-btn {
-  width: 100%;
-}
-
-.sta-flowchart-btn-advanced.active {
-  background: var(--color-shadow-primary);
-  color: var(--color-text-light-highlight);
-}
-
-/* Description Sidebar (left side) */
-.sta-flowchart-description-sidebar {
-  width: 280px;
-  background: var(--color-bg-lightest);
-  border-right: 1px solid var(--color-border-light-tertiary);
-  overflow-y: auto;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.sta-flowchart-description-content {
-  flex: 1;
-  padding: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: visible;
-}
-
-.sta-flowchart-description-content .sta-flowchart-sidebar-hint {
-  text-align: center;
-  font-style: italic;
-  padding: 1rem 0;
-  color: var(--color-text-light-2);
-}
-
-.sta-flowchart-description-editor {
-  flex: 1;
-  min-height: 200px;
-  display: flex;
-  flex-direction: column;
-}
-
-.sta-flowchart-description-editor .editor-content {
-  flex: 1;
-  overflow-y: auto;
-}
-
-/* Description sidebar info section */
-.sta-flowchart-desc-info {
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
-  padding-top: 0.5rem;
-  margin-top: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.sta-flowchart-info-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.sta-flowchart-info-label {
-  font-size: var(--font-size-11);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0;
-}
-
-.sta-flowchart-info-values {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-}
-
-.sta-flowchart-info-value-badge {
-  font-size: var(--font-size-11);
-  padding: 0.1rem 0.4rem;
-  border: 1px solid;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.sta-flowchart-info-link {
-  font-size: var(--font-size-11);
-  margin: 0;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.sta-flowchart-info-link i {
-  width: 1em;
-  text-align: center;
-  margin-right: 0.2em;
-  opacity: 0.6;
-}
-
-.sta-flowchart-info-milestone {
-  font-size: var(--font-size-11);
-  margin: 0;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.sta-flowchart-info-milestone i {
-  color: #f0c040;
-  margin-right: 0.2em;
-}
-
-.sta-flowchart-info-no-milestone {
-  font-size: var(--font-size-11);
-  margin: 0;
-  color: rgba(255, 255, 255, 0.5);
-  font-style: italic;
-}
-
-.sta-flowchart-btn-sm {
-  font-size: var(--font-size-11);
-  padding: 0.2rem 0.5rem;
-  margin-top: 0.25rem;
-}
-
-.sta-flowchart-sidebar-header {
-  padding: 0.5rem 0.75rem;
-  background: var(--color-bg-option);
-  border-bottom: 1px solid var(--color-border-light-tertiary);
-  font-weight: 600;
-  font-size: var(--font-size-12);
-}
-
 .sta-flowchart-sidebar-content {
-  padding: 0.75rem;
-}
+padding: 0.75rem;
 
-.sta-flowchart-sidebar-content p {
-  margin: 0 0 0.5rem;
-  font-size: var(--font-size-12);
-  color: var(--color-text-light-2);
-}
-
-.sta-flowchart-sidebar-hint {
-  text-align: center;
-  font-style: italic;
-  padding: 1rem 0;
-}
-
-.sta-flowchart-sidebar-multi {
-  text-align: center;
-  font-weight: 600;
-  padding: 1rem 0;
-  color: var(--color-text-light-1);
-}
-
-.sta-flowchart-sidebar-content .node-name {
-  font-weight: 600;
-  font-size: var(--font-size-14);
-  margin-bottom: 0.75rem;
-  word-wrap: break-word;
-}
-
-.sta-flowchart-sidebar-content .node-values {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  margin-bottom: 0.75rem;
-}
-
-.sta-flowchart-sidebar-content .value-badge {
-  display: inline-block;
-  padding: 0.15rem 0.5rem;
-  border-radius: 3px;
-  font-size: var(--font-size-10);
-  color: white;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
-}
-
-.sta-flowchart-sidebar-content .callback-section {
-  margin-bottom: 0.75rem;
-}
-
-.sta-flowchart-sidebar-content .callback-section h4 {
-  font-size: var(--font-size-11);
-  margin: 0 0 0.25rem;
-  color: var(--color-text-light-3);
-}
-
-.sta-flowchart-sidebar-content .callback-section ul {
-  margin: 0;
-  padding-left: 1rem;
-  font-size: var(--font-size-12);
-}
-
-/* Node details (dynamically generated) */
-.sta-flowchart-node-details h5 {
-  margin: 0 0 0.5rem;
-  font-size: var(--font-size-14);
-  font-weight: 600;
-  word-wrap: break-word;
-}
-
-.sta-flowchart-node-details p {
-  margin: 0 0 0.5rem;
-  font-size: var(--font-size-12);
-}
-
-.sta-flowchart-node-details em {
-  color: var(--color-text-light-2);
-}
-
-.sta-flowchart-node-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--color-border-light-tertiary);
-}
-
-.sta-flowchart-node-actions button {
-  width: 100%;
-  font-size: var(--font-size-11);
-  padding: 0.35rem 0.5rem;
-}
-
-.sta-flowchart-node-actions button i {
-  margin-right: 0.25rem;
-}
-
-.sta-flowchart-btn-danger {
-  --button-hover-background-color: var(--color-level-error);
-}
-
-.sta-flowchart-btn-warning {
-  --button-hover-background-color: var(--color-level-warning);
-}
-
-.sta-flowchart-sidebar-content .sidebar-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--color-border-light-tertiary);
-}
-
-.sta-flowchart-sidebar-content .sidebar-actions button {
-  width: 100%;
-  font-size: var(--font-size-11);
-  padding: 0.35rem 0.5rem;
-}
-
-.sta-flowchart-sidebar-content .sidebar-actions button i {
-  margin-right: 0.25rem;
-}
-
-/* Legend */
-.sta-flowchart-legend {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.5rem 0.75rem;
-  background: var(--color-bg-lightest);
-  border-top: 1px solid var(--color-border-light-tertiary);
-  overflow-x: auto;
-  flex-shrink: 0;
-}
-
-.sta-flowchart-legend-label {
-  font-weight: 600;
-  font-size: var(--font-size-11);
-}
-
-.sta-flowchart-legend-empty {
-  font-style: italic;
-  color: var(--color-text-light-3);
-}
-
-.sta-flowchart-legend-item {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: var(--font-size-11);
-  white-space: nowrap;
-}
-
-.sta-flowchart-legend-item .color-swatch {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-}
-
-/* Value color swatches - matches COLOR_PALETTE in MissionFlowchartApp.js */
-.sta-flowchart-legend-item[data-color-index="0"] .color-swatch { background-color: #ca99cc; }
-.sta-flowchart-legend-item[data-color-index="1"] .color-swatch { background-color: #ffcc9c; }
-.sta-flowchart-legend-item[data-color-index="2"] .color-swatch { background-color: #cd6666; }
-.sta-flowchart-legend-item[data-color-index="3"] .color-swatch { background-color: #999ace; }
-.sta-flowchart-legend-item[data-color-index="4"] .color-swatch { background-color: #ff9a65; }
-.sta-flowchart-legend-item[data-color-index="5"] .color-swatch { background-color: #cc6699; }
-.sta-flowchart-legend-item[data-color-index="6"] .color-swatch { background-color: #4e81b6; }
-.sta-flowchart-legend-item[data-color-index="7"] .color-swatch { background-color: #6da38c; }
-
-/* Status bar */
-.sta-flowchart-status {
-  display: flex;
-  gap: 1.5rem;
-  padding: 0.35rem 0.75rem;
-  background: var(--color-bg-option);
-  border-top: 1px solid var(--color-border-light-tertiary);
-  font-size: var(--font-size-11);
-  color: var(--color-text-light-3);
-  flex-shrink: 0;
-}
-
-/* Character sheet flowchart button */
-.sta-flowchart-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.25rem 0.5rem;
-  font-size: var(--font-size-11);
-  cursor: pointer;
-}
-
-.sta-flowchart-btn i {
-  font-size: var(--font-size-12);
-}
-
-/* Save button states */
-.sta-flowchart-btn-save {
-  transition: background-color 0.2s, box-shadow 0.2s;
-}
-
-.sta-flowchart-btn-dirty {
-  background-color: var(--color-warm-2) !important;
-  box-shadow: 0 0 4px var(--color-warm-2);
-  animation: sta-pulse-save 1.5s ease-in-out infinite;
-}
-
-@keyframes sta-pulse-save {
-  0%,
-  100% {
-    opacity: 1;
+  /* =============================================================================
+   * MISSION LOG FLOWCHART
+   * ============================================================================= */
+  
+  .sta-flowchart-window {
+    min-width: 600px;
+    min-height: 400px;
   }
-  50% {
-    opacity: 0.7;
+  
+  .sta-flowchart-window .window-content {
+    padding: 0;
+    overflow: hidden;
   }
+  
+  .sta-flowchart-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--color-bg-option);
+  }
+  
+  /* Toolbar */
+  .sta-flowchart-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: var(--color-bg-lightest);
+    border-bottom: 1px solid var(--color-border-light-tertiary);
+    flex-shrink: 0;
+  }
+  
+  .sta-flowchart-toolbar-left,
+  .sta-flowchart-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  
+  .sta-flowchart-toolbar-center {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .sta-flowchart-toolbar .sta-flowchart-title {
+    font-weight: 600;
+    font-size: var(--font-size-14);
+  }
+  
+  .sta-flowchart-toolbar button {
+    padding: 0.35rem 0.75rem;
+    font-size: var(--font-size-12);
+  }
+  
+  .sta-flowchart-toolbar button i {
+    margin-right: 0.25rem;
+  }
+  
+  .sta-flowchart-toolbar .spacer {
+    flex: 1;
+  }
+  
+  /* Main area with canvas and sidebar */
+  .sta-flowchart-main {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+  
+  /* Canvas container */
+  .sta-flowchart-canvas-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  }
+  
+  .sta-flowchart-canvas-container canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+  }
+  
+  /* Empty state */
+  .sta-flowchart-empty {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: var(--color-text-light-2);
+  }
+  
+  .sta-flowchart-empty p {
+    margin: 0.5rem 0;
+    font-size: var(--font-size-14);
+  }
+  
+  .sta-flowchart-empty button {
+    margin-top: 1rem;
+  }
+  
+  /* Sidebar */
+  .sta-flowchart-sidebar {
+    width: 220px;
+    background: var(--color-bg-lightest);
+    border-left: 1px solid var(--color-border-light-tertiary);
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  
+  .sta-flowchart-sidebar[hidden] {
+    display: none;
+  }
+  
+  .sta-flowchart-sidebar-actions {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--color-border-light-tertiary);
+  }
+  
+  .sta-flowchart-sidebar-actions .sta-flowchart-btn {
+    width: 100%;
+  }
+  
+  .sta-flowchart-btn-advanced.active {
+    background: var(--color-shadow-primary);
+    color: var(--color-text-light-highlight);
+  }
+  
+  /* Description Sidebar (left side) */
+  .sta-flowchart-description-sidebar {
+    width: 280px;
+    background: var(--color-bg-lightest);
+    border-right: 1px solid var(--color-border-light-tertiary);
+    overflow-y: auto;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .sta-flowchart-description-content {
+    flex: 1;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: visible;
+  }
+  
+  .sta-flowchart-description-content .sta-flowchart-sidebar-hint {
+    text-align: center;
+    font-style: italic;
+    padding: 1rem 0;
+    color: var(--color-text-light-2);
+  }
+  
+  .sta-flowchart-description-editor {
+    flex: 1;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .sta-flowchart-description-editor .editor-content {
+    flex: 1;
+    overflow-y: auto;
+  }
+  
+  /* Description sidebar info section */
+  .sta-flowchart-desc-info {
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .sta-flowchart-info-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .sta-flowchart-info-label {
+    font-size: var(--font-size-11);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+  }
+  
+  .sta-flowchart-info-values {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  
+  .sta-flowchart-info-value-badge {
+    font-size: var(--font-size-11);
+    padding: 0.1rem 0.4rem;
+    border: 1px solid;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  .sta-flowchart-info-link {
+    font-size: var(--font-size-11);
+    margin: 0;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .sta-flowchart-info-link i {
+    width: 1em;
+    text-align: center;
+    margin-right: 0.2em;
+    opacity: 0.6;
+  }
+  
+  .sta-flowchart-info-milestone {
+    font-size: var(--font-size-11);
+    margin: 0;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .sta-flowchart-info-milestone i {
+    color: #f0c040;
+    margin-right: 0.2em;
+  }
+  
+  .sta-flowchart-info-no-milestone {
+    font-size: var(--font-size-11);
+    margin: 0;
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+  }
+  
+  .sta-flowchart-btn-sm {
+    font-size: var(--font-size-11);
+    padding: 0.2rem 0.5rem;
+    margin-top: 0.25rem;
+  }
+  
+  .sta-flowchart-sidebar-header {
+    padding: 0.5rem 0.75rem;
+    background: var(--color-bg-option);
+    border-bottom: 1px solid var(--color-border-light-tertiary);
+    font-weight: 600;
+    font-size: var(--font-size-12);
+  }
+  
+  p {
+    margin: 0 0 0.5rem;
+    font-size: var(--font-size-12);
+    color: var(--color-text-light-2);
+  }
+  
+  .sta-flowchart-sidebar-hint {
+    text-align: center;
+    font-style: italic;
+    padding: 1rem 0;
+  }
+  
+  .sta-flowchart-sidebar-multi {
+    text-align: center;
+    font-weight: 600;
+    padding: 1rem 0;
+    color: var(--color-text-light-1);
+  }
+  
+  .node-name {
+    font-weight: 600;
+    font-size: var(--font-size-14);
+    margin-bottom: 0.75rem;
+    word-wrap: break-word;
+  }
+  
+  .node-values {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .value-badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    font-size: var(--font-size-10);
+    color: white;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+  }
+  
+  .callback-section {
+    margin-bottom: 0.75rem;
+  }
+  
+  .callback-section h4 {
+    font-size: var(--font-size-11);
+    margin: 0 0 0.25rem;
+    color: var(--color-text-light-3);
+  }
+  
+  .callback-section ul {
+    margin: 0;
+    padding-left: 1rem;
+    font-size: var(--font-size-12);
+  }
+  
+  /* Node details (dynamically generated) */
+  .sta-flowchart-node-details h5 {
+    margin: 0 0 0.5rem;
+    font-size: var(--font-size-14);
+    font-weight: 600;
+    word-wrap: break-word;
+  }
+  
+  .sta-flowchart-node-details p {
+    margin: 0 0 0.5rem;
+    font-size: var(--font-size-12);
+  }
+  
+  .sta-flowchart-node-details em {
+    color: var(--color-text-light-2);
+  }
+  
+  .sta-flowchart-node-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-border-light-tertiary);
+  }
+  
+  .sta-flowchart-node-actions button {
+    width: 100%;
+    font-size: var(--font-size-11);
+    padding: 0.35rem 0.5rem;
+  }
+  
+  .sta-flowchart-node-actions button i {
+    margin-right: 0.25rem;
+  }
+  
+  .sta-flowchart-btn-danger {
+    --button-hover-background-color: var(--color-level-error);
+  }
+  
+  .sta-flowchart-btn-warning {
+    --button-hover-background-color: var(--color-level-warning);
+  }
+  
+  .sidebar-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-border-light-tertiary);
+  }
+  
+  .sidebar-actions button {
+    width: 100%;
+    font-size: var(--font-size-11);
+    padding: 0.35rem 0.5rem;
+  }
+  
+  .sidebar-actions button i {
+    margin-right: 0.25rem;
+  }
+  
+  /* Legend */
+  .sta-flowchart-legend {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--color-bg-lightest);
+    border-top: 1px solid var(--color-border-light-tertiary);
+    overflow-x: auto;
+    flex-shrink: 0;
+  }
+  
+  .sta-flowchart-legend-label {
+    font-weight: 600;
+    font-size: var(--font-size-11);
+  }
+  
+  .sta-flowchart-legend-empty {
+    font-style: italic;
+    color: var(--color-text-light-3);
+  }
+  
+  .sta-flowchart-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: var(--font-size-11);
+    white-space: nowrap;
+  }
+  
+  .sta-flowchart-legend-item .color-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Value color swatches - matches COLOR_PALETTE in MissionFlowchartApp.js */
+  .sta-flowchart-legend-item[data-color-index="0"] .color-swatch { background-color: #ca99cc; }
+  .sta-flowchart-legend-item[data-color-index="1"] .color-swatch { background-color: #ffcc9c; }
+  .sta-flowchart-legend-item[data-color-index="2"] .color-swatch { background-color: #cd6666; }
+  .sta-flowchart-legend-item[data-color-index="3"] .color-swatch { background-color: #999ace; }
+  .sta-flowchart-legend-item[data-color-index="4"] .color-swatch { background-color: #ff9a65; }
+  .sta-flowchart-legend-item[data-color-index="5"] .color-swatch { background-color: #cc6699; }
+  .sta-flowchart-legend-item[data-color-index="6"] .color-swatch { background-color: #4e81b6; }
+  .sta-flowchart-legend-item[data-color-index="7"] .color-swatch { background-color: #6da38c; }
+  
+  /* Status bar */
+  .sta-flowchart-status {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0.35rem 0.75rem;
+    background: var(--color-bg-option);
+    border-top: 1px solid var(--color-border-light-tertiary);
+    font-size: var(--font-size-11);
+    color: var(--color-text-light-3);
+    flex-shrink: 0;
+  }
+  
+  /* Character sheet flowchart button */
+  .sta-flowchart-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.5rem;
+    font-size: var(--font-size-11);
+    cursor: pointer;
+  }
+  
+  .sta-flowchart-btn i {
+    font-size: var(--font-size-12);
+  }
+  
+  /* Save button states */
+  .sta-flowchart-btn-save {
+    transition: background-color 0.2s, box-shadow 0.2s;
+  }
+  
+  .sta-flowchart-btn-dirty {
+    background-color: var(--color-warm-2) !important;
+    box-shadow: 0 0 4px var(--color-warm-2);
+    animation: sta-pulse-save 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes sta-pulse-save {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+  
+  /* =============================================================================
 }
-
-/* =============================================================================
- * FLOWCHART SIDEBAR EDITING UI
- * ============================================================================= */
-
-.sta-flowchart-edit-section {
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--color-border-light-tertiary);
-}
-
-.sta-flowchart-edit-label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  font-size: var(--font-size-12);
-  font-weight: 600;
-  color: var(--color-text-light-heading);
-}
-
-.sta-flowchart-select {
-  width: 100%;
-  padding: 0.25rem 0.35rem;
-  font-size: var(--font-size-11);
-  border: 1px solid var(--color-border-light-tertiary);
-  border-radius: 3px;
-  background: var(--color-bg-input);
-  color: var(--color-text-dark-primary);
-}
-
-.sta-flowchart-select option {
-  background: #1a1c2e;
-  color: #ddd;
-}
-
-.sta-flowchart-number-input {
-  width: 4rem;
-  padding: 0.25rem 0.35rem;
-  font-size: var(--font-size-11);
-  border: 1px solid var(--color-border-light-tertiary);
-  border-radius: 3px;
-  background: var(--color-bg-input);
-  color: var(--color-text-light-primary);
-  text-align: center;
-}
-
-.sta-flowchart-arc-steps {
-  margin-top: 0.5rem;
-  padding-left: 1.5rem;
-}
-
-.sta-flowchart-edit-checkbox {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: var(--font-size-12);
-  cursor: pointer;
-}
-
-.sta-flowchart-edit-checkbox input[type="checkbox"] {
-  width: 1rem;
-  height: 1rem;
-  cursor: pointer;
-}
-
-.sta-flowchart-section-title {
-  margin: 0 0 0.5rem 0;
-  font-size: var(--font-size-12);
-  font-weight: 600;
-  color: var(--color-text-light-heading);
-}
-
-.sta-flowchart-value-states {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  max-height: 200px;
-  overflow-y: auto;
-  border: 1px solid rgba(239, 230, 216);
-  border-radius: 4px;
-  padding: 0.4rem;
-}
-
-.sta-flowchart-value-state-row {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  padding: 0.35rem;
-  background: var(--color-bg-option);
-  border-radius: 3px;
-}
-
-.sta-flowchart-value-name {
-  font-size: var(--font-size-11);
-  font-weight: 600;
-  color: var(--color-text-light-heading);
-}
-
-.sta-flowchart-state-checkboxes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.sta-flowchart-state-checkbox {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: var(--font-size-10);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.sta-flowchart-state-checkbox input[type="checkbox"] {
-  width: 0.85rem;
-  height: 0.85rem;
-  cursor: pointer;
-}
-
-.sta-flowchart-no-values {
-  font-style: italic;
-  color: var(--color-text-light-3);
-  font-size: var(--font-size-11);
-}
-
-.sta-flowchart-status-hint {
-  margin-left: auto;
-  font-style: italic;
-  color: var(--color-text-light-5);
-}
-
-/* Value picker dialog for callback link creation */
-.sta-flowchart-value-choices {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.sta-flowchart-value-choice {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-}
-
-.sta-flowchart-value-choice input[type="radio"] {
-  appearance: auto;
-  -webkit-appearance: auto;
-  opacity: 1;
-  width: 1rem;
-  height: 1rem;
-  margin: 0;
-  pointer-events: auto;
-  position: static;
-  background: none;
-  border: none;
-  box-shadow: none;
-}
-
-.sta-flowchart-value-choice input[type="radio"]::before,
-.sta-flowchart-value-choice input[type="radio"]::after {
-  content: none;
-  display: none;
-}
-
-.sta-flowchart-value-choice:hover {
-  background: var(--color-bg-option);
-}
-
-/* ------------------------------------------------------------------ */
-/* Reputation Spend – Chat Button                                      */
-/* ------------------------------------------------------------------ */
-
-.sta-spend-btn-container {
-  display: flex;
-  justify-content: center;
-  padding: 6px 0 2px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  margin-top: 6px;
-}
-
-.sta-spend-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 14px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-  background: rgba(255, 255, 255, 0.08);
-  color: inherit;
-}
-
-.sta-spend-acclaim-btn:hover {
-  background: rgba(80, 200, 120, 0.25);
-  border-color: rgba(80, 200, 120, 0.5);
-}
-
-.sta-spend-reprimand-btn:hover {
-  background: rgba(220, 80, 80, 0.25);
-  border-color: rgba(220, 80, 80, 0.5);
-}
-
-/* ------------------------------------------------------------------ */
-/* Reputation Spend – Dialog                                           */
-/* ------------------------------------------------------------------ */
-
-.sta-spend-dialog {
-  padding: 4px 8px;
-}
-
-.sta-spend-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 1rem;
-  margin-bottom: 4px;
-}
-
-.sta-spend-status-amount {
-  font-size: 1.3rem;
-}
-
-.sta-spend-status-breakdown {
-  font-size: 0.8rem;
-  opacity: 0.7;
-  font-weight: 400;
-}
-
-.sta-spend-acclaim .sta-spend-status-amount {
-  color: #50c878;
-}
-
-.sta-spend-reprimand .sta-spend-status-amount {
-  color: #dc5050;
-}
-
-.sta-spend-current-stats {
-  display: flex;
-  gap: 16px;
-  font-size: 0.8rem;
-  opacity: 0.8;
-  margin-bottom: 8px;
-}
-
-.sta-spend-dialog h3 {
-  margin: 6px 0 4px;
-  font-size: 0.95rem;
-}
-
-.sta-spend-options {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  max-height: 50vh;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-.sta-spend-subheader {
-  margin: 8px 0 2px;
-  padding: 4px 0 2px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-  letter-spacing: 0.03em;
-}
-
 .sta-spend-option {
-  padding: 6px 8px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-}
+padding: 6px 8px;
+border: 1px solid rgba(255, 255, 255, 0.15);
+border-radius: 4px;
+cursor: pointer;
+transition: background 0.15s, border-color 0.15s;
 
-.sta-spend-option:hover {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.sta-spend-option label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.9rem;
-  flex-wrap: wrap;
-}
-
-.sta-spend-option input[type="checkbox"] {
-  -webkit-appearance: auto;
-  appearance: auto;
-  margin: 0;
-  cursor: pointer;
-}
-
-.sta-spend-option input[type="checkbox"]::before,
-.sta-spend-option input[type="checkbox"]::after {
-  content: none;
-  display: none;
-}
-
-.sta-spend-variable-input {
-  -webkit-appearance: auto;
-  appearance: auto;
-  width: 3.5rem;
-  padding: 1px 4px;
-  margin-left: auto;
-  font-size: 0.85rem;
-  text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 3px;
-  background: rgba(0, 0, 0, 0.2);
-  color: inherit;
-}
-
-.sta-spend-option-cost {
-  font-weight: 400;
-  opacity: 0.7;
-  font-size: 0.8rem;
-}
-
-.sta-spend-option-desc {
-  margin: 2px 0 0 26px;
-  font-size: 0.8rem;
-  opacity: 0.75;
-  line-height: 1.3;
-}
-
-.sta-spend-unaffordable {
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-.sta-spend-unaffordable input[type="checkbox"] {
-  pointer-events: none;
-}
-
-/* Total cost bar */
-.sta-spend-total {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 8px;
-  padding: 6px 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
-  font-size: 0.95rem;
-  font-weight: 600;
-}
-
-.sta-spend-total-amount {
-  font-size: 1.15rem;
-  color: #50c878;
-  transition: color 0.2s;
-}
-
-.sta-spend-over-budget .sta-spend-total-amount {
-  color: #dc5050;
-}
-
-.sta-spend-total-separator {
-  opacity: 0.5;
-}
-
-.sta-spend-total-available {
-  opacity: 0.8;
-}
-
-/* Chat result */
-.sta-spend-chat-result {
-  padding: 1rem;
-}
-
-.sta-spend-chat-result p {
-  margin: 0;
-  font-size: 0.9rem;
-}
-
-.sta-spend-chat-result ul {
-  margin: 4px 0 0 0;
-  padding-left: 20px;
-  font-size: 0.85rem;
-}
-
-.sta-spend-chat-result li {
-  margin-bottom: 6px;
-}
-
-.sta-spend-chat-result li em {
-  font-weight: 400;
-  opacity: 0.8;
-  font-size: 0.8rem;
-}
-
-.sta-spend-chat-remaining {
-  margin-top: 6px;
-  font-size: 0.85rem;
-  font-style: italic;
-  opacity: 0.85;
-}
-
-.sta-spend-chat-wasted {
-  color: #b0b0b0;
-}
-
-.sta-spend-chat-saved {
-  color: #dc5050;
-}
-
-.sta-spend-chat-manual {
-  margin-top: 6px;
-  font-size: 0.8rem;
-  opacity: 0.6;
-  font-style: italic;
-}
-
-/* GM-sent spend message */
-.sta-gm-spend-message {
-  padding: 1rem;
-}
-
-.sta-gm-spend-message p {
-  margin: 0 0 6px;
-  font-size: 0.9rem;
+  /* =============================================================================
+   * FLOWCHART SIDEBAR EDITING UI
+   * ============================================================================= */
+  
+  .sta-flowchart-edit-section {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-border-light-tertiary);
+  }
+  
+  .sta-flowchart-edit-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: var(--font-size-12);
+    font-weight: 600;
+    color: var(--color-text-light-heading);
+  }
+  
+  .sta-flowchart-select {
+    width: 100%;
+    padding: 0.25rem 0.35rem;
+    font-size: var(--font-size-11);
+    border: 1px solid var(--color-border-light-tertiary);
+    border-radius: 3px;
+    background: var(--color-bg-input);
+    color: var(--color-text-dark-primary);
+  }
+  
+  .sta-flowchart-select option {
+    background: #1a1c2e;
+    color: #ddd;
+  }
+  
+  .sta-flowchart-number-input {
+    width: 4rem;
+    padding: 0.25rem 0.35rem;
+    font-size: var(--font-size-11);
+    border: 1px solid var(--color-border-light-tertiary);
+    border-radius: 3px;
+    background: var(--color-bg-input);
+    color: var(--color-text-light-primary);
+    text-align: center;
+  }
+  
+  .sta-flowchart-arc-steps {
+    margin-top: 0.5rem;
+    padding-left: 1.5rem;
+  }
+  
+  .sta-flowchart-edit-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: var(--font-size-12);
+    cursor: pointer;
+  }
+  
+  .sta-flowchart-edit-checkbox input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+  }
+  
+  .sta-flowchart-section-title {
+    margin: 0 0 0.5rem 0;
+    font-size: var(--font-size-12);
+    font-weight: 600;
+    color: var(--color-text-light-heading);
+  }
+  
+  .sta-flowchart-value-states {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid rgba(239, 230, 216);
+    border-radius: 4px;
+    padding: 0.4rem;
+  }
+  
+  .sta-flowchart-value-state-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.35rem;
+    background: var(--color-bg-option);
+    border-radius: 3px;
+  }
+  
+  .sta-flowchart-value-name {
+    font-size: var(--font-size-11);
+    font-weight: 600;
+    color: var(--color-text-light-heading);
+  }
+  
+  .sta-flowchart-state-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .sta-flowchart-state-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: var(--font-size-10);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  
+  .sta-flowchart-state-checkbox input[type="checkbox"] {
+    width: 0.85rem;
+    height: 0.85rem;
+    cursor: pointer;
+  }
+  
+  .sta-flowchart-no-values {
+    font-style: italic;
+    color: var(--color-text-light-3);
+    font-size: var(--font-size-11);
+  }
+  
+  .sta-flowchart-status-hint {
+    margin-left: auto;
+    font-style: italic;
+    color: var(--color-text-light-5);
+  }
+  
+  /* Value picker dialog for callback link creation */
+  .sta-flowchart-value-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  
+  .sta-flowchart-value-choice {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+  }
+  
+  .sta-flowchart-value-choice input[type="radio"] {
+    appearance: auto;
+    -webkit-appearance: auto;
+    opacity: 1;
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
+    pointer-events: auto;
+    position: static;
+    background: none;
+    border: none;
+    box-shadow: none;
+  }
+  
+  .sta-flowchart-value-choice input[type="radio"]::before,
+  .sta-flowchart-value-choice input[type="radio"]::after {
+    content: none;
+    display: none;
+  }
+  
+  .sta-flowchart-value-choice:hover {
+    background: var(--color-bg-option);
+  }
+  
+  /* ------------------------------------------------------------------ */
+  /* Reputation Spend – Chat Button                                      */
+  /* ------------------------------------------------------------------ */
+  
+  .sta-spend-btn-container {
+    display: flex;
+    justify-content: center;
+    padding: 6px 0 2px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 6px;
+  }
+  
+  .sta-spend-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    background: rgba(255, 255, 255, 0.08);
+    color: inherit;
+  }
+  
+  .sta-spend-acclaim-btn:hover {
+    background: rgba(80, 200, 120, 0.25);
+    border-color: rgba(80, 200, 120, 0.5);
+  }
+  
+  .sta-spend-reprimand-btn:hover {
+    background: rgba(220, 80, 80, 0.25);
+    border-color: rgba(220, 80, 80, 0.5);
+  }
+  
+  /* ------------------------------------------------------------------ */
+  /* Reputation Spend – Dialog                                           */
+  /* ------------------------------------------------------------------ */
+  
+  .sta-spend-dialog {
+    padding: 4px 8px;
+  }
+  
+  .sta-spend-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    margin-bottom: 4px;
+  }
+  
+  .sta-spend-status-amount {
+    font-size: 1.3rem;
+  }
+  
+  .sta-spend-status-breakdown {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    font-weight: 400;
+  }
+  
+  .sta-spend-acclaim .sta-spend-status-amount {
+    color: #50c878;
+  }
+  
+  .sta-spend-reprimand .sta-spend-status-amount {
+    color: #dc5050;
+  }
+  
+  .sta-spend-current-stats {
+    display: flex;
+    gap: 16px;
+    font-size: 0.8rem;
+    opacity: 0.8;
+    margin-bottom: 8px;
+  }
+  
+  .sta-spend-dialog h3 {
+    margin: 6px 0 4px;
+    font-size: 0.95rem;
+  }
+  
+  .sta-spend-options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 50vh;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  
+  .sta-spend-subheader {
+    margin: 8px 0 2px;
+    padding: 4px 0 2px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    letter-spacing: 0.03em;
+  }
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+  
+  label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    flex-wrap: wrap;
+  }
+  
+  input[type="checkbox"] {
+    -webkit-appearance: auto;
+    appearance: auto;
+    margin: 0;
+    cursor: pointer;
+  }
+  
+  input[type="checkbox"]::before,
+  input[type="checkbox"]::after {
+    content: none;
+    display: none;
+  }
+  
+  .sta-spend-variable-input {
+    -webkit-appearance: auto;
+    appearance: auto;
+    width: 3.5rem;
+    padding: 1px 4px;
+    margin-left: auto;
+    font-size: 0.85rem;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.2);
+    color: inherit;
+  }
+  
+  .sta-spend-option-cost {
+    font-weight: 400;
+    opacity: 0.7;
+    font-size: 0.8rem;
+  }
+  
+  .sta-spend-option-desc {
+    margin: 2px 0 0 26px;
+    font-size: 0.8rem;
+    opacity: 0.75;
+    line-height: 1.3;
+  }
+  
+  .sta-spend-unaffordable {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  
+  .sta-spend-unaffordable input[type="checkbox"] {
+    pointer-events: none;
+  }
+  
+  /* Total cost bar */
+  .sta-spend-total {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 6px 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+  
+  .sta-spend-total-amount {
+    font-size: 1.15rem;
+    color: #50c878;
+    transition: color 0.2s;
+  }
+  
+  .sta-spend-over-budget .sta-spend-total-amount {
+    color: #dc5050;
+  }
+  
+  .sta-spend-total-separator {
+    opacity: 0.5;
+  }
+  
+  .sta-spend-total-available {
+    opacity: 0.8;
+  }
+  
+  /* Chat result */
+  .sta-spend-chat-result {
+    padding: 1rem;
+  }
+  
+  .sta-spend-chat-result p {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  
+  .sta-spend-chat-result ul {
+    margin: 4px 0 0 0;
+    padding-left: 20px;
+    font-size: 0.85rem;
+  }
+  
+  .sta-spend-chat-result li {
+    margin-bottom: 6px;
+  }
+  
+  .sta-spend-chat-result li em {
+    font-weight: 400;
+    opacity: 0.8;
+    font-size: 0.8rem;
+  }
+  
+  .sta-spend-chat-remaining {
+    margin-top: 6px;
+    font-size: 0.85rem;
+    font-style: italic;
+    opacity: 0.85;
+  }
+  
+  .sta-spend-chat-wasted {
+    color: #b0b0b0;
+  }
+  
+  .sta-spend-chat-saved {
+    color: #dc5050;
+  }
+  
+  .sta-spend-chat-manual {
+    margin-top: 6px;
+    font-size: 0.8rem;
+    opacity: 0.6;
+    font-style: italic;
+  }
+  
+  /* GM-sent spend message */
+  .sta-gm-spend-message {
+    padding: 1rem;
+  }
+  
+  .sta-gm-spend-message p {
+    margin: 0 0 6px;
+    font-size: 0.9rem;
+  }
 }

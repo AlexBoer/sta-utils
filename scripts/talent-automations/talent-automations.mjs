@@ -143,10 +143,6 @@ function _normalise(name) {
 
 import { registerExperimentalVessel } from "./experimental-vessel.mjs";
 import { registerAdvancedSensorSuite } from "./advanced-sensor-suite.mjs";
-import {
-  qualifiesForUntappedPotential,
-  appendUntappedPotentialButton,
-} from "./untapped-potential.mjs";
 
 /**
  * Import all sub-feature modules.
@@ -157,15 +153,6 @@ import {
 function _importSubFeatures() {
   // Example:
   // import("./bold.mjs");
-  // Register Untapped Potential handler
-  registerTalent({
-    name: "Untapped Potential",
-    onRoll: (actor, item, rollData) => {
-      if (qualifiesForUntappedPotential(actor, rollData)) {
-        appendUntappedPotentialButton(actor, rollData);
-      }
-    },
-  });
 }
 
 /**

@@ -1,0 +1,74 @@
+﻿/* ----------------------------------------------------------------------- */
+/*  PRODIGY                                                                 */
+/*  Cosmic violet chrome; cobalt blue secondary; vivid violet tertiary.    */
+/*  Deep-space nebula bg; magenta-crimson danger; no gold anywhere.        */
+/* ----------------------------------------------------------------------- */
+.theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-prodigy,
+.theme-dark .sta-lcars-dialogue-app.lcars-scheme-prodigy,
+body.theme-dark.sta-officers-lcars-active.lcars-scheme-prodigy {
+  --lcars-bg:              #0d0820da; /* deep-space purple-black */
+  --lcars-bg-panel:        rgba(8, 0, 24, 0.25);           /* panel tint: deep purple darkening */
+  --lcars-primary-color:   #5828b0; /* royal purple */
+  --lcars-secondary-color: #2850c8; /* cobalt blue */
+  --lcars-tertiary-color:  #7838c0; /* vivid violet */
+  /* biography/bio-fields/traits are violet not cobalt */
+  --lcars-titlebar-biography:       #9030c0;
+  --lcars-titlebar-traits:          var(--lcars-tertiary-color);
+  --lcars-titlebar-bio-fields:      #9030c0;
+  /* belongings are cobalt (matches secondary — shared default is fine) */
+  --lcars-titlebar-injuries:        #b81860; /* cosmic magenta-crimson */
+  --lcars-titlebar-belongings-colheader: #2858c0;
+  --lcars-titlebar-launchbay:       #1c3890;
+  --lcars-chrome-hover:             #7848d0;
+  --lcars-input-border:             #5030b8;
+  --lcars-text-body:                #d4c4f8;
+  --lcars-text-item:                #d4c4f8;
+  --lcars-text-title:               #f8f2ff;
+  --lcars-text-header:              #f8f2ff;
+}
+.theme-light :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-prodigy,
+.theme-light .sta-lcars-dialogue-app.lcars-scheme-prodigy,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-prodigy {
+  --lcars-bg:              #eee8f8; /* pale lavender */
+  --lcars-bg-panel:        rgba(250, 240, 255, 0.50); /* panel tint: violet-white brightening */
+  --lcars-primary-color:   #3a1888; /* deep indigo */
+  --lcars-secondary-color: #1a3898; /* deep cobalt */
+  --lcars-tertiary-color:  #5820a0; /* rich indigo-violet */
+  /* biography/bio-fields/traits are violet not cobalt */
+  --lcars-titlebar-biography:       #6818a8;
+  --lcars-titlebar-traits:          var(--lcars-tertiary-color);
+  --lcars-titlebar-bio-fields:      #6818a8;
+  --lcars-titlebar-injuries:        #8a0850; /* deep magenta */
+  --lcars-titlebar-belongings-colheader: #1c3888;
+  --lcars-titlebar-launchbay:       #102070;
+  --lcars-chrome-hover:             #5028b0;
+  --lcars-input-border:             #3a1888;
+  --lcars-text-body:                #0a0620;
+  --lcars-text-item:                #120a28;
+  --lcars-text-title:               #f8f2ff;
+  --lcars-text-header:              #f8f2ff;
+  /* ── Raw palette aliases (light mode) ── */
+  --lcars-orange:     var(--lcars-chrome);
+  --lcars-peach:      var(--lcars-chrome-hover);
+  --lcars-lavender:   var(--lcars-titlebar);
+  --lcars-lilac:      var(--lcars-input-border);
+  --lcars-blue:       var(--lcars-btn-secondary);
+  --lcars-sky:        var(--lcars-input-text);
+  --lcars-red:        var(--lcars-titlebar-injuries);
+  --lcars-tan:        var(--lcars-btn-reputation);
+  --lcars-text-light: var(--lcars-text-body);
+}
+
+/* ── Window-root background overrides (:has() targets the ancestor .application element) ── */
+.theme-dark .sta-lcars-window.application:has(.lcars-scheme-prodigy) {
+  --lcars-bg: #0d0820da;
+}
+.theme-light .sta-lcars-window.application:has(.lcars-scheme-prodigy) {
+  --lcars-bg: #eee8f8;
+}
+.sta-lcars-window.application.theme-dark:has(.lcars-scheme-prodigy) {
+  --lcars-bg: #0d0820da;
+}
+.sta-lcars-window.application.theme-light:has(.lcars-scheme-prodigy) {
+  --lcars-bg: #eee8f8;
+}

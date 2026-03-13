@@ -1,0 +1,58 @@
+﻿/* ----------------------------------------------------------------------- */
+/*  ENTERPRISE NX-01                                                        */
+/*  Steel blue-grey chrome; warm brass biography/belongings; teal focuses. */
+/* ----------------------------------------------------------------------- */
+.theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-enterprise,
+.theme-dark .sta-lcars-dialogue-app.lcars-scheme-enterprise,
+body.theme-dark.sta-officers-lcars-active.lcars-scheme-enterprise {
+  --lcars-primary-color:                 #4A6282; /* steel blue-grey — NX-01 hull */
+  --lcars-secondary-color:               #887050; /* warm brass-gold */
+  --lcars-tertiary-color:                #3A7080; /* teal */
+  --lcars-titlebar-injuries:             #8A3828;
+  --lcars-titlebar-traits:               #5A6850; /* MACO tactical olive */
+  --lcars-titlebar-belongings-colheader: #6A5830;
+  --lcars-titlebar-launchbay:            #2A5868;
+  --lcars-chrome-hover:                  #5A7292;
+  --lcars-input-border:                  #5A7282;
+  --lcars-text-body:                     #B8C4CC;
+  --lcars-text-item:                     #B8C4CC;
+  --lcars-text-title:                    #0a1420;
+  --lcars-text-header:                   #0a1420;
+  --lcars-bg-panel:                      rgba(0, 4, 8, 0.25);          /* panel tint: steel-blue darkening */
+}
+.theme-light :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-enterprise,
+.theme-light .sta-lcars-dialogue-app.lcars-scheme-enterprise,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-enterprise {
+  --lcars-bg:                            #e8ecf0;
+  --lcars-bg-panel:                      rgba(240, 244, 255, 0.50); /* panel tint: cool blue-white brightening */
+  --lcars-primary-color:                 #2A4A62;
+  --lcars-secondary-color:               #6A5028;
+  --lcars-tertiary-color:                #1A5060;
+  --lcars-titlebar-injuries:             #6A2010;
+  --lcars-titlebar-traits:               #3A4830;
+  --lcars-titlebar-belongings-colheader: #4A3810;
+  --lcars-titlebar-launchbay:            #123848;
+  --lcars-chrome-hover:                  #3A5A72;
+  --lcars-input-border:                  #3A5A72;
+  --lcars-text-body:                     #0e1820;
+  --lcars-text-item:                     #0e1820;
+  --lcars-text-title:                    #f0f4f8;
+  --lcars-text-header:                   #f0f4f8;
+  --lcars-orange:     var(--lcars-chrome);
+  --lcars-peach:      var(--lcars-chrome-hover);
+  --lcars-lavender:   var(--lcars-titlebar);
+  --lcars-lilac:      var(--lcars-input-border);
+  --lcars-blue:       var(--lcars-btn-secondary);
+  --lcars-sky:        var(--lcars-input-text);
+  --lcars-red:        var(--lcars-titlebar-injuries);
+  --lcars-tan:        var(--lcars-btn-reputation);
+  --lcars-text-light: var(--lcars-text-body);
+}
+
+/* ── Window-root background overrides (:has() targets the ancestor .application element) ── */
+.theme-light .sta-lcars-window.application:has(.lcars-scheme-enterprise) {
+  --lcars-bg: #e8ecf0;
+}
+.sta-lcars-window.application.theme-light:has(.lcars-scheme-enterprise) {
+  --lcars-bg: #e8ecf0;
+}

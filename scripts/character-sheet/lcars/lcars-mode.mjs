@@ -5,7 +5,6 @@
  *  - Collapsible sections on the traits tab
  *  - Relocated "+" create buttons in development tab title bars
  *  - Right-click context menu for all item rows
- *  - Decorative top-bar and footer-bar LCARS frame elements
  *
  * When sta-officers-log is also active, `syncOfficersLogLcars(true)` adds
  * `body.sta-officers-lcars-active` so all Officers Log dialogs and popups
@@ -21,50 +20,10 @@ import {
   _installCollapsibleSections,
   _installItemContextMenu,
   _moveDevelopmentCreateButtons,
+  _moveStarshipSectionCreateButtons,
 } from "../sheet-utils.mjs";
 import { syncOfficersLogLcars } from "./officers-log-sync.mjs";
 import { getLcarsColorScheme } from "../../core/settings.mjs";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// LCARS frame helper
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Inject LCARS-style decorative frame elements into the character sheet.
- * Adds a multi-segment top bar and a multi-segment footer bar.
- *
- * @param {HTMLElement} sheet - The `.character-sheet` element.
- */
-function _installLcarsFrame(sheet) {
-  const bottomSection = sheet.querySelector(".split-section:last-child");
-  if (!bottomSection) return;
-
-  // Add LCARS header bar across the full width at the top of the sheet
-  if (!sheet.querySelector(".sta-lcars-top-bar")) {
-    const topBar = document.createElement("div");
-    topBar.className = "sta-lcars-top-bar";
-
-    // Add decorative segments
-    for (let i = 0; i < 3; i++) {
-      const seg = document.createElement("div");
-      seg.className = `sta-lcars-top-segment sta-lcars-seg-${i}`;
-      topBar.appendChild(seg);
-    }
-    sheet.prepend(topBar);
-  }
-
-  // Add LCARS footer bar
-  if (!sheet.querySelector(".sta-lcars-footer-bar")) {
-    const footerBar = document.createElement("div");
-    footerBar.className = "sta-lcars-footer-bar";
-    for (let i = 0; i < 4; i++) {
-      const seg = document.createElement("div");
-      seg.className = `sta-lcars-footer-segment sta-lcars-fseg-${i}`;
-      footerBar.appendChild(seg);
-    }
-    sheet.appendChild(footerBar);
-  }
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Public installer
@@ -95,7 +54,7 @@ export function installLcarsMode(sheetApp, root) {
 
   sheet.classList.add("sta-lcars");
   const scheme = getLcarsColorScheme();
-  if (scheme && scheme !== "tng") sheet.classList.add(`lcars-scheme-${scheme}`);
+  if (scheme) sheet.classList.add(`lcars-scheme-${scheme}`);
   console.debug(`[sta-utils] sta-lcars class added to sheet`);
 
   // ── Collapsible sections (reuse shared infrastructure) ────────────────
@@ -107,9 +66,6 @@ export function installLcarsMode(sheetApp, root) {
 
   // ── Move create buttons from hidden header rows into titles ────────────
   _moveDevelopmentCreateButtons(sheet, "sta-lcars");
-
-  // ── LCARS frame elements ──────────────────────────────────────────────
-  _installLcarsFrame(sheet);
 
   // ── Sync Officers Log LCARS body class (no-op when OL is absent) ──────
   syncOfficersLogLcars(true);
@@ -136,10 +92,10 @@ export function installLcarsStarshipMode(sheetApp, root) {
 
   sheet.classList.add("sta-lcars");
   const scheme = getLcarsColorScheme();
-  if (scheme && scheme !== "tng") sheet.classList.add(`lcars-scheme-${scheme}`);
+  if (scheme) sheet.classList.add(`lcars-scheme-${scheme}`);
 
+  _moveStarshipSectionCreateButtons(sheet, "sta-lcars");
   _installItemContextMenu(sheetApp, root);
-  _installLcarsFrame(sheet);
   syncOfficersLogLcars(true);
 }
 
@@ -162,8 +118,7 @@ export function installLcarsExtendedTaskMode(sheetApp, root) {
 
   sheet.classList.add("sta-lcars");
   const scheme = getLcarsColorScheme();
-  if (scheme && scheme !== "tng") sheet.classList.add(`lcars-scheme-${scheme}`);
-  _installLcarsFrame(sheet);
+  if (scheme) sheet.classList.add(`lcars-scheme-${scheme}`);
   syncOfficersLogLcars(true);
 }
 
@@ -186,8 +141,7 @@ export function installLcarsItemSheetMode(sheetApp, root) {
 
   sheet.classList.add("sta-lcars");
   const scheme = getLcarsColorScheme();
-  if (scheme && scheme !== "tng") sheet.classList.add(`lcars-scheme-${scheme}`);
-  _installLcarsFrame(sheet);
+  if (scheme) sheet.classList.add(`lcars-scheme-${scheme}`);
   syncOfficersLogLcars(true);
 }
 
@@ -210,8 +164,7 @@ export function installLcarsSceneTraitsMode(sheetApp, root) {
 
   sheet.classList.add("sta-lcars");
   const scheme = getLcarsColorScheme();
-  if (scheme && scheme !== "tng") sheet.classList.add(`lcars-scheme-${scheme}`);
-  _installLcarsFrame(sheet);
+  if (scheme) sheet.classList.add(`lcars-scheme-${scheme}`);
   syncOfficersLogLcars(true);
 }
 
@@ -236,6 +189,15 @@ export function installLcarsDialogueMode(sheetApp, root) {
 
   sheet.classList.add("sta-lcars");
   const scheme = getLcarsColorScheme();
-  if (scheme && scheme !== "tng") sheet.classList.add(`lcars-scheme-${scheme}`);
+  if (scheme) sheet.classList.add(`lcars-scheme-${scheme}`);
+
+  // Also apply to the outer application wrapper so the window header,
+  // footer buttons (.dialog-buttons), and ::before pseudo-element are themed.
+  const appEl = root?.closest?.(".application") ?? root;
+  if (appEl && !appEl.classList.contains("sta-lcars")) {
+    appEl.classList.add("sta-lcars", "sta-lcars-dialogue-app");
+    if (scheme) appEl.classList.add(`lcars-scheme-${scheme}`);
+  }
+
   syncOfficersLogLcars(true);
 }

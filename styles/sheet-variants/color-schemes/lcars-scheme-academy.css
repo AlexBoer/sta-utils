@@ -1,0 +1,92 @@
+﻿/* ----------------------------------------------------------------------- */
+/*  STARFLEET ACADEMY                                                       */
+/*  Cadet grey chrome; command red biography/bio-fields; sunny yellow      */
+/*  focuses/belongings/buttons; grass green development/systems.           */
+/*  Note: 4-colour scheme — green sections require explicit overrides.     */
+/* ----------------------------------------------------------------------- */
+.theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-academy,
+.theme-dark .sta-lcars-dialogue-app.lcars-scheme-academy,
+body.theme-dark.sta-officers-lcars-active.lcars-scheme-academy {
+  --lcars-bg:              #181818bb;
+  --lcars-bg-panel:        rgba(0, 0, 0, 0.25);            /* panel tint: neutral dark deepening */
+  --lcars-primary-color:   #6a6860; /* cadet grey */
+  --lcars-secondary-color: #c03028; /* command red → biography/bio-fields */
+  --lcars-tertiary-color:  #c8a020; /* sunny yellow → focuses */
+  /* green sections (development/systems/milestones/launchbay) */
+  --lcars-titlebar-development:          #4a8030;
+  --lcars-titlebar-milestones:           #5a9c38;
+  --lcars-titlebar-systems:              #4a8030;
+  --lcars-titlebar-launchbay:            #385c20;
+  /* traits = lighter grey, not command red */
+  --lcars-titlebar-traits:               #827f78;
+  /* belongings/btn-secondary = yellow, not red */
+  --lcars-titlebar-belongings:           var(--lcars-tertiary-color);
+  --lcars-btn-secondary:                 var(--lcars-tertiary-color);
+  /* btn-reputation = warm grey, not yellow */
+  --lcars-btn-reputation:                #827f78;
+  --lcars-titlebar-injuries:             #d02020;
+  --lcars-titlebar-belongings-colheader: #a07c10;
+  --lcars-chrome-hover:                  #8a8880;
+  --lcars-tracktitle:                    #d4b830; /* brighter yellow for track labels */
+  --lcars-input-border:                  #7a7870;
+  --lcars-input-text:                    #e0c840;
+  --lcars-text-body:                     #d8d4cc;
+  --lcars-text-item:                     #d8d4cc;
+  --lcars-text-title:                    #f8f6f0;
+  --lcars-text-header:                   #f8f6f0;
+}
+.theme-light :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-academy,
+.theme-light .sta-lcars-dialogue-app.lcars-scheme-academy,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-academy {
+  --lcars-bg:              #e8e6e0; /* warm concrete grey — SF campus */
+  --lcars-bg-panel:        rgba(255, 255, 250, 0.50); /* panel tint: warm near-white brightening */
+  --lcars-primary-color:   #4a4840; /* deep cadet grey */
+  --lcars-secondary-color: #8a2018; /* deep command red */
+  --lcars-tertiary-color:  #906808; /* deep sunny yellow-amber */
+  /* green sections */
+  --lcars-titlebar-development:          #306018;
+  --lcars-titlebar-milestones:           #3a7018;
+  --lcars-titlebar-systems:              #306018;
+  --lcars-titlebar-launchbay:            #204010;
+  /* traits = mid warm grey */
+  --lcars-titlebar-traits:               #585550;
+  /* belongings/btn-secondary = yellow */
+  --lcars-titlebar-belongings:           var(--lcars-tertiary-color);
+  --lcars-btn-secondary:                 var(--lcars-tertiary-color);
+  /* btn-reputation = mid warm grey */
+  --lcars-btn-reputation:                #585550;
+  --lcars-titlebar-injuries:             #881818;
+  --lcars-titlebar-belongings-colheader: #6a4c06;
+  --lcars-chrome-hover:                  #686460;
+  --lcars-tracktitle:                    #786010;
+  --lcars-input-border:                  var(--lcars-primary-color);
+  --lcars-input-text:                    #604808;
+  --lcars-text-body:                     #121008;
+  --lcars-text-item:                     #1c1a10;
+  --lcars-text-title:                    #f8f6f0;
+  --lcars-text-header:                   #f8f6f0;
+  /* ── Raw palette aliases (light mode) ── */
+  --lcars-orange:     var(--lcars-chrome);
+  --lcars-peach:      var(--lcars-chrome-hover);
+  --lcars-lavender:   var(--lcars-titlebar);
+  --lcars-lilac:      var(--lcars-input-border);
+  --lcars-blue:       var(--lcars-btn-secondary);
+  --lcars-sky:        var(--lcars-input-text);
+  --lcars-red:        var(--lcars-titlebar-injuries);
+  --lcars-tan:        var(--lcars-btn-reputation);
+  --lcars-text-light: var(--lcars-text-body);
+}
+
+/* ── Window-root background overrides (:has() targets the ancestor .application element) ── */
+.theme-dark .sta-lcars-window.application:has(.lcars-scheme-academy) {
+  --lcars-bg: #181818bb;
+}
+.theme-light .sta-lcars-window.application:has(.lcars-scheme-academy) {
+  --lcars-bg: #e8e6e0;
+}
+.sta-lcars-window.application.theme-dark:has(.lcars-scheme-academy) {
+  --lcars-bg: #181818bb;
+}
+.sta-lcars-window.application.theme-light:has(.lcars-scheme-academy) {
+  --lcars-bg: #e8e6e0;
+}

@@ -60,5 +60,12 @@ export function initSocket() {
     handleMomentumSpendClose(msg);
   });
 
+  // --- RPC: Player -> GM (shaken choice resolution) ---
+  moduleSocket.register("shakenResolve", async (msg) => {
+    if (!game.user.isGM) return;
+    const { performShakenResolve } = await import("../shaken/shaken.mjs");
+    await performShakenResolve(msg.messageId, msg.choice);
+  });
+
   return moduleSocket;
 }

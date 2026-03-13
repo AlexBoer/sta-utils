@@ -334,7 +334,7 @@ function canExperienceFatigue(actor) {
   try {
     // Check if actor is an NPC (using STANPCSheet2e sheet class)
     const sheetClass = actor.getFlag?.("core", "sheetClass");
-    if (sheetClass === "sta.STANPCSheet2e") return false;
+    if (sheetClass === "sta.STANPCSheet2e" || sheetClass === "sta-utils.LcarsNPCSheet2e") return false;
 
     // Check if actor has stress.max = 0
     const maxStress = Number(actor.system?.stress?.max ?? 0);

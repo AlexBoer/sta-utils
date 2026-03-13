@@ -1,0 +1,67 @@
+/* ----------------------------------------------------------------------- */
+/*  ROMULAN STAR EMPIRE                                                     */
+/*  Near-black bg with faint green cast; jade-forest chrome; deep forest   */
+/*  floating pills; plasma electric green input text & track labels.       */
+/*  Monochromatic green — injuries section provides the only red accent.   */
+/* ----------------------------------------------------------------------- */
+.theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-romulan,
+.theme-dark .sta-lcars-dialogue-app.lcars-scheme-romulan,
+body.theme-dark.sta-officers-lcars-active.lcars-scheme-romulan {
+  --lcars-bg:              rgb(3 9 4 / 93%);
+  --lcars-bg-panel:        rgba(0, 10, 2, 0.28);            /* panel tint: deep green-tinted darkening */
+  --lcars-primary-color:   #2d8040; /* jade-forest green */
+  --lcars-secondary-color: #1a5c30; /* deep forest */
+  --lcars-tertiary-color:  #3ecc58; /* plasma electric green */
+  --lcars-titlebar-injuries:             #c02828;
+  --lcars-titlebar-belongings-colheader: #144e28;
+  --lcars-titlebar-launchbay:            #1a5c30;
+  --lcars-chrome-hover:                  #3a9850;
+  --lcars-input-border:                  #28683a;
+  --lcars-text-body:                     #b0d8b8;
+  --lcars-text-item:                     #b0d8b8;
+  --lcars-text-title:                    #000000;
+  --lcars-text-header:                   #000000;
+}
+
+.theme-light :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-romulan,
+.theme-light .sta-lcars-dialogue-app.lcars-scheme-romulan,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-romulan {
+  --lcars-bg:              #e8f0e8; /* pale celadon */
+  --lcars-bg-panel:        rgba(230, 248, 232, 0.50); /* panel tint: soft green brightening */
+  --lcars-primary-color:   #1c6028; /* deep jade */
+  --lcars-secondary-color: #104020; /* deep forest */
+  --lcars-tertiary-color:  #186028; /* dark green for text readability on light bg */
+  --lcars-titlebar-injuries:             #881818;
+  --lcars-titlebar-belongings-colheader: #0c3818;
+  --lcars-titlebar-launchbay:            #104020;
+  --lcars-chrome-hover:                  #287038;
+  --lcars-input-border:                  #1c5028;
+  --lcars-text-body:                     #081408;
+  --lcars-text-item:                     #081408;
+  --lcars-text-title:                    #f0fff0;
+  --lcars-text-header:                   #f0fff0;
+  /* ── Raw palette aliases (light mode) ── */
+  --lcars-orange:     var(--lcars-chrome);
+  --lcars-peach:      var(--lcars-chrome-hover);
+  --lcars-lavender:   var(--lcars-titlebar);
+  --lcars-lilac:      var(--lcars-input-border);
+  --lcars-blue:       var(--lcars-btn-secondary);
+  --lcars-sky:        var(--lcars-input-text);
+  --lcars-red:        var(--lcars-titlebar-injuries);
+  --lcars-tan:        var(--lcars-btn-reputation);
+  --lcars-text-light: var(--lcars-text-body);
+}
+
+/* ── Window-root background overrides (:has() targets the ancestor .application element) ── */
+.theme-dark .sta-lcars-window.application:has(.lcars-scheme-romulan) {
+  --lcars-bg: rgb(3 9 4 / 93%);
+}
+.theme-light .sta-lcars-window.application:has(.lcars-scheme-romulan) {
+  --lcars-bg: #e8f0e8;
+}
+.sta-lcars-window.application.theme-dark:has(.lcars-scheme-romulan) {
+  --lcars-bg: rgb(3 9 4 / 93%);
+}
+.sta-lcars-window.application.theme-light:has(.lcars-scheme-romulan) {
+  --lcars-bg: #e8f0e8;
+}

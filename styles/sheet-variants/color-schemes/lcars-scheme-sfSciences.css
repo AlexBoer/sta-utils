@@ -1,0 +1,67 @@
+/* ----------------------------------------------------------------------- */
+/*  STARFLEET SCIENCES DIVISION                                             */
+/*  Near-black bg with blue cast; sciences division blue chrome; deep blue */
+/*  floating pills; bright sky-blue input text & track labels.             */
+/*  Monochromatic blue — injuries uses red (fully contrasting hue).        */
+/* ----------------------------------------------------------------------- */
+.theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-sfSciences,
+.theme-dark .sta-lcars-dialogue-app.lcars-scheme-sfSciences,
+body.theme-dark.sta-officers-lcars-active.lcars-scheme-sfSciences {
+  --lcars-bg:              rgb(2 4 10 / 93%);
+  --lcars-bg-panel:        rgba(2, 4, 14, 0.28);            /* panel tint: deep blue-space darkening */
+  --lcars-primary-color:   #1e5c98; /* sciences division blue */
+  --lcars-secondary-color: #144070; /* deep sciences blue */
+  --lcars-tertiary-color:  #4ab0e8; /* bright sky blue */
+  --lcars-titlebar-injuries:             #b82020;
+  --lcars-titlebar-belongings-colheader: #103058;
+  --lcars-titlebar-launchbay:            #144070;
+  --lcars-chrome-hover:                  #2870b0;
+  --lcars-input-border:                  #1a4878;
+  --lcars-text-body:                     #a8c8e8;
+  --lcars-text-item:                     #a8c8e8;
+  --lcars-text-title:                    #000000;
+  --lcars-text-header:                   #000000;
+}
+
+.theme-light :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-sfSciences,
+.theme-light .sta-lcars-dialogue-app.lcars-scheme-sfSciences,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-sfSciences {
+  --lcars-bg:              #e8eef8; /* pale periwinkle */
+  --lcars-bg-panel:        rgba(234, 242, 255, 0.50); /* panel tint: cool blue-white brightening */
+  --lcars-primary-color:   #143e70; /* deep sciences blue */
+  --lcars-secondary-color: #0c2c58; /* darkest blue */
+  --lcars-tertiary-color:  #0c3870; /* dark blue for readability on light bg */
+  --lcars-titlebar-injuries:             #881818;
+  --lcars-titlebar-belongings-colheader: #082048;
+  --lcars-titlebar-launchbay:            #0c2c58;
+  --lcars-chrome-hover:                  #1c5080;
+  --lcars-input-border:                  #103060;
+  --lcars-text-body:                     #04080c;
+  --lcars-text-item:                     #04080c;
+  --lcars-text-title:                    #f0f4ff;
+  --lcars-text-header:                   #f0f4ff;
+  /* ── Raw palette aliases (light mode) ── */
+  --lcars-orange:     var(--lcars-chrome);
+  --lcars-peach:      var(--lcars-chrome-hover);
+  --lcars-lavender:   var(--lcars-titlebar);
+  --lcars-lilac:      var(--lcars-input-border);
+  --lcars-blue:       var(--lcars-btn-secondary);
+  --lcars-sky:        var(--lcars-input-text);
+  --lcars-red:        var(--lcars-titlebar-injuries);
+  --lcars-tan:        var(--lcars-btn-reputation);
+  --lcars-text-light: var(--lcars-text-body);
+}
+
+/* ── Window-root background overrides (:has() targets the ancestor .application element) ── */
+.theme-dark .sta-lcars-window.application:has(.lcars-scheme-sfSciences) {
+  --lcars-bg: rgb(2 4 10 / 93%);
+}
+.theme-light .sta-lcars-window.application:has(.lcars-scheme-sfSciences) {
+  --lcars-bg: #e8eef8;
+}
+.sta-lcars-window.application.theme-dark:has(.lcars-scheme-sfSciences) {
+  --lcars-bg: rgb(2 4 10 / 93%);
+}
+.sta-lcars-window.application.theme-light:has(.lcars-scheme-sfSciences) {
+  --lcars-bg: #e8eef8;
+}

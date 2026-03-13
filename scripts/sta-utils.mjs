@@ -28,9 +28,6 @@ import {
   isStyleEnhanceEnabled,
   _toggleStyleEnhance,
   injectSheetVariantCss,
-  isCompactCharacterSheetEnabled,
-  isTidyCharacterSheetEnabled,
-  isLcarsCharacterSheetEnabled,
   getWorldTraitsActorUuid,
 } from "./core/settings.mjs";
 
@@ -80,6 +77,10 @@ import { installShakenHook } from "./shaken/index.mjs";
 
 import { initExtendedTaskTracker } from "./extended-task-tracker/index.mjs";
 
+import { openNpcBuilder } from "./npc-builder/index.mjs";
+
+import { installPersonalThreatHook } from "./personal-threat/index.mjs";
+
 import {
   isBacklinksEnabled,
   isDicePoolOverrideEnabled,
@@ -88,11 +89,16 @@ import {
   isMomentumMergerEnabled,
   isChatHeaderMergeEnabled,
   isExtendedTaskTrackerEnabled,
+  isPersonalThreatEnabled,
+  isActionChooserEnabled,
 } from "./core/settings.mjs";
 
-import { isActionChooserEnabled } from "./core/settings.mjs";
-
 import { MobileCharacterSheet2e } from "./mobile-sheet/mobile-character-sheet2e.mjs";
+import { LcarsCharacterSheet2e } from "./lcars-sheet/lcars-character-sheet2e.mjs";
+import { LcarsSupportingSheet2e } from "./lcars-sheet/lcars-supporting-sheet2e.mjs";
+import { LcarsNPCSheet2e } from "./lcars-sheet/lcars-npc-sheet2e.mjs";
+import { LcarsStarshipSheet2e } from "./lcars-sheet/lcars-starship-sheet2e.mjs";
+import { LcarsSmallCraftSheet2e } from "./lcars-sheet/lcars-smallcraft-sheet2e.mjs";
 
 const MODULE_ID = "sta-utils";
 
@@ -113,6 +119,13 @@ Hooks.once("init", () => {
     `modules/${MODULE_ID}/templates/breakthrough-dialog.hbs`,
     `modules/${MODULE_ID}/templates/character-sheet2e-mobile.hbs`,
     `modules/${MODULE_ID}/templates/character-sheet2e-mobile-limited.hbs`,
+    `modules/${MODULE_ID}/templates/character-sheet2e-lcars.hbs`,
+    `modules/${MODULE_ID}/templates/character-sheet2e-lcars-limited.hbs`,
+    `modules/${MODULE_ID}/templates/supporting-sheet2e-lcars.hbs`,
+    `modules/${MODULE_ID}/templates/npc-sheet2e-lcars.hbs`,
+    `modules/${MODULE_ID}/templates/starship-sheet2e-lcars.hbs`,
+    `modules/${MODULE_ID}/templates/smallcraft-sheet2e-lcars.hbs`,
+    `modules/${MODULE_ID}/templates/limited-ship-lcars.hbs`,
   ]);
 
   // --- Mobile sheet registration ---
@@ -121,6 +134,42 @@ Hooks.once("init", () => {
     MODULE_ID,
     MobileCharacterSheet2e,
     { types: ["character"], label: "Character (2e) Mobile" },
+  );
+
+  // --- LCARS sheet registration ---
+  foundry.applications.apps.DocumentSheetConfig.registerSheet(
+    Actor,
+    MODULE_ID,
+    LcarsCharacterSheet2e,
+    { types: ["character"], label: "Character (2e) LCARS" },
+  );
+
+  foundry.applications.apps.DocumentSheetConfig.registerSheet(
+    Actor,
+    MODULE_ID,
+    LcarsSupportingSheet2e,
+    { types: ["character"], label: "Supporting Character (2e) LCARS" },
+  );
+
+  foundry.applications.apps.DocumentSheetConfig.registerSheet(
+    Actor,
+    MODULE_ID,
+    LcarsNPCSheet2e,
+    { types: ["character"], label: "NPC (2e) LCARS" },
+  );
+
+  foundry.applications.apps.DocumentSheetConfig.registerSheet(
+    Actor,
+    MODULE_ID,
+    LcarsStarshipSheet2e,
+    { types: ["starship"], label: "Starship (2e) LCARS" },
+  );
+
+  foundry.applications.apps.DocumentSheetConfig.registerSheet(
+    Actor,
+    MODULE_ID,
+    LcarsSmallCraftSheet2e,
+    { types: ["smallcraft"], label: "Small Craft (2e) LCARS" },
   );
 
   // --- Register settings ---
@@ -152,21 +201,13 @@ Hooks.once("init", () => {
     _toggleStyleEnhance(true);
   }
 
-  // --- Sheet Variant CSS Injection ---
-  injectSheetVariantCss(
-    "sta-utils-compact",
-    "styles/sheet-variants/sta-compact.css",
-    isCompactCharacterSheetEnabled(),
-  );
-  injectSheetVariantCss(
-    "sta-utils-tidy",
-    "styles/sheet-variants/sta-tidy.css",
-    isTidyCharacterSheetEnabled(),
-  );
+  // LCARS sheet CSS is always injected — it is scoped to .character-sheet.sta-lcars
+  // and only takes effect when the LCARS sheet type is explicitly selected (either
+  // via the sheetVariant setting or per-actor sheet configuration).
   injectSheetVariantCss(
     "sta-utils-lcars",
     "styles/sheet-variants/sta-lcars.css",
-    isLcarsCharacterSheetEnabled(),
+    true,
   );
   // Mobile sheet CSS is always injected — it is scoped to .character-sheet--mobile
   // and only takes effect when the mobile sheet type is explicitly selected.
@@ -175,9 +216,7 @@ Hooks.once("init", () => {
     "styles/sheet-variants/sta-mobile-sheet.css",
     true,
   );
-  if (isLcarsCharacterSheetEnabled()) {
-    syncOfficersLogLcars(true);
-  }
+  syncOfficersLogLcars(true);
 
   // Flag for CSS: mark if Character Chat Selector is active
   if (game.modules.get("character-chat-selector")?.active) {
@@ -213,6 +252,12 @@ Hooks.once("init", () => {
   if (isExtendedTaskTrackerEnabled()) {
     initExtendedTaskTracker();
   }
+
+  // --- Personal Threat ---
+  if (isPersonalThreatEnabled()) {
+    installPersonalThreatHook();
+    console.log(`${MODULE_ID} | Personal Threat feature enabled`);
+  }
 });
 
 /* -------------------------------------------- */
@@ -236,7 +281,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
         return;
       }
       const actor = await getOrCreateProxyActor(scene.id);
-      actor.sheet.render(true);
+      actor.sheet?.render(true);
     },
   };
 
@@ -261,7 +306,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
       } else {
         actor = await getOrCreateWorldTraitActor();
       }
-      actor.sheet.render(true);
+      actor.sheet?.render(true);
     },
   };
 });
@@ -333,6 +378,7 @@ Hooks.once("ready", async () => {
     crewManifest,
     actionChooser,
     dicePool: dicePoolApi,
+    npcBuilder: openNpcBuilder,
   };
   console.log(`${MODULE_ID} | Public API exposed at game.staUtils`);
 });

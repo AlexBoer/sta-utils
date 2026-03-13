@@ -200,23 +200,3 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
     console.warn(`${MODULE_ID} | UntappedPotential render error`, err);
   }
 });
-
-/* ------------------------------------------------------------------ */
-/*  Exports (backwards-compatible)                                     */
-/* ------------------------------------------------------------------ */
-
-export function qualifiesForUntappedPotential(actor, rollData) {
-  try {
-    if (rollData && (rollData.flags || rollData.flavor || rollData.data))
-      return _qualifiesForUntapped(actor, rollData);
-    return false;
-  } catch (err) {
-    console.warn(`${MODULE_ID} | qualifiesForUntappedPotential error`, err);
-    return false;
-  }
-}
-
-export function appendUntappedPotentialButton(_actor, _rollData) {
-  // Button placement is handled at render time by the hook above.
-  return;
-}

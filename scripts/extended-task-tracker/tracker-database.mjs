@@ -68,6 +68,10 @@ export class TrackerDatabase extends Collection {
     }
   }
 
+  clearAll() {
+    game.settings.set(MODULE_ID, SETTING_KEY, {});
+  }
+
   move(id, idx) {
     const trackers = Object.values(this.#getData());
     const item = trackers.find((t) => t.id === id);

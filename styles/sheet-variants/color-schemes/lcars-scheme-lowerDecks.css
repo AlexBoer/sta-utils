@@ -1,0 +1,71 @@
+﻿/* ----------------------------------------------------------------------- */
+/*  LOWER DECKS                                                             */
+/*  Cerritos cobalt blue chrome; command red biography; engineering gold   */
+/*  traits/belongings; deep-space black bg.                                */
+/* ----------------------------------------------------------------------- */
+.theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-lowerDecks,
+.theme-dark .sta-lcars-dialogue-app.lcars-scheme-lowerDecks,
+body.theme-dark.sta-officers-lcars-active.lcars-scheme-lowerDecks {
+  --lcars-bg:              #1d1d1dda; /* deep-space black */
+  --lcars-bg-panel:        rgba(0, 0, 0, 0.25);            /* panel tint: pure dark deepening */
+  --lcars-primary-color:   #1e60c8; /* USS Cerritos cobalt */
+  --lcars-secondary-color: #c43030; /* command red */
+  --lcars-tertiary-color:  #c8a010; /* engineering gold */
+  /* traits/belongings are gold not red */
+  --lcars-titlebar-traits:               var(--lcars-tertiary-color);
+  --lcars-titlebar-belongings:           var(--lcars-tertiary-color);
+  --lcars-titlebar-injuries:             #dd2020; /* vivid alert red */
+  --lcars-titlebar-belongings-colheader: #a47e08;
+  --lcars-titlebar-launchbay:            #0f3880;
+  --lcars-chrome-hover:                  #3a7ee0;
+  --lcars-input-border:                  #2464cc;
+  --lcars-text-body:                     #dde8ff;
+  --lcars-text-item:                     #dde8ff;
+  --lcars-text-title:                    #ffffff;
+  --lcars-text-header:                   #ffffff;
+}
+.theme-light :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-lowerDecks,
+.theme-light .sta-lcars-dialogue-app.lcars-scheme-lowerDecks,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-lowerDecks {
+  --lcars-bg:              #b6b7be; /* light cool grey — Cerritos corridor panels */
+  --lcars-bg-panel:        rgba(240, 244, 255, 0.50); /* panel tint: blue-tinted brightening */
+  --lcars-primary-color:   #1040a0; /* deep cobalt */
+  --lcars-secondary-color: #9c1a1a; /* deep command red */
+  --lcars-tertiary-color:  #906800; /* dark engineering gold */
+  /* traits/belongings are gold not red */
+  --lcars-titlebar-traits:               var(--lcars-tertiary-color);
+  --lcars-titlebar-belongings:           var(--lcars-tertiary-color);
+  --lcars-titlebar-injuries:             #aa1010;
+  --lcars-titlebar-belongings-colheader: #7a5800;
+  --lcars-titlebar-launchbay:            #082060;
+  --lcars-chrome-hover:                  #1a54cc;
+  --lcars-input-border:                  #1040a0;
+  --lcars-text-body:                     #0a0c18;
+  --lcars-text-item:                     #0a0c18;
+  --lcars-text-title:                    #ffffff;
+  --lcars-text-header:                   #ffffff;
+  /* ── Raw palette aliases (light mode) ── */
+  --lcars-orange:     var(--lcars-chrome);
+  --lcars-peach:      var(--lcars-chrome-hover);
+  --lcars-lavender:   var(--lcars-titlebar);
+  --lcars-lilac:      var(--lcars-input-border);
+  --lcars-blue:       var(--lcars-btn-secondary);
+  --lcars-sky:        var(--lcars-input-text);
+  --lcars-red:        var(--lcars-titlebar-injuries);
+  --lcars-tan:        var(--lcars-btn-reputation);
+  --lcars-text-light: var(--lcars-text-body);
+}
+
+/* ── Window-root background overrides (:has() targets the ancestor .application element) ── */
+.theme-dark .sta-lcars-window.application:has(.lcars-scheme-lowerDecks) {
+  --lcars-bg: #1d1d1dda;
+}
+.theme-light .sta-lcars-window.application:has(.lcars-scheme-lowerDecks) {
+  --lcars-bg: #b6b7be;
+}
+.sta-lcars-window.application.theme-dark:has(.lcars-scheme-lowerDecks) {
+  --lcars-bg: #1d1d1dda;
+}
+.sta-lcars-window.application.theme-light:has(.lcars-scheme-lowerDecks) {
+  --lcars-bg: #b6b7be;
+}

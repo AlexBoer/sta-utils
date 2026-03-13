@@ -19,6 +19,7 @@
 import { MODULE_ID } from "../core/constants.mjs";
 import { t } from "../core/i18n.mjs";
 import { getGroupShipActorId } from "../core/settings.mjs";
+import { getModuleSocket } from "../core/socket.mjs";
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                          */
@@ -327,6 +328,33 @@ function _bindButtons(message, html) {
  * @param {string}      choice   One of "brace", "losingPower", "casualties", "rollForIt".
  */
 async function _resolveChoice(message, choice) {
+  if (game.user.isGM) {
+    await performShakenResolve(message.id, choice);
+  } else {
+    const socket = getModuleSocket();
+    if (!socket) {
+      console.error(
+        `${MODULE_ID} | Shaken: socket unavailable, cannot resolve choice`,
+      );
+      return;
+    }
+    await socket.executeAsGM("shakenResolve", {
+      messageId: message.id,
+      choice,
+    });
+  }
+}
+
+/**
+ * Perform the full shaken resolution on behalf of any user.
+ * Must be called on (or delegated to) a GM client so that actor and
+ * message updates succeed.  Exported so the socket RPC handler can
+ * call it directly.
+ *
+ * @param {string} messageId  ID of the SHAKEN! chat message to update.
+ * @param {string} choice     One of "brace", "losingPower", "casualties", "rollForIt".
+ */
+export async function performShakenResolve(messageId, choice) {
   let resultKey = choice;
   let rollHTML = "";
 
@@ -349,6 +377,9 @@ async function _resolveChoice(message, choice) {
       console.warn(`${MODULE_ID} | Shaken: failed to set system.shaken`, err);
     }
   }
+
+  const message = game.messages?.get(messageId);
+  if (!message) return;
 
   const content = `
 <div class="sta-utils-chat-card sta-utils-chat-card--red sta-utils-shaken-card sta-utils-shaken-card--resolved">
