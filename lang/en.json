@@ -99,38 +99,6 @@
         "name": "Enable Chat Header Merge",
         "hint": "Hide the message header (avatar, name, timestamp) on consecutive chat messages from the same sender. Requires a world reload when changed."
       },
-      "sheetVariant": {
-        "name": "Character Sheet Style",
-        "hint": "Choose a visual style for character sheets. LCARS applies a futuristic Star Trek panel theme. Requires a world reload when changed.",
-        "choices": {
-          "none": "Default",
-          "lcars": "LCARS"
-        }
-      },
-      "lcarsColorScheme": {
-        "name": "LCARS Color Scheme",
-        "hint": "Choose a color palette for the LCARS theme. Each scheme is inspired by a different Star Trek era. Only applies when LCARS Sheet is enabled.",
-        "applyPreview": "Apply",
-        "choices": {
-          "tng": "The Next Generation",
-          "sta": "STA System — Original",
-          "voyager": "Voyager",
-          "ds9": "DS9 — Deep Space Nine",
-          "tos": "TOS — The Original Series",
-          "enterprise": "Enterprise NX-01",
-          "kelvin": "Kelvin Timeline",
-          "picard": "Picard",
-          "lowerDecks": "Lower Decks",
-          "prodigy": "Prodigy",
-          "academy": "Starfleet Academy",
-          "romulan": "Romulan Star Empire",
-          "klingon": "Klingon Empire",
-          "sfCommand": "SF — Command Division",
-          "sfSciences": "SF — Sciences Division",
-          "sfOperations": "SF — Operations Division",
-          "redAlert": "Red Alert"
-        }
-      },
       "mobileSheetTheme": {
         "name": "Mobile Sheet Theme (Default)",
         "hint": "Default color palette for the mobile character sheet when no per-character theme has been chosen. Each character can override this individually via the palette icon in its sheet header. Only applies to Character (2e) Mobile sheets.",

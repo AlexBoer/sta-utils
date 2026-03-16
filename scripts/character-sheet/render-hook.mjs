@@ -14,7 +14,6 @@ import {
   isFatigueEnabled,
   isActionChooserEnabled,
   isActionChooserAsTabEnabled,
-  isLcarsCharacterSheetEnabled,
 } from "../core/settings.mjs";
 import { MODULE_ID } from "../core/constants.mjs";
 import {
@@ -37,14 +36,6 @@ import { t } from "../core/i18n.mjs";
 
 import { installMobileMode } from "../mobile-sheet/mobile-mode.mjs";
 import { installLcarsSheetMode } from "../lcars-sheet/lcars-mode.mjs";
-import {
-  installLcarsMode,
-  installLcarsStarshipMode,
-  installLcarsExtendedTaskMode,
-  installLcarsItemSheetMode,
-  installLcarsSceneTraitsMode,
-  installLcarsDialogueMode,
-} from "./lcars/lcars-mode.mjs";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Handler: Dialogs
@@ -70,15 +61,6 @@ function handleDialogRender(app, root, context) {
     installDicePoolBroadcast(app, root, context);
   } catch (_) {
     // ignore
-  }
-
-  // LCARS mode for STA dialogue windows (dice pool, cheat sheet, etc.)
-  if (isLcarsCharacterSheetEnabled()) {
-    try {
-      installLcarsDialogueMode(app, root);
-    } catch (_) {
-      // ignore
-    }
   }
 }
 
@@ -272,15 +254,6 @@ function handleCharacterSheetRender(app, root) {
 
   const actor = app.actor;
   if (!actor || (actor.type !== "character" && actor.type !== "npc")) return;
-
-  // LCARS character sheet mode
-  if (isLcarsCharacterSheetEnabled()) {
-    try {
-      installLcarsMode(app, root);
-    } catch (_) {
-      // ignore
-    }
-  }
 
   if (isFatigueEnabled()) {
     try {
@@ -598,20 +571,6 @@ function handleStarshipSheetRender(app, root) {
   if (!actor) return;
   if (actor.type !== "starship" && actor.type !== "smallcraft") return;
 
-  // LCARS mode for starship/smallcraft sheets (skip for bespoke LCARS sheets
-  // which bake the styling into the template and use per-actor color schemes)
-  if (
-    isLcarsCharacterSheetEnabled() &&
-    !app?.id?.startsWith("LcarsStarshipSheet2e") &&
-    !app?.id?.startsWith("LcarsSmallCraftSheet2e")
-  ) {
-    try {
-      installLcarsStarshipMode(app, root);
-    } catch (_) {
-      // ignore
-    }
-  }
-
   const systemsBlock = root?.querySelector?.(".systems-block");
   if (!systemsBlock) return;
 
@@ -732,15 +691,6 @@ function _installReservePowerContextMenu(systemsBlock, actor) {
  * @param {HTMLElement} root - The root element.
  */
 function handleItemSheetRender(app, root) {
-  // LCARS mode for all item sheets
-  if (isLcarsCharacterSheetEnabled()) {
-    try {
-      installLcarsItemSheetMode(app, root);
-    } catch (_) {
-      // ignore
-    }
-  }
-
   if (!isFatigueEnabled()) return;
 
   const item = app?.item ?? null;
@@ -767,14 +717,6 @@ function handleItemSheetRender(app, root) {
 function handleExtendedTaskSheetRender(app, root) {
   const actor = app?.actor;
   if (!actor || actor.type !== "extendedtask") return;
-
-  if (isLcarsCharacterSheetEnabled()) {
-    try {
-      installLcarsExtendedTaskMode(app, root);
-    } catch (_) {
-      // ignore
-    }
-  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -791,14 +733,6 @@ function handleExtendedTaskSheetRender(app, root) {
 function handleSceneTraitsSheetRender(app, root) {
   const actor = app?.actor;
   if (!actor || actor.type !== "scenetraits") return;
-
-  if (isLcarsCharacterSheetEnabled()) {
-    try {
-      installLcarsSceneTraitsMode(app, root);
-    } catch (_) {
-      // ignore
-    }
-  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

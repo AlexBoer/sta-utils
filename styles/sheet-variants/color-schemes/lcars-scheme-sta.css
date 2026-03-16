@@ -6,6 +6,7 @@
 /*  regardless of Foundry's active theme.                                  */
 /* ----------------------------------------------------------------------- */
 :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-sta,
+:is(.character-sheet, .starship-sheet).sta-lcars-sheet.lcars-scheme-sta,
 .sta-lcars-dialogue-app.lcars-scheme-sta,
 body.sta-officers-lcars-active.lcars-scheme-sta {
   --lcars-bg:              transparent; /* let Foundry bg show through */
@@ -32,6 +33,7 @@ body.sta-officers-lcars-active.lcars-scheme-sta {
 }
 /* Light Mode */
 .theme-light :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-sta,
+.theme-light :is(.character-sheet, .starship-sheet).sta-lcars-sheet.lcars-scheme-sta,
 .theme-light .sta-lcars-dialogue-app.lcars-scheme-sta,
 body.theme-light.sta-officers-lcars-active.lcars-scheme-sta {
   --lcars-bg:         #f0f5ff;

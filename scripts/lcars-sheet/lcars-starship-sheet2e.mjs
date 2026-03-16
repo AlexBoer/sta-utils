@@ -14,7 +14,7 @@
  */
 
 import { STAStarshipSheet2e } from "/systems/sta/module/actors/starship-sheet2e.mjs";
-import { getLcarsColorScheme } from "../core/settings.mjs";
+
 import { LCARS_THEMES } from "./lcars-mode.mjs";
 
 const MODULE_ID = "sta-utils";
@@ -50,11 +50,7 @@ export class LcarsStarshipSheet2e extends STAStarshipSheet2e {
    * @returns {string} Scheme key, e.g. "tng", "voyager", "ds9".
    */
   getLcarsScheme() {
-    return (
-      this.actor.getFlag(MODULE_ID, "lcarsSheetScheme") ||
-      getLcarsColorScheme() ||
-      "tng"
-    );
+    return this.actor.getFlag(MODULE_ID, "lcarsSheetScheme") || "sta";
   }
 
   /**
@@ -65,8 +61,9 @@ export class LcarsStarshipSheet2e extends STAStarshipSheet2e {
     const context = await super._prepareContext(options);
     const scheme = this.getLcarsScheme();
     context.isOriginalTheme = scheme === "sta";
-    context.lcarsSchemeClass =
-      scheme && scheme !== "sta" ? `lcars-scheme-${scheme}` : "";
+    context.lcarsSchemeClass = scheme
+      ? `lcars-scheme-${scheme}`
+      : "lcars-scheme-tng";
     context.lcarsThemes = LCARS_THEMES.map((t) => ({
       ...t,
       isActive: t.key === scheme,

@@ -202,8 +202,7 @@ Hooks.once("init", () => {
   }
 
   // LCARS sheet CSS is always injected — it is scoped to .character-sheet.sta-lcars
-  // and only takes effect when the LCARS sheet type is explicitly selected (either
-  // via the sheetVariant setting or per-actor sheet configuration).
+  // and only takes effect when a dedicated LCARS sheet class is selected per-actor.
   injectSheetVariantCss(
     "sta-utils-lcars",
     "styles/sheet-variants/sta-lcars.css",

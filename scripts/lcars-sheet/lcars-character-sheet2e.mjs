@@ -10,7 +10,7 @@
  */
 
 import { STACharacterSheet2e } from "/systems/sta/module/actors/character-sheet2e.mjs";
-import { getLcarsColorScheme } from "../core/settings.mjs";
+
 import { LCARS_THEMES } from "./lcars-mode.mjs";
 
 const MODULE_ID = "sta-utils";
@@ -50,11 +50,7 @@ export class LcarsCharacterSheet2e extends STACharacterSheet2e {
    * @returns {string} Scheme key, e.g. "tng", "voyager", "ds9".
    */
   getLcarsScheme() {
-    return (
-      this.actor.getFlag(MODULE_ID, "lcarsSheetScheme") ||
-      getLcarsColorScheme() ||
-      "tng"
-    );
+    return this.actor.getFlag(MODULE_ID, "lcarsSheetScheme") || "sta";
   }
 
   /**
@@ -89,8 +85,9 @@ export class LcarsCharacterSheet2e extends STACharacterSheet2e {
     // "sta" scheme = STA Original: disable all LCARS visual styles,
     // fall back to the system's default appearance.
     context.isOriginalTheme = scheme === "sta";
-    context.lcarsSchemeClass =
-      scheme && scheme !== "sta" ? `lcars-scheme-${scheme}` : "";
+    context.lcarsSchemeClass = scheme
+      ? `lcars-scheme-${scheme}`
+      : "lcars-scheme-tng";
     context.lcarsThemes = LCARS_THEMES.map((t) => ({
       ...t,
       isActive: t.key === scheme,

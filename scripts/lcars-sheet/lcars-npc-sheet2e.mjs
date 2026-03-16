@@ -10,7 +10,7 @@
  */
 
 import { STANPCSheet2e } from "/systems/sta/module/actors/npc-sheet2e.mjs";
-import { getLcarsColorScheme } from "../core/settings.mjs";
+
 import { LCARS_THEMES } from "./lcars-mode.mjs";
 
 const MODULE_ID = "sta-utils";
@@ -47,11 +47,7 @@ export class LcarsNPCSheet2e extends STANPCSheet2e {
    * @returns {string} Scheme key, e.g. "tng", "voyager", "ds9".
    */
   getLcarsScheme() {
-    return (
-      this.actor.getFlag(MODULE_ID, "lcarsSheetScheme") ||
-      getLcarsColorScheme() ||
-      "tng"
-    );
+    return this.actor.getFlag(MODULE_ID, "lcarsSheetScheme") || "sta";
   }
 
   /**
@@ -62,8 +58,9 @@ export class LcarsNPCSheet2e extends STANPCSheet2e {
     const context = await super._prepareContext(options);
     const scheme = this.getLcarsScheme();
     context.isOriginalTheme = scheme === "sta";
-    context.lcarsSchemeClass =
-      scheme && scheme !== "sta" ? `lcars-scheme-${scheme}` : "";
+    context.lcarsSchemeClass = scheme
+      ? `lcars-scheme-${scheme}`
+      : "lcars-scheme-tng";
     context.lcarsThemes = LCARS_THEMES.map((t) => ({
       ...t,
       isActive: t.key === scheme,

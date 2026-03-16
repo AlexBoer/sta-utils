@@ -13,6 +13,7 @@
 /* -- Shared derived vars — written once for every named scheme ------------ */
 :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet,
     .scenetraits-sheet, .dialogue).sta-lcars[class*="lcars-scheme-"],
+:is(.character-sheet, .starship-sheet).sta-lcars-sheet[class*="lcars-scheme-"],
 .sta-lcars-dialogue-app[class*="lcars-scheme-"],
 body.sta-officers-lcars-active[class*="lcars-scheme-"] {
   --lcars-bg-default:              var(--lcars-bg);

@@ -16,10 +16,7 @@
 
 import { _installItemContextMenu } from "../character-sheet/sheet-utils.mjs";
 import { syncOfficersLogLcars } from "../character-sheet/lcars/officers-log-sync.mjs";
-import {
-  getLcarsColorScheme,
-  injectSheetVariantCss,
-} from "../core/settings.mjs";
+import { injectSheetVariantCss } from "../core/settings.mjs";
 
 const MODULE_ID = "sta-utils";
 const LCARS_CSS_LINK_ID = "sta-utils-lcars";

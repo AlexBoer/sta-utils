@@ -30,202 +30,12 @@ const GROUP_SHIP_ACTOR_SETTING = "groupShipActorId";
 const ENABLE_EXTENDED_TASK_TRACKER_SETTING = "enableExtendedTaskTracker";
 const NPC_BUILDER_SPECIAL_RULES_PACK_SETTING = "npcBuilderSpecialRulesPack";
 const ENABLE_PERSONAL_THREAT_SETTING = "enablePersonalThreat";
-const SHEET_VARIANT_SETTING = "sheetVariant";
-// Legacy key kept for migration only (config: false)
-const LCARS_CHARACTER_SHEET_SETTING = "lcarsCharacterSheet";
-const LCARS_COLOR_SCHEME_SETTING = "lcarsColorScheme";
 const MOBILE_THEME_SETTING = "mobileSheetTheme";
 const OFFICERS_LOG_MODULE_ID = "sta-officers-log";
 
 /** Localized group labels for the settings menu. */
 const GROUP_WORLD = "sta-utils.settings.groups.world";
 const GROUP_CLIENT = "sta-utils.settings.groups.client";
-
-/**
- * LCARS color palette data for the scheme swatch preview.
- * Each entry maps a scheme key to its 8 canonical CSS color values in order:
- * [orange, peach, lavender, lilac, blue, sky, red, tan]
- * These must stay in sync with the `--lcars-*` variables in sta-lcars.css.
- */
-const LCARS_PALETTE_DATA = {
-  tng: [
-    "#f1a43c" /* orange/chrome */,
-    "#f0b872" /* peach */,
-    "#c5a3d9" /* lavender */,
-    "#9b8fc2" /* lilac */,
-    "#6688cc" /* blue */,
-    "#88aaff" /* sky */,
-    "#d05050" /* red */,
-    "#e8c57a" /* tan/gold */,
-  ],
-  voyager: [
-    "#488888",
-    "#60a098",
-    "#7898a0",
-    "#587880",
-    "#507898",
-    "#6898a8",
-    "#a86868",
-    "#689088",
-  ],
-  ds9: [
-    "#b89848",
-    "#c8a868",
-    "#988868",
-    "#806848",
-    "#687888",
-    "#788898",
-    "#a84840",
-    "#a89050",
-  ],
-  tos: [
-    "#a84848",
-    "#b86858",
-    "#4868a0",
-    "#5878a0",
-    "#385888",
-    "#4870a0",
-    "#983030",
-    "#a88020",
-  ],
-  enterprise: [
-    "#506888",
-    "#688098",
-    "#7890a0",
-    "#506878",
-    "#405868",
-    "#587888",
-    "#a05848",
-    "#607888",
-  ],
-  kelvin: [
-    "#2878b8",
-    "#4098c8",
-    "#78a8c0",
-    "#6898b0",
-    "#1860a8",
-    "#4890c0",
-    "#b84040",
-    "#5890b0",
-  ],
-  picard: [
-    "#385878",
-    "#507090",
-    "#8098a8",
-    "#607888",
-    "#284870",
-    "#4870a0",
-    "#a04050",
-    "#587888",
-  ],
-  lowerDecks: [
-    "#9838a0",
-    "#b058a8",
-    "#6878b0",
-    "#5868a8",
-    "#4858a0",
-    "#5878b0",
-    "#b03050",
-    "#a068a0",
-  ],
-  prodigy: [
-    "#c87038",
-    "#d09050",
-    "#50a090",
-    "#4888a0",
-    "#3070a0",
-    "#4890b0",
-    "#b84848",
-    "#c89050",
-  ],
-  academy: [
-    "#a03038",
-    "#b84850",
-    "#b09028",
-    "#304888",
-    "#203898",
-    "#3860a8",
-    "#902028",
-    "#808898",
-  ],
-  redAlert: [
-    "#b03030",
-    "#c84848",
-    "#d06060",
-    "#882828",
-    "#784040",
-    "#a85858",
-    "#d82020",
-    "#b04840",
-  ],
-  sta: [
-    "#009dff",
-    "#4db3ff",
-    "#6699ff",
-    "#5577dd",
-    "#0055aa",
-    "#77bbff",
-    "#cc1111",
-    "#c8a800",
-  ],
-};
-
-/** All valid LCARS scheme CSS classes. */
-const LCARS_SCHEME_CLASSES = [
-  "lcars-scheme-tng",
-  "lcars-scheme-sta",
-  "lcars-scheme-voyager",
-  "lcars-scheme-ds9",
-  "lcars-scheme-tos",
-  "lcars-scheme-enterprise",
-  "lcars-scheme-kelvin",
-  "lcars-scheme-picard",
-  "lcars-scheme-lowerDecks",
-  "lcars-scheme-prodigy",
-  "lcars-scheme-academy",
-  "lcars-scheme-romulan",
-  "lcars-scheme-klingon",
-  "lcars-scheme-sfCommand",
-  "lcars-scheme-sfSciences",
-  "lcars-scheme-sfOperations",
-  "lcars-scheme-redAlert",
-];
-
-/**
- * Live-swap the LCARS color scheme CSS class on all open sheets and the body.
- * This changes the visual appearance instantly without a re-render or reload.
- * @param {string} scheme  The scheme key (e.g. "tng", "voyager", "ds9").
- */
-function _applyLcarsSchemeToDOM(scheme) {
-  const newClass = scheme ? `lcars-scheme-${scheme}` : null;
-
-  // Swap scheme class on every open sheet that has sta-lcars applied
-  document.querySelectorAll(".sta-lcars").forEach((el) => {
-    el.classList.remove(...LCARS_SCHEME_CLASSES);
-    if (newClass) el.classList.add(newClass);
-  });
-
-  // Also update the body class for Officers Log styling
-  document.body.classList.remove(...LCARS_SCHEME_CLASSES);
-  if (
-    newClass &&
-    document.body.classList.contains("sta-officers-lcars-active")
-  ) {
-    document.body.classList.add(newClass);
-  }
-}
-
-/** Human-readable labels for each swatch slot, used as tooltip titles. */
-const LCARS_SWATCH_LABELS = [
-  "Primary (orange)",
-  "Secondary (peach)",
-  "Lavender",
-  "Lilac",
-  "Blue",
-  "Sky",
-  "Red / Alert",
-  "Tan",
-];
 
 /**
  * Subgroup definitions — each maps its first setting key to a localization
@@ -714,77 +524,13 @@ export function registerSettings() {
 
   game.settings.register(MODULE_ID, SETTING_BACKLINKS_DEBUG, {
     name: t("sta-utils.journalBacklinks.debug.name"),
-    scope: "client",
+    scope: "world",
     config: true,
+    requiresReload: false,
+    restricted: true,
     type: Boolean,
     default: false,
-    group: GROUP_CLIENT,
-  });
-
-  // Legacy boolean setting — hidden from UI, retained for migration
-  game.settings.register(MODULE_ID, LCARS_CHARACTER_SHEET_SETTING, {
-    scope: "client",
-    config: false,
-    type: Boolean,
-    default: false,
-  });
-
-  game.settings.register(MODULE_ID, SHEET_VARIANT_SETTING, {
-    name: t("sta-utils.settings.sheetVariant.name"),
-    hint: t("sta-utils.settings.sheetVariant.hint"),
-    scope: "client",
-    config: true,
-    type: String,
-    default: "none",
-    requiresReload: true,
-    choices: {
-      none: t("sta-utils.settings.sheetVariant.choices.none"),
-      lcars: t("sta-utils.settings.sheetVariant.choices.lcars"),
-    },
-    group: GROUP_CLIENT,
-  });
-
-  // Migrate legacy boolean setting → sheetVariant (runs once; no-ops once
-  // the legacy flag has been cleared).
-  try {
-    if (game.settings.get(MODULE_ID, LCARS_CHARACTER_SHEET_SETTING)) {
-      game.settings.set(MODULE_ID, SHEET_VARIANT_SETTING, "lcars");
-      game.settings.set(MODULE_ID, LCARS_CHARACTER_SHEET_SETTING, false);
-    }
-  } catch (_) {
-    // settings may not be accessible during very early init — safe to skip
-  }
-
-  game.settings.register(MODULE_ID, LCARS_COLOR_SCHEME_SETTING, {
-    name: t("sta-utils.settings.lcarsColorScheme.name"),
-    hint: t("sta-utils.settings.lcarsColorScheme.hint"),
-    scope: "client",
-    config: true,
-    type: String,
-    default: "tng",
-    choices: {
-      tng: t("sta-utils.settings.lcarsColorScheme.choices.tng"),
-      sta: t("sta-utils.settings.lcarsColorScheme.choices.sta"),
-      voyager: t("sta-utils.settings.lcarsColorScheme.choices.voyager"),
-      ds9: t("sta-utils.settings.lcarsColorScheme.choices.ds9"),
-      tos: t("sta-utils.settings.lcarsColorScheme.choices.tos"),
-      enterprise: t("sta-utils.settings.lcarsColorScheme.choices.enterprise"),
-      kelvin: t("sta-utils.settings.lcarsColorScheme.choices.kelvin"),
-      picard: t("sta-utils.settings.lcarsColorScheme.choices.picard"),
-      lowerDecks: t("sta-utils.settings.lcarsColorScheme.choices.lowerDecks"),
-      prodigy: t("sta-utils.settings.lcarsColorScheme.choices.prodigy"),
-      academy: t("sta-utils.settings.lcarsColorScheme.choices.academy"),
-      romulan: t("sta-utils.settings.lcarsColorScheme.choices.romulan"),
-      klingon: t("sta-utils.settings.lcarsColorScheme.choices.klingon"),
-      sfCommand: t("sta-utils.settings.lcarsColorScheme.choices.sfCommand"),
-      sfSciences: t("sta-utils.settings.lcarsColorScheme.choices.sfSciences"),
-      sfOperations: t(
-        "sta-utils.settings.lcarsColorScheme.choices.sfOperations",
-      ),
-      redAlert: t("sta-utils.settings.lcarsColorScheme.choices.redAlert"),
-    },
-    group: GROUP_CLIENT,
-    onChange: (newScheme) => _applyLcarsSchemeToDOM(newScheme),
+    group: GROUP_WORLD,
   });
 
   game.settings.register(MODULE_ID, MOBILE_THEME_SETTING, {
@@ -932,30 +678,6 @@ export function isMomentumMergerEnabled() {
     );
   } catch (_) {
     return false;
-  }
-}
-
-/** @returns {boolean} */
-export function isLcarsCharacterSheetEnabled() {
-  try {
-    return game.settings.get(MODULE_ID, SHEET_VARIANT_SETTING) === "lcars";
-  } catch (_) {
-    return false;
-  }
-}
-
-/**
- * Returns the selected LCARS color scheme key.
- * Defaults to "tng" (the original palette) if unset or on error.
- * @returns {string}
- */
-export function getLcarsColorScheme() {
-  try {
-    return String(
-      game.settings.get(MODULE_ID, LCARS_COLOR_SCHEME_SETTING) ?? "tng",
-    );
-  } catch (_) {
-    return "tng";
   }
 }
 
@@ -1124,34 +846,6 @@ export function installSettingsHeaderHook() {
 
     // --- Dependency enforcement ---
     _enforceDependencies(tab);
-
-    // --- LCARS color scheme swatches + Apply button ---
-    const schemeSelect = tab.querySelector(
-      `select[name="${MODULE_ID}.${LCARS_COLOR_SCHEME_SETTING}"]`,
-    );
-    if (schemeSelect) {
-      const schemeFg = schemeSelect.closest(".form-group");
-      if (schemeFg) {
-        const swatchRow = _createLcarsSwatchRow(schemeSelect.value);
-        schemeFg.after(swatchRow);
-        schemeSelect.addEventListener("change", () => {
-          _updateLcarsSwatches(swatchRow, schemeSelect.value);
-        });
-
-        // "Apply" button — live-previews the selected scheme without saving
-        const applyBtn = document.createElement("button");
-        applyBtn.type = "button";
-        applyBtn.className = "sta-utils-lcars-apply-btn";
-        applyBtn.textContent = t(
-          "sta-utils.settings.lcarsColorScheme.applyPreview",
-        );
-        applyBtn.addEventListener("click", (ev) => {
-          ev.preventDefault();
-          _applyLcarsSchemeToDOM(schemeSelect.value);
-        });
-        swatchRow.appendChild(applyBtn);
-      }
-    }
   });
 }
 
@@ -1216,35 +910,6 @@ function _setFormGroupDisabled(fg, disabled) {
   fg.classList.toggle("sta-utils-disabled", disabled);
   for (const el of fg.querySelectorAll("input, select, button, textarea")) {
     el.disabled = disabled;
-  }
-}
-
-/**
- * Build the swatch preview row for the LCARS color scheme dropdown.
- * @param {string} schemeKey  Initial scheme key.
- * @returns {HTMLElement}
- */
-function _createLcarsSwatchRow(schemeKey) {
-  const row = document.createElement("div");
-  row.className = "sta-utils-lcars-swatches";
-  _updateLcarsSwatches(row, schemeKey);
-  return row;
-}
-
-/**
- * Populate (or repopulate) a swatch row element with the colors for a scheme.
- * @param {HTMLElement} row       The swatch container element.
- * @param {string}      schemeKey The scheme key to display.
- */
-function _updateLcarsSwatches(row, schemeKey) {
-  row.innerHTML = "";
-  const colors = LCARS_PALETTE_DATA[schemeKey] ?? LCARS_PALETTE_DATA.tng;
-  for (let i = 0; i < colors.length; i++) {
-    const swatch = document.createElement("span");
-    swatch.className = "sta-utils-lcars-swatch";
-    swatch.style.background = colors[i];
-    swatch.title = `${LCARS_SWATCH_LABELS[i]}: ${colors[i]}`;
-    row.appendChild(swatch);
   }
 }
 
