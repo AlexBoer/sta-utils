@@ -452,6 +452,7 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         hideDropdown();
         return;
       }
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") showDropdown();
       const visible = options.filter((o) => !o.hidden);
       if (!visible.length) return;
       const active = dropdown.querySelector(".npc-species-option--active");
@@ -536,6 +537,34 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         this._wizardState.value = e.target.value;
       });
     }
+
+    // Per-field randomize buttons
+    for (const btn of html.querySelectorAll("[data-action='random-focus']")) {
+      btn.addEventListener("click", () => {
+        const i = parseInt(btn.dataset.index);
+        const pool =
+          this._wizardState.focusNames.length > 0
+            ? this._wizardState.focusNames
+            : RANDOM_FOCUSES_FALLBACK;
+        const used = this._wizardState.focuses.filter((_, j) => j !== i);
+        const available = pool.filter((f) => !used.includes(f));
+        this._wizardState.focuses[i] = this._pick(
+          available.length > 0 ? available : pool,
+        );
+        this.render();
+      });
+    }
+
+    html
+      .querySelector("[data-action='random-value']")
+      ?.addEventListener("click", () => {
+        const pool =
+          this._wizardState.valueNames.length > 0
+            ? this._wizardState.valueNames
+            : RANDOM_VALUES;
+        this._wizardState.value = this._pick(pool);
+        this.render();
+      });
   }
 
   _setupSuggestionInput({ input, dropdown, onChange }) {
@@ -576,9 +605,10 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         hide();
         return;
       }
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") show();
       const visible = options.filter((o) => !o.hidden);
       if (!visible.length) return;
-      const active = dropdown.querySelector(".npc-suggestion-option--active");
+      const active = dropdown.querySelector(".npc-species-option--active");
       let idx = visible.indexOf(active);
       if (e.key === "ArrowDown") {
         e.preventDefault();
@@ -591,9 +621,8 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         select(active.textContent.trim());
         return;
       } else return;
-      for (const o of options)
-        o.classList.remove("npc-suggestion-option--active");
-      visible[idx]?.classList.add("npc-suggestion-option--active");
+      for (const o of options) o.classList.remove("npc-species-option--active");
+      visible[idx]?.classList.add("npc-species-option--active");
       visible[idx]?.scrollIntoView({ block: "nearest" });
     });
 
@@ -604,8 +633,8 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       });
       opt.addEventListener("mouseover", () => {
         for (const o of options)
-          o.classList.remove("npc-suggestion-option--active");
-        opt.classList.add("npc-suggestion-option--active");
+          o.classList.remove("npc-species-option--active");
+        opt.classList.add("npc-species-option--active");
       });
     }
   }

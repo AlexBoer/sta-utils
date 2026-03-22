@@ -326,15 +326,17 @@ function canWriteActor(actor) {
 
 /**
  * Checks if an actor should experience fatigue mechanics.
- * NPCs (using STANPCSheet2e) and characters with stress.max = 0 do not experience fatigue.
+ * Minor NPCs on the NPC or NPC-LCARS sheet, and characters with stress.max = 0, do not experience fatigue.
  * @param {Actor} actor - The character actor
  * @returns {boolean} True if the actor can experience fatigue
  */
 function canExperienceFatigue(actor) {
   try {
-    // Check if actor is an NPC (using STANPCSheet2e sheet class)
+    // Minor NPCs on the NPC or NPC LCARS sheet do not experience fatigue
     const sheetClass = actor.getFlag?.("core", "sheetClass");
-    if (sheetClass === "sta.STANPCSheet2e" || sheetClass === "sta-utils.LcarsNPCSheet2e") return false;
+    const isNpcSheet = sheetClass === "sta.STANPCSheet2e" || sheetClass === "sta-utils.LcarsNPCSheet2e";
+    const isMinorNpc = actor.system?.npcType === "minor";
+    if (isNpcSheet && isMinorNpc) return false;
 
     // Check if actor has stress.max = 0
     const maxStress = Number(actor.system?.stress?.max ?? 0);

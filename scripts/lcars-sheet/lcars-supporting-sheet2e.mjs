@@ -33,7 +33,7 @@ export class LcarsSupportingSheet2e extends STASupportingSheet2e {
   };
 
   static DEFAULT_OPTIONS = {
-    position: { width: 850, height: "auto" },
+    position: { width: 756, height: "auto" },
   };
 
   get title() {

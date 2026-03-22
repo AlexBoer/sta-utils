@@ -1,0 +1,62 @@
+{{!-- Roll Prompt — Player side --}}
+<div class="rr-prompt">
+
+  {{!-- ── Header ─────────────────────────────────────────────────── --}}
+  <div class="rr-prompt-header">
+    <i class="fa-solid fa-dice-d20 rr-prompt-icon"></i>
+    <div class="rr-prompt-from">
+      Roll Request from <strong>{{fromUserName}}</strong>
+    </div>
+  </div>
+
+  {{!-- ── Roll Details ─────────────────────────────────────────── --}}
+  <div class="rr-prompt-details">
+    <div class="rr-prompt-roll-line">
+      <span class="rr-prompt-attr">{{attributeLabel}}</span>
+      <span class="rr-prompt-sep">+</span>
+      <span class="rr-prompt-disc">{{disciplineLabel}}</span>
+      <span class="rr-prompt-diff">
+        — Difficulty {{difficulty}}
+      </span>
+      {{#if (gt complicationRange 1)}}
+      <span class="rr-prompt-comp">· Complication Range {{complicationRange}}</span>
+      {{/if}}
+    </div>
+
+    {{#if (gt actorOptions.length 1)}}
+    <div class="rr-field-row rr-field-row--inline rr-prompt-actor-select">
+      <label class="rr-label">Rolling as</label>
+      <select class="rr-select" name="actorId">
+        {{#each actorOptions}}
+        <option value="{{id}}" {{#if (eq id ../selectedActorId)}}selected{{/if}}>{{name}}</option>
+        {{/each}}
+      </select>
+    </div>
+    {{else if selectedActorName}}
+    <div class="rr-prompt-actor">
+      <i class="fa-solid fa-user"></i>
+      Rolling as: <strong>{{selectedActorName}}</strong>
+    </div>
+    {{/if}}
+  </div>
+
+  {{!-- ── GM Message ──────────────────────────────────────────── --}}
+  {{#if message}}
+  <div class="rr-prompt-message">
+    <i class="fa-solid fa-quote-left rr-prompt-quote"></i>
+    {{message}}
+  </div>
+  {{/if}}
+
+  {{!-- ── Buttons ──────────────────────────────────────────────── --}}
+  <div class="rr-buttons">
+    <button type="button" class="rr-btn rr-btn--primary" data-action="roll">
+      <i class="fa-solid fa-dice-d20"></i>
+      Roll Now
+    </button>
+    <button type="button" class="rr-btn rr-btn--secondary" data-action="dismiss">
+      Dismiss
+    </button>
+  </div>
+
+</div>

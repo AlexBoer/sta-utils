@@ -30,6 +30,7 @@ const GROUP_SHIP_ACTOR_SETTING = "groupShipActorId";
 const ENABLE_EXTENDED_TASK_TRACKER_SETTING = "enableExtendedTaskTracker";
 const NPC_BUILDER_SPECIAL_RULES_PACK_SETTING = "npcBuilderSpecialRulesPack";
 const ENABLE_PERSONAL_THREAT_SETTING = "enablePersonalThreat";
+const ENABLE_ROLL_REQUEST_SETTING = "enableRollRequest";
 const MOBILE_THEME_SETTING = "mobileSheetTheme";
 const OFFICERS_LOG_MODULE_ID = "sta-officers-log";
 
@@ -77,6 +78,10 @@ const SUBGROUPS = [
   {
     firstKey: ENABLE_PERSONAL_THREAT_SETTING,
     label: "sta-utils.settings.subgroups.personalThreat",
+  },
+  {
+    firstKey: ENABLE_ROLL_REQUEST_SETTING,
+    label: "sta-utils.settings.subgroups.rollRequest",
   },
 ];
 
@@ -360,6 +365,18 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "",
+    group: GROUP_WORLD,
+  });
+
+  // ----- Roll Request -----
+
+  game.settings.register(MODULE_ID, ENABLE_ROLL_REQUEST_SETTING, {
+    name: t("sta-utils.settings.enableRollRequest.name"),
+    hint: t("sta-utils.settings.enableRollRequest.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
     group: GROUP_WORLD,
   });
 
@@ -716,6 +733,15 @@ export function getWorldTraitsActorUuid() {
     );
   } catch (_) {
     return "";
+  }
+}
+
+/** @returns {boolean} */
+export function isRollRequestEnabled() {
+  try {
+    return Boolean(game.settings.get(MODULE_ID, ENABLE_ROLL_REQUEST_SETTING));
+  } catch (_) {
+    return false;
   }
 }
 

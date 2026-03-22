@@ -432,6 +432,27 @@ class WarpCalculatorApp extends Base {
       await this.close();
     });
 
+    // Copy button handler (event delegation — survives innerHTML replacement)
+    resultsDiv?.addEventListener("click", (ev) => {
+      const btn = ev.target.closest(".sta-copy-btn");
+      if (!btn) return;
+      const text =
+        btn
+          .closest(".sta-result-copy-group")
+          ?.querySelector(".sta-warp-result-value")
+          ?.textContent?.trim() ?? "";
+      navigator.clipboard.writeText(text).catch(() => {});
+      const icon = btn.querySelector("i");
+      if (icon) {
+        icon.className = "fas fa-check";
+        btn.disabled = true;
+        setTimeout(() => {
+          icon.className = "fas fa-copy";
+          btn.disabled = false;
+        }, 1500);
+      }
+    });
+
     // Initial calculation
     updateCalculation();
   }
@@ -531,20 +552,32 @@ function computeResults(warp, distance, time, formulaType = "tng") {
     <div class="sta-warp-results-grid">
       <div class="sta-warp-result-row ${highlightClass("warp")}">
         <span class="sta-warp-result-label">${t("sta-utils.warpCalculator.warpFactor")}:</span>
-        <span class="sta-warp-result-value">${warpDisplay}</span>
+        <span class="sta-result-copy-group">
+          <span class="sta-warp-result-value">${warpDisplay}</span>
+          <button class="sta-copy-btn" type="button" title="Copy"><i class="fas fa-copy"></i></button>
+        </span>
       </div>
       <div class="sta-warp-result-row ${highlightClass("distance")}">
         <span class="sta-warp-result-label">${t("sta-utils.warpCalculator.distance")}:</span>
-        <span class="sta-warp-result-value">${distanceDisplay} ${t("sta-utils.warpCalculator.ly")}</span>
+        <span class="sta-result-copy-group">
+          <span class="sta-warp-result-value">${distanceDisplay} ${t("sta-utils.warpCalculator.ly")}</span>
+          <button class="sta-copy-btn" type="button" title="Copy"><i class="fas fa-copy"></i></button>
+        </span>
       </div>
       <div class="sta-warp-result-row ${highlightClass("time")}">
         <span class="sta-warp-result-label">${t("sta-utils.warpCalculator.time")}:</span>
-        <span class="sta-warp-result-value">${timeDisplay}</span>
+        <span class="sta-result-copy-group">
+          <span class="sta-warp-result-value">${timeDisplay}</span>
+          <button class="sta-copy-btn" type="button" title="Copy"><i class="fas fa-copy"></i></button>
+        </span>
       </div>
       <hr class="sta-warp-divider" />
       <div class="sta-warp-result-row sta-warp-derived">
         <span class="sta-warp-result-label">${t("sta-utils.warpCalculator.lyPerDay")}:</span>
-        <span class="sta-warp-result-value">${lyPerDayDisplay} ${t("sta-utils.warpCalculator.lyDay")}</span>
+        <span class="sta-result-copy-group">
+          <span class="sta-warp-result-value">${lyPerDayDisplay} ${t("sta-utils.warpCalculator.lyDay")}</span>
+          <button class="sta-copy-btn" type="button" title="Copy"><i class="fas fa-copy"></i></button>
+        </span>
       </div>
     </div>
   `;

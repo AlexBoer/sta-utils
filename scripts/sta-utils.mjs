@@ -79,7 +79,16 @@ import { initExtendedTaskTracker } from "./extended-task-tracker/index.mjs";
 
 import { openNpcBuilder } from "./npc-builder/index.mjs";
 
+import {
+  treknobabble,
+  installTreknobabbleHook,
+  medicalbabble,
+  installMedicalbabbleHook,
+} from "./treknobabble/index.mjs";
+
 import { installPersonalThreatHook } from "./personal-threat/index.mjs";
+
+import { openRollRequestDialog } from "./roll-request/index.mjs";
 
 import {
   isBacklinksEnabled,
@@ -91,6 +100,7 @@ import {
   isExtendedTaskTrackerEnabled,
   isPersonalThreatEnabled,
   isActionChooserEnabled,
+  isRollRequestEnabled,
 } from "./core/settings.mjs";
 
 import { MobileCharacterSheet2e } from "./mobile-sheet/mobile-character-sheet2e.mjs";
@@ -126,6 +136,8 @@ Hooks.once("init", () => {
     `modules/${MODULE_ID}/templates/starship-sheet2e-lcars.hbs`,
     `modules/${MODULE_ID}/templates/smallcraft-sheet2e-lcars.hbs`,
     `modules/${MODULE_ID}/templates/limited-ship-lcars.hbs`,
+    `modules/${MODULE_ID}/templates/roll-request-dialog.hbs`,
+    `modules/${MODULE_ID}/templates/roll-prompt.hbs`,
   ]);
 
   // --- Mobile sheet registration ---
@@ -346,6 +358,11 @@ Hooks.once("ready", async () => {
   // --- Shaken (Minor Damage on Group Ship) ---
   installShakenHook();
 
+  // --- Treknobabble / Medical Babble Generators ---
+  installTreknobabbleHook();
+  installMedicalbabbleHook();
+  installMedicalbabbleHook();
+
   // --- Flag migration (GM only) ---
   if (game.user.isGM) {
     await runMigrations();
@@ -378,6 +395,9 @@ Hooks.once("ready", async () => {
     actionChooser,
     dicePool: dicePoolApi,
     npcBuilder: openNpcBuilder,
+    rollRequest: isRollRequestEnabled() ? openRollRequestDialog : null,
+    treknobabble,
+    medicalbabble,
   };
   console.log(`${MODULE_ID} | Public API exposed at game.staUtils`);
 });

@@ -7,7 +7,7 @@
 .theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-academy,
 .theme-dark .sta-lcars-dialogue-app.lcars-scheme-academy,
 body.theme-dark.sta-officers-lcars-active.lcars-scheme-academy {
-  --lcars-bg:              #181818bb;
+  --lcars-bg:              #0f0f0fe0;
   --lcars-bg-panel:        rgba(0, 0, 0, 0.25);            /* panel tint: neutral dark deepening */
   --lcars-primary-color:   #6a6860; /* cadet grey */
   --lcars-secondary-color: #c03028; /* command red → biography/bio-fields */
@@ -79,13 +79,13 @@ body.theme-light.sta-officers-lcars-active.lcars-scheme-academy {
 
 /* ── Window-root background overrides (:has() targets the ancestor .application element) ── */
 .theme-dark .sta-lcars-window.application:has(.lcars-scheme-academy) {
-  --lcars-bg: #181818bb;
+  --lcars-bg: #0f0f0fe0;
 }
 .theme-light .sta-lcars-window.application:has(.lcars-scheme-academy) {
   --lcars-bg: #e8e6e0;
 }
 .sta-lcars-window.application.theme-dark:has(.lcars-scheme-academy) {
-  --lcars-bg: #181818bb;
+  --lcars-bg: #0f0f0fe0;
 }
 .sta-lcars-window.application.theme-light:has(.lcars-scheme-academy) {
   --lcars-bg: #e8e6e0;

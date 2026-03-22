@@ -140,20 +140,24 @@
     </div>
     {{#each focusList}}
     <div class="npc-builder-field-row">
-      {{#if ../hasFocusSuggestions}}
-      <div class="npc-focus-combobox npc-species-combobox">
-        <input class="npc-builder-input" type="text" value="{{value}}"
-          placeholder="Focus {{num}}" autocomplete="off">
-        <ul class="npc-suggestion-dropdown npc-species-dropdown" role="listbox">
-          {{#each ../focusSuggestions}}
-          <li class="npc-suggestion-option npc-species-option" role="option">{{this}}</li>
-          {{/each}}
-        </ul>
+      <div class="npc-field-rand-wrap">
+        {{#if ../hasFocusSuggestions}}
+        <div class="npc-focus-combobox npc-species-combobox">
+          <input class="npc-builder-input" type="text" value="{{value}}"
+            placeholder="Focus {{num}}" autocomplete="off">
+          <ul class="npc-suggestion-dropdown npc-species-dropdown" role="listbox">
+            {{#each ../focusSuggestions}}
+            <li class="npc-suggestion-option npc-species-option" role="option">{{this}}</li>
+            {{/each}}
+          </ul>
+        </div>
+        {{else}}
+        <input class="npc-builder-input npc-focus-input" type="text" value="{{value}}"
+          placeholder="Focus {{num}}">
+        {{/if}}
+        <button class="npc-field-random-btn npc-builder-btn npc-builder-btn--ghost" type="button"
+          title="Pick random" data-action="random-focus" data-index="{{@index}}"><i class="fa-solid fa-shuffle"></i></button>
       </div>
-      {{else}}
-      <input class="npc-builder-input npc-focus-input" type="text" value="{{value}}"
-        placeholder="Focus {{num}}">
-      {{/if}}
     </div>
     {{/each}}
 
@@ -161,20 +165,24 @@
       Value <span class="npc-hint">(optional)</span>
     </div>
     <div class="npc-builder-field-row">
-      {{#if hasValueSuggestions}}
-      <div class="npc-value-combobox npc-species-combobox">
-        <input class="npc-builder-input" type="text" value="{{value}}"
-          placeholder="e.g. Duty and Loyalty" autocomplete="off">
-        <ul class="npc-suggestion-dropdown npc-species-dropdown" role="listbox">
-          {{#each valueSuggestions}}
-          <li class="npc-suggestion-option npc-species-option" role="option">{{this}}</li>
-          {{/each}}
-        </ul>
+      <div class="npc-field-rand-wrap">
+        {{#if hasValueSuggestions}}
+        <div class="npc-value-combobox npc-species-combobox">
+          <input class="npc-builder-input" type="text" value="{{value}}"
+            placeholder="e.g. Duty and Loyalty" autocomplete="off">
+          <ul class="npc-suggestion-dropdown npc-species-dropdown" role="listbox">
+            {{#each valueSuggestions}}
+            <li class="npc-suggestion-option npc-species-option" role="option">{{this}}</li>
+            {{/each}}
+          </ul>
+        </div>
+        {{else}}
+        <input class="npc-builder-input npc-value-input" type="text" value="{{value}}"
+          placeholder="e.g. Duty and Loyalty">
+        {{/if}}
+        <button class="npc-field-random-btn npc-builder-btn npc-builder-btn--ghost" type="button"
+          title="Pick random" data-action="random-value"><i class="fa-solid fa-shuffle"></i></button>
       </div>
-      {{else}}
-      <input class="npc-builder-input npc-value-input" type="text" value="{{value}}"
-        placeholder="e.g. Duty and Loyalty">
-      {{/if}}
     </div>
   </div>
 

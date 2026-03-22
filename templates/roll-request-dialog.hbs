@@ -1,0 +1,105 @@
+{{!-- Roll Request Dialog — GM side --}}
+<div class="rr-dialog">
+
+  {{!-- ── Who to prompt ───────────────────────────────────────────── --}}
+  <div class="rr-section">
+    <div class="rr-section-title">
+      <i class="fa-solid fa-user-group"></i>
+      Target Player
+    </div>
+
+    <div class="rr-field-row">
+      <label class="rr-label">Player</label>
+      <select class="rr-select" name="targetUserId">
+        {{#each userOptions}}
+        <option value="{{id}}" {{#if (eq id ../selectedUserId)}}selected{{/if}}>
+          {{name}}{{#if charName}} ({{charName}}){{/if}}
+        </option>
+        {{/each}}
+      </select>
+    </div>
+
+    {{#if actorOptions.length}}
+    <div class="rr-field-row">
+      <label class="rr-label">Character</label>
+      <select class="rr-select" name="actorId">
+        {{#each actorOptions}}
+        <option value="{{id}}" {{#if (eq id ../selectedActorId)}}selected{{/if}}>{{name}}</option>
+        {{/each}}
+      </select>
+    </div>
+    {{else}}
+    <p class="rr-hint">Each player will roll as their assigned character.</p>
+    {{/if}}
+  </div>
+
+  {{!-- ── Roll Configuration ────────────────────────────────────── --}}
+  <div class="rr-section">
+    <div class="rr-section-title">
+      <i class="fa-solid fa-dice-d20"></i>
+      Roll Configuration
+    </div>
+
+    {{!-- Attribute --}}
+    <div class="rr-field-row">
+      <label class="rr-label">Attribute</label>
+      <div class="rr-pill-group">
+        {{#each attributes}}
+        <label class="rr-pill{{#if checked}} active{{/if}}">
+          <input type="radio" name="attribute" value="{{key}}" {{#if checked}}checked{{/if}}>
+          {{label}}
+        </label>
+        {{/each}}
+      </div>
+    </div>
+
+    {{!-- Discipline --}}
+    <div class="rr-field-row">
+      <label class="rr-label">Discipline</label>
+      <div class="rr-pill-group">
+        {{#each disciplines}}
+        <label class="rr-pill{{#if checked}} active{{/if}}">
+          <input type="radio" name="discipline" value="{{key}}" {{#if checked}}checked{{/if}}>
+          {{label}}
+        </label>
+        {{/each}}
+      </div>
+    </div>
+
+    {{!-- Difficulty + Complication Range --}}
+    <div class="rr-field-row rr-field-row--paired">
+      <div class="rr-paired-field">
+        <label class="rr-label">Difficulty</label>
+        <input class="rr-input rr-input--number" type="number" name="difficulty"
+          value="{{difficulty}}" min="0" max="5" step="1">
+      </div>
+      <div class="rr-paired-field">
+        <label class="rr-label">Complication</label>
+        <input class="rr-input rr-input--number" type="number" name="complicationRange"
+          value="{{complicationRange}}" min="1" max="5" step="1">
+      </div>
+    </div>
+  </div>
+
+  {{!-- ── Message ──────────────────────────────────────────────── --}}
+  <div class="rr-section rr-section--last">
+    <div class="rr-section-title">
+      <i class="fa-solid fa-message"></i>
+      Message <span class="rr-optional">(optional)</span>
+    </div>
+    <textarea class="rr-textarea" name="message" rows="2"
+      placeholder="e.g. Make a Conn test to navigate the asteroid field.">{{message}}</textarea>
+  </div>
+
+  {{!-- ── Buttons ──────────────────────────────────────────────── --}}
+  <div class="rr-buttons">
+    <button type="button" class="rr-btn rr-btn--primary" data-action="send">
+      <i class="fa-solid fa-paper-plane"></i>
+      Send Request
+    </button>
+    <button type="button" class="rr-btn rr-btn--secondary" data-action="cancel">
+      Cancel
+    </button>
+  </div>
+
+</div>

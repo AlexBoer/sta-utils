@@ -19,8 +19,8 @@ body.theme-dark.sta-officers-lcars-active.lcars-scheme-sfSciences {
   --lcars-input-border:                  #1a4878;
   --lcars-text-body:                     #a8c8e8;
   --lcars-text-item:                     #a8c8e8;
-  --lcars-text-title:                    #000000;
-  --lcars-text-header:                   #000000;
+  --lcars-text-title:                    #d4e3f1;
+  --lcars-text-header:                   #d4e3f1;
 }
 
 .theme-light :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-sfSciences,

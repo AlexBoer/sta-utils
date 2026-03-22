@@ -12,9 +12,9 @@ export const DISCIPLINE_KEYS = [
   "command",
   "conn",
   "engineering",
-  "medicine",
-  "science",
   "security",
+  "science",
+  "medicine",
 ];
 
 export const ATTRIBUTE_LABELS = {

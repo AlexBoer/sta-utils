@@ -65,6 +65,10 @@ export class TrackerDialog extends fapi.HandlebarsApplicationMixin(
   }
 
   async _prepareContext() {
+    const extendedTaskActors = (game.actors ?? [])
+      .filter((a) => a.type === "extendedtask")
+      .map((a) => ({ id: a.id, name: a.name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
     return {
       entry: this.entry,
       maxSize: MAX_SIZE,
@@ -73,6 +77,8 @@ export class TrackerDialog extends fapi.HandlebarsApplicationMixin(
       defaultSize: this.entry?.max ?? 5,
       defaultDifficulty: this.entry?.difficulty ?? 1,
       defaultResistance: this.entry?.resistance ?? 0,
+      extendedTaskActors,
+      selectedActorId: this.entry?.actorId ?? "",
     };
   }
 
@@ -85,6 +91,27 @@ export class TrackerDialog extends fapi.HandlebarsApplicationMixin(
         inputElement.value = event.target.getAttribute("data-value");
       });
     }
+
+    // When an actor is selected, auto-populate fields from its data.
+    const actorSelect = html.querySelector("[name='actorId']");
+    actorSelect?.addEventListener("change", (event) => {
+      const actor = game.actors?.get(event.target.value);
+      if (!actor) return;
+      const nameInput = html.querySelector("[name='name']");
+      if (nameInput) nameInput.value = actor.name;
+      const maxInput = html.querySelector("[name='max']");
+      if (maxInput) maxInput.value = actor.system.workprogress.max;
+      if (inputElement)
+        inputElement.value = String(actor.system.workprogress.max);
+      const diffInput = html.querySelector("[name='difficulty']");
+      if (diffInput) diffInput.value = actor.system.difficulty;
+      const resInput = html.querySelector("[name='resistance']");
+      if (resInput) resInput.value = actor.system.resistance;
+      if (this.entry) {
+        const valueInput = html.querySelector("[name='value']");
+        if (valueInput) valueInput.value = actor.system.workprogress.value;
+      }
+    });
   }
 
   static #onUpdateObject(event, _form, formData) {
@@ -96,6 +123,7 @@ export class TrackerDialog extends fapi.HandlebarsApplicationMixin(
     data.max = Math.clamp(data.max, 1, MAX_SIZE);
     data.difficulty = Math.clamp(data.difficulty ?? 1, 1, 10);
     data.resistance = Math.clamp(data.resistance ?? 0, 0, 5);
+    data.actorId = data.actorId || null;
     if (this.entry) {
       data.id = this.entry.id;
       data.value = Math.clamp(data.value, 0, data.max);

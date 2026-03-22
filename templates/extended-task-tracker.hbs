@@ -8,17 +8,26 @@
                     style="--max: {{tracker.max}}; --filled: {{tracker.value}}; --entry-color: {{tracker.color}}; --entry-background: {{tracker.backgroundColor}}"
                 >
                     <div class="ext-tracker-name">
-                        <span class="value">{{#if tracker.private}}<i class="fas fa-eye-slash"></i> {{/if}}{{tracker.name}}</span>
-                        <span class="ext-tracker-stats">
-                            <span class="ext-stat" title="Difficulty">D{{tracker.difficulty}}</span>
-                            {{#if tracker.resistance}}<span class="ext-stat resistance" title="Resistance">R{{tracker.resistance}}</span>{{/if}}
-                        </span>
-                        {{#if @root.options.editable}}
-                            <div class="ext-tracker-controls">
-                                <a data-action="deleteEntry"><i class="fa-solid fa-fw fa-trash"></i></a>
-                                <a data-action="editEntry"><i class="fa-solid fa-fw fa-edit"></i></a>
-                            </div>
-                        {{/if}}
+                        <div class="ext-name-row">
+                            <span class="value" title="{{tracker.name}}">{{#if tracker.private}}<i class="fas fa-eye-slash"></i> {{/if}}{{tracker.name}}</span>
+                        </div>
+                        <div class="ext-meta-row">
+                            <span class="ext-tracker-stats">
+                                <span class="ext-stat" title="Difficulty">Difficulty: {{tracker.difficulty}}</span>
+                                {{#if tracker.resistance}}<span class="ext-stat resistance" title="Resistance">Resist: {{tracker.resistance}}</span>{{/if}}
+                            </span>
+                            {{#if @root.options.editable}}
+                                <div class="ext-tracker-controls">
+                                    {{#if tracker.actorId}}
+                                        <a data-action="openLinkedActor" title="{{localize "sta-utils.extendedTaskTracker.linkedActor"}}"><i class="fa-solid fa-fw fa-link"></i></a>
+                                    {{else}}
+                                        <a data-action="saveToActor" title="{{localize "sta-utils.extendedTaskTracker.saveToActor"}}"><i class="fa-solid fa-fw fa-floppy-disk"></i></a>
+                                    {{/if}}
+                                    <a data-action="deleteEntry"><i class="fa-solid fa-fw fa-trash"></i></a>
+                                    <a data-action="editEntry"><i class="fa-solid fa-fw fa-edit"></i></a>
+                                </div>
+                            {{/if}}
+                        </div>
                     </div>
                     <div class="ext-tracker-bar graphic">
                         <div class="ext-tracker-value">{{tracker.value}}/{{tracker.max}}</div>

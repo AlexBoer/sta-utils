@@ -52,6 +52,12 @@ export function initExtendedTaskTracker() {
     }
   });
 
+  Hooks.on("updateActor", (actor) => {
+    if (actor.type !== "extendedtask") return;
+    if (db.isSyncingToActor) return;
+    db.syncFromActor(actor);
+  });
+
   // Query handler for non-GM edits
   Hooks.once("setup", () => {
     if (typeof CONFIG.queries === "object") {

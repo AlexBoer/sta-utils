@@ -9,7 +9,10 @@ const FLAG_VISIBLE = "visible";
  * Call once during the "init" hook.
  */
 export function initTraitVisibility() {
-  // Inject visibility toggle buttons into the Scene Traits sheet
+  // Inject visibility toggle buttons into the Scene Traits sheet.
+  // STASceneTraits is an AppV2 sheet; "renderSTASceneTraits" fires for it.
+  // The AppV1 fallbacks are kept in case the sheet is ever swapped.
+  Hooks.on("renderSTASceneTraits", _onRenderSceneTraitsSheet);
   Hooks.on("renderApplication", _onRenderSceneTraitsSheet);
   Hooks.on("renderActorSheet", _onRenderSceneTraitsSheet);
 
@@ -31,7 +34,8 @@ export function initTraitVisibility() {
  * @param {HTMLElement}  html   The rendered HTML element.
  */
 function _onRenderSceneTraitsSheet(app, html) {
-  // Only act on Scene Traits proxy actor sheets
+  // Only act on Scene Traits proxy actor sheets, and only for the GM
+  if (!game.user.isGM) return;
   const actor = app.actor ?? app.document;
   if (!actor || actor.type !== "scenetraits") return;
   if (!actor.getFlag(MODULE_ID, "isProxyActor")) return;

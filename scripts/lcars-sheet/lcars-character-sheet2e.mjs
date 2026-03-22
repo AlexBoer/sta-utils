@@ -36,7 +36,7 @@ export class LcarsCharacterSheet2e extends STACharacterSheet2e {
    * inherited from STAActors.DEFAULT_OPTIONS via the ApplicationV2 merge chain.
    */
   static DEFAULT_OPTIONS = {
-    position: { width: 850, height: "auto" },
+    position: { width: 756, height: "auto" },
   };
 
   get title() {

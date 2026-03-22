@@ -510,7 +510,7 @@ async function _onUpdateItem(item, changes, _options, _userId) {
   if (!nameChanged && !qtyChanged) return;
   if (item.type !== "trait") return;
   const actor = item.parent;
-  if (!actor?.getFlag(MODULE_ID, "isProxyActor")) return;
+  if (!actor) return;
 
   const qty = item.system?.quantity ?? 1;
   const newDisplayName = traitDisplayName(item.name, qty);

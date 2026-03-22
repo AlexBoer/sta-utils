@@ -33,7 +33,7 @@ export class LcarsNPCSheet2e extends STANPCSheet2e {
   };
 
   static DEFAULT_OPTIONS = {
-    position: { width: 850, height: "auto" },
+    position: { width: 600, height: "auto" },
   };
 
   get title() {

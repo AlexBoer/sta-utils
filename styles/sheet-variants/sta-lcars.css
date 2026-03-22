@@ -46,7 +46,7 @@
     background: transparent;
     border: none;
     flex: 1 1 auto;
-    min-width: 0;
+    min-width: 580px;
     padding: 5px;
   }
 
@@ -116,13 +116,93 @@
 }
 
 /* ===========================================================================
+ * STRUCTURE-ONLY OVERRIDES — Starship sheet (all themes, incl. STA Original)
+ * Mirrors .character-sheet.sta-lcars-sheet above. Ensures the theme picker is
+ * hidden by default, the name-row is flex, and the right-column fills the
+ * wider (1050px) LCARS window — even when .sta-lcars is absent.
+ * =========================================================================== */
+.starship-sheet.sta-lcars-sheet {
+  .left-column {
+    background: transparent;
+    border: none;
+  }
+
+  .right-column {
+    background: transparent;
+    border: none;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .right-column > .name-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    width: 100%;
+  }
+
+  .right-column > .name-row > .name-field {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 0; /* force flex to control width, not content */
+  }
+
+  .right-column > .name-row > .sta-lcars-theme-btn {
+    flex: 0 0 auto;
+    background: transparent;
+    border: none;
+    color: var(--lcars-chrome, var(--lcars-orange));
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 2px 4px;
+    line-height: 1;
+    opacity: 0.7;
+  }
+
+  .right-column > .name-row > .sta-lcars-theme-btn:hover {
+    opacity: 1;
+  }
+
+  .sta-lcars-theme-picker {
+    display: none;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 4px 2px 6px;
+  }
+
+  .sta-lcars-theme-picker.open {
+    display: flex;
+  }
+
+  .sta-lcars-theme-dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 38%, var(--dot-color), var(--dot-secondary-color));
+    border: 2px solid transparent;
+    cursor: pointer;
+    padding: 0;
+    transition: border-color 0.15s;
+  }
+
+  .sta-lcars-theme-dot.active {
+    border-color: #fff;
+    box-shadow: 0 0 0 1px var(--lcars-chrome, var(--lcars-orange));
+  }
+
+  .sta-lcars-theme-dot:hover {
+    border-color: var(--lcars-chrome, var(--lcars-orange));
+  }
+}
+
+/* ===========================================================================
  * WINDOW ROOT — base bg surface for LCARS character/starship sheet windows.
  * .sta-lcars-window is added by lcars-mode.mjs to the .application element.
  * Color-scheme files override --lcars-bg via :has() selectors at the end of
  * each scheme file.
  * =========================================================================== */
 .theme-dark .sta-lcars-window.application {
-  --lcars-bg: rgb(14 14 22 / 94%);
+  --lcars-bg: #0f0f0fe0;
   background: var(--lcars-bg);
 }
 .theme-light .sta-lcars-window.application {

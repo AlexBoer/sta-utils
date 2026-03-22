@@ -9,6 +9,7 @@ const DEFAULT_TRACKER = {
   difficulty: 1,
   resistance: 0,
   private: false,
+  actorId: null,
 };
 
 /**
@@ -18,14 +19,31 @@ const DEFAULT_TRACKER = {
  * breakthrough markers at 50 % and 75 %.
  */
 export class TrackerDatabase extends Collection {
+  #isSyncingToActor = false;
+
+  get isSyncingToActor() {
+    return this.#isSyncingToActor;
+  }
+
   addTracker(data = {}) {
     if (!this.#verifyData(data)) return;
 
     const trackers = this.#getData();
     const newData = { ...DEFAULT_TRACKER, ...data };
     newData.id ??= foundry.utils.randomID();
+
+    // When linking to an existing actor on creation, pull the actor's current
+    // progress value — the new-tracker form has no value input, so it would
+    // otherwise default to 0 and overwrite the actor's real progress.
+    if (newData.actorId) {
+      const actor = game.actors?.get(newData.actorId);
+      if (actor) newData.value = actor.system.workprogress.value;
+    }
+
     trackers[newData.id] = newData;
     game.settings.set(MODULE_ID, SETTING_KEY, trackers);
+    // No #syncToActor here — we just initialised FROM the actor,
+    // so there is nothing to write back. Subsequent updates handle sync.
   }
 
   delete(id) {
@@ -51,6 +69,7 @@ export class TrackerDatabase extends Collection {
       Object.assign(existing, newData);
       existing.value = newData.value;
       await game.settings.set(MODULE_ID, SETTING_KEY, trackers);
+      if (newData.actorId) await this.#syncToActor(newData);
     } else if (this.canUserEdit(game.user)) {
       const gm = game.users.activeGM;
       if (gm) {
@@ -108,6 +127,55 @@ export class TrackerDatabase extends Collection {
       return { ok: true };
     }
   };
+
+  /**
+   * Called by the updateActor hook. Finds the tracker linked to this actor
+   * and updates its fields from the actor's current data, without triggering
+   * a write back to the actor (loop prevention).
+   */
+  async syncFromActor(actor) {
+    if (!game.user.hasPermission("SETTINGS_MODIFY")) return;
+    const entry = this.contents.find((t) => t.actorId === actor.id);
+    if (!entry) return;
+    await this.#updateSettingOnly({
+      id: entry.id,
+      name: actor.name,
+      value: actor.system.workprogress.value,
+      max: actor.system.workprogress.max,
+      difficulty: actor.system.difficulty,
+      resistance: actor.system.resistance,
+    });
+  }
+
+  async #syncToActor(trackerData) {
+    const actor = game.actors?.get(trackerData.actorId);
+    if (!actor) return;
+    this.#isSyncingToActor = true;
+    try {
+      await actor.update({
+        name: trackerData.name,
+        "system.workprogress.value": trackerData.value,
+        "system.workprogress.max": trackerData.max,
+        "system.difficulty": trackerData.difficulty,
+        "system.resistance": trackerData.resistance,
+      });
+    } finally {
+      this.#isSyncingToActor = false;
+    }
+  }
+
+  async #updateSettingOnly(data) {
+    const trackers = this.#getData();
+    const existing = trackers[data.id];
+    if (!existing) return;
+    const newData = foundry.utils.mergeObject(
+      foundry.utils.duplicate(existing),
+      data,
+    );
+    newData.value = Math.clamp(newData.value, 0, newData.max);
+    Object.assign(existing, newData);
+    await game.settings.set(MODULE_ID, SETTING_KEY, trackers);
+  }
 
   #getData() {
     const entries = game.settings.get(MODULE_ID, SETTING_KEY);

@@ -15,7 +15,8 @@
         "chatUi": "Chat & UI",
         "standalone": "Other Features",
         "npcBuilder": "NPC Builder",
-        "personalThreat": "Personal Threat"
+        "personalThreat": "Personal Threat",
+        "rollRequest": "Roll Request"
       },
       "groupShipActorId": {
         "name": "Group Ship",
@@ -50,6 +51,10 @@
       "enablePersonalThreat": {
         "name": "Enable Personal Threat Dots",
         "hint": "Replace the resource bar on NPC tokens with a ring of red dots around the token edge — one dot per point of Bar 1 value. Requires a world reload when changed."
+      },
+      "enableRollRequest": {
+        "name": "Enable Roll Request",
+        "hint": "Allow the GM to prompt players with a dice roll request. Players receive a popup with the requested roll details and a one-click Roll button."
       },
       "playerAmbientAudioSelectionOnly": {
         "name": "Player Ambient Audio Uses Selected Tokens",
@@ -1165,6 +1170,9 @@
     "extendedTaskTracker": {
       "add": "+ Tracker",
       "breakthrough": "Breakthrough",
+      "linkedActor": "Linked Actor",
+      "noLinkedActor": "\u2014 None \u2014",
+      "saveToActor": "Save to Actor",
       "breakthroughDialog": {
         "title": "Breakthrough Effect",
         "breakthroughsTab": "Breakthroughs",
@@ -1225,6 +1233,7 @@
       "dialog": {
         "title": "Create Extended Task Tracker",
         "editTitle": "Edit Extended Task Tracker",
+        "actorLabel": "Link to Actor",
         "name": "Name",
         "value": "Current Value",
         "size": "Work Track Size (max 30)",
@@ -1248,6 +1257,18 @@
       "errors": {
         "sizeTooBig": "Maximum tracker size is {maxSize}."
       }
+    },
+    "rollRequest": {
+      "dialogTitle": "Send Roll Request",
+      "promptTitle": "Roll Request",
+      "allPlayers": "All Connected Players",
+      "noActor": "— No character specified —",
+      "noSocket": "Socket not available. Please ensure socketlib is installed and active.",
+      "noTargets": "No connected players are available to receive the request.",
+      "noActorForRoll": "No character found to roll with. Open your character sheet first.",
+      "rollFailed": "Unable to trigger the roll automatically. Please click the attribute on your character sheet.",
+      "sentOne": "Roll request sent.",
+      "sentMany": "Roll requests sent to {count} players."
     }
   }
 }

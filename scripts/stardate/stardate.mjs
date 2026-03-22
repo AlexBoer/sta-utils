@@ -101,11 +101,17 @@ function computeResults(mode, stardateValue, dateValue, timeValue) {
       <div class="sta-stardate-results-grid">
         <div class="sta-stardate-result-row">
           <span class="sta-stardate-result-label">${t("sta-utils.stardateCalculator.calendarDate")}:</span>
-          <span class="sta-stardate-result-value">${parsed.toLocaleDateString(undefined, { weekday: "short", year: "numeric", month: "short", day: "numeric" })}${timeValue ? ` @ ${timeValue}` : ""}</span>
+          <span class="sta-result-copy-group">
+            <span class="sta-stardate-result-value">${parsed.toLocaleDateString(undefined, { weekday: "short", year: "numeric", month: "short", day: "numeric" })}${timeValue ? ` @ ${timeValue}` : ""}</span>
+            <button class="sta-copy-btn" type="button" title="Copy"><i class="fas fa-copy"></i></button>
+          </span>
         </div>
         <div class="sta-stardate-result-row sta-stardate-calculated">
           <span class="sta-stardate-result-label">${t("sta-utils.stardateCalculator.stardate")}:</span>
-          <span class="sta-stardate-result-value">${stardate}</span>
+          <span class="sta-result-copy-group">
+            <span class="sta-stardate-result-value">${stardate}</span>
+            <button class="sta-copy-btn" type="button" title="Copy"><i class="fas fa-copy"></i></button>
+          </span>
         </div>
       </div>
     `;
@@ -125,11 +131,17 @@ function computeResults(mode, stardateValue, dateValue, timeValue) {
     <div class="sta-stardate-results-grid">
       <div class="sta-stardate-result-row">
         <span class="sta-stardate-result-label">${t("sta-utils.stardateCalculator.stardate")}:</span>
-        <span class="sta-stardate-result-value">${sd}</span>
+        <span class="sta-result-copy-group">
+          <span class="sta-stardate-result-value">${sd}</span>
+          <button class="sta-copy-btn" type="button" title="Copy"><i class="fas fa-copy"></i></button>
+        </span>
       </div>
       <div class="sta-stardate-result-row sta-stardate-calculated">
         <span class="sta-stardate-result-label">${t("sta-utils.stardateCalculator.calendarDate")}:</span>
-        <span class="sta-stardate-result-value">${calendarStr}</span>
+        <span class="sta-result-copy-group">
+          <span class="sta-stardate-result-value">${calendarStr}</span>
+          <button class="sta-copy-btn" type="button" title="Copy"><i class="fas fa-copy"></i></button>
+        </span>
       </div>
     </div>
   `;
@@ -302,6 +314,27 @@ class StardateCalculatorApp extends Base {
       ev.preventDefault();
       this._resolveOnce(false);
       await this.close();
+    });
+
+    // Copy button handler (event delegation — survives innerHTML replacement)
+    resultsDiv?.addEventListener("click", (ev) => {
+      const btn = ev.target.closest(".sta-copy-btn");
+      if (!btn) return;
+      const text =
+        btn
+          .closest(".sta-result-copy-group")
+          ?.querySelector(".sta-stardate-result-value")
+          ?.textContent?.trim() ?? "";
+      navigator.clipboard.writeText(text).catch(() => {});
+      const icon = btn.querySelector("i");
+      if (icon) {
+        icon.className = "fas fa-check";
+        btn.disabled = true;
+        setTimeout(() => {
+          icon.className = "fas fa-copy";
+          btn.disabled = false;
+        }, 1500);
+      }
     });
 
     // Initial state
