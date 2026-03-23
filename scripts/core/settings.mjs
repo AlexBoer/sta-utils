@@ -32,6 +32,7 @@ const NPC_BUILDER_SPECIAL_RULES_PACK_SETTING = "npcBuilderSpecialRulesPack";
 const ENABLE_PERSONAL_THREAT_SETTING = "enablePersonalThreat";
 const ENABLE_ROLL_REQUEST_SETTING = "enableRollRequest";
 const MOBILE_THEME_SETTING = "mobileSheetTheme";
+const PIERCING_MODE_SETTING = "piercingMode";
 const OFFICERS_LOG_MODULE_ID = "sta-officers-log";
 
 /** Localized group labels for the settings menu. */
@@ -82,6 +83,10 @@ const SUBGROUPS = [
   {
     firstKey: ENABLE_ROLL_REQUEST_SETTING,
     label: "sta-utils.settings.subgroups.rollRequest",
+  },
+  {
+    firstKey: PIERCING_MODE_SETTING,
+    label: "sta-utils.settings.subgroups.attackCalculator",
   },
 ];
 
@@ -377,6 +382,25 @@ export function registerSettings() {
     config: true,
     type: Boolean,
     default: false,
+    group: GROUP_WORLD,
+  });
+
+  // ----- Attack Calculator -----
+
+  game.settings.register(MODULE_ID, PIERCING_MODE_SETTING, {
+    name: t("sta-utils.settings.piercingMode.name"),
+    hint: t("sta-utils.settings.piercingMode.hint"),
+    scope: "world",
+    config: true,
+    type: String,
+    default: "raw",
+    choices: {
+      raw: t("sta-utils.settings.piercingMode.choices.raw"),
+      firstHit: t("sta-utils.settings.piercingMode.choices.firstHit"),
+      sciencePiercing: t(
+        "sta-utils.settings.piercingMode.choices.sciencePiercing",
+      ),
+    },
     group: GROUP_WORLD,
   });
 

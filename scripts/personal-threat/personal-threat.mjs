@@ -32,8 +32,12 @@ const NPC_SHEET_CLASSES = new Set([
  */
 const RING_RADIUS_FRACTION = 0.58;
 
-/** Dot radius in pixels; scales with token size via uiScale. */
-const BASE_DOT_RADIUS = 8;
+/**
+ * Dot radius as a fraction of the token's shorter dimension.
+ * At 0.08 a 1×1 token (100 px grid) gets an 8 px dot; a 2×2 token
+ * gets a 16 px dot automatically.
+ */
+const DOT_RADIUS_FRACTION = 0.08;
 
 /**
  * Start angle for the dot sequence — 1 o'clock position
@@ -98,9 +102,8 @@ function _isNpcToken(token) {
  * @param {number}        value   Current bar value (already clamped 0..MAX_VALUE).
  * @param {number}        w       Token pixel width.
  * @param {number}        h       Token pixel height.
- * @param {number}        uiScale Canvas UI scale factor.
  */
-function _drawDotRing(bar, value, w, h, uiScale) {
+function _drawDotRing(bar, value, w, h) {
   if (value <= 0) return;
 
   const cx = w / 2;
@@ -108,7 +111,7 @@ function _drawDotRing(bar, value, w, h, uiScale) {
 
   // Radius is outside the token edge (RING_RADIUS_FRACTION > 0.5)
   const ringRadius = Math.min(w, h) * RING_RADIUS_FRACTION;
-  const dotRadius = BASE_DOT_RADIUS * uiScale;
+  const dotRadius = Math.min(w, h) * DOT_RADIUS_FRACTION;
 
   // Angular step: dot diameter + 20% padding, expressed in radians
   const angularStep = (dotRadius * 2 * 1.2) / ringRadius;
@@ -192,9 +195,8 @@ export function installPersonalThreatHook() {
       if (value === 0) return; // empty ring — just leave bar cleared
 
       const { width: w, height: h } = this.document.getSize();
-      const uiScale = canvas.dimensions?.uiScale ?? 1;
 
-      _drawDotRing(bar, value, w, h, uiScale);
+      _drawDotRing(bar, value, w, h);
     },
     "MIXED",
   );

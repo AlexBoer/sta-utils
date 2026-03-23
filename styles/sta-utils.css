@@ -1049,6 +1049,480 @@ input.selector.attribute.sta-fatigued-attribute {
 }
 
 /* =============================================================================
+ * STARSHIP ATTACK CALCULATOR
+ * ============================================================================= */
+
+.sta-attack-calculator-dialog {
+  min-width: 380px;
+}
+
+.sta-attack-calculator {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* Section panels (qualities, actions, spends) */
+.sta-attack-section {
+  padding: 0.5rem 0.65rem;
+  background: rgba(100, 150, 200, 0.1);
+  border: 1px solid rgba(100, 150, 200, 0.3);
+  border-radius: 4px;
+}
+
+.sta-attack-section-title {
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.4rem;
+}
+
+/* Checkbox rows */
+.sta-attack-quality-select {
+  width: 100%;
+  padding: 0.3rem 0.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(100, 150, 200, 0.35);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.85rem;
+  cursor: pointer;
+
+  option {
+    background: #1a2535;
+    color: #d0e4f7;
+  }
+
+  option:disabled { color: rgba(180, 210, 255, 0.3); }
+}
+
+.sta-attack-quality-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.4rem;
+  min-height: 0;
+}
+
+.sta-quality-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.45rem 0.15rem 0.5rem;
+  background: rgba(100, 180, 255, 0.12);
+  border: 1px solid rgba(100, 180, 255, 0.35);
+  border-radius: 10px;
+  font-size: 0.78rem;
+  color: rgba(180, 220, 255, 0.9);
+
+  .sta-quality-badge__name { font-weight: 600; }
+
+  .sta-quality-badge__remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    padding: 0;
+    margin-left: 0.1rem;
+    background: none;
+    border: none;
+    border-radius: 50%;
+    color: rgba(180, 220, 255, 0.55);
+    font-size: 0.85rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 0.12s, background 0.12s;
+
+    &:hover {
+      color: rgba(255, 120, 120, 0.9);
+      background: rgba(255, 80, 80, 0.12);
+    }
+  }
+}
+
+/* Base damage input */
+.sta-attack-weapon-name {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin: 0 0 0.35rem;
+  padding: 0.3rem 0.6rem;
+  background: rgba(100, 180, 255, 0.07);
+  border-left: 3px solid rgba(100, 180, 255, 0.45);
+  border-radius: 0 4px 4px 0;
+
+  .sta-attack-weapon-name__label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.45);
+    flex-shrink: 0;
+  }
+
+  .sta-attack-weapon-name__value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: rgba(180, 220, 255, 0.95);
+  }
+}
+
+.sta-attack-base-damage {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.1rem 0;
+
+  label {
+    flex: 0 0 100px;
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .form-fields { flex: 1; }
+
+  input[type="number"],
+  input[type="text"] {
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid rgba(100, 150, 200, 0.4);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    color: inherit;
+    font-size: 1rem;
+
+    &:focus {
+      border-color: rgba(100, 200, 255, 0.7);
+      outline: none;
+      box-shadow: 0 0 4px rgba(100, 200, 255, 0.3);
+    }
+  }
+}
+
+/* Expression field: wraps input + evaluated-result badge */
+.sta-attack-expr-field {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  input { flex: 1; min-width: 0; }
+}
+
+.sta-attack-expr-result {
+  font-size: 0.8rem;
+  font-family: monospace;
+  color: rgba(100, 220, 255, 0.75);
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &[hidden] { display: none; }
+}
+
+/* Momentum spend rows */
+.sta-attack-spends-section {
+  .sta-attack-spend-row:not(:last-child) {
+    border-bottom: 1px solid rgba(100, 150, 200, 0.15);
+    padding-bottom: 0.35rem;
+    margin-bottom: 0.35rem;
+  }
+}
+
+.sta-attack-spend-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sta-attack-spend-label {
+  flex: 1;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.sta-attack-cost-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(100, 200, 255, 0.9);
+  background: rgba(100, 200, 255, 0.12);
+  border: 1px solid rgba(100, 200, 255, 0.3);
+  border-radius: 10px;
+  padding: 0.1rem 0.45rem;
+  min-width: 1.5rem;
+  text-align: center;
+  user-select: none;
+}
+
+/* Counter: [−] N [+] */
+.sta-attack-counter {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.sta-counter-btn {
+  width: 1.6rem;
+  height: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(100, 150, 200, 0.4);
+  border-radius: 3px;
+  background: rgba(100, 150, 200, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+  transition: background 0.12s, border-color 0.12s;
+
+  &:hover {
+    background: rgba(100, 150, 200, 0.35);
+    border-color: rgba(100, 200, 255, 0.6);
+    color: rgba(255, 255, 255, 1);
+  }
+}
+
+.sta-counter-value {
+  min-width: 1.5rem;
+  text-align: center;
+  font-family: monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  user-select: none;
+}
+
+/* Maximize section layout */
+.sta-attack-maximize-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* Sweep table */
+.sta-attack-max-table-wrap {
+  margin-top: 0.2rem;
+}
+
+.sta-attack-max-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+
+  th {
+    text-align: left;
+    color: rgba(180, 210, 255, 0.6);
+    font-weight: 600;
+    padding: 0.15rem 0.4rem;
+    border-bottom: 1px solid rgba(100, 150, 200, 0.25);
+  }
+
+  td {
+    padding: 0.18rem 0.4rem;
+  }
+
+  tbody tr {
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background 0.1s;
+
+    &:hover {
+      background: rgba(100, 150, 200, 0.22);
+    }
+  }
+}
+
+.sta-max-table-mom {
+  color: rgba(100, 200, 255, 0.9);
+  font-family: monospace;
+  font-weight: 700;
+  width: 2.5rem;
+}
+
+.sta-max-table-dmg {
+  font-family: monospace;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  width: 3rem;
+}
+
+.sta-max-table-detail {
+  color: rgba(180, 210, 255, 0.5);
+  font-size: 0.78rem;
+}
+
+/* Highlight rows where damage increases vs. previous row */
+.sta-max-table-row--new .sta-max-table-dmg {
+  color: rgba(100, 240, 140, 0.95);
+}
+
+/* Maximize Damage button (inline action button in a spend row) */
+.sta-attack-maximize-btn {
+  flex-shrink: 0;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid rgba(100, 150, 200, 0.4);
+  border-radius: 4px;
+  background: rgba(100, 150, 200, 0.2);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  transition: background 0.12s, border-color 0.12s;
+
+  &:hover {
+    background: rgba(100, 150, 200, 0.38);
+    border-color: rgba(100, 200, 255, 0.6);
+    color: #fff;
+  }
+
+  i { margin-right: 0.3rem; }
+}
+
+/* Results panel */
+.sta-attack-results {
+  padding: 0.75rem;
+  background: rgba(100, 150, 200, 0.15);
+  border: 1px solid rgba(100, 150, 200, 0.3);
+  border-radius: 6px;
+  min-height: 80px;
+}
+
+.sta-attack-result-placeholder {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+  padding: 1rem 0;
+}
+
+.sta-attack-results-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sta-attack-result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+}
+
+.sta-attack-result-label {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.sta-attack-result-value {
+  font-family: monospace;
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.sta-attack-result-value-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+}
+
+.sta-attack-formula {
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
+}
+
+.sta-attack-calibrate-row {
+  font-size: 0.85rem;
+  opacity: 0.75;
+
+  .sta-attack-result-value { font-size: 0.9rem; }
+}
+
+.sta-attack-total-row {
+  background: rgba(100, 200, 255, 0.18);
+  border-left: 3px solid rgba(100, 200, 255, 0.7);
+
+  .sta-attack-result-label {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 1rem;
+  }
+
+  .sta-attack-result-value {
+    color: rgba(100, 220, 255, 1);
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+}
+
+.sta-attack-momentum-row {
+  opacity: 0.8;
+  font-size: 0.9rem;
+
+  .sta-attack-result-label { font-weight: 500; }
+}
+
+  .sta-warp-derived {
+    .sta-attack-result-label { font-weight: 500; }
+  }
+}
+
+/* Chat qualities block */
+.sta-attack-chat-weapon-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgba(180, 220, 255, 0.95);
+  margin-bottom: 0.4rem;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+.sta-attack-chat-qualities {
+  margin-top: 0.5rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+
+  .sta-attack-chat-qualities-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 0.2rem;
+  }
+
+  .sta-attack-chat-qualities-list {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.sta-utils-weapon-calc-btn {
+  display: block;
+  width: calc(100% - 1rem);
+  margin: 0.5rem 0.5rem 0.25rem;
+  padding: 0.35rem 0.6rem;
+  background: rgba(100, 180, 255, 0.08);
+  border: 1px solid rgba(100, 180, 255, 0.3);
+  border-radius: 3px;
+  color: rgba(180, 220, 255, 0.85);
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-align: center;
+
+  &:hover {
+    background: rgba(100, 180, 255, 0.18);
+    border-color: rgba(100, 180, 255, 0.55);
+  }
+
+  i { margin-right: 0.3rem; }
+}
+
+/* =============================================================================
  * NOTE STYLER DIALOG
  * ============================================================================= */
 
@@ -2969,7 +3443,31 @@ input.selector.attribute.sta-fatigued-attribute {
 .sta-action-detail__footer {
   display: flex;
   justify-content: flex-end;
+  gap: 0.4rem;
   margin-top: auto;
+}
+
+.sta-action-detail__dmg-calc-btn {
+  font-family: var(--ac-font);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 0.3rem 0.75rem;
+  border-radius: 12px;
+  background: rgba(100, 180, 255, 0.06);
+  border: 1px solid rgba(100, 180, 255, 0.3);
+  color: rgba(150, 200, 255, 0.75);
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  i { margin-right: 0.25rem; }
+
+  &:hover {
+    background: rgba(100, 180, 255, 0.18);
+    border-color: rgba(100, 180, 255, 0.55);
+    color: rgba(180, 220, 255, 0.95);
+  }
 }
 
 .sta-action-detail__btn {

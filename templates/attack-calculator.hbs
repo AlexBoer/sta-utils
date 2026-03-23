@@ -1,0 +1,139 @@
+<form class="sta-attack-calculator" autocomplete="off">
+
+  {{! ── Weapon Qualities ── }}
+  <div class="sta-attack-section">
+    <div class="sta-attack-section-title">{{labels.weaponQualities}}</div>
+    <select class="sta-attack-quality-select" data-hook="quality-select">
+      <option value="">{{labels.addQuality}}</option>
+      <option value="area"         title="{{labels.qualities.areaHint}}">{{labels.qualities.area}}</option>
+      <option value="calibrationQuality" title="{{labels.qualities.calibrationQualityHint}}">{{labels.qualities.calibrationQuality}}</option>
+      <option value="cumbersome"   title="{{labels.qualities.cumbersomeHint}}">{{labels.qualities.cumbersome}}</option>
+      <option value="dampening"    title="{{labels.qualities.dampeningHint}}">{{labels.qualities.dampening}}</option>
+      <option value="depleting"    title="{{labels.qualities.depletingHint}}">{{labels.qualities.depleting}}</option>
+      <option value="devastatingQuality" title="{{labels.qualities.devastatingQualityHint}}">{{labels.qualities.devastatingQuality}}</option>
+      <option value="hidden"       title="{{labels.qualities.hiddenHint}}">{{labels.qualities.hidden}}</option>
+      <option value="highYield"    title="{{labels.qualities.highYieldHint}}">{{labels.qualities.highYield}}</option>
+      <option value="intense"      title="{{labels.qualities.intenseHint}}">{{labels.qualities.intense}}</option>
+      <option value="jamming"      title="{{labels.qualities.jammingHint}}">{{labels.qualities.jamming}}</option>
+      <option value="persistent"   title="{{labels.qualities.persistentHint}}">{{labels.qualities.persistent}}</option>
+      <option value="piercing"     title="{{labels.qualities.piercingHint}}">{{labels.qualities.piercing}}</option>
+      <option value="slowing"      title="{{labels.qualities.slowingHint}}">{{labels.qualities.slowing}}</option>
+      <option value="spread"       title="{{labels.qualities.spreadHint}}">{{labels.qualities.spread}}</option>
+      <option value="versatile"    title="{{labels.qualities.versatileHint}}">{{labels.qualities.versatile}}</option>
+    </select>
+    <div class="sta-attack-quality-badges" data-hook="quality-badges"></div>
+  </div>
+
+  {{! ── Actions Taken ── }}
+  <div class="sta-attack-section">
+    <div class="sta-attack-section-title">{{labels.actions}}</div>
+    <label class="sta-attack-quality-option">
+      <input type="checkbox" name="calibrateWeapons" {{checked state.calibrateWeapons}} />
+      <span class="sta-attack-quality-name">{{labels.calibrateWeapons}}</span>
+      <span class="sta-attack-quality-hint">{{labels.calibrateWeaponsHint}}</span>
+    </label>
+  </div>
+
+  {{! ── Weapon Name (when pre-populated from chat or action chooser) ── }}
+  {{#if state.weaponName}}
+  <div class="sta-attack-weapon-name">
+    <span class="sta-attack-weapon-name__label">{{labels.weaponName}}:</span>
+    <span class="sta-attack-weapon-name__value">{{state.weaponName}}</span>
+  </div>
+  {{/if}}
+
+  {{! ── Base Damage & Resistance ── }}
+  <div class="form-group sta-attack-base-damage">
+    <label>{{labels.baseDamage}}</label>
+    <div class="form-fields sta-attack-expr-field">
+      <input type="text" inputmode="decimal" name="baseDamage" placeholder="e.g. 5" value="{{state.baseDamage}}" />
+      <span class="sta-attack-expr-result" data-hook="base-damage-result"></span>
+    </div>
+  </div>
+
+  <div class="form-group sta-attack-base-damage">
+    <label>{{labels.resistance}}</label>
+    <div class="form-fields sta-attack-expr-field">
+      <input type="text" inputmode="decimal" name="resistance" placeholder="0" value="{{state.resistance}}" />
+      <span class="sta-attack-expr-result" data-hook="resistance-result"></span>
+    </div>
+  </div>
+
+  {{#if piercingModeSciencePiercing}}
+  <div class="form-group sta-attack-base-damage">
+    <label>{{labels.scienceRating}}</label>
+    <div class="form-fields sta-attack-expr-field">
+      <input type="text" inputmode="decimal" name="scienceRating" placeholder="0" value="{{state.scienceRating}}" />
+      <span class="sta-attack-expr-result" data-hook="science-rating-result"></span>
+    </div>
+  </div>
+  {{/if}}
+
+  {{! ── Momentum Spends ── }}
+  <div class="sta-attack-section sta-attack-spends-section">
+    <div class="sta-attack-section-title">{{labels.momentumSpends}}</div>
+
+    <div class="sta-attack-spend-row">
+      <span class="sta-attack-spend-label">{{labels.increaseDamage}}</span>
+      <span class="sta-attack-cost-badge" data-hook="increase-cost">{{#if state.intense}}1{{else}}{{#if state.depleting}}1{{else}}2{{/if}}{{/if}} Momentum</span>
+      <div class="sta-attack-counter">
+        <button type="button" class="sta-counter-btn" data-action="decrease" data-spend="increase">−</button>
+        <span class="sta-counter-value" data-hook="increase-count">{{state.increaseDamageCount}}</span>
+        <button type="button" class="sta-counter-btn" data-action="increase" data-spend="increase">+</button>
+      </div>
+    </div>
+
+    <div class="sta-attack-spend-row">
+      <span class="sta-attack-spend-label">{{labels.devastatingAttack}}</span>
+      <span class="sta-attack-cost-badge" data-hook="devastating-cost">{{#if state.spread}}1{{else}}2{{/if}} Momentum</span>
+      <div class="sta-attack-counter">
+        <button type="button" class="sta-counter-btn" data-action="decrease" data-spend="devastating">−</button>
+        <span class="sta-counter-value" data-hook="devastating-count">{{state.devastatingCount}}</span>
+        <button type="button" class="sta-counter-btn" data-action="increase" data-spend="devastating">+</button>
+      </div>
+    </div>
+    {{#if piercingModeFirstHit}}
+    <div class="sta-attack-spend-row" data-hook="piercing-ignore-row">
+      <span class="sta-attack-spend-label">{{labels.piercingIgnoreHits}}</span>
+      <span class="sta-attack-cost-badge">2</span>
+      <div class="sta-attack-counter">
+        <button type="button" class="sta-counter-btn" data-action="decrease" data-spend="piercingIgnore">−</button>
+        <span class="sta-counter-value" data-hook="piercing-ignore-count">{{state.piercingHitsToIgnore}}</span>
+        <button type="button" class="sta-counter-btn" data-action="increase" data-spend="piercingIgnore">+</button>
+      </div>
+    </div>
+    {{/if}}  </div>
+
+  {{! ── Maximize Damage (GM only) ── }}
+  {{#if isGM}}
+  <div class="sta-attack-section sta-attack-maximize-section">
+    <div class="sta-attack-section-title">{{labels.maximizeDamage}}</div>
+    <div class="sta-attack-spend-row">
+      <span class="sta-attack-spend-label">{{labels.momentumBudget}}</span>
+      <div class="sta-attack-expr-field">
+        <input type="text" inputmode="decimal" data-hook="max-budget-input" placeholder="e.g. 6" />
+        <span class="sta-attack-expr-result" data-hook="max-budget-result"></span>
+      </div>
+      <button type="button" class="sta-attack-maximize-btn" data-action="maximize">
+        <i class="fas fa-arrow-up"></i> {{labels.maximize}}
+      </button>
+    </div>
+    <div class="sta-attack-max-table-wrap" data-hook="max-budget-table"></div>
+  </div>
+  {{/if}}
+
+  {{! ── Results ── }}
+  <div class="sta-attack-results" data-hook="results">
+    <div class="sta-attack-result-placeholder">{{labels.enterBaseDamage}}</div>
+  </div>
+
+  <footer class="sta-warp-calculator-footer">
+    <button type="button" class="dialog-button" data-action="send" disabled>
+      <i class="fas fa-comment"></i> {{labels.sendToChat}}
+    </button>
+    <button type="button" class="dialog-button" data-action="close">
+      <i class="fas fa-times"></i> {{labels.close}}
+    </button>
+  </footer>
+
+</form>

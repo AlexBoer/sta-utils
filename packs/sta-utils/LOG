@@ -1,5 +1,5 @@
-2026/03/22-07:36:46.808 59dc Recovering log #295
-2026/03/22-07:36:46.808 59dc Level-0 table #297: started
-2026/03/22-07:36:46.823 59dc Level-0 table #297: 766 bytes OK
-2026/03/22-07:36:46.839 59dc Delete type=0 #295
-2026/03/22-07:36:46.839 59dc Delete type=3 #294
+2026/03/23-19:34:30.288 8ad0 Recovering log #301
+2026/03/23-19:34:30.288 8ad0 Level-0 table #303: started
+2026/03/23-19:34:30.304 8ad0 Level-0 table #303: 3755 bytes OK
+2026/03/23-19:34:30.319 8ad0 Delete type=0 #301
+2026/03/23-19:34:30.319 8ad0 Delete type=3 #299

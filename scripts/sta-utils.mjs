@@ -42,6 +42,11 @@ import { warpCalculator } from "./warp-calculator/index.mjs";
 
 import { stardateCalculator } from "./stardate/index.mjs";
 
+import {
+  attackCalculator,
+  installAttackCalculatorChatHook,
+} from "./attack-calculator/index.mjs";
+
 import { actionChooser } from "./action-chooser/index.mjs";
 
 import {
@@ -138,6 +143,7 @@ Hooks.once("init", () => {
     `modules/${MODULE_ID}/templates/limited-ship-lcars.hbs`,
     `modules/${MODULE_ID}/templates/roll-request-dialog.hbs`,
     `modules/${MODULE_ID}/templates/roll-prompt.hbs`,
+    `modules/${MODULE_ID}/templates/attack-calculator.hbs`,
   ]);
 
   // --- Mobile sheet registration ---
@@ -188,6 +194,11 @@ Hooks.once("init", () => {
   registerSettings();
   installSettingsHeaderHook();
   registerMigrationSetting();
+
+  // --- Attack Calculator chat button ---
+  // Registered at init time so it catches weapon cards rendered from the
+  // chat log cache before the ready hook fires.
+  installAttackCalculatorChatHook();
 
   // --- Chat Header Merge (render hook) ---
   // Must be registered at init time so it catches messages rendered from
@@ -389,6 +400,7 @@ Hooks.once("ready", async () => {
   game.staUtils = {
     warpCalculator,
     stardateCalculator,
+    attackCalculator,
     noteStyler,
     openDicePoolMonitor,
     crewManifest,

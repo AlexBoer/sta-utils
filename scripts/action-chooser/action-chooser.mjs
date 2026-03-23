@@ -11,6 +11,7 @@ import {
   PERSONAL_CONFLICT_SPENDS,
   STARSHIP_COMBAT_SPENDS,
 } from "../momentum-spend/momentum-spend-data.mjs";
+import { openAttackCalculator } from "../attack-calculator/attack-calculator.mjs";
 
 /**
  * Flat lookup of all momentum-spend definitions keyed by spend ID.
@@ -878,8 +879,13 @@ class ActionChooserApp extends BaseApp {
               <div class="sta-reroute-grid">${systemButtons}</div>
             </div>`;
         } else {
+          const hasDmgCalc = actionDef?.starshipWeaponAttack;
+          const dmgCalcBtn = hasDmgCalc
+            ? `<button class="sta-action-detail__dmg-calc-btn" data-action="dmg-calc" title="${t("sta-utils.attackCalculator.openCalculator")}"><i class="fas fa-crosshairs"></i> ${t("sta-utils.attackCalculator.openCalculator")}</button>`
+            : "";
           footerHtml = `
             <div class="sta-action-detail__footer">
+              ${dmgCalcBtn}
               <button class="sta-action-detail__btn" data-action-id="${tabId}">${buttonLabel}</button>
             </div>`;
         }
@@ -953,6 +959,71 @@ class ActionChooserApp extends BaseApp {
               } else {
                 await this._handleAction(action, detail);
               }
+            });
+          }
+
+          // Damage Calculator button (Fire / Defensive Fire)
+          const dmgCalcBtn = detail.querySelector("[data-action='dmg-calc']");
+          if (dmgCalcBtn) {
+            dmgCalcBtn.addEventListener("click", (ev) => {
+              ev.preventDefault();
+              const weaponSelect = detail.querySelector("#sta-weapon-select");
+              const weaponId = weaponSelect?.value;
+              const weapon = weaponId
+                ? this.selectedStarship?.items.get(weaponId)
+                : null;
+
+              const defaults = {};
+              if (weapon) {
+                const sys = weapon.system;
+                defaults.weaponName = weapon.name ?? "";
+                const baseDamage = sys?.damage ?? 0;
+                const shipScale = this.selectedStarship?.system?.scale ?? 0;
+                const weaponsRating =
+                  this.selectedStarship?.system?.systems?.weapons?.value ?? 0;
+                let weaponsBonus = 0;
+                if (weaponsRating >= 13) weaponsBonus = 4;
+                else if (weaponsRating >= 11) weaponsBonus = 3;
+                else if (weaponsRating >= 9) weaponsBonus = 2;
+                else if (weaponsRating >= 7) weaponsBonus = 1;
+                const weaponType = (sys?.includescale ?? "").toLowerCase();
+                const isEnergy = weaponType === "energy";
+                const isTorpedo = weaponType === "torpedo";
+                const totalDamage = isEnergy
+                  ? baseDamage + shipScale + weaponsBonus
+                  : isTorpedo
+                    ? baseDamage + weaponsBonus
+                    : baseDamage;
+                defaults.baseDamage = String(totalDamage);
+
+                // Map weapon qualities object keys to calculator state keys
+                const STA_QUALITY_TO_STATE = {
+                  intense: "intense",
+                  spread: "spread",
+                  depleting: "depleting",
+                  piercing: "piercing",
+                  area: "area",
+                  calibration: "calibrationQuality",
+                  cumbersome: "cumbersome",
+                  dampening: "dampening",
+                  devastating: "devastatingQuality",
+                  hiddenx: "hidden",
+                  highyield: "highYield",
+                  jamming: "jamming",
+                  persistent: "persistent",
+                  slowing: "slowing",
+                  versatilex: "versatile",
+                };
+                const qualitiesObj = sys?.qualities || {};
+                for (const [key, value] of Object.entries(qualitiesObj)) {
+                  const stateKey = STA_QUALITY_TO_STATE[key.toLowerCase()];
+                  if (stateKey) {
+                    defaults[stateKey] =
+                      typeof value === "boolean" ? value : value > 0;
+                  }
+                }
+              }
+              openAttackCalculator(defaults);
             });
           }
         }
