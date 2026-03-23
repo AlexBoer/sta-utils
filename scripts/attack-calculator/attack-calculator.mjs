@@ -808,9 +808,9 @@ class AttackCalculatorApp extends Base {
 
       // Update cost badges
       if (increaseCostBadge)
-        increaseCostBadge.textContent = intense || depleting ? 1 : 2;
+        increaseCostBadge.textContent = `${intense || depleting ? 1 : 2} Momentum`;
       if (devastatingCostBadge)
-        devastatingCostBadge.textContent = spread ? 1 : 2;
+        devastatingCostBadge.textContent = `${spread ? 1 : 2} Momentum`;
 
       if (baseDamage <= 0) {
         if (resultsDiv)
