@@ -2778,10 +2778,9 @@ body.sta-officers-lcars-active {
   /* -- LCARS Custom Properties (on body for dialog inheritance) -------------- */
 
   /* -- Action Chooser: map --ac-* semantic vars from LCARS scheme when active - */
-  /* Each per-scheme body block updates the LCARS semantic vars (--lcars-chrome,  */
-  /* --lcars-titlebar, etc.). Mapping --ac-* to those vars here means the action  */
-  /* chooser always reflects the active colour scheme automatically.              */
-  .sta-action-chooser {
+  /* Only applies to embedded choosers (inside a sheet). The standalone popout  */
+  /* has class .popout and is excluded — it uses hardcoded TNG values instead.  */
+  .sta-action-chooser:not(.popout):not([data-application-part]) {
     /* Structural */
     --ac-bg:        var(--lcars-bg);
     --ac-radius:    var(--lcars-radius);
@@ -2818,6 +2817,32 @@ body.sta-officers-lcars-active {
     --ac-info:      var(--lcars-input-text);
     --ac-body:      var(--lcars-text-body);
     --ac-text:      var(--lcars-tracktitle);
+  }
+
+  /* -- Action Chooser popout: hardcoded TNG values, no --lcars-* dependencies - */
+  .sta-action-chooser.popout {
+    --ac-bg:              #000;
+    --ac-radius:          24px;
+    --ac-font:            "Antonio", "Roboto Condensed", sans-serif;
+    --ac-chrome:          #f1a43c;
+    --ac-chrome-fg:       #000;
+    --ac-header:          #c5a3d9;
+    --ac-minor:           #6688cc;
+    --ac-major:           #f0b872;
+    --ac-social:          #d05050;
+    --ac-minor-tab:       #6688cc;
+    --ac-major-tab:       #f0b872;
+    --ac-social-tab:      #d05050;
+    --ac-minor-panel-bg:  rgba(102, 136, 204, 0.12);
+    --ac-major-panel-bg:  rgba(240, 184, 114, 0.10);
+    --ac-social-panel-bg: rgba(208, 80, 80, 0.10);
+    --ac-minor-panel-text: #f0b872;
+    --ac-major-panel-text: #f0b872;
+    --ac-social-panel-text: #f0b872;
+    --ac-info:            #88aaff;
+    --ac-body:            #f0b872;
+    --ac-text:            #ff9900;
+    --lcars-text-dark:    #000;
   }
 
   /* -- Light mode raw-palette defaults for the base (no-scheme) body case --- */

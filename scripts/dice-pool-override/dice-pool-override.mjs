@@ -206,14 +206,15 @@ async function _overriddenAttributeTest(event, _original) {
   /* ---------------------------------------------------------------- */
   /*  PRE-DIALOG middleware pass                                       */
   /*                                                                   */
-  /*  On the starship sheet there is no ship-assist toggle, so we      */
-  /*  know all inputs before the dialog opens. Run middleware now to    */
-  /*  let it adjust dialog defaults (complication range, dice pool).   */
-  /*  For the character sheet path, we skip this and run middleware     */
-  /*  after the dialog instead.                                        */
+  /*  On sheets whose dialog contains a ship-assist / NPC-ship toggle  */
+  /*  we cannot know all inputs before the dialog opens, so middleware  */
+  /*  runs after the dialog instead.  For starship/smallcraft sheets   */
+  /*  without such a toggle we run middleware now.                     */
   /* ---------------------------------------------------------------- */
   const hasShipAssistUI =
-    template.includes("starshipAssisting") || template.includes("attribute2e");
+    template.includes("starshipAssisting") ||
+    template.includes("attribute2e") ||
+    template.includes("attributess");
   const preDialogApplied = !hasShipAssistUI && _middleware.length > 0;
 
   if (preDialogApplied) {
@@ -329,13 +330,14 @@ async function _overriddenAttributeTest(event, _original) {
   usingDetermination = formData.get("usingDetermination") === "on";
   usingReservePower = formData.get("usingReservePower") === "on";
   complicationRange = parseInt(formData.get("complicationRange"), 10);
+  const skillLevel = formData.get("skillLevel") ?? "";
 
   // sta-officers-log dropdown: selecting a value counts as using determination
   if (determinationValueId) {
     usingDetermination = true;
   }
 
-  const speaker = this.actor;
+  let speaker = this.actor;
   const reputationValue =
     parseInt(this.element.querySelector("#total-rep")?.value, 10) || 0;
   const useReputationInstead =
@@ -412,17 +414,32 @@ async function _overriddenAttributeTest(event, _original) {
     }
   });
 
-  /* ---- Ship assist ---- */
+  /* ---- Ship assist / NPC ship ---- */
   let starship = null;
   const isShipAssist = formData.get("starshipAssisting") === "on";
   if (isShipAssist) {
-    const starshipId = formData.get("starship");
-    starship = game.actors.get(starshipId);
-    selectedSystem = formData.get("system");
-    selectedDepartment = formData.get("department");
-    selectedSystemValue = starship.system.systems[selectedSystem]?.value ?? 0;
-    selectedDepartmentValue =
-      starship.system.departments[selectedDepartment]?.value ?? 0;
+    if (skillLevel) {
+      // STA v2.5.3+: starship sheet NPC crew roll — use fixed stat values
+      const npcValues = {
+        basic: [8, 1],
+        proficient: [9, 2],
+        talented: [10, 3],
+        exceptional: [11, 4],
+      };
+      [selectedAttributeValue, selectedDisciplineValue] = npcValues[
+        skillLevel
+      ] ?? [8, 1];
+      starship = speaker;
+      speaker = { name: "NPC Crew" };
+    } else {
+      const starshipId = formData.get("starship");
+      starship = game.actors.get(starshipId);
+      selectedSystem = formData.get("system");
+      selectedDepartment = formData.get("department");
+      selectedSystemValue = starship.system.systems[selectedSystem]?.value ?? 0;
+      selectedDepartmentValue =
+        starship.system.departments[selectedDepartment]?.value ?? 0;
+    }
   }
 
   /* ---- Assemble taskData ---- */
@@ -446,13 +463,17 @@ async function _overriddenAttributeTest(event, _original) {
     usingDetermination,
     usingReservePower,
     complicationRange,
+    skillLevel,
   };
 
   /* ================================================================ */
   /*  ★ MIDDLEWARE HOOK                                                */
   /* ================================================================ */
+  // For NPC crew rolls, `speaker` is {name:"NPC Crew"} — pass the actual
+  // ship actor so middleware appliesTo checks don't crash.
+  const middlewareActor = isShipAssist && skillLevel ? starship : speaker;
   const middlewareContext = {
-    actor: speaker,
+    actor: middlewareActor,
     starship: isShipAssist ? starship : null,
     formData,
     isShipAssist,
@@ -484,7 +505,11 @@ async function _overriddenAttributeTest(event, _original) {
   /* ================================================================ */
 
   /* ---- Execute roll (delegates to shared execute-task-roll module) ---- */
-  await executeTaskRoll(taskData, { isShipAssist, actor: speaker, starship });
+  await executeTaskRoll(taskData, {
+    isShipAssist,
+    actor: isShipAssist && skillLevel ? starship : speaker,
+    starship,
+  });
 
   /* ---- Post-roll: record positive value use via sta-officers-log ---- */
   if (determinationValueId && game.modules.get("sta-officers-log")?.active) {

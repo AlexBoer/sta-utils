@@ -330,7 +330,7 @@ class ActionChooserApp extends BaseApp {
     window: {
       title: t("sta-utils.actionChooser.title"),
     },
-    classes: ["sta-utils", "sta-action-chooser"],
+    classes: ["sta-utils", "sta-action-chooser", "lcars-scheme-tng", "popout"],
     position: { width: 520, height: "auto" },
     resizable: true,
   };

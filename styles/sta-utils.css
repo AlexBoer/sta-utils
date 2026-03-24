@@ -1469,7 +1469,6 @@ input.selector.attribute.sta-fatigued-attribute {
   .sta-warp-derived {
     .sta-attack-result-label { font-weight: 500; }
   }
-}
 
 /* Chat qualities block */
 .sta-attack-chat-weapon-name {
@@ -2824,12 +2823,12 @@ input.selector.attribute.sta-fatigued-attribute {
   /* Prominent accent text — reserve power system name */
   --ac-text:      #ff9900;
 
-  /* ---- Window frame override ---- */
-  &.application {
-    background: var(--ac-bg);
-    border-radius: var(--ac-radius) var(--ac-radius) var(--ac-radius) var(--ac-radius);
-    overflow: hidden;
-  }
+  /* Ensure --lcars-text-dark is always defined in this scope */
+  --lcars-text-dark: #000;
+
+  background: var(--ac-bg);
+  border-radius: var(--ac-radius) var(--ac-radius) var(--ac-radius) var(--ac-radius);
+  overflow: hidden;
 
   .window-header {
     background: var(--ac-chrome);
@@ -2940,6 +2939,29 @@ input.selector.attribute.sta-fatigued-attribute {
     align-items: center;
     gap: 0.2rem;
     flex-shrink: 0;
+  }
+
+  /* ---- Scoped overrides: establish high specificity to beat Foundry's button reset ---- */
+  .sta-action-tab {
+    color: var(--ac-chrome-fg);
+    &[data-type="minor"] { background: var(--ac-minor-tab); }
+    &[data-type="major"] { background: var(--ac-major-tab); }
+    &[data-type="social"] { background: var(--ac-social-tab); }
+  }
+
+  .sta-action-detail {
+    &[data-type="minor"] {
+      background: var(--ac-minor-panel-bg);
+      border-color: var(--ac-minor);
+    }
+    &[data-type="major"] {
+      background: var(--ac-major-panel-bg);
+      border-color: var(--ac-major);
+    }
+    &[data-type="social"] {
+      background: var(--ac-social-panel-bg);
+      border-color: var(--ac-social);
+    }
   }
 }
 

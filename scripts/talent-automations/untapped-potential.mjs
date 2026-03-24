@@ -61,8 +61,7 @@ function _qualifiesForUntapped(actor, message) {
   // 2. Extract the chosen attribute from the talent name / description
   const chosen =
     _extractAttribute(talentItem.name) ||
-    _extractAttribute(talentItem.system?.description) ||
-    _extractAttribute(talentItem.data?.data?.description);
+    _extractAttribute(talentItem.system?.description);
   if (!chosen) return false;
 
   // 3. The roll must have used that attribute (check flavor text)
@@ -119,8 +118,7 @@ function _appendButtonToCard(message, root) {
       const talentItem = _findUntappedTalent(actor);
       const chosen =
         _extractAttribute(talentItem?.name) ||
-        _extractAttribute(talentItem?.system?.description) ||
-        _extractAttribute(talentItem?.data?.data?.description);
+        _extractAttribute(talentItem?.system?.description);
       const attrValue = actor?.system?.attributes?.[chosen]?.value ?? 0;
       const attrLabel = chosen
         ? chosen.charAt(0).toUpperCase() + chosen.slice(1)
