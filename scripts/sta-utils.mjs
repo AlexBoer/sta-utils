@@ -83,6 +83,7 @@ import { installShakenHook } from "./shaken/index.mjs";
 import { initExtendedTaskTracker } from "./extended-task-tracker/index.mjs";
 
 import { openNpcBuilder } from "./npc-builder/index.mjs";
+import { openSupportingBuilder } from "./supporting-builder/index.mjs";
 
 import {
   treknobabble,
@@ -94,6 +95,7 @@ import {
 import { installPersonalThreatHook } from "./personal-threat/index.mjs";
 
 import { openRollRequestDialog } from "./roll-request/index.mjs";
+import { openLauncher, installTrackerLauncherButton } from "./launcher/index.mjs";
 
 import {
   isBacklinksEnabled,
@@ -144,6 +146,7 @@ Hooks.once("init", () => {
     `modules/${MODULE_ID}/templates/roll-request-dialog.hbs`,
     `modules/${MODULE_ID}/templates/roll-prompt.hbs`,
     `modules/${MODULE_ID}/templates/attack-calculator.hbs`,
+    `modules/${MODULE_ID}/templates/supporting-builder.hbs`,
   ]);
 
   // --- Mobile sheet registration ---
@@ -247,6 +250,7 @@ Hooks.once("init", () => {
 
   // --- Hook installers (init-time) ---
   installRenderApplicationV2Hook();
+  installTrackerLauncherButton();
   if (isFatigueEnabled()) {
     installStressMonitoringHook();
     console.log(`${MODULE_ID} | Fatigue Management feature enabled`);
@@ -407,9 +411,11 @@ Hooks.once("ready", async () => {
     actionChooser,
     dicePool: dicePoolApi,
     npcBuilder: openNpcBuilder,
+    supportingBuilder: openSupportingBuilder,
     rollRequest: isRollRequestEnabled() ? openRollRequestDialog : null,
     treknobabble,
     medicalbabble,
+    launcher: openLauncher,
   };
   console.log(`${MODULE_ID} | Public API exposed at game.staUtils`);
 });

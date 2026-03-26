@@ -19,6 +19,7 @@ const AUTO_DEDUCT_MOMENTUM_SETTING = "autoDeductMomentum";
 const ENABLE_MOMENTUM_MERGER_SETTING = "enableMomentumMerger";
 const ENABLE_CHAT_HEADER_MERGE_SETTING = "enableChatHeaderMerge";
 const SETTING_TRAIT_TOKENS = "enableTraitTokens";
+const SETTING_TRAIT_TOKEN_AUTO_LAYER = "traitTokenAutoLayerSwitch";
 const SETTING_WORLD_TRAITS_ACTOR_UUID = "worldTraitsActorUuid";
 const SETTING_BACKLINKS_REBUILD_ON_SAVE = "backlinksRebuildOnSave";
 const SETTING_BACKLINKS_HEADING_TAG = "backlinksHeadingTag";
@@ -251,6 +252,16 @@ export function registerSettings() {
     group: GROUP_WORLD,
   });
 
+  game.settings.register(MODULE_ID, SETTING_TRAIT_TOKEN_AUTO_LAYER, {
+    name: t("sta-utils.settings.traitTokenAutoLayerSwitch.name"),
+    hint: t("sta-utils.settings.traitTokenAutoLayerSwitch.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    group: GROUP_WORLD,
+  });
+
   game.settings.register(MODULE_ID, SETTING_WORLD_TRAITS_ACTOR_UUID, {
     name: t("sta-utils.settings.worldTraitsActorUuid.name"),
     hint: t("sta-utils.settings.worldTraitsActorUuid.hint"),
@@ -369,7 +380,7 @@ export function registerSettings() {
     scope: "world",
     config: true,
     type: String,
-    default: "",
+    default: "sta.items-2e",
     group: GROUP_WORLD,
   });
 
@@ -855,6 +866,8 @@ export function installSettingsHeaderHook() {
       html[0]?.querySelector?.(`section[data-category="${MODULE_ID}"]`);
     if (!tab) return;
 
+    _upgradeNpcBuilderCompendiumField(tab);
+
     // Avoid double-injection if the hook fires again
     if (tab.querySelector(".sta-utils-settings-group-header")) return;
 
@@ -897,6 +910,218 @@ export function installSettingsHeaderHook() {
     // --- Dependency enforcement ---
     _enforceDependencies(tab);
   });
+}
+
+function _upgradeNpcBuilderCompendiumField(tab) {
+  const field = _findSettingFormGroup(
+    tab,
+    NPC_BUILDER_SPECIAL_RULES_PACK_SETTING,
+  );
+  if (!field) return;
+
+  const name = `${MODULE_ID}.${NPC_BUILDER_SPECIAL_RULES_PACK_SETTING}`;
+  if (field.querySelector(`input[type="hidden"][name="${name}"]`)) return;
+
+  const input = field.querySelector(`input[name="${name}"]`);
+  if (!input) return;
+
+  const selectedPackIds = _parseCompendiumPackIds(input.value);
+  const optionLabels = new Map();
+
+  const hiddenInput = document.createElement("input");
+  hiddenInput.type = "hidden";
+  hiddenInput.name = input.name;
+  hiddenInput.value = selectedPackIds.join("\n");
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "sta-utils-pack-selector";
+
+  const controls = document.createElement("div");
+  controls.style.display = "flex";
+  controls.style.gap = "0.4rem";
+  controls.style.alignItems = "center";
+
+  const select = document.createElement("select");
+  select.className = input.className;
+  select.style.flex = "1 1 auto";
+
+  const emptyOption = document.createElement("option");
+  emptyOption.value = "";
+  emptyOption.textContent = "Loading talent compendiums...";
+  select.appendChild(emptyOption);
+
+  const addButton = document.createElement("button");
+  addButton.type = "button";
+  addButton.className = "button";
+  addButton.textContent = "Add";
+
+  const badgeContainer = document.createElement("div");
+  badgeContainer.style.display = "flex";
+  badgeContainer.style.flexWrap = "wrap";
+  badgeContainer.style.gap = "0.35rem";
+  badgeContainer.style.marginTop = "0.45rem";
+
+  const syncInputValue = () => {
+    hiddenInput.value = selectedPackIds.join("\n");
+  };
+
+  const renderBadges = () => {
+    badgeContainer.innerHTML = "";
+
+    if (!selectedPackIds.length) {
+      const none = document.createElement("span");
+      none.className = "hint";
+      none.textContent = "No compendium packs selected.";
+      badgeContainer.appendChild(none);
+      return;
+    }
+
+    for (const packId of selectedPackIds) {
+      const badge = document.createElement("span");
+      badge.style.display = "inline-flex";
+      badge.style.alignItems = "center";
+      badge.style.gap = "0.3rem";
+      badge.style.padding = "0.2rem 0.45rem";
+      badge.style.border = "1px solid var(--color-border-light-2)";
+      badge.style.borderRadius = "999px";
+      badge.style.background = "var(--color-bg-option)";
+
+      const label = document.createElement("span");
+      const title = optionLabels.get(packId);
+      label.textContent = title
+        ? `${title} (${packId})`
+        : `${packId} (missing)`;
+      badge.appendChild(label);
+
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "button";
+      remove.style.padding = "0 0.35rem";
+      remove.style.minHeight = "1.25rem";
+      remove.textContent = "x";
+      remove.setAttribute("aria-label", `Remove ${packId}`);
+      remove.addEventListener("click", () => {
+        const idx = selectedPackIds.indexOf(packId);
+        if (idx === -1) return;
+        selectedPackIds.splice(idx, 1);
+        syncInputValue();
+        renderBadges();
+      });
+      badge.appendChild(remove);
+
+      badgeContainer.appendChild(badge);
+    }
+  };
+
+  addButton.addEventListener("click", () => {
+    const packId = String(select.value ?? "").trim();
+    if (!packId) return;
+    if (selectedPackIds.includes(packId)) return;
+    selectedPackIds.push(packId);
+    syncInputValue();
+    renderBadges();
+  });
+
+  controls.appendChild(select);
+  controls.appendChild(addButton);
+  wrapper.appendChild(controls);
+  wrapper.appendChild(badgeContainer);
+
+  input.replaceWith(hiddenInput);
+  hiddenInput.after(wrapper);
+  renderBadges();
+
+  void _populateCompendiumPackSelect(select, optionLabels, renderBadges);
+}
+
+function _parseCompendiumPackIds(value) {
+  return String(value ?? "")
+    .split(/[\n,;]/)
+    .map((id) => id.trim())
+    .filter(Boolean);
+}
+
+async function _populateCompendiumPackSelect(
+  select,
+  optionLabels,
+  renderBadges,
+) {
+  const options = await _getCompendiumPackOptions();
+  optionLabels.clear();
+
+  for (const option of options) {
+    optionLabels.set(option.id, option.label);
+  }
+
+  select.innerHTML = "";
+  const emptyOption = document.createElement("option");
+  emptyOption.value = "";
+  emptyOption.textContent = "Select a compendium pack...";
+  select.appendChild(emptyOption);
+
+  for (const option of options) {
+    const el = document.createElement("option");
+    el.value = option.id;
+    el.textContent = `${option.label} (${option.id})`;
+    select.appendChild(el);
+  }
+
+  if (!options.length) {
+    emptyOption.textContent = "No talent compendiums available";
+  }
+
+  renderBadges();
+}
+
+async function _getCompendiumPackOptions() {
+  const packs = Array.from(game.packs?.values?.() ?? game.packs ?? []);
+  const talentPacks = [];
+  const itemPackFallback = [];
+
+  for (const pack of packs) {
+    const id = String(pack?.collection ?? "").trim();
+    if (!id) continue;
+
+    const documentName = String(
+      pack?.documentName ?? pack?.metadata?.type ?? "",
+    ).toLowerCase();
+    if (documentName !== "item") continue;
+
+    const label = String(pack?.title ?? pack?.metadata?.label ?? id).trim();
+    itemPackFallback.push({ id, label });
+
+    try {
+      if (typeof pack?.getIndex !== "function") continue;
+      await pack.getIndex({ fields: ["type"] });
+      const entries = _normalizeCompendiumIndexEntries(pack?.index);
+      const hasTalent = entries.some(
+        (entry) => String(entry?.type ?? "").toLowerCase() === "talent",
+      );
+      if (hasTalent) {
+        talentPacks.push({ id, label });
+      }
+    } catch (_) {
+      // If index inspection fails, we'll fall back to item compendiums below.
+    }
+  }
+
+  const out = talentPacks.length ? talentPacks : itemPackFallback;
+  out.sort((a, b) => a.label.localeCompare(b.label));
+  return out;
+}
+
+function _normalizeCompendiumIndexEntries(indexLike) {
+  if (!indexLike) return [];
+  if (Array.isArray(indexLike)) return indexLike;
+  if (Array.isArray(indexLike.contents)) return indexLike.contents;
+  try {
+    if (typeof indexLike.values === "function") {
+      return Array.from(indexLike.values());
+    }
+  } catch (_) {
+    // ignore
+  }
+  return [];
 }
 
 /**

@@ -4,63 +4,80 @@ import {
   DISCIPLINE_KEYS,
   ATTRIBUTE_LABELS,
   DISCIPLINE_LABELS,
-  MINOR_ATTR_CHIPS,
-  NOTABLE_ATTR_CHIPS,
-  MINOR_DISC_CHIPS,
-  NOTABLE_DISC_CHIPS,
   EQUIPMENT_LOADOUTS,
-  TALENT_TEMPLATES,
-  getSpecialRulesPackConfigured,
   RANDOM_NAMES,
   RANDOM_ROLES,
   RANDOM_FOCUSES_FALLBACK,
   RANDOM_VALUES,
   loadSpeciesCatalog,
   loadEquipmentItems,
-  loadSpecialRulesItems,
   loadFocusNames,
   loadValueNames,
-  createNpcActor,
-} from "./npc-builder-data.mjs";
+} from "../npc-builder/npc-builder-data.mjs";
 
-const MINOR_STEPS = [
-  "info",
-  "attributes",
-  "departments",
-  "special-rules",
-  "equipment",
+// ── Stat arrays ───────────────────────────────────────────────────────────────
+const SUPP_ATTR_CHIPS = [10, 9, 9, 8, 8, 7];
+const SUPERVISORY_ATTR_CHIPS = [10, 10, 9, 9, 8, 8];
+const SUPP_DEPT_CHIPS = [4, 3, 2, 2, 1, 1];
+const SUPERVISORY_DEPT_CHIPS = [4, 4, 3, 2, 2, 1];
+
+// ── Rank options ──────────────────────────────────────────────────────────────
+const RANK_GROUPS = [
+  {
+    label: "Enlisted",
+    ranks: [
+      "Crewman 3rd Class",
+      "Crewman 2nd Class",
+      "Crewman 1st Class",
+      "Petty Officer 3rd Class",
+      "Petty Officer 2nd Class",
+      "Petty Officer 1st Class",
+      "Chief Petty Officer",
+      "Senior Chief Petty Officer",
+      "Master Chief Petty Officer",
+    ],
+  },
+  {
+    label: "Officers",
+    ranks: [
+      "Cadet",
+      "Ensign",
+      "Lieutenant (Junior Grade)",
+      "Lieutenant",
+      "Lieutenant Commander",
+      "Commander",
+      "Captain",
+      "Commodore",
+      "Rear Admiral",
+      "Vice-Admiral",
+      "Admiral",
+      "Fleet Admiral",
+    ],
+  },
 ];
-const NOTABLE_STEPS = [
-  "info",
-  "attributes",
-  "departments",
-  "details",
-  "special-rules",
-  "equipment",
-];
+
+const ALL_RANKS = RANK_GROUPS.flatMap((g) => g.ranks);
+
+const STEPS = ["info", "attributes", "departments", "focuses", "finishing"];
 
 const fapi = foundry.applications.api;
 
-export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
+export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
   fapi.Application,
 ) {
   constructor(options = {}) {
     super(options);
     this._currentStep = "info";
     this._equipmentCacheLoaded = false;
-    this._specialRulesCacheLoaded = false;
     this._speciesCatalogLoaded = false;
     this._focusCacheLoaded = false;
     this._valueCacheLoaded = false;
-    this._specialRulePreviewUuid = null;
-    this._specialRuleDescriptionCache = new Map();
-    this._specialRuleDescriptionLoads = new Map();
-    this._specialRuleRawDescriptionCache = new Map();
     this._wizardState = {
       name: "",
-      npcType: "minor",
+      charType: "supporting", // "supporting" | "supervisory"
       species: "",
-      role: "",
+      purpose: "",
+      rank: "",
       attributes: Object.fromEntries(ATTRIBUTE_KEYS.map((k) => [k, null])),
       disciplines: Object.fromEntries(DISCIPLINE_KEYS.map((k) => [k, null])),
       focuses: ["", "", ""],
@@ -69,47 +86,52 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       selectedAttributeBonuses: [],
       selectedEquipment: [],
       equipmentItems: [],
-      selectedSpecialRules: [],
-      specialRulesItems: [],
-      specialRulesSearch: "",
-      specialRulesNpcOnly: false,
-      specialRulesRequirementsOnly: false,
-      customTalents: [],
       focusNames: [],
       valueNames: [],
     };
   }
 
   static DEFAULT_OPTIONS = {
-    id: `${MODULE_ID}-npc-builder`,
-    classes: ["sta-tracker-dialog", "sta-npc-builder"],
+    id: `${MODULE_ID}-supporting-builder`,
+    classes: ["sta-tracker-dialog", "npc-builder", "sta-supporting-builder"],
     position: { width: 560 },
     window: {
       icon: "fa-solid fa-user-plus",
-      title: "NPC Builder",
+      title: "Supporting Character Builder",
     },
   };
 
   static PARTS = {
     main: {
-      template: `modules/${MODULE_ID}/templates/npc-builder.hbs`,
+      template: `modules/${MODULE_ID}/templates/supporting-builder.hbs`,
       root: true,
     },
   };
 
   // ── Helpers ──────────────────────────────────────────────────────────────
 
-  _getSteps() {
-    return this._wizardState.npcType === "notable"
-      ? NOTABLE_STEPS
-      : MINOR_STEPS;
+  _isSupervisory() {
+    return this._wizardState.charType === "supervisory";
+  }
+
+  _getAttrChips() {
+    return this._isSupervisory()
+      ? [...SUPERVISORY_ATTR_CHIPS]
+      : [...SUPP_ATTR_CHIPS];
+  }
+
+  _getDeptChips() {
+    return this._isSupervisory()
+      ? [...SUPERVISORY_DEPT_CHIPS]
+      : [...SUPP_DEPT_CHIPS];
+  }
+
+  _getFocusCount() {
+    return this._isSupervisory() ? 4 : 3;
   }
 
   _getAvailableAttrChips() {
-    const pool =
-      this._wizardState.npcType === "notable"
-        ? [...NOTABLE_ATTR_CHIPS]
-        : [...MINOR_ATTR_CHIPS];
+    const pool = this._getAttrChips();
     for (const val of Object.values(this._wizardState.attributes)) {
       if (val !== null) {
         const idx = pool.indexOf(val);
@@ -120,10 +142,7 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
   }
 
   _getAvailableDiscChips() {
-    const pool =
-      this._wizardState.npcType === "notable"
-        ? [...NOTABLE_DISC_CHIPS]
-        : [...MINOR_DISC_CHIPS];
+    const pool = this._getDeptChips();
     for (const val of Object.values(this._wizardState.disciplines)) {
       if (val !== null) {
         const idx = pool.indexOf(val);
@@ -131,76 +150,6 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       }
     }
     return pool;
-  }
-
-  _normalizeRequirementString(value) {
-    return String(value ?? "")
-      .trim()
-      .toLowerCase();
-  }
-
-  _resolveAttributeKey(value) {
-    const normalized = this._normalizeRequirementString(value);
-    if (!normalized) return null;
-    if (ATTRIBUTE_KEYS.includes(normalized)) return normalized;
-    return (
-      ATTRIBUTE_KEYS.find(
-        (key) =>
-          this._normalizeRequirementString(ATTRIBUTE_LABELS[key]) ===
-          normalized,
-      ) ?? null
-    );
-  }
-
-  _resolveDisciplineKey(value) {
-    const normalized = this._normalizeRequirementString(value);
-    if (!normalized) return null;
-    if (DISCIPLINE_KEYS.includes(normalized)) return normalized;
-    return (
-      DISCIPLINE_KEYS.find(
-        (key) =>
-          this._normalizeRequirementString(DISCIPLINE_LABELS[key]) ===
-          normalized,
-      ) ?? null
-    );
-  }
-
-  _meetsSpecialRuleRequirement(item) {
-    if (!item?.hasRequirement) return true;
-
-    const type = this._normalizeRequirementString(item.requirementType);
-    const minimum = Number.isFinite(Number(item.requirementMinimum))
-      ? Number(item.requirementMinimum)
-      : null;
-
-    switch (type) {
-      case "attribute": {
-        const key = this._resolveAttributeKey(item.requirementDescription);
-        if (!key) return false;
-        const value = this._wizardState.attributes[key];
-        if (value == null) return false;
-        return minimum == null ? true : value >= minimum;
-      }
-      case "discipline": {
-        const key = this._resolveDisciplineKey(item.requirementDescription);
-        if (!key) return false;
-        const value = this._wizardState.disciplines[key];
-        if (value == null) return false;
-        return minimum == null ? true : value >= minimum;
-      }
-      case "species": {
-        const required = this._normalizeRequirementString(
-          item.requirementDescription,
-        );
-        const selected = this._normalizeRequirementString(
-          this._wizardState.species,
-        );
-        if (!required || !selected) return false;
-        return selected === required || selected.includes(required);
-      }
-      default:
-        return true;
-    }
   }
 
   _canProceed() {
@@ -211,21 +160,17 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       case "attributes": {
         if (!ATTRIBUTE_KEYS.every((k) => state.attributes[k] !== null))
           return false;
-        const _specEntry = state.speciesCatalog.find(
+        const specEntry = state.speciesCatalog.find(
           (s) => s.name.toLowerCase() === state.species?.trim().toLowerCase(),
         );
-        if (_specEntry && _specEntry.attributeBonuses === null)
+        if (specEntry && specEntry.attributeBonuses === null)
           return state.selectedAttributeBonuses.length === 3;
         return true;
       }
-      case "departments": {
-        const pool =
-          state.npcType === "notable" ? NOTABLE_DISC_CHIPS : MINOR_DISC_CHIPS;
-        return (
-          DISCIPLINE_KEYS.filter((k) => state.disciplines[k] !== null).length >=
-          pool.length
-        );
-      }
+      case "departments":
+        return this._getAvailableDiscChips().length === 0;
+      case "focuses":
+        return state.focuses.every((f) => f?.trim() !== "");
       default:
         return true;
     }
@@ -240,13 +185,6 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         loadEquipmentItems().then((v) => {
           this._wizardState.equipmentItems = v;
           this._equipmentCacheLoaded = true;
-        }),
-      );
-    if (!this._specialRulesCacheLoaded)
-      loads.push(
-        loadSpecialRulesItems().then((v) => {
-          this._wizardState.specialRulesItems = v;
-          this._specialRulesCacheLoaded = true;
         }),
       );
     if (!this._speciesCatalogLoaded)
@@ -273,8 +211,7 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
     if (loads.length) await Promise.all(loads);
 
     const state = this._wizardState;
-    const steps = this._getSteps();
-    const stepIndex = steps.indexOf(this._currentStep);
+    const stepIdx = STEPS.indexOf(this._currentStep);
     const availableAttrChips = this._getAvailableAttrChips();
     const availableDiscChips = this._getAvailableDiscChips();
 
@@ -285,83 +222,22 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       selectedSpeciesEntry && selectedSpeciesEntry.attributeBonuses === null
     );
 
-    const specialRulesAvailable = getSpecialRulesPackConfigured();
-    const searchQuery = state.specialRulesSearch.trim().toLowerCase();
-    const filteredSpecialRulesItems = state.specialRulesItems.filter((item) => {
-      if (searchQuery && !item.name.toLowerCase().includes(searchQuery)) {
-        return false;
-      }
-      if (state.specialRulesNpcOnly && !item.isNpcType) {
-        return false;
-      }
-      if (
-        state.specialRulesRequirementsOnly &&
-        !this._meetsSpecialRuleRequirement(item)
-      ) {
-        return false;
-      }
-      return true;
-    });
-
-    if (specialRulesAvailable && filteredSpecialRulesItems.length > 0) {
-      const hasActivePreview = filteredSpecialRulesItems.some(
-        (item) => item.uuid === this._specialRulePreviewUuid,
-      );
-      if (!hasActivePreview) {
-        this._specialRulePreviewUuid = filteredSpecialRulesItems[0].uuid;
-      }
-    } else {
-      this._specialRulePreviewUuid = null;
-    }
-
-    const specialRulesItems = filteredSpecialRulesItems.map((item) => ({
-      ...item,
-      previewActive: item.uuid === this._specialRulePreviewUuid,
-    }));
-
-    let specialRulePreview = null;
-    if (
-      this._currentStep === "special-rules" &&
-      specialRulesAvailable &&
-      this._specialRulePreviewUuid
-    ) {
-      const previewItem = specialRulesItems.find(
-        (item) => item.uuid === this._specialRulePreviewUuid,
-      );
-      if (previewItem) {
-        const description = await this._loadSpecialRuleDescription(
-          previewItem.uuid,
-        );
-        specialRulePreview = {
-          name: previewItem.name,
-          img: previewItem.img,
-          requirementLabel: previewItem.requirementLabel,
-          description,
-        };
-      }
-    }
-
     return {
       currentStep: this._currentStep,
-      stepLabel: `Step ${stepIndex + 1} of ${steps.length}`,
-      isFirstStep: stepIndex === 0,
-      isLastStep: stepIndex === steps.length - 1,
+      stepLabel: `Step ${stepIdx + 1} of ${STEPS.length}`,
+      isFirstStep: stepIdx === 0,
+      isLastStep: stepIdx === STEPS.length - 1,
       canProceed: this._canProceed(),
-      stepPanels: {
-        info: this._currentStep === "info",
-        attributes: this._currentStep === "attributes",
-        departments: this._currentStep === "departments",
-        details: this._currentStep === "details",
-        "special-rules": this._currentStep === "special-rules",
-        equipment: this._currentStep === "equipment",
-      },
+      stepPanels: Object.fromEntries(
+        STEPS.map((s) => [s, s === this._currentStep]),
+      ),
       // Info
       name: state.name,
-      npcType: state.npcType,
-      isMinor: state.npcType === "minor",
-      isNotable: state.npcType === "notable",
+      charType: state.charType,
+      isSupporting: state.charType === "supporting",
+      isSupervisory: state.charType === "supervisory",
       species: state.species,
-      role: state.role,
+      purpose: state.purpose,
       speciesList: state.speciesCatalog.map((s) => ({
         name: s.name,
         selected: s.name === state.species,
@@ -390,7 +266,7 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
             : null,
         };
       }),
-      // Disciplines
+      // Departments
       availableDiscChips,
       discPoolEmpty: availableDiscChips.length === 0,
       disciplineSlots: DISCIPLINE_KEYS.map((k) => ({
@@ -398,15 +274,19 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         label: DISCIPLINE_LABELS[k],
         value: state.disciplines[k],
       })),
-      // Details (notable)
+      // Focuses
       focusList: state.focuses.map((f, i) => ({ value: f, num: i + 1 })),
-      value: state.value,
       hasFocusSuggestions: state.focusNames.length > 0,
       focusSuggestions: state.focusNames,
+      value: state.value,
       hasValueSuggestions: state.valueNames.length > 0,
       valueSuggestions: state.valueNames,
-      // Equipment
-      equipmentAvailable: true,
+      // Finishing
+      rank: state.rank,
+      rankGroups: RANK_GROUPS.map((g) => ({
+        label: g.label,
+        ranks: g.ranks.map((r) => ({ value: r, selected: r === state.rank })),
+      })),
       equipmentLoadouts: EQUIPMENT_LOADOUTS.map((loadout, i) => ({
         name: loadout.name,
         index: i,
@@ -420,94 +300,7 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         ...item,
         checked: state.selectedEquipment.includes(item.uuid),
       })),
-      // Special rules
-      specialRulesAvailable,
-      specialRulesItems,
-      specialRulePreview,
-      specialRulesSearch: state.specialRulesSearch,
-      specialRulesNpcOnly: state.specialRulesNpcOnly,
-      specialRulesRequirementsOnly: state.specialRulesRequirementsOnly,
-      specialRulesTotalCount: state.specialRulesItems.length,
-      hasSpecialRulesMatches: specialRulesItems.length > 0,
-      talentTemplates: TALENT_TEMPLATES,
-      customTalents: state.customTalents,
     };
-  }
-
-  async _loadSpecialRuleDescription(uuid) {
-    if (!uuid)
-      return '<p class="npc-builder-hint">No description available.</p>';
-    if (this._specialRuleDescriptionCache.has(uuid)) {
-      return this._specialRuleDescriptionCache.get(uuid);
-    }
-    if (this._specialRuleDescriptionLoads.has(uuid)) {
-      return this._specialRuleDescriptionLoads.get(uuid);
-    }
-
-    const load = (async () => {
-      let fallback =
-        '<p class="npc-builder-hint">No description available.</p>';
-      try {
-        const item = await fromUuid(uuid);
-        if (!item) return fallback;
-
-        let rawDescription = this._extractSpecialRuleRawDescription(item);
-        if (rawDescription.trim()) {
-          this._specialRuleRawDescriptionCache.set(uuid, rawDescription);
-        }
-        if (!rawDescription.trim()) return fallback;
-
-        const enriched = await TextEditor.enrichHTML(rawDescription, {
-          async: true,
-        });
-        return enriched || fallback;
-      } catch (err) {
-        console.warn(
-          `${MODULE_ID} | NPC Builder: failed loading special rule description ${uuid}`,
-          err,
-        );
-        return fallback;
-      }
-    })();
-
-    this._specialRuleDescriptionLoads.set(uuid, load);
-    const description = await load;
-    this._specialRuleDescriptionLoads.delete(uuid);
-    this._specialRuleDescriptionCache.set(uuid, description);
-    return description;
-  }
-
-  _extractSpecialRuleRawDescription(item) {
-    let rawDescription =
-      foundry.utils.getProperty(item, "system.description.value") ??
-      foundry.utils.getProperty(item, "system.description") ??
-      item.description ??
-      "";
-    if (typeof rawDescription !== "string") {
-      rawDescription = rawDescription?.value ?? "";
-    }
-    return String(rawDescription ?? "").trim();
-  }
-
-  async _loadSpecialRuleRawDescription(uuid) {
-    if (!uuid) return "";
-    if (this._specialRuleRawDescriptionCache.has(uuid)) {
-      return this._specialRuleRawDescriptionCache.get(uuid);
-    }
-
-    try {
-      const item = await fromUuid(uuid);
-      if (!item) return "";
-      const rawDescription = this._extractSpecialRuleRawDescription(item);
-      this._specialRuleRawDescriptionCache.set(uuid, rawDescription);
-      return rawDescription;
-    } catch (err) {
-      console.warn(
-        `${MODULE_ID} | NPC Builder: failed loading special rule text ${uuid}`,
-        err,
-      );
-      return "";
-    }
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -523,7 +316,7 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       if (this._canProceed()) this._onNext();
     });
     html
-      .querySelector(".npc-builder-create")
+      .querySelector(".supp-builder-create")
       ?.addEventListener("click", () => this._onCreate());
     html
       .querySelector(".npc-builder-randomize")
@@ -540,14 +333,11 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       case "departments":
         this._setupDragDrop(html, "disciplines");
         break;
-      case "details":
-        this._setupDetailsStep(html);
+      case "focuses":
+        this._setupFocusesStep(html);
         break;
-      case "special-rules":
-        this._setupSpecialRulesStep(html);
-        break;
-      case "equipment":
-        this._setupEquipmentStep(html);
+      case "finishing":
+        this._setupFinishingStep(html);
         break;
     }
 
@@ -557,33 +347,30 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
   _refreshNextButton(html = this.element) {
     const btn =
       html.querySelector(".npc-builder-next") ??
-      html.querySelector(".npc-builder-create");
+      html.querySelector(".supp-builder-create");
     if (btn) btn.disabled = !this._canProceed();
   }
 
   // ── Step setups ───────────────────────────────────────────────────────────
 
   _setupInfoStep(html) {
-    const nameInput = html.querySelector("[name='npc-name']");
+    const nameInput = html.querySelector("[name='supp-name']");
     if (nameInput) {
       nameInput.addEventListener("input", () => {
         this._wizardState.name = nameInput.value;
-        this._refreshNextButton(html);
       });
     }
 
-    for (const radio of html.querySelectorAll("[name='npcType']")) {
+    for (const radio of html.querySelectorAll("[name='charType']")) {
       radio.addEventListener("change", () => {
-        const oldType = this._wizardState.npcType;
-        this._wizardState.npcType = radio.value;
-        // Update label active class without re-rendering
+        const oldType = this._wizardState.charType;
+        this._wizardState.charType = radio.value;
         for (const lbl of html.querySelectorAll(".npc-radio-label")) {
           lbl.classList.toggle(
             "active",
             lbl.querySelector("input").value === radio.value,
           );
         }
-        // Reset chip assignments when pool sizes change
         if (oldType !== radio.value) {
           this._wizardState.attributes = Object.fromEntries(
             ATTRIBUTE_KEYS.map((k) => [k, null]),
@@ -591,19 +378,27 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
           this._wizardState.disciplines = Object.fromEntries(
             DISCIPLINE_KEYS.map((k) => [k, null]),
           );
+          const newCount = radio.value === "supervisory" ? 4 : 3;
+          while (this._wizardState.focuses.length < newCount)
+            this._wizardState.focuses.push("");
+          if (this._wizardState.focuses.length > newCount)
+            this._wizardState.focuses = this._wizardState.focuses.slice(
+              0,
+              newCount,
+            );
         }
       });
     }
 
     this._setupSpeciesCombobox(html);
-    html.querySelector("[name='role']")?.addEventListener("input", (e) => {
-      this._wizardState.role = e.target.value;
+
+    html.querySelector("[name='purpose']")?.addEventListener("input", (e) => {
+      this._wizardState.purpose = e.target.value;
     });
   }
 
   _setupSpeciesCombobox(html) {
     const input = html.querySelector(".npc-species-combobox [name='species']");
-    // Plain text input (no catalog) — simple binding
     if (!input) {
       html.querySelector("[name='species']")?.addEventListener("input", (e) => {
         this._wizardState.species = e.target.value;
@@ -644,7 +439,6 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       filterOptions(input.value);
       showDropdown();
     });
-
     input.addEventListener("input", () => {
       if (this._wizardState.species !== input.value)
         this._wizardState.selectedAttributeBonuses = [];
@@ -652,12 +446,7 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       filterOptions(input.value);
       showDropdown();
     });
-
-    input.addEventListener("blur", () => {
-      // Defer so a click on an option fires first
-      setTimeout(hideDropdown, 150);
-    });
-
+    input.addEventListener("blur", () => setTimeout(hideDropdown, 150));
     input.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         hideDropdown();
@@ -716,24 +505,25 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
     }
   }
 
-  _setupDetailsStep(html) {
-    // Wire focus comboboxes
+  _setupFocusesStep(html) {
     html.querySelectorAll(".npc-focus-combobox").forEach((wrapper, i) => {
       this._setupSuggestionInput({
         input: wrapper.querySelector("input"),
         dropdown: wrapper.querySelector(".npc-suggestion-dropdown"),
         onChange: (val) => {
           this._wizardState.focuses[i] = val;
+          this._refreshNextButton(html);
         },
       });
     });
-    // Fallback plain inputs (no suggestions)
+
     html.querySelectorAll(".npc-focus-input").forEach((input, i) => {
       input.addEventListener("input", () => {
         this._wizardState.focuses[i] = input.value;
+        this._refreshNextButton(html);
       });
     });
-    // Wire value combobox
+
     const valWrapper = html.querySelector(".npc-value-combobox");
     if (valWrapper) {
       this._setupSuggestionInput({
@@ -749,7 +539,6 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       });
     }
 
-    // Per-field randomize buttons
     for (const btn of html.querySelectorAll("[data-action='random-focus']")) {
       btn.addEventListener("click", () => {
         const i = parseInt(btn.dataset.index);
@@ -831,7 +620,9 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         e.preventDefault();
         select(active.textContent.trim());
         return;
-      } else return;
+      } else {
+        return;
+      }
       for (const o of options) o.classList.remove("npc-species-option--active");
       visible[idx]?.classList.add("npc-species-option--active");
       visible[idx]?.scrollIntoView({ block: "nearest" });
@@ -860,7 +651,11 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
     );
   }
 
-  _setupEquipmentStep(html) {
+  _setupFinishingStep(html) {
+    html.querySelector("[name='rank']")?.addEventListener("change", (e) => {
+      this._wizardState.rank = e.target.value;
+    });
+
     for (const cb of html.querySelectorAll(".npc-equip-checkbox")) {
       cb.addEventListener("change", () => {
         const uuid = cb.value;
@@ -893,102 +688,6 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         this.render();
       });
     }
-  }
-
-  _setupSpecialRulesStep(html) {
-    html
-      .querySelector(".npc-special-rules-search")
-      ?.addEventListener("input", (e) => {
-        this._wizardState.specialRulesSearch = e.target.value;
-        this.render();
-      });
-
-    html
-      .querySelector(".npc-special-rules-filter-npc")
-      ?.addEventListener("change", (e) => {
-        this._wizardState.specialRulesNpcOnly = e.target.checked;
-        this.render();
-      });
-
-    html
-      .querySelector(".npc-special-rules-filter-requirements")
-      ?.addEventListener("change", (e) => {
-        this._wizardState.specialRulesRequirementsOnly = e.target.checked;
-        this.render();
-      });
-
-    for (const row of html.querySelectorAll(".npc-special-rule-row")) {
-      row.addEventListener("click", () => {
-        const uuid = row.dataset.uuid;
-        if (!uuid || uuid === this._specialRulePreviewUuid) return;
-        this._specialRulePreviewUuid = uuid;
-        this.render();
-      });
-    }
-
-    for (const btn of html.querySelectorAll(".npc-special-rule-add-btn")) {
-      btn.addEventListener("click", async (e) => {
-        e.stopPropagation();
-        const uuid = btn.dataset.uuid;
-        const name = btn.dataset.name || "Talent";
-        if (!uuid) return;
-        const description = await this._loadSpecialRuleRawDescription(uuid);
-        this._wizardState.customTalents = [
-          ...this._wizardState.customTalents,
-          { name, description },
-        ];
-        this.render();
-      });
-    }
-
-    for (const btn of html.querySelectorAll(".npc-talent-template-btn")) {
-      btn.addEventListener("click", () => {
-        const idx = parseInt(btn.dataset.templateIndex);
-        const template = TALENT_TEMPLATES[idx];
-        if (!template) return;
-        this._wizardState.customTalents = [
-          ...this._wizardState.customTalents,
-          {
-            name: template.name,
-            description: template.description,
-          },
-        ];
-        this.render();
-      });
-    }
-
-    html
-      .querySelector(".npc-custom-talent-add")
-      ?.addEventListener("click", () => {
-        this._wizardState.customTalents = [
-          ...this._wizardState.customTalents,
-          { name: "", description: "" },
-        ];
-        this.render();
-      });
-
-    for (const btn of html.querySelectorAll(".npc-custom-talent-remove")) {
-      btn.addEventListener("click", () => {
-        const idx = parseInt(btn.dataset.talentIndex);
-        if (Number.isNaN(idx)) return;
-        this._wizardState.customTalents =
-          this._wizardState.customTalents.filter((_talent, i) => i !== idx);
-        this.render();
-      });
-    }
-
-    html.querySelectorAll(".npc-custom-talent").forEach((row, i) => {
-      row
-        .querySelector(".npc-custom-talent-name")
-        ?.addEventListener("input", (e) => {
-          this._wizardState.customTalents[i].name = e.target.value;
-        });
-      row
-        .querySelector(".npc-custom-talent-desc")
-        ?.addEventListener("input", (e) => {
-          this._wizardState.customTalents[i].description = e.target.value;
-        });
-    });
   }
 
   // ── Drag and drop ─────────────────────────────────────────────────────────
@@ -1031,24 +730,19 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       });
     };
 
-    // Slot drop zones
     for (const zone of html.querySelectorAll(".npc-drop-zone")) {
       attachZoneListeners(zone, ({ value, sourceKey }) => {
         const targetKey = zone.dataset.key;
         const state = this._wizardState[stateKey];
         const existingValue = state[targetKey];
-        // Clear source slot if dragging from a slot
         if (sourceKey !== null) state[sourceKey] = null;
-        // Swap: send existing target value back to source slot
         if (existingValue !== null && sourceKey !== null)
           state[sourceKey] = existingValue;
-        // Place value in target
         state[targetKey] = value;
         this.render();
       });
     }
 
-    // Pool as drop target (return assigned chips)
     if (pool) {
       attachZoneListeners(pool, ({ sourceKey }) => {
         if (sourceKey !== null) {
@@ -1079,30 +773,29 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
 
     switch (this._currentStep) {
       case "info": {
-        const prevType = state.npcType;
+        const oldType = state.charType;
         state.name = this._pick(RANDOM_NAMES);
-        state.npcType = Math.random() < 0.35 ? "notable" : "minor";
+        state.charType = Math.random() < 0.3 ? "supervisory" : "supporting";
         state.species =
           state.speciesCatalog.length > 0
             ? this._pick(state.speciesCatalog).name
             : "";
-        state.role = this._pick(RANDOM_ROLES);
+        state.purpose = this._pick(RANDOM_ROLES);
         state.selectedAttributeBonuses = [];
-        if (prevType !== state.npcType) {
+        if (oldType !== state.charType) {
           state.attributes = Object.fromEntries(
             ATTRIBUTE_KEYS.map((k) => [k, null]),
           );
           state.disciplines = Object.fromEntries(
             DISCIPLINE_KEYS.map((k) => [k, null]),
           );
+          const newCount = state.charType === "supervisory" ? 4 : 3;
+          state.focuses = Array.from({ length: newCount }, () => "");
         }
         break;
       }
       case "attributes": {
-        const attrPool =
-          state.npcType === "notable"
-            ? [...NOTABLE_ATTR_CHIPS]
-            : [...MINOR_ATTR_CHIPS];
+        const attrPool = this._getAttrChips();
         const attrKeys = this._shuffle(ATTRIBUTE_KEYS);
         state.attributes = Object.fromEntries(
           attrKeys.map((k, i) => [k, attrPool[i]]),
@@ -1118,10 +811,7 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         break;
       }
       case "departments": {
-        const discPool =
-          state.npcType === "notable"
-            ? [...NOTABLE_DISC_CHIPS]
-            : [...MINOR_DISC_CHIPS];
+        const discPool = this._getDeptChips();
         const discKeys = this._shuffle(DISCIPLINE_KEYS);
         state.disciplines = Object.fromEntries(
           DISCIPLINE_KEYS.map((k) => [k, null]),
@@ -1130,31 +820,24 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
           state.disciplines[discKeys[i]] = discPool[i];
         break;
       }
-      case "details": {
-        const focusPool = this._shuffle(
+      case "focuses": {
+        const count = this._getFocusCount();
+        const pool = this._shuffle(
           state.focusNames.length > 0
             ? state.focusNames
             : RANDOM_FOCUSES_FALLBACK,
         );
-        state.focuses = [focusPool[0], focusPool[1], focusPool[2]];
-        const valuePool =
-          state.valueNames.length > 0 ? state.valueNames : RANDOM_VALUES;
-        state.value = this._pick(valuePool);
+        state.focuses = pool.slice(0, count);
+        if (this._isSupervisory()) {
+          const valuePool =
+            state.valueNames.length > 0 ? state.valueNames : RANDOM_VALUES;
+          state.value = this._pick(valuePool);
+        }
         break;
       }
-      case "special-rules": {
-        const talentCount = Math.floor(Math.random() * 3); // 0–2
-        state.customTalents = this._shuffle(TALENT_TEMPLATES)
-          .slice(0, talentCount)
-          .map((talent) => ({
-            name: talent.name,
-            description: talent.description,
-          }));
-        state.selectedSpecialRules = [];
-        break;
-      }
-      case "equipment": {
-        const eqCount = 1 + Math.floor(Math.random() * 3); // 1–3
+      case "finishing": {
+        state.rank = this._pick(ALL_RANKS);
+        const eqCount = 1 + Math.floor(Math.random() * 3);
         state.selectedEquipment = this._shuffle(
           state.equipmentItems.map((i) => i.uuid),
         ).slice(0, eqCount);
@@ -1166,57 +849,146 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
   }
 
   _onBack() {
-    const steps = this._getSteps();
-    const idx = steps.indexOf(this._currentStep);
+    const idx = STEPS.indexOf(this._currentStep);
     if (idx > 0) {
-      this._currentStep = steps[idx - 1];
+      this._currentStep = STEPS[idx - 1];
       this.render();
     }
   }
 
   _onNext() {
-    const steps = this._getSteps();
-    const idx = steps.indexOf(this._currentStep);
-    if (idx < steps.length - 1) {
-      this._currentStep = steps[idx + 1];
+    const idx = STEPS.indexOf(this._currentStep);
+    if (idx < STEPS.length - 1) {
+      this._currentStep = STEPS[idx + 1];
       this.render();
     }
   }
 
   async _onCreate() {
-    // Final capture of custom talent fields
-    this.element?.querySelectorAll(".npc-custom-talent").forEach((row, i) => {
-      this._wizardState.customTalents[i] = {
-        name: row.querySelector(".npc-custom-talent-name")?.value ?? "",
-        description: row.querySelector(".npc-custom-talent-desc")?.value ?? "",
-      };
-    });
-
-    // Final capture of equipment checkboxes
-    const checked = this.element?.querySelectorAll(
-      ".npc-equip-checkbox:checked",
-    );
-    if (checked?.length) {
-      this._wizardState.selectedEquipment = [...checked].map((cb) => cb.value);
-    }
-
     const state = this._wizardState;
-    await createNpcActor({
+    await createSupportingActor({
       name: state.name,
-      npcType: state.npcType,
+      charType: state.charType,
       species: state.species,
-      role: state.role,
+      purpose: state.purpose,
+      rank: state.rank,
       attributes: state.attributes,
       disciplines: state.disciplines,
       focuses: state.focuses,
       value: state.value,
       selectedEquipmentUuids: state.selectedEquipment,
-      selectedSpecialRulesUuids: [],
-      customTalents: state.customTalents,
       speciesCatalog: state.speciesCatalog,
       selectedAttributeBonuses: state.selectedAttributeBonuses,
     });
-
     this.close();
   }
+}
+
+// ── Actor creation ─────────────────────────────────────────────────────────────
+
+async function createSupportingActor({
+  name,
+  charType,
+  species,
+  purpose,
+  rank,
+  attributes,
+  disciplines,
+  focuses,
+  value,
+  selectedEquipmentUuids,
+  speciesCatalog = [],
+  selectedAttributeBonuses = [],
+}) {
+  const isSupervisory = charType === "supervisory";
+  const actorName =
+    name?.trim() ||
+    (isSupervisory ? "New Supervisory Character" : "New Supporting Character");
+
+  // Resolve species attribute bonuses
+  const speciesEntry = speciesCatalog.find(
+    (s) => s.name.toLowerCase() === species?.trim().toLowerCase(),
+  );
+  const bonuses =
+    speciesEntry?.attributeBonuses ??
+    (selectedAttributeBonuses.length > 0
+      ? Object.fromEntries(selectedAttributeBonuses.map((k) => [k, 1]))
+      : null);
+
+  // Compute final attribute values (base + species bonus)
+  const finalAttributes = Object.fromEntries(
+    ATTRIBUTE_KEYS.map((k) => [
+      k,
+      { value: (attributes[k] ?? 7) + (bonuses?.[k] ?? 0) },
+    ]),
+  );
+
+  // Stress: 0 for supporting; equals Fitness for supervisory
+  const stressVal = isSupervisory
+    ? (finalAttributes["fitness"]?.value ?? 8)
+    : 0;
+
+  const actor = await Actor.create({
+    name: actorName,
+    type: "character",
+    system: {
+      species: species ?? "",
+      rank: rank ?? "",
+      stress: { value: stressVal, max: stressVal },
+      strmod: 0,
+      attributes: finalAttributes,
+      disciplines: Object.fromEntries(
+        DISCIPLINE_KEYS.map((k) => [k, { value: disciplines[k] ?? 0 }]),
+      ),
+    },
+    flags: { core: { sheetClass: "sta.STASupportingSheet2e" } },
+  });
+
+  if (!actor) return null;
+
+  const embeddedItems = [];
+
+  if (species?.trim())
+    embeddedItems.push({ name: species.trim(), type: "trait" });
+  if (purpose?.trim())
+    embeddedItems.push({ name: purpose.trim(), type: "trait" });
+
+  if (speciesEntry?.talentUuid) {
+    try {
+      const talent = await fromUuid(speciesEntry.talentUuid);
+      if (talent) embeddedItems.push(talent.toObject());
+    } catch (e) {
+      console.warn(
+        `${MODULE_ID} | Supporting Builder: could not load species talent ${speciesEntry.talentUuid}`,
+        e,
+      );
+    }
+  }
+
+  for (const f of focuses ?? []) {
+    if (f?.trim()) embeddedItems.push({ name: f.trim(), type: "focus" });
+  }
+
+  if (isSupervisory && value?.trim()) {
+    embeddedItems.push({ name: value.trim(), type: "value" });
+  }
+
+  for (const uuid of selectedEquipmentUuids ?? []) {
+    try {
+      const item = await fromUuid(uuid);
+      if (item) embeddedItems.push(item.toObject());
+    } catch (e) {
+      console.warn(
+        `${MODULE_ID} | Supporting Builder: could not load item ${uuid}`,
+        e,
+      );
+    }
+  }
+
+  if (embeddedItems.length) {
+    await actor.createEmbeddedDocuments("Item", embeddedItems);
+  }
+
+  actor.sheet?.render(true);
+  return actor;
 }

@@ -786,7 +786,83 @@ input.selector.attribute.sta-fatigued-attribute {
  * ============================================================================= */
 
 .sta-warp-calculator-dialog {
+  /* Sky/blue as the primary chrome color — navigation/travel theme */
+  --lcars-orange: #88aaff;
+  --lcars-peach: #f0b872;
+  --lcars-lavender: #c5a3d9;
+  --lcars-lilac: #9b8fc2;
+  --lcars-blue: #6688cc;
+  --lcars-sky: #88aaff;
+  --lcars-red: #d05050;
+  --lcars-tan: #e8c57a;
+  --lcars-bg: #000;
+  --lcars-text: #88aaff;
+  --lcars-text-dark: #000;
+  --lcars-font: "Antonio", "Roboto Condensed", sans-serif;
+  --lcars-radius: 24px;
   min-width: 360px;
+
+  .sta-warp-calculator-instructions { color: var(--lcars-lavender); }
+
+  .sta-warp-calculator-formula-selector {
+    background: rgba(136, 170, 255, 0.07);
+    border-color: rgba(136, 170, 255, 0.25);
+  }
+
+  .sta-warp-formula-label { color: var(--lcars-lavender); }
+
+  .sta-warp-formula-option {
+    color: var(--lcars-lavender);
+    input[type="radio"] { accent-color: var(--lcars-orange); }
+  }
+
+  .sta-warp-calculator-inputs {
+    .form-group label { color: var(--lcars-lavender); }
+
+    input[type="number"] {
+      border-color: rgba(136, 170, 255, 0.4);
+      &:focus {
+        border-color: var(--lcars-orange);
+        box-shadow: 0 0 4px rgba(136, 170, 255, 0.3);
+      }
+    }
+  }
+
+  .sta-warp-calculator-results {
+    background: rgba(136, 170, 255, 0.07);
+    border-color: rgba(136, 170, 255, 0.25);
+  }
+
+  .sta-warp-result-label { color: var(--lcars-lavender); }
+
+  .sta-warp-calculated {
+    background: rgba(136, 170, 255, 0.14);
+    border-left-color: rgba(136, 170, 255, 0.8);
+    .sta-warp-result-value { color: var(--lcars-orange); }
+  }
+
+  .sta-warp-divider { border-top-color: rgba(136, 170, 255, 0.25); }
+
+  .sta-copy-btn {
+    color: rgba(136, 170, 255, 0.35);
+    &:hover {
+      color: var(--lcars-orange);
+      background: rgba(136, 170, 255, 0.1);
+    }
+  }
+
+  .sta-warp-calculator-footer {
+    border-top-color: rgba(136, 170, 255, 0.25);
+    .dialog-button {
+      border-color: rgba(136, 170, 255, 0.4);
+      background: rgba(136, 170, 255, 0.08);
+      color: var(--lcars-lavender);
+      &:hover:not(:disabled) {
+        background: rgba(136, 170, 255, 0.2);
+        border-color: rgba(136, 170, 255, 0.7);
+      }
+    }
+  }
 }
 
 .sta-warp-calculator {
@@ -1053,7 +1129,144 @@ input.selector.attribute.sta-fatigued-attribute {
  * ============================================================================= */
 
 .sta-attack-calculator-dialog {
+  --lcars-orange: #f1a43c;
+  --lcars-peach: #f0b872;
+  --lcars-lavender: #c5a3d9;
+  --lcars-lilac: #9b8fc2;
+  --lcars-blue: #6688cc;
+  --lcars-sky: #88aaff;
+  --lcars-red: #d05050;
+  --lcars-tan: #e8c57a;
+  --lcars-bg: #000;
+  --lcars-text: #ff9900;
+  --lcars-text-dark: #000;
+  --lcars-font: "Antonio", "Roboto Condensed", sans-serif;
+  --lcars-radius: 24px;
   min-width: 380px;
+
+  /* Section panels use lilac tinting (like momentum spend rows) */
+  .sta-attack-section {
+    background: rgba(155, 143, 194, 0.06);
+    border-color: rgba(155, 143, 194, 0.2);
+    border-left: 3px solid var(--lcars-lilac);
+    border-radius: 0 4px 4px 0;
+  }
+
+  .sta-attack-section-title { color: var(--lcars-lavender); }
+
+  .sta-attack-quality-select {
+    border-color: rgba(155, 143, 194, 0.4);
+    color: var(--lcars-lavender);
+    option { background: #05040a; color: var(--lcars-lavender); }
+    option:disabled { color: rgba(155, 143, 194, 0.3); }
+  }
+
+  .sta-quality-badge {
+    background: rgba(197, 163, 217, 0.1);
+    border-color: rgba(155, 143, 194, 0.35);
+    color: var(--lcars-lavender);
+    .sta-quality-badge__remove { color: rgba(155, 143, 194, 0.5); }
+  }
+
+  .sta-attack-weapon-name {
+    background: rgba(155, 143, 194, 0.05);
+    border-left-color: rgba(155, 143, 194, 0.5);
+    .sta-attack-weapon-name__label { color: rgba(155, 143, 194, 0.5); }
+    .sta-attack-weapon-name__value { color: var(--lcars-lavender); }
+  }
+
+  .sta-attack-base-damage {
+    label { color: var(--lcars-peach); }
+    input[type="number"],
+    input[type="text"] {
+      border-color: rgba(155, 143, 194, 0.4);
+      &:focus {
+        border-color: var(--lcars-lilac);
+        box-shadow: 0 0 4px rgba(155, 143, 194, 0.3);
+      }
+    }
+  }
+
+  /* Expression result uses sky (same as cost values) */
+  .sta-attack-expr-result { color: rgba(136, 170, 255, 0.75); }
+
+  .sta-attack-spends-section .sta-attack-spend-row:not(:last-child) {
+    border-bottom-color: rgba(155, 143, 194, 0.15);
+  }
+
+  .sta-attack-spend-label { color: var(--lcars-peach); }
+
+  /* Cost badges in sky-blue, like the cost labels in the momentum dialog */
+  .sta-attack-cost-badge {
+    color: var(--lcars-sky);
+    background: rgba(136, 170, 255, 0.1);
+    border-color: rgba(136, 170, 255, 0.3);
+  }
+
+  .sta-counter-btn {
+    border-color: rgba(155, 143, 194, 0.4);
+    background: rgba(155, 143, 194, 0.1);
+    &:hover {
+      background: rgba(155, 143, 194, 0.25);
+      border-color: var(--lcars-lilac);
+    }
+  }
+
+  .sta-attack-maximize-btn {
+    border-color: rgba(155, 143, 194, 0.4);
+    background: rgba(155, 143, 194, 0.1);
+    color: var(--lcars-lavender);
+    &:hover {
+      background: rgba(155, 143, 194, 0.25);
+      border-color: var(--lcars-lilac);
+    }
+  }
+
+  .sta-attack-max-table {
+    th {
+      color: rgba(197, 163, 217, 0.65);
+      border-bottom-color: rgba(155, 143, 194, 0.25);
+    }
+    tbody tr:hover { background: rgba(155, 143, 194, 0.1); }
+  }
+
+  /* Momentum value in sky-blue */
+  .sta-max-table-mom { color: var(--lcars-sky); }
+
+  .sta-attack-results {
+    background: rgba(155, 143, 194, 0.06);
+    border-color: rgba(155, 143, 194, 0.2);
+  }
+
+  .sta-attack-result-label { color: var(--lcars-lavender); }
+
+  /* Total row stays orange — the primary combat result */
+  .sta-attack-total-row {
+    background: rgba(241, 164, 60, 0.15);
+    border-left-color: rgba(241, 164, 60, 0.8);
+    .sta-attack-result-label { color: var(--lcars-peach); }
+    .sta-attack-result-value { color: var(--lcars-orange); }
+  }
+
+  .sta-attack-formula { color: rgba(155, 143, 194, 0.4); }
+
+  .sta-copy-btn {
+    color: rgba(155, 143, 194, 0.35);
+    &:hover {
+      color: var(--lcars-lavender);
+      background: rgba(155, 143, 194, 0.1);
+    }
+  }
+
+  .sta-utils-weapon-calc-btn {
+    background: rgba(155, 143, 194, 0.07);
+    border-color: rgba(155, 143, 194, 0.3);
+    color: var(--lcars-lavender);
+    &:hover {
+      background: rgba(155, 143, 194, 0.18);
+      border-color: rgba(155, 143, 194, 0.55);
+    }
+  }
 }
 
 .sta-attack-calculator {
@@ -1615,7 +1828,81 @@ input.selector.attribute.sta-fatigued-attribute {
  * ============================================================================= */
 
 .sta-stardate-calculator-dialog {
+  /* Lavender as the primary chrome color — science/temporal theme */
+  --lcars-orange: #c5a3d9;
+  --lcars-peach: #f0b872;
+  --lcars-lavender: #c5a3d9;
+  --lcars-lilac: #9b8fc2;
+  --lcars-blue: #6688cc;
+  --lcars-sky: #88aaff;
+  --lcars-red: #d05050;
+  --lcars-tan: #e8c57a;
+  --lcars-bg: #000;
+  --lcars-text: #c5a3d9;
+  --lcars-text-dark: #000;
+  --lcars-font: "Antonio", "Roboto Condensed", sans-serif;
+  --lcars-radius: 24px;
   min-width: 360px;
+
+  .sta-stardate-calculator-instructions { color: var(--lcars-lilac); }
+
+  .sta-stardate-calculator-mode-selector {
+    background: rgba(197, 163, 217, 0.07);
+    border-color: rgba(197, 163, 217, 0.25);
+  }
+
+  .sta-stardate-mode-label { color: var(--lcars-lilac); }
+
+  .sta-stardate-mode-option {
+    color: var(--lcars-lilac);
+    input[type="radio"] { accent-color: var(--lcars-orange); }
+  }
+
+  .sta-stardate-calculator-inputs {
+    .form-group label { color: var(--lcars-lilac); }
+
+    input {
+      border-color: rgba(155, 143, 194, 0.4);
+      &:focus {
+        border-color: var(--lcars-orange);
+        box-shadow: 0 0 4px rgba(197, 163, 217, 0.3);
+      }
+    }
+  }
+
+  .sta-stardate-calculator-results {
+    background: rgba(197, 163, 217, 0.07);
+    border-color: rgba(197, 163, 217, 0.25);
+  }
+
+  .sta-stardate-result-label { color: var(--lcars-lilac); }
+
+  .sta-stardate-calculated {
+    background: rgba(197, 163, 217, 0.14);
+    border-left-color: rgba(197, 163, 217, 0.8);
+    .sta-stardate-result-value { color: var(--lcars-orange); }
+  }
+
+  .sta-copy-btn {
+    color: rgba(197, 163, 217, 0.35);
+    &:hover {
+      color: var(--lcars-orange);
+      background: rgba(197, 163, 217, 0.1);
+    }
+  }
+
+  .sta-stardate-calculator-footer {
+    border-top-color: rgba(197, 163, 217, 0.25);
+    .dialog-button {
+      border-color: rgba(155, 143, 194, 0.4);
+      background: rgba(197, 163, 217, 0.08);
+      color: var(--lcars-lilac);
+      &:hover:not(:disabled) {
+        background: rgba(197, 163, 217, 0.2);
+        border-color: rgba(197, 163, 217, 0.7);
+      }
+    }
+  }
 }
 
 .sta-stardate-calculator {
@@ -4971,6 +5258,123 @@ input.selector.attribute.sta-fatigued-attribute {
     background: #1a1a1a;
     color: #f0b872;
   }
+}
+
+/* =============================================================================
+ * LAUNCHER — feature launcher icon grid
+ * ============================================================================= */
+
+.sta-utils-launcher {
+  .window-content {
+    padding: 12px;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+}
+
+.sta-launcher-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px;
+}
+
+.sta-launcher-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 8px 12px;
+  min-height: 100px;
+  border: 1px solid var(--color-border-light-tertiary, #999);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.25;
+  color: var(--color-text-dark-primary, inherit);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+
+  i {
+    font-size: 1.5rem;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .sta-launcher-img {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--color-border-light-primary, #ccc);
+    color: var(--color-text-hyperlink, #5b73a5);
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.sta-launcher-section {
+  & + & {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+  }
+}
+
+/* =============================================================================
+ * STA TRACKER — Launcher button
+ * ============================================================================= */
+
+/* Hide the Challenge Roll button to free up space for the launcher button. */
+#sta-roll-challenge-button {
+  display: none !important;
+}
+
+.sta-utils-tracker-launcher-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 26px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+
+  i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #faf9f6;
+    font-size: 1.3em;
+    line-height: 1;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+
+    i { color: #89CFF0; }
+  }
+}
+
+.sta-launcher-section-header {
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-dark-secondary, #888);
+  margin-bottom: 6px;
+  opacity: 0.75;
 }
 
 .npc-builder-hint {

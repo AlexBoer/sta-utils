@@ -29,6 +29,10 @@
         "name": "Enable Trait Tokens",
         "hint": "Drag trait items onto the canvas to create trait drawings. Requires a world reload when changed."
       },
+      "traitTokenAutoLayerSwitch": {
+        "name": "Trait Token Auto Layer Switch",
+        "hint": "When on the token layer, automatically switch to the drawings layer when clicking or dragging a trait drawing. Turn this off if you experience issues where tokens become unselectable or unmovable."
+      },
       "worldTraitsActorUuid": {
         "name": "World Traits Actor",
         "hint": "UUID of the Scene Traits actor to open from the World Traits tool button. Supports compendium actors. Leave blank to auto-create a world-level actor."
@@ -47,7 +51,7 @@
       },
       "npcBuilderSpecialRulesPack": {
         "name": "NPC Builder — Special Rules Compendium",
-        "hint": "Pack ID of the compendium to use for special rules (e.g. \"world.my-talents\" or \"module.my-module.talents\"). When empty, the NPC Builder shows manual name/description fields instead."
+        "hint": "Compendium pack IDs to use for special rules. Enter one per line (e.g. \"world.my-talents\" or \"module.my-module.talents\"). When empty, the NPC Builder shows manual name/description fields instead."
       },
       "enablePersonalThreat": {
         "name": "Enable Personal Threat Dots",
@@ -1348,6 +1352,43 @@
       "rollFailed": "Unable to trigger the roll automatically. Please click the attribute on your character sheet.",
       "sentOne": "Roll request sent.",
       "sentMany": "Roll requests sent to {count} players."
+    },
+    "launcher": {
+      "title": "STA Utilities",
+      "stardateCalculator": "Stardate Calculator",
+      "warpCalculator": "Warp Calculator",
+      "attackCalculator": "Attack Calculator",
+      "actionChooser": "Conflict Actions",
+      "supportingBuilder": "Supporting Builder",
+      "treknobabble": "Treknobabble",
+      "medicalbabble": "Medicalbabble",
+      "npcBuilder": "NPC Builder",
+      "crewManifest": "Crew Manifest",
+      "dicePoolMonitor": "Dice Pool Monitor",
+      "noteStyler": "Note Styler",
+      "rollRequest": "Roll Request",
+      "section": {
+        "staUtils": "STA Utilities",
+        "officersLog": "Officers Log",
+        "tacticalCampaign": "Tactical Campaign"
+      },
+      "ol": {
+        "open": "Prompt Callback",
+        "openGroupShip": "Open Group Ship",
+        "newScene": "New Scene",
+        "newMission": "New Mission",
+        "addParticipant": "Add Participant",
+        "acclaimSurvey": "Reputation Survey",
+        "surveyMonitor": "Survey Monitor",
+        "gmSpend": "Manual Acclaim",
+        "resetCallbacks": "Reset Callbacks"
+      },
+      "tc": {
+        "generatePoi": "Generate POI",
+        "generateAsset": "Generate Asset",
+        "convertActor": "Convert Actor",
+        "convertFolder": "Convert Folder"
+      }
     }
   }
 }

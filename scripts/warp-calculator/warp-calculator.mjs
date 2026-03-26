@@ -322,7 +322,7 @@ class WarpCalculatorApp extends Base {
   static DEFAULT_OPTIONS = {
     id: `${MODULE_ID}-warp-calculator`,
     window: { title: "Warp Speed Calculator" },
-    classes: ["sta-utils", "sta-warp-calculator-dialog"],
+    classes: ["sta-utils", "sta-warp-calculator-dialog", "sta-utils-ms-lcars"],
     position: { width: 400, height: "auto" },
     resizable: true,
   };

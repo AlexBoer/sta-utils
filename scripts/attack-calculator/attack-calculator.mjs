@@ -542,7 +542,11 @@ class AttackCalculatorApp extends Base {
   static DEFAULT_OPTIONS = {
     id: `${MODULE_ID}-attack-calculator`,
     window: { title: "Starship Attack Calculator" },
-    classes: ["sta-utils", "sta-attack-calculator-dialog"],
+    classes: [
+      "sta-utils",
+      "sta-attack-calculator-dialog",
+      "sta-utils-ms-lcars",
+    ],
     position: { width: 440, height: "auto" },
     resizable: true,
   };

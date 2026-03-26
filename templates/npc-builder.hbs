@@ -191,27 +191,94 @@
     <h3 class="npc-builder-panel-title">Special Rules</h3>
 
     {{#if specialRulesAvailable}}
-      {{#if specialRulesItems.length}}
-      <p class="npc-builder-hint">Select talents to add as special rules.</p>
-      <ul class="npc-equip-list">
-        {{#each specialRulesItems}}
-        <li class="npc-equip-item">
-          <label class="npc-equip-label">
-            <input class="npc-special-rule-checkbox" type="checkbox" value="{{uuid}}"
-              {{#if checked}}checked{{/if}}>
-            <img class="npc-equip-img" src="{{img}}" alt="">
-            <span class="npc-equip-name">{{name}}</span>
-          </label>
-        </li>
-        {{/each}}
-      </ul>
+      <p class="npc-builder-hint">Preview talents and add them to Custom Talents.</p>
+      <div class="npc-builder-field-row" style="margin-bottom:0.5rem;">
+        <input class="npc-builder-input npc-special-rules-search" type="text"
+          value="{{specialRulesSearch}}" placeholder="Search talents...">
+      </div>
+      <div class="npc-builder-field-row" style="display:flex;flex-direction:row;align-items:center;gap:1rem;flex-wrap:nowrap;margin-bottom:0.6rem;">
+        <label class="npc-builder-hint" style="display:flex;align-items:center;gap:0.35rem;">
+          <input class="npc-special-rules-filter-npc" type="checkbox" {{#if specialRulesNpcOnly}}checked{{/if}}>
+          NPC Talents Only
+        </label>
+        <label class="npc-builder-hint" style="display:flex;align-items:center;gap:0.35rem;">
+          <input class="npc-special-rules-filter-requirements" type="checkbox" {{#if specialRulesRequirementsOnly}}checked{{/if}}>
+          Meets Requirements Only
+        </label>
+      </div>
+
+    {{#if hasSpecialRulesMatches}}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;align-items:start;">
+        <ul class="npc-equip-list" style="margin:0;">
+          {{#each specialRulesItems}}
+          <li class="npc-equip-item npc-special-rule-row{{#if previewActive}} active{{/if}}"
+            data-uuid="{{uuid}}"
+            style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;cursor:pointer;">
+            <div class="npc-equip-label" style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:0.45rem;min-width:0;">
+                <img class="npc-equip-img" src="{{img}}" alt="">
+                <span class="npc-equip-name">{{name}}</span>
+                {{#if isNpcType}}
+                <span class="npc-hint" style="white-space:nowrap;">NPC</span>
+                {{/if}}
+              </div>
+            </div>
+            <div style="display:flex;gap:0.35rem;align-items:center;">
+              <button class="npc-builder-btn npc-builder-btn--ghost npc-special-rule-add-btn"
+                type="button" data-uuid="{{uuid}}" data-name="{{name}}" title="Add to custom talents">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+          </li>
+          {{/each}}
+        </ul>
+
+        <div class="npc-custom-talent" style="margin-bottom:0;">
+          <div class="npc-builder-section-label" style="margin-top:0;">Talent Preview</div>
+          {{#if specialRulePreview}}
+          <div class="npc-equip-label" style="margin-bottom:0.5rem;">
+            <img class="npc-equip-img" src="{{specialRulePreview.img}}" alt="">
+            <span class="npc-equip-name">{{specialRulePreview.name}}</span>
+          </div>
+          {{#if specialRulePreview.requirementLabel}}
+          <div class="npc-builder-hint" style="margin-bottom:0.5rem;">{{specialRulePreview.requirementLabel}}</div>
+          {{/if}}
+          <div class="npc-builder-input" style="padding:0.5rem;max-height:16rem;overflow:auto;">
+            {{{specialRulePreview.description}}}
+          </div>
+          {{else}}
+          <p class="npc-builder-hint">Select a talent to preview its description.</p>
+          {{/if}}
+        </div>
+      </div>
+    {{else}}
+      {{#if specialRulesTotalCount}}
+      <p class="npc-builder-hint">No talents match the current filters.</p>
       {{else}}
       <p class="npc-builder-hint">No items found in the special rules compendium.</p>
       {{/if}}
+    {{/if}}
     {{else}}
-    <p class="npc-builder-hint">No compendium configured. Enter talents manually below.</p>
+    <p class="npc-builder-hint">No compendium configured. Add talents manually or from templates below.</p>
+    {{/if}}
+
+    <div class="npc-builder-section-label npc-section-gap">Talent Templates</div>
+    <p class="npc-builder-hint">Insert a template, then customize it below.</p>
+    <div class="npc-loadout-presets" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.35rem;">
+      {{#each talentTemplates}}
+      <button class="npc-loadout-btn npc-talent-template-btn" style="width:100%;" data-template-index="{{@index}}" type="button">{{name}}</button>
+      {{/each}}
+    </div>
+
+    <div class="npc-builder-section-label npc-section-gap">Custom Talents</div>
+    {{#if customTalents.length}}
     {{#each customTalents}}
     <div class="npc-custom-talent npc-builder-field-row" style="flex-direction:column;gap:4px;margin-bottom:0.6rem;">
+      <div style="display:flex;justify-content:flex-end;">
+        <button class="npc-builder-btn npc-builder-btn--ghost npc-custom-talent-remove" type="button" data-talent-index="{{@index}}" title="Remove talent">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
       <input class="npc-builder-input npc-custom-talent-name" type="text"
         value="{{name}}" placeholder="Talent name (optional)">
       <textarea class="npc-builder-input npc-custom-talent-desc"
@@ -219,7 +286,13 @@
         style="resize:vertical;font-family:inherit;font-size:inherit;">{{description}}</textarea>
     </div>
     {{/each}}
+    {{else}}
+    <p class="npc-builder-hint">No custom talents yet.</p>
     {{/if}}
+
+    <button class="npc-builder-btn npc-builder-btn--ghost npc-custom-talent-add" type="button">
+      <i class="fa-solid fa-plus"></i> Add Custom Talent
+    </button>
   </div>
 
   {{!-- ── Step: Equipment ──────────────────────────────────────── --}}

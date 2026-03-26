@@ -258,52 +258,201 @@ export const EQUIPMENT_LOADOUTS = [
   },
 ];
 
+// ── Talent templates ──────────────────────────────────────────────────────────
+// Preset templates can be inserted on the NPC Builder special-rules step and
+// then customized by the user before actor creation.
+export const TALENT_TEMPLATES = [
+  {
+    name: "Additional Threat Spent",
+    description:
+      "Whenever performing a task with a particular department, the NPC may spend 1 Threat to gain a specific or unique benefit.",
+  },
+  {
+    name: "Familiarity",
+    description:
+      "Whenever the NPC attempts to perform a particular task, they may reduce the Difficulty by 2, to a minimum of 0.",
+  },
+  {
+    name: "Guidance",
+    description:
+      "Whenever the NPC assists another NPC in a particular way, they may re-roll their d20.",
+  },
+  {
+    name: "Proficiency",
+    description:
+      "When performing a particular task, in a specific way, the first bonus d20 is free.",
+  },
+  {
+    name: "Substitution",
+    description:
+      "Whenever the NPC performs a particular task in a particular way, they may use a specified different department instead of the normal department required, and/or may use a specific focus with a different department.",
+  },
+  {
+    name: "Threatening",
+    description:
+      "When performing a particular task, or acting in a specific way, and buying additional d20s with Threat, the NPC may re-roll a single d20.",
+  },
+];
+
 // ── Special Rules ─────────────────────────────────────────────────────────────
 const NPC_BUILDER_SPECIAL_RULES_PACK_SETTING = "npcBuilderSpecialRulesPack";
 
-/** Returns true when a special-rules compendium pack is configured. */
-export function getSpecialRulesPackConfigured() {
-  try {
-    return !!game.settings.get(
-      MODULE_ID,
-      NPC_BUILDER_SPECIAL_RULES_PACK_SETTING,
-    );
-  } catch {
-    return false;
-  }
+const REQUIREMENT_TYPE_LABELS = {
+  attribute: "Attribute",
+  discipline: "Discipline",
+  species: "Species",
+};
+
+function _normalizeRequirementString(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
 }
 
-export async function loadSpecialRulesItems() {
-  let packId;
+function _resolveAttributeLabel(value) {
+  const key = _normalizeRequirementString(value);
+  return ATTRIBUTE_LABELS[key] ?? value ?? "";
+}
+
+function _resolveDisciplineLabel(value) {
+  const key = _normalizeRequirementString(value);
+  return DISCIPLINE_LABELS[key] ?? value ?? "";
+}
+
+function _buildRequirementLabel(talentType) {
+  const type = _normalizeRequirementString(talentType?.typeenum);
+  if (!["attribute", "discipline", "species"].includes(type)) return "";
+
+  const rawDescription = String(talentType?.description ?? "").trim();
+  const minimum = Number.isFinite(Number(talentType?.minimum))
+    ? Number(talentType.minimum)
+    : null;
+
+  if (type === "attribute") {
+    const attrLabel = _resolveAttributeLabel(rawDescription);
+    const suffix = minimum != null ? ` ${minimum}+` : "";
+    return `Requires ${attrLabel}${suffix}`;
+  }
+
+  if (type === "discipline") {
+    const discLabel = _resolveDisciplineLabel(rawDescription);
+    const suffix = minimum != null ? ` ${minimum}+` : "";
+    return `Requires ${discLabel}${suffix}`;
+  }
+
+  return rawDescription
+    ? `Requires ${REQUIREMENT_TYPE_LABELS[type]}: ${rawDescription}`
+    : `Requires ${REQUIREMENT_TYPE_LABELS[type]}`;
+}
+
+function _parseSpecialRulesPackIds(value) {
+  return String(value ?? "")
+    .split(/[\n,;]/)
+    .map((id) => id.trim())
+    .filter(Boolean);
+}
+
+function _getSpecialRulesPackIds() {
   try {
-    packId = game.settings.get(
+    const raw = game.settings.get(
       MODULE_ID,
       NPC_BUILDER_SPECIAL_RULES_PACK_SETTING,
     );
+    return _parseSpecialRulesPackIds(raw);
   } catch {
     return [];
   }
-  if (!packId) return [];
+}
+
+function _isInStarshipFolder(doc, pack) {
+  let folder = doc?.folder ?? null;
+  if (typeof folder === "string") {
+    folder = pack?.folders?.get?.(folder) ?? null;
+  }
+
+  while (folder) {
+    if (_normalizeRequirementString(folder.name) === "starship") return true;
+    folder = folder.folder ?? null;
+  }
+
+  return false;
+}
+
+/** Returns true when a special-rules compendium pack is configured. */
+export function getSpecialRulesPackConfigured() {
+  return _getSpecialRulesPackIds().length > 0;
+}
+
+export async function loadSpecialRulesItems() {
+  const packIds = _getSpecialRulesPackIds();
+  if (!packIds.length) return [];
+
   const results = [];
+  const seenUuids = new Set();
+  const seenNames = new Set();
+
   try {
-    const pack = game.packs.get(packId);
-    if (!pack) {
-      console.warn(
-        `${MODULE_ID} | NPC Builder: special rules pack "${packId}" not found`,
-      );
-      return [];
-    }
-    const index = await pack.getIndex({ fields: ["name", "img"] });
-    for (const e of index) {
-      results.push({
-        uuid: e.uuid,
-        name: e.name,
-        img: e.img || "icons/svg/item-bag.svg",
-      });
+    for (const packId of packIds) {
+      const pack = game.packs.get(packId);
+      if (!pack) {
+        console.warn(
+          `${MODULE_ID} | NPC Builder: special rules pack "${packId}" not found`,
+        );
+        continue;
+      }
+
+      const docs = await pack.getDocuments();
+      for (const doc of docs) {
+        if (doc.type !== "talent") continue;
+        if (_isInStarshipFolder(doc, pack)) continue;
+
+        const normalizedName = _normalizeRequirementString(doc.name);
+        if (seenNames.has(normalizedName)) continue;
+
+        if (seenUuids.has(doc.uuid)) continue;
+        seenUuids.add(doc.uuid);
+        seenNames.add(normalizedName);
+
+        const requirementType = _normalizeRequirementString(
+          foundry.utils.getProperty(doc, "system.talenttype.typeenum"),
+        );
+        const requirementDescription = String(
+          foundry.utils.getProperty(doc, "system.talenttype.description") ?? "",
+        ).trim();
+        const requirementMinimumRaw = foundry.utils.getProperty(
+          doc,
+          "system.talenttype.minimum",
+        );
+        const requirementMinimum = Number.isFinite(
+          Number(requirementMinimumRaw),
+        )
+          ? Number(requirementMinimumRaw)
+          : null;
+        const hasRequirement = ["attribute", "discipline", "species"].includes(
+          requirementType,
+        );
+
+        results.push({
+          uuid: doc.uuid,
+          name: doc.name,
+          img: doc.img || "icons/svg/item-bag.svg",
+          talentType: requirementType,
+          isNpcType: requirementType === "npc",
+          hasRequirement,
+          requirementType,
+          requirementDescription,
+          requirementMinimum,
+          requirementLabel: hasRequirement
+            ? _buildRequirementLabel(
+                foundry.utils.getProperty(doc, "system.talenttype"),
+              )
+            : "",
+        });
+      }
     }
   } catch (e) {
     console.warn(
-      `${MODULE_ID} | NPC Builder: could not load special rules compendium "${packId}"`,
+      `${MODULE_ID} | NPC Builder: could not load one or more special rules compendiums`,
       e,
     );
   }
@@ -386,6 +535,8 @@ export async function createNpcActor({
 }) {
   const isNotable = npcType === "notable";
   const stressVal = isNotable ? 3 : 0;
+  const actorName =
+    name?.trim() || (isNotable ? "New Notable NPC" : "New Minor NPC");
 
   // Resolve species attribute bonuses
   const speciesEntry = speciesCatalog.find(
@@ -398,7 +549,7 @@ export async function createNpcActor({
       : null);
 
   const actor = await Actor.create({
-    name: name || "New NPC",
+    name: actorName,
     type: "character",
     system: {
       npcType,

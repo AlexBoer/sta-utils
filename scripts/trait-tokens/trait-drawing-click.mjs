@@ -138,6 +138,7 @@ export function initTraitDrawingClick() {
 
   /* ----- Click on token layer → activate drawing if trait hit ----- */
   Hooks.on("canvasReady", () => {
+    if (!game.settings.get(MODULE_ID, "traitTokenAutoLayerSwitch")) return;
     _installTokenLayerTraitDrawingHandler();
   });
 
@@ -196,6 +197,9 @@ function _installTokenLayerTraitDrawingHandler() {
     if (typeof drawing._onClickRight === "function") {
       drawing._onClickRight(pixi);
     }
+
+    // Switch back to the token layer on right-mouse release.
+    window.addEventListener("pointerup", _switchBackToTokens, { once: true });
   });
 
   /* --- Left-click: switch to drawings layer & enable drag --------- */
@@ -304,9 +308,9 @@ function _startManualDrag(drawing, original) {
   }
 
   function cleanup() {
-    view.removeEventListener("pointermove", onMove);
-    view.removeEventListener("pointerup", onUp);
-    view.removeEventListener("pointercancel", onUp);
+    window.removeEventListener("pointermove", onMove);
+    window.removeEventListener("pointerup", onUp);
+    window.removeEventListener("pointercancel", onUp);
   }
 
   function onUp(ev) {
@@ -353,7 +357,7 @@ function _startManualDrag(drawing, original) {
     _switchBackToTokens();
   }
 
-  view.addEventListener("pointermove", onMove);
-  view.addEventListener("pointerup", onUp);
-  view.addEventListener("pointercancel", onUp);
+  window.addEventListener("pointermove", onMove);
+  window.addEventListener("pointerup", onUp);
+  window.addEventListener("pointercancel", onUp);
 }

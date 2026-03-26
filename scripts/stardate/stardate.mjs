@@ -194,7 +194,11 @@ class StardateCalculatorApp extends Base {
   static DEFAULT_OPTIONS = {
     id: `${MODULE_ID}-stardate-calculator`,
     window: { title: "Stardate Calculator" },
-    classes: ["sta-utils", "sta-stardate-calculator-dialog"],
+    classes: [
+      "sta-utils",
+      "sta-stardate-calculator-dialog",
+      "sta-utils-ms-lcars",
+    ],
     position: { width: 420, height: "auto" },
     resizable: true,
   };
