@@ -148,9 +148,9 @@ function handleLcarsSheetRender(app, root) {
   const actor = app.actor;
   if (!actor || (actor.type !== "character" && actor.type !== "npc")) return;
 
-  const isMinorNpcOnNpcSheet = app?.id?.startsWith("LcarsNPCSheet2e") && actor.system?.npcType === "minor";
+  const isNpcOnNpcSheet = app?.id?.startsWith("LcarsNPCSheet2e");
 
-  if (isFatigueEnabled() && !isMinorNpcOnNpcSheet) {
+  if (isFatigueEnabled() && !isNpcOnNpcSheet) {
     try {
       installFatiguedAttributeDisplay(root, actor);
     } catch (_) {
@@ -214,7 +214,7 @@ function handleLcarsSheetRender(app, root) {
     // ignore
   }
 
-  if (isFatigueEnabled() && !isMinorNpcOnNpcSheet) {
+  if (isFatigueEnabled() && !isNpcOnNpcSheet) {
     try {
       installChooseAttributeButtons(root, actor, app);
     } catch (_) {
@@ -257,9 +257,9 @@ function handleCharacterSheetRender(app, root) {
   const actor = app.actor;
   if (!actor || (actor.type !== "character" && actor.type !== "npc")) return;
 
-  const isMinorNpcOnNpcSheet = app?.id?.startsWith("STANPCSheet2e") && actor.system?.npcType === "minor";
+  const isNpcOnNpcSheet = app?.id?.startsWith("STANPCSheet2e");
 
-  if (isFatigueEnabled() && !isMinorNpcOnNpcSheet) {
+  if (isFatigueEnabled() && !isNpcOnNpcSheet) {
     try {
       installFatiguedAttributeDisplay(root, actor);
     } catch (_) {
@@ -327,7 +327,7 @@ function handleCharacterSheetRender(app, root) {
     // ignore
   }
 
-  if (isFatigueEnabled() && !isMinorNpcOnNpcSheet) {
+  if (isFatigueEnabled() && !isNpcOnNpcSheet) {
     try {
       installChooseAttributeButtons(root, actor, app);
     } catch (_) {

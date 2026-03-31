@@ -305,22 +305,6 @@ class ActionChooserApp extends BaseApp {
       ? this._resolveStarship()
       : null;
     this._warnIfUnlinkedToken();
-    // DEBUG: log starship state at construction time
-    if (this.selectedStarship) {
-      const ss = this.selectedStarship;
-      console.log(
-        `%c[sta-utils DEBUG] Constructor — starship: ${ss.name}`,
-        "color: orange; font-weight: bold",
-      );
-      console.log(`  system.reservepower:`, ss.system?.reservepower);
-      console.log(`  system.shields:`, ss.system?.shields);
-      console.log(`  typeof system:`, typeof ss.system);
-      console.log(`  system keys:`, ss.system ? Object.keys(ss.system) : "N/A");
-      console.log(
-        `  reservePowerSystem flag:`,
-        ss.getFlag?.("sta-utils", "reservePowerSystem"),
-      );
-    }
     this._actorUpdateHookId = null;
     this._savedActiveActions = null; // Track active action tabs during re-renders
   }
@@ -448,39 +432,6 @@ class ActionChooserApp extends BaseApp {
     // Extract ship status information (shields, reserve power, breaches)
     let shipStatus = null;
     if (showStarship && starship) {
-      // DEBUG: log starship state at _prepareContext time
-      console.log(
-        `%c[sta-utils DEBUG] _prepareContext — starship: ${starship.name}`,
-        "color: cyan; font-weight: bold",
-      );
-      console.log(`  system.reservepower:`, starship.system?.reservepower);
-      console.log(
-        `  typeof system.reservepower:`,
-        typeof starship.system?.reservepower,
-      );
-      console.log(
-        `  system.shields:`,
-        JSON.stringify(starship.system?.shields),
-      );
-      console.log(
-        `  reservePowerSystem flag:`,
-        starship.getFlag?.("sta-utils", "reservePowerSystem"),
-      );
-      console.log(`  actionSet:`, this.actionSet?.id);
-      console.log(
-        `  this.selectedStarship === starship:`,
-        this.selectedStarship === starship,
-      );
-      // Also log the raw source data for comparison
-      console.log(
-        `  _source.system.reservepower:`,
-        starship._source?.system?.reservepower,
-      );
-      console.log(
-        `  toObject().system.reservepower:`,
-        starship.toObject?.()?.system?.reservepower,
-      );
-
       const shields = starship.system?.shields ?? { value: 0, max: 0 };
       const shieldsValue = shields.value ?? 0;
       const shieldsMax = shields.max ?? 0;
@@ -500,15 +451,6 @@ class ActionChooserApp extends BaseApp {
 
       // Reserve power is available whenever the ship has it, regardless of assignment
       const isReservePowerAvailable = hasReservePowerFlag;
-
-      // DEBUG: log final computed reserve power availability
-      console.log(
-        `%c[sta-utils DEBUG] Reserve power computation result:`,
-        "color: #ff9900",
-      );
-      console.log(
-        `  hasReservePowerFlag: ${hasReservePowerFlag}, reservePowerSystem: ${reservePowerSystem}, isReservePowerAvailable: ${isReservePowerAvailable}`,
-      );
 
       // Extract breaches for each system
       const systemNames = [
@@ -601,15 +543,6 @@ class ActionChooserApp extends BaseApp {
       if (opt.selected) selectedLabel = opt.textContent.trim();
     }
 
-    // Don't bother enhancing if there are very few options
-    if (options.length <= 5) {
-      selectEl.addEventListener("change", (event) => {
-        event.preventDefault();
-        onSelect(selectEl.value);
-      });
-      return;
-    }
-
     // Build the widget DOM
     const wrapper = document.createElement("div");
     wrapper.classList.add("sta-searchable-select");
@@ -644,21 +577,34 @@ class ActionChooserApp extends BaseApp {
     dropdown.appendChild(searchInput);
     dropdown.appendChild(optionsList);
     wrapper.appendChild(display);
-    wrapper.appendChild(dropdown);
+    // Append to body so the dropdown escapes overflow: hidden and clip ancestors.
+    document.body.appendChild(dropdown);
 
     // Replace the native select
     selectEl.replaceWith(wrapper);
 
     // --- Interaction logic ---
     const open = () => {
-      wrapper.classList.add("sta-searchable-select--open");
+      // Position below the display button using fixed viewport coordinates so the
+      // dropdown escapes any overflow: hidden or paint-level clip on ancestors.
+      const rect = display.getBoundingClientRect();
+      dropdown.style.top = `${rect.bottom + 2}px`;
+      dropdown.style.left = `${rect.left}px`;
+      dropdown.style.width = `${rect.width}px`;
+      // Forward CSS variables so they resolve outside .sta-action-chooser context.
+      const cs = getComputedStyle(wrapper);
+      for (const prop of ["--ac-header", "--ac-chrome-fg"]) {
+        const val = cs.getPropertyValue(prop).trim();
+        if (val) dropdown.style.setProperty(prop, val);
+      }
+      dropdown.classList.add("sta-searchable-select__dropdown--open");
       searchInput.value = "";
       filterOptions("");
       requestAnimationFrame(() => searchInput.focus());
     };
 
     const close = () => {
-      wrapper.classList.remove("sta-searchable-select--open");
+      dropdown.classList.remove("sta-searchable-select__dropdown--open");
     };
 
     const filterOptions = (query) => {
@@ -672,7 +618,9 @@ class ActionChooserApp extends BaseApp {
     display.addEventListener("click", (ev) => {
       ev.preventDefault();
       ev.stopPropagation();
-      if (wrapper.classList.contains("sta-searchable-select--open")) {
+      if (
+        dropdown.classList.contains("sta-searchable-select__dropdown--open")
+      ) {
         close();
       } else {
         open();
@@ -705,10 +653,17 @@ class ActionChooserApp extends BaseApp {
       onSelect(value);
     });
 
-    // Close when clicking outside
-    document.addEventListener("click", (ev) => {
-      if (!wrapper.contains(ev.target)) close();
-    });
+    // Close when clicking outside; self-removes when the wrapper leaves the DOM.
+    function onDocClick(ev) {
+      if (!wrapper.isConnected) {
+        document.removeEventListener("click", onDocClick);
+        dropdown.remove();
+        return;
+      }
+      if (!dropdown.contains(ev.target) && !wrapper.contains(ev.target))
+        close();
+    }
+    document.addEventListener("click", onDocClick);
 
     // Keyboard navigation
     searchInput.addEventListener("keydown", (ev) => {
@@ -1370,22 +1325,6 @@ class ActionChooserApp extends BaseApp {
             ? this._resolveStarship()
             : null;
           this._warnIfUnlinkedToken();
-          // DEBUG: log action set switch
-          console.log(
-            `%c[sta-utils DEBUG] Action set switched to: ${setId}`,
-            "color: magenta; font-weight: bold",
-          );
-          console.log(`  showStarship:`, newSet.showStarship);
-          console.log(
-            `  selectedStarship:`,
-            this.selectedStarship?.name ?? "null",
-          );
-          if (this.selectedStarship) {
-            console.log(
-              `  starship.system.reservepower:`,
-              this.selectedStarship.system?.reservepower,
-            );
-          }
           this._rerender();
         }
       });
@@ -2242,21 +2181,6 @@ async function renderActionChooserEmbed(container, actor) {
     // losing the player's selected actions / state.
     app._targetContainer = container;
 
-    // DEBUG: log reuse path
-    console.log(
-      `%c[sta-utils DEBUG] renderActionChooserEmbed — REUSING cached app for ${actorId}`,
-      "color: yellow; font-weight: bold",
-    );
-    console.log(`  has element:`, !!app.element);
-    console.log(`  current actionSet:`, app.actionSet?.id);
-    console.log(`  selectedStarship:`, app.selectedStarship?.name ?? "null");
-    if (app.selectedStarship) {
-      console.log(
-        `  starship.system.reservepower:`,
-        app.selectedStarship.system?.reservepower,
-      );
-    }
-
     if (app.element) {
       // The element is still a live DOM node; just re-parent it.
       container.appendChild(app.element);
@@ -2275,10 +2199,6 @@ async function renderActionChooserEmbed(container, actor) {
   }
 
   // Create a new embedded instance
-  console.log(
-    `%c[sta-utils DEBUG] renderActionChooserEmbed — CREATING new app for ${actorId}`,
-    "color: lime; font-weight: bold",
-  );
   const actionSet = await loadActionSet("personal-conflict");
   app = new EmbeddedActionChooserApp(actionSet, { actor });
   app._targetContainer = container;

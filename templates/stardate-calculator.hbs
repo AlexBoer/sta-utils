@@ -29,6 +29,9 @@
       <label>{{labels.calendarDate}}</label>
       <div class="form-fields">
         <input type="date" name="date" value="{{values.date}}" />
+        <button type="button" class="sta-game-time-btn" data-action="useGameTime" title="{{labels.useGameTime}}">
+          <i class="fas fa-clock"></i> {{labels.useGameTime}}
+        </button>
       </div>
     </div>
 
@@ -45,6 +48,11 @@
   </div>
 
   <footer class="sta-stardate-calculator-footer">
+    {{#if isGM}}
+    <button type="button" class="dialog-button sta-set-world-time-btn" data-action="setWorldTime" disabled>
+      <i class="fas fa-globe"></i> {{labels.setWorldTime}}
+    </button>
+    {{/if}}
     <button type="button" class="dialog-button" data-action="send" disabled>
       <i class="fas fa-comment"></i> {{labels.sendToChat}}
     </button>

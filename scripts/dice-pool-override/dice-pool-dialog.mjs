@@ -273,6 +273,30 @@ function _replaceDeterminationWithValueDropdown(dialogEl, actor) {
     .map((v) => `<option value="${v.id}">${v.name}</option>`)
     .join("");
 
+  // Append mission directives from sta-officers-log, if any
+  let directivesHtml = "";
+  try {
+    const api = game.staofficerslog;
+    if (api) {
+      const directives = api.getMissionDirectives?.() ?? [];
+      if (directives.length > 0) {
+        const directiveOptions = directives
+          .map((d) => {
+            const vid = api.makeDirectiveValueIdFromText?.(d) ?? "";
+            if (!vid) return "";
+            return `<option value="${vid}">${d}</option>`;
+          })
+          .filter(Boolean)
+          .join("");
+        if (directiveOptions) {
+          directivesHtml = `<option value="" disabled>\u2015 DIRECTIVES \u2015</option>${directiveOptions}`;
+        }
+      }
+    }
+  } catch (_) {
+    // directive lookup failed — omit gracefully
+  }
+
   const label = game.i18n.localize("sta-utils.dicePool.useValue");
   const newRow = document.createElement("div");
   newRow.className = "row";
@@ -283,6 +307,7 @@ function _replaceDeterminationWithValueDropdown(dialogEl, actor) {
             ${disabled ? "disabled" : ""}>
       <option value=""></option>
       ${options}
+      ${directivesHtml}
     </select>`;
 
   row.replaceWith(newRow);

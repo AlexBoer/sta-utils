@@ -149,6 +149,34 @@ function computeResults(mode, stardateValue, dateValue, timeValue) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// WORLD TIME COMPUTATION
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Compute the Unix timestamp (seconds) for the current input state.
+ * Returns null if inputs are invalid or incomplete.
+ * @param {"toStardate"|"toCalendar"} mode
+ * @param {string} stardateValue
+ * @param {string} dateValue
+ * @param {string} timeValue
+ * @returns {number|null}
+ */
+function computeWorldTimeSeconds(mode, stardateValue, dateValue, timeValue) {
+  if (mode === "toStardate") {
+    if (!dateValue) return null;
+    const dateStr = timeValue ? `${dateValue}T${timeValue}` : dateValue;
+    const parsed = new Date(dateStr);
+    if (isNaN(parsed.getTime())) return null;
+    return Math.round(parsed.getTime() / 1000);
+  }
+  // toCalendar
+  const sd = parseFloat(stardateValue);
+  if (isNaN(sd)) return null;
+  const ms = STARDATE_ORIGIN.getTime() + sd * MS_PER_STARDATE_UNIT;
+  return Math.round(ms / 1000);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // SEND TO CHAT
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -221,9 +249,12 @@ class StardateCalculatorApp extends Base {
         enterDate: t("sta-utils.stardateCalculator.enterDate"),
         sendToChat: t("sta-utils.stardateCalculator.sendToChat"),
         close: t("sta-utils.stardateCalculator.close"),
+        useGameTime: t("sta-utils.stardateCalculator.useGameTime"),
+        setWorldTime: t("sta-utils.stardateCalculator.setWorldTime"),
       },
       values: this._values,
       mode: this._mode,
+      isGM: game.user.isGM,
     };
   }
 
@@ -259,6 +290,9 @@ class StardateCalculatorApp extends Base {
     const resultsDiv = root.querySelector('[data-hook="results"]');
     const sendButton = root.querySelector('button[data-action="send"]');
     const closeButton = root.querySelector('button[data-action="close"]');
+    const setWorldTimeButton = root.querySelector(
+      'button[data-action="setWorldTime"]',
+    );
     const modeRadios = root.querySelectorAll('input[name="mode"]');
 
     const stardateGroup = root.querySelector('[data-group="stardate"]');
@@ -289,6 +323,15 @@ class StardateCalculatorApp extends Base {
       );
       if (resultsDiv) resultsDiv.innerHTML = result.html;
       if (sendButton) sendButton.disabled = !result.valid;
+      if (setWorldTimeButton) {
+        setWorldTimeButton.disabled =
+          computeWorldTimeSeconds(
+            this._mode,
+            this._values.stardate,
+            this._values.date,
+            this._values.time,
+          ) === null;
+      }
     };
 
     // Bind input events
@@ -303,6 +346,43 @@ class StardateCalculatorApp extends Base {
         updateVisibility();
         updateCalculation();
       });
+    });
+
+    // "Use Game Time" button — fills date/time inputs from worldTime
+    const gameTimeButton = root.querySelector(
+      'button[data-action="useGameTime"]',
+    );
+    gameTimeButton?.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      const worldTimeMs = (game.time?.worldTime ?? 0) * 1000;
+      const date = new Date(worldTimeMs);
+      // Format as YYYY-MM-DD and HH:MM for the input elements
+      const yyyy = date.getFullYear();
+      const mm = String(date.getMonth() + 1).padStart(2, "0");
+      const dd = String(date.getDate()).padStart(2, "0");
+      const hh = String(date.getHours()).padStart(2, "0");
+      const min = String(date.getMinutes()).padStart(2, "0");
+      if (dateInput) dateInput.value = `${yyyy}-${mm}-${dd}`;
+      if (timeInput) timeInput.value = `${hh}:${min}`;
+      updateCalculation();
+    });
+
+    // "Set World Time" button — advances worldTime to the computed date (GM only)
+    setWorldTimeButton?.addEventListener("click", async (ev) => {
+      ev.preventDefault();
+      if (!game.user.isGM) return;
+      const targetSeconds = computeWorldTimeSeconds(
+        this._mode,
+        stardateInput?.value ?? "",
+        dateInput?.value ?? "",
+        timeInput?.value ?? "",
+      );
+      if (targetSeconds === null) return;
+      const delta = targetSeconds - game.time.worldTime;
+      await game.time.advance(delta);
+      ui.notifications.info(
+        t("sta-utils.stardateCalculator.worldTimeSetConfirm"),
+      );
     });
 
     // Handle button clicks

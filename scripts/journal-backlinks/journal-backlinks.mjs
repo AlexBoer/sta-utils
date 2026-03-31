@@ -635,12 +635,15 @@ export class JournalBacklinks {
               parentLabel.textContent = parentName;
               linksDiv.appendChild(parentLabel);
             }
-            const ul = document.createElement("ul");
-            for (const { entity, uuid } of items) {
+            const line = document.createElement("div");
+            line.classList.add("backlinks-inline-list");
+            for (let i = 0; i < items.length; i++) {
+              const { entity, uuid } = items[i];
               this.debug(`adding link from ${type} ${entity.name}`);
-              ul.appendChild(buildLi(entity, uuid, type));
+              line.appendChild(buildLi(entity, uuid, type).firstElementChild);
+              if (i < items.length - 1) line.append(", ");
             }
-            linksDiv.appendChild(ul);
+            linksDiv.appendChild(line);
           }
         }
       } else {

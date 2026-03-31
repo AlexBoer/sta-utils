@@ -41,6 +41,8 @@ import { registerNoteStylerHooks, noteStyler } from "./note-styler/index.mjs";
 import { warpCalculator } from "./warp-calculator/index.mjs";
 
 import { stardateCalculator } from "./stardate/index.mjs";
+import { installStardateDisplay } from "./stardate-display/index.mjs";
+import { installAlertStatus } from "./alert-status/index.mjs";
 
 import {
   attackCalculator,
@@ -95,7 +97,10 @@ import {
 import { installPersonalThreatHook } from "./personal-threat/index.mjs";
 
 import { openRollRequestDialog } from "./roll-request/index.mjs";
-import { openLauncher, installTrackerLauncherButton } from "./launcher/index.mjs";
+import {
+  openLauncher,
+  installTrackerLauncherButton,
+} from "./launcher/index.mjs";
 
 import {
   isBacklinksEnabled,
@@ -108,6 +113,8 @@ import {
   isPersonalThreatEnabled,
   isActionChooserEnabled,
   isRollRequestEnabled,
+  isStardateDisplayEnabled,
+  isAlertStatusEnabled,
 } from "./core/settings.mjs";
 
 import { MobileCharacterSheet2e } from "./mobile-sheet/mobile-character-sheet2e.mjs";
@@ -208,6 +215,18 @@ Hooks.once("init", () => {
   // the chat log cache before the ready hook fires.
   if (isChatHeaderMergeEnabled()) {
     installChatHeaderMergeRenderHook();
+  }
+
+  // --- Stardate Display ---
+  if (isStardateDisplayEnabled()) {
+    installStardateDisplay();
+    console.log(`${MODULE_ID} | Stardate Display feature enabled`);
+  }
+
+  // --- Alert Status ---
+  if (isAlertStatusEnabled()) {
+    installAlertStatus();
+    console.log(`${MODULE_ID} | Alert Status feature enabled`);
   }
 
   // --- Trait Tokens (gated) ---

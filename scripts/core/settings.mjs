@@ -18,6 +18,10 @@ const ENABLE_MOMENTUM_SPEND_SETTING = "enableMomentumSpend";
 const AUTO_DEDUCT_MOMENTUM_SETTING = "autoDeductMomentum";
 const ENABLE_MOMENTUM_MERGER_SETTING = "enableMomentumMerger";
 const ENABLE_CHAT_HEADER_MERGE_SETTING = "enableChatHeaderMerge";
+const ENABLE_STARDATE_DISPLAY_SETTING = "enableStardateDisplay";
+const ENABLE_ALERT_STATUS_SETTING = "enableAlertStatus";
+const ALERT_STATUS_PLAYER_CONTROL_SETTING = "alertStatusPlayerControl";
+const ALERT_STATUS_SETTING = "alertStatus";
 const SETTING_TRAIT_TOKENS = "enableTraitTokens";
 const SETTING_TRAIT_TOKEN_AUTO_LAYER = "traitTokenAutoLayerSwitch";
 const SETTING_WORLD_TRAITS_ACTOR_UUID = "worldTraitsActorUuid";
@@ -68,6 +72,14 @@ const SUBGROUPS = [
   {
     firstKey: ENABLE_CHAT_HEADER_MERGE_SETTING,
     label: "sta-utils.settings.subgroups.chatUi",
+  },
+  {
+    firstKey: ENABLE_STARDATE_DISPLAY_SETTING,
+    label: "sta-utils.settings.subgroups.stardateDisplay",
+  },
+  {
+    firstKey: ENABLE_ALERT_STATUS_SETTING,
+    label: "sta-utils.settings.subgroups.alertStatus",
   },
   {
     firstKey: ENABLE_TALENT_AUTOMATIONS_SETTING,
@@ -310,6 +322,48 @@ export function registerSettings() {
   });
 
   // ----- Chat & UI -----
+
+  game.settings.register(MODULE_ID, ENABLE_STARDATE_DISPLAY_SETTING, {
+    name: t("sta-utils.settings.enableStardateDisplay.name"),
+    hint: t("sta-utils.settings.enableStardateDisplay.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+    group: GROUP_WORLD,
+  });
+
+  // ----- Alert Status -----
+
+  game.settings.register(MODULE_ID, ENABLE_ALERT_STATUS_SETTING, {
+    name: t("sta-utils.settings.enableAlertStatus.name"),
+    hint: t("sta-utils.settings.enableAlertStatus.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, ALERT_STATUS_PLAYER_CONTROL_SETTING, {
+    name: t("sta-utils.settings.alertStatusPlayerControl.name"),
+    hint: t("sta-utils.settings.alertStatusPlayerControl.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    group: GROUP_WORLD,
+  });
+
+  // Hidden operational setting — changed at runtime by the GM, not via config UI.
+  game.settings.register(MODULE_ID, ALERT_STATUS_SETTING, {
+    scope: "world",
+    config: false,
+    type: String,
+    default: "normal",
+  });
 
   game.settings.register(MODULE_ID, ENABLE_CHAT_HEADER_MERGE_SETTING, {
     name: t("sta-utils.settings.enableChatHeaderMerge.name"),
@@ -708,6 +762,49 @@ export function isAutoDeductMomentumEnabled() {
     return Boolean(game.settings.get(MODULE_ID, AUTO_DEDUCT_MOMENTUM_SETTING));
   } catch (_) {
     return true;
+  }
+}
+
+/** @returns {boolean} */
+export function isStardateDisplayEnabled() {
+  try {
+    return Boolean(
+      game.settings.get(MODULE_ID, ENABLE_STARDATE_DISPLAY_SETTING),
+    );
+  } catch (_) {
+    return false;
+  }
+}
+
+/** @returns {boolean} */
+export function isAlertStatusEnabled() {
+  try {
+    return Boolean(game.settings.get(MODULE_ID, ENABLE_ALERT_STATUS_SETTING));
+  } catch (_) {
+    return false;
+  }
+}
+
+/** @returns {string} */
+export function getAlertStatus() {
+  try {
+    return game.settings.get(MODULE_ID, ALERT_STATUS_SETTING) ?? "normal";
+  } catch (_) {
+    return "normal";
+  }
+}
+
+/** @param {string} status @returns {Promise<void>} */
+export function setAlertStatus(status) {
+  return game.settings.set(MODULE_ID, ALERT_STATUS_SETTING, status);
+}
+
+/** @returns {boolean} */
+export function isAlertStatusPlayerControlEnabled() {
+  try {
+    return Boolean(game.settings.get(MODULE_ID, ALERT_STATUS_PLAYER_CONTROL_SETTING));
+  } catch (_) {
+    return false;
   }
 }
 

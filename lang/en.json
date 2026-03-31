@@ -13,11 +13,25 @@
         "traitTokens": "Trait Tokens",
         "groupShip": "Group Ship",
         "chatUi": "Chat & UI",
+        "stardateDisplay": "Stardate Display",
+        "alertStatus": "Ship Alert Status",
         "standalone": "Other Features",
         "npcBuilder": "NPC Builder",
         "personalThreat": "Personal Threat",
         "rollRequest": "Roll Request",
         "attackCalculator": "Attack Calculator"
+      },
+      "enableStardateDisplay": {
+        "name": "Enable Stardate Display",
+        "hint": "Show a live stardate bar at the top of the chat panel, updated whenever the game time advances. Uses the same TNG stardate formula as the Stardate Calculator. Requires a world reload when changed."
+      },
+      "enableAlertStatus": {
+        "name": "Enable Ship Alert Status",
+        "hint": "Show a ship alert status indicator at the top of the chat panel. The GM can click it to cycle between Normal, Yellow Alert, and Red Alert. All players see the change in real time. Requires a world reload when changed."
+      },
+      "alertStatusPlayerControl": {
+        "name": "Allow Players to Change Alert Status",
+        "hint": "When enabled, non-GM players can also click the alert status bar to cycle between alert states. The GM can always change the status regardless of this setting."
       },
       "groupShipActorId": {
         "name": "Group Ship",
@@ -117,6 +131,10 @@
       "enableChatHeaderMerge": {
         "name": "Enable Chat Header Merge",
         "hint": "Hide the message header (avatar, name, timestamp) on consecutive chat messages from the same sender. Requires a world reload when changed."
+      },
+      "enableStardateDisplay": {
+        "name": "Enable Stardate Display",
+        "hint": "Show a live stardate bar at the top of the chat panel, updated whenever the game time advances. Uses the same TNG stardate formula as the Stardate Calculator. Requires a world reload when changed."
       },
       "mobileSheetTheme": {
         "name": "Mobile Sheet Theme (Default)",
@@ -339,6 +357,18 @@
         "versatileHint": "If an attack with this weapon is successful, it gains X points of bonus Momentum. Bonus Momentum cannot be saved."
       }
     },
+    "stardateDisplay": {
+      "label": "STARDATE",
+      "copyTitle": "Click to copy stardate",
+      "copied": "COPIED!"
+    },
+    "alertStatus": {
+      "label": "ALERT",
+      "normal": "NORMAL",
+      "yellow": "YELLOW ALERT",
+      "red": "RED ALERT",
+      "clickToCycle": "Click to change alert status"
+    },
     "stardateCalculator": {
       "title": "Stardate Calculator",
       "instructions": "Convert between TNG stardates and calendar dates.",
@@ -351,7 +381,10 @@
       "enterStardate": "Enter a stardate above to calculate the calendar date.",
       "invalidDate": "Invalid date.",
       "sendToChat": "Send to Chat",
-      "close": "Close"
+      "close": "Close",
+      "useGameTime": "Use Game Time",
+      "setWorldTime": "Set World Time",
+      "worldTimeSetConfirm": "World time updated."
     },
     "sceneConfig": {
       "sceneTraitsActor": {

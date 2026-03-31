@@ -67,12 +67,19 @@ export function initSocket() {
     await performShakenResolve(msg.messageId, msg.choice);
   });
 
-  // --- RPC: GM -> Player (roll request prompt) ---
+  // --- RPC: Player -> GM (roll request prompt) ---
   moduleSocket.register("rollRequestReceive", async (msg) => {
     // Only process if this message is intended for us
     if (msg.targetUserId && msg.targetUserId !== game.user.id) return;
     const { showRollPrompt } = await import("../roll-request/roll-prompt.mjs");
     showRollPrompt(msg);
+  });
+
+  // --- RPC: Player -> GM (alert status change) ---
+  moduleSocket.register("setAlertStatus", async (msg) => {
+    if (!game.user.isGM) return;
+    const { setAlertStatus } = await import("../core/settings.mjs");
+    await setAlertStatus(msg.status);
   });
 
   return moduleSocket;
