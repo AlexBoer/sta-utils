@@ -67,16 +67,34 @@ export class TrackerDialog extends fapi.HandlebarsApplicationMixin(
   async _prepareContext() {
     const extendedTaskActors = (game.actors ?? [])
       .filter((a) => a.type === "extendedtask")
-      .map((a) => ({ id: a.id, name: a.name }))
+      .map((a) => ({
+        id: a.id,
+        name: a.name,
+        selected: a.id === (this.entry?.actorId ?? ""),
+      }))
       .sort((a, b) => a.name.localeCompare(b.name));
+    const selectedColorId = this.entry?.colorId ?? COLOR_PRESETS[0]?.id ?? "";
+    const colorPresets = COLOR_PRESETS.map((p) => ({
+      ...p,
+      selected: p.id === selectedColorId,
+    }));
+    const trackerType = this.entry?.isTimedChallenge
+      ? "timed"
+      : this.entry?.isConsequence
+        ? "consequence"
+        : "task";
     return {
       entry: this.entry,
       maxSize: MAX_SIZE,
       presetSizes: PRESET_SIZES,
-      colorPresets: COLOR_PRESETS,
+      colorPresets,
       defaultSize: this.entry?.max ?? 5,
       defaultDifficulty: this.entry?.difficulty ?? 1,
       defaultResistance: this.entry?.resistance ?? 0,
+      defaultImpact: this.entry?.impact ?? 3,
+      isConsequence: this.entry?.isConsequence ?? false,
+      isTimedChallenge: this.entry?.isTimedChallenge ?? false,
+      trackerType,
       extendedTaskActors,
       selectedActorId: this.entry?.actorId ?? "",
     };
@@ -105,6 +123,8 @@ export class TrackerDialog extends fapi.HandlebarsApplicationMixin(
         inputElement.value = String(actor.system.workprogress.max);
       const diffInput = html.querySelector("[name='difficulty']");
       if (diffInput) diffInput.value = actor.system.difficulty;
+      const impactInput = html.querySelector("[name='impact']");
+      if (impactInput) impactInput.value = actor.system.difficulty;
       const resInput = html.querySelector("[name='resistance']");
       if (resInput) resInput.value = actor.system.resistance;
       if (this.entry) {
@@ -112,6 +132,25 @@ export class TrackerDialog extends fapi.HandlebarsApplicationMixin(
         if (valueInput) valueInput.value = actor.system.workprogress.value;
       }
     });
+
+    // Toggle consequence/timed mode: show/hide relevant fields.
+    const typeSelect = html.querySelector("[name='trackerType']");
+    const difficultyRow = html.querySelector(".difficulty-row");
+    const impactRow = html.querySelector(".impact-row");
+    const resistanceRow = html.querySelector(".resistance-row");
+    const actorRow = html.querySelector(".actor-row");
+    const syncMode = () => {
+      const type = typeSelect?.value;
+      const isConseq = type === "consequence";
+      const isTimed = type === "timed";
+      if (difficultyRow)
+        difficultyRow.style.display = isConseq || isTimed ? "none" : "";
+      if (impactRow) impactRow.style.display = isConseq ? "" : "none";
+      if (resistanceRow) resistanceRow.style.display = isTimed ? "none" : "";
+      if (actorRow) actorRow.style.display = isTimed ? "none" : "";
+    };
+    syncMode();
+    typeSelect?.addEventListener("change", syncMode);
   }
 
   static #onUpdateObject(event, _form, formData) {
@@ -121,8 +160,14 @@ export class TrackerDialog extends fapi.HandlebarsApplicationMixin(
 
     const data = formData.object;
     data.max = Math.clamp(data.max, 1, MAX_SIZE);
+    data.isConsequence = data.trackerType === "consequence";
+    data.isTimedChallenge = data.trackerType === "timed";
+    delete data.trackerType;
     data.difficulty = Math.clamp(data.difficulty ?? 1, 1, 10);
-    data.resistance = Math.clamp(data.resistance ?? 0, 0, 5);
+    data.resistance = data.isTimedChallenge
+      ? 0
+      : Math.clamp(data.resistance ?? 0, 0, 5);
+    data.impact = Math.clamp(data.impact ?? 3, 1, 10);
     data.actorId = data.actorId || null;
     if (this.entry) {
       data.id = this.entry.id;

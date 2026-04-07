@@ -2,6 +2,10 @@ import { MODULE_ID } from "./constants.mjs";
 import { t } from "./i18n.mjs";
 import { setPlayerAmbientAudioSelectionOnlyEnabled } from "../misc/ambient-audio-patch.mjs";
 import { SyncDialog } from "../journal-backlinks/sync-dialog.mjs";
+import {
+  TrackerMacroButtonsConfig,
+  TRACKER_MACRO_LAYOUT_SETTING,
+} from "../tracker-macro-buttons/index.mjs";
 
 // --- Setting keys ---
 const SHOW_INFO_BUTTONS_SETTING = "showInfoButtons";
@@ -31,6 +35,7 @@ const SETTING_BACKLINKS_MIN_PERMISSION = "backlinksMinPermission";
 const SETTING_BACKLINKS_DEBUG = "backlinksDebug";
 const SETTING_BACKLINKS_LAST_SYNCED = "backlinksLastSyncedVersion";
 const SETTING_BACKLINKS_SYNC_BUTTON = "backlinksSyncButton";
+const SETTING_TRACKER_MACRO_MENU = "trackerMacroButtonsConfig";
 const GROUP_SHIP_ACTOR_SETTING = "groupShipActorId";
 const ENABLE_EXTENDED_TASK_TRACKER_SETTING = "enableExtendedTaskTracker";
 const NPC_BUILDER_SPECIAL_RULES_PACK_SETTING = "npcBuilderSpecialRulesPack";
@@ -68,6 +73,10 @@ const SUBGROUPS = [
   {
     firstKey: GROUP_SHIP_ACTOR_SETTING,
     label: "sta-utils.settings.subgroups.groupShip",
+  },
+  {
+    firstKey: SETTING_TRACKER_MACRO_MENU,
+    label: "sta-utils.settings.subgroups.trackerButtons",
   },
   {
     firstKey: ENABLE_CHAT_HEADER_MERGE_SETTING,
@@ -318,6 +327,29 @@ export function registerSettings() {
       }
       return out;
     },
+    group: GROUP_WORLD,
+  });
+
+  // ----- Tracker Buttons (cross-module) -----
+
+  game.settings.register(MODULE_ID, TRACKER_MACRO_LAYOUT_SETTING, {
+    scope: "world",
+    config: false,
+    type: Object,
+    default: {
+      version: 1,
+      firstColumn: ["", "", ""],
+      secondColumn: ["", "", ""],
+    },
+  });
+
+  game.settings.registerMenu(MODULE_ID, SETTING_TRACKER_MACRO_MENU, {
+    name: t("sta-utils.trackerMacroButtons.menu.name"),
+    label: t("sta-utils.trackerMacroButtons.menu.label"),
+    hint: t("sta-utils.trackerMacroButtons.menu.hint"),
+    icon: "fas fa-table-columns",
+    type: TrackerMacroButtonsConfig,
+    restricted: true,
     group: GROUP_WORLD,
   });
 
@@ -802,7 +834,9 @@ export function setAlertStatus(status) {
 /** @returns {boolean} */
 export function isAlertStatusPlayerControlEnabled() {
   try {
-    return Boolean(game.settings.get(MODULE_ID, ALERT_STATUS_PLAYER_CONTROL_SETTING));
+    return Boolean(
+      game.settings.get(MODULE_ID, ALERT_STATUS_PLAYER_CONTROL_SETTING),
+    );
   } catch (_) {
     return false;
   }

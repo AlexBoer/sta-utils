@@ -5,11 +5,7 @@
     <div class="sta-launcher-grid">
       {{#each items}}
       <button class="sta-launcher-btn" type="button" data-item-id="{{id}}" title="{{label}}" draggable="true">
-        {{#if img}}
-        <img class="sta-launcher-img" src="{{img}}" alt="" aria-hidden="true">
-        {{else}}
         <i class="fa-solid {{icon}}"></i>
-        {{/if}}
         <span>{{label}}</span>
       </button>
       {{/each}}

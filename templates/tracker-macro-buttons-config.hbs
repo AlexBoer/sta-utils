@@ -1,0 +1,51 @@
+<form class="sta-utils-tracker-macro-config">
+  {{#if ready}}
+    <p class="hint">{{guidance}}</p>
+
+    <fieldset class="sta-utils-tracker-macro-fieldset">
+      <legend>{{firstColumnLabel}}</legend>
+
+      {{#each firstColumnSlots}}
+      <div class="form-group">
+        <label for="firstColumn{{this.index}}">{{this.label}}</label>
+        <select id="firstColumn{{this.index}}" name="firstColumn{{this.index}}">
+          <option value="">{{this.noneLabel}}</option>
+          {{#each this.groups}}
+            <optgroup label="{{this.label}}">
+              {{#each this.options}}
+                <option value="{{this.uuid}}" {{#if this.selected}}selected{{/if}}>{{this.packTitle}} / {{this.name}}</option>
+              {{/each}}
+            </optgroup>
+          {{/each}}
+        </select>
+      </div>
+      {{/each}}
+    </fieldset>
+
+    <fieldset class="sta-utils-tracker-macro-fieldset">
+      <legend>{{secondColumnLabel}}</legend>
+
+      {{#each secondColumnSlots}}
+        <div class="form-group">
+          <label for="secondColumn{{this.index}}">{{this.label}}</label>
+          <select id="secondColumn{{this.index}}" name="secondColumn{{this.index}}">
+            <option value="">{{this.noneLabel}}</option>
+            {{#each this.groups}}
+              <optgroup label="{{this.label}}">
+                {{#each this.options}}
+                  <option value="{{this.uuid}}" {{#if this.selected}}selected{{/if}}>{{this.packTitle}} / {{this.name}}</option>
+                {{/each}}
+              </optgroup>
+            {{/each}}
+          </select>
+        </div>
+      {{/each}}
+    </fieldset>
+
+    <div class="form-group">
+      <button type="submit" class="button"><i class="fas fa-save"></i> {{localize "SETTINGS.Save"}}</button>
+    </div>
+  {{else}}
+    <p class="hint">Enable both STA Utilities and STA Officers Log to use this feature.</p>
+  {{/if}}
+</form>

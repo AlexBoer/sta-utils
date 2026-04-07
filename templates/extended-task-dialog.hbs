@@ -1,15 +1,13 @@
 <form>
     <div class="dialog-content">
-        <div class="form-group">
+        <div class="form-group actor-row">
             <label>{{localize "sta-utils.extendedTaskTracker.dialog.actorLabel"}}</label>
             <div class="form-fields">
                 <select name="actorId">
-                    {{#select selectedActorId}}
-                        <option value="">{{localize "sta-utils.extendedTaskTracker.noLinkedActor"}}</option>
-                        {{#each extendedTaskActors as |actor|}}
-                            <option value="{{actor.id}}">{{actor.name}}</option>
-                        {{/each}}
-                    {{/select}}
+                    <option value="" {{#unless selectedActorId}}selected{{/unless}}>{{localize "sta-utils.extendedTaskTracker.noLinkedActor"}}</option>
+                    {{#each extendedTaskActors as |actor|}}
+                        <option value="{{actor.id}}" {{#if actor.selected}}selected{{/if}}>{{actor.name}}</option>
+                    {{/each}}
                 </select>
             </div>
         </div>
@@ -17,6 +15,16 @@
             <label>{{localize "sta-utils.extendedTaskTracker.dialog.name"}}</label>
             <div class="form-fields">
                 <input type="text" name="name" value="{{entry.name}}" {{#unless entry}}autofocus{{/unless}} />
+            </div>
+        </div>
+        <div class="form-group">
+            <label>{{localize "sta-utils.extendedTaskTracker.dialog.type"}}</label>
+            <div class="form-fields">
+                <select name="trackerType">
+                    <option value="task" {{#if (eq trackerType "task")}}selected{{/if}}>{{localize "sta-utils.extendedTaskTracker.types.task"}}</option>
+                    <option value="consequence" {{#if (eq trackerType "consequence")}}selected{{/if}}>{{localize "sta-utils.extendedTaskTracker.types.consequence"}}</option>
+                    <option value="timed" {{#if (eq trackerType "timed")}}selected{{/if}}>{{localize "sta-utils.extendedTaskTracker.types.timed"}}</option>
+                </select>
             </div>
         </div>
         {{#if entry}}
@@ -40,13 +48,19 @@
                 </div>
             </div>
         </div>
-        <div class="form-group">
+        <div class="form-group difficulty-row">
             <label>{{localize "sta-utils.extendedTaskTracker.dialog.difficulty"}}</label>
             <div class="form-fields">
                 {{ numberInput defaultDifficulty name="difficulty" step=1 min=1 max=10 }}
             </div>
         </div>
-        <div class="form-group">
+        <div class="form-group impact-row">
+            <label>{{localize "sta-utils.extendedTaskTracker.dialog.impact"}}</label>
+            <div class="form-fields">
+                {{ numberInput defaultImpact name="impact" step=1 min=1 max=10 }}
+            </div>
+        </div>
+        <div class="form-group resistance-row">
             <label>{{localize "sta-utils.extendedTaskTracker.dialog.resistance"}}</label>
             <div class="form-fields">
                 {{ numberInput defaultResistance name="resistance" step=1 min=0 max=5 }}
@@ -56,11 +70,9 @@
             <label>{{localize "sta-utils.extendedTaskTracker.dialog.color"}}</label>
             <div class="form-fields">
                 <select name="colorId">
-                    {{#select entry.colorId}}
-                        {{#each colorPresets as |preset|}}
-                            <option value="{{preset.id}}">{{preset.name}}</option>
-                        {{/each}}
-                    {{/select}}
+                    {{#each colorPresets as |preset|}}
+                        <option value="{{preset.id}}" {{#if preset.selected}}selected{{/if}}>{{preset.name}}</option>
+                    {{/each}}
                 </select>
             </div>
         </div>

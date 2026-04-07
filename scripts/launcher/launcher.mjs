@@ -130,6 +130,47 @@ const LAUNCHER_SECTIONS = [
         available: () => !!game.staUtils?.rollRequest,
         call: () => game.staUtils.rollRequest(),
       },
+      {
+        id: "rollCasualties",
+        labelKey: "sta-utils.launcher.rollCasualties",
+        icon: "fa-user-injured",
+        img: `${ASSET_BASE}/RollCasualites.webp`,
+        gmOnly: true,
+        available: () => !!game.staUtils?.rollForCasualties,
+        call: () => game.staUtils.rollForCasualties(),
+      },
+      {
+        id: "openSceneTraits",
+        labelKey: "sta-utils.launcher.openSceneTraits",
+        icon: "fa-note-sticky",
+        gmOnly: true,
+        available: () => !!game.staUtils?.openSceneTraits,
+        call: () => game.staUtils.openSceneTraits(),
+      },
+      {
+        id: "openWorldTraits",
+        labelKey: "sta-utils.launcher.openWorldTraits",
+        icon: "fa-globe",
+        gmOnly: true,
+        available: () => !!game.staUtils?.openWorldTraits,
+        call: () => game.staUtils.openWorldTraits(),
+      },
+      {
+        id: "manualShaken",
+        labelKey: "sta-utils.launcher.manualShaken",
+        icon: "fa-burst",
+        gmOnly: true,
+        available: () => !!game.staUtils?.triggerShaken,
+        call: () => game.staUtils.triggerShaken(),
+      },
+      {
+        id: "stressReset",
+        labelKey: "sta-utils.launcher.stressReset",
+        icon: "fa-bed",
+        gmOnly: true,
+        available: () => !!game.staUtils?.openStressReset,
+        call: () => game.staUtils.openStressReset(),
+      },
     ],
   },
 
@@ -321,7 +362,6 @@ class LauncherApp extends Base {
             id: item.id,
             label: t(item.labelKey),
             icon: item.icon,
-            img: item.img ?? null,
           }));
       });
       return { sections: [{ id: "sta-utils", label: null, items: allItems }] };
@@ -339,7 +379,6 @@ class LauncherApp extends Base {
           id: item.id,
           label: t(item.labelKey),
           icon: item.icon,
-          img: item.img ?? null,
         }));
 
       if (items.length === 0) continue;

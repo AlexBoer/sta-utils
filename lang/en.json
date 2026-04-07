@@ -17,6 +17,7 @@
         "alertStatus": "Ship Alert Status",
         "standalone": "Other Features",
         "npcBuilder": "NPC Builder",
+        "trackerButtons": "Tracker Buttons",
         "personalThreat": "Personal Threat",
         "rollRequest": "Roll Request",
         "attackCalculator": "Attack Calculator"
@@ -147,6 +148,23 @@
           "purple": "Purple — Nebula",
           "green": "Green — Borg"
         }
+      }
+    },
+    "trackerMacroButtons": {
+      "menu": {
+        "name": "Tracker Macro Buttons",
+        "label": "Configure Buttons",
+        "hint": "Choose macro buttons for the STA tracker columns when STA Utilities and STA Officers Log are both active."
+      },
+      "form": {
+        "guidance": "Choose macros for each tracker button slot. Leave a slot as None to keep its original button.",
+        "firstColumn": "First Column (System Buttons)",
+        "secondColumn": "Second Column (Officers Log Buttons)",
+        "slotOne": "Slot 1",
+        "slotTwo": "Slot 2",
+        "slotThree": "Slot 3",
+        "none": "- Keep Default -",
+        "saved": "Tracker macro button layout saved."
       }
     },
     "traits": {
@@ -1161,7 +1179,7 @@
           "chatSummary": "Prepare for a task or ready an item for use."
         },
         "standDropProne": {
-          "name": "Stand/Drop Prone",
+          "name": "Stand/Drop",
           "description": "Drop to the ground or stand up. While prone, Ranged attacks against you have <strong>+1 Difficulty</strong>, and if you are in Cover, you gain an additional <strong>+1 Protection</strong>. However, Melee Attacks and Ranged Attacks at Close range gain <strong>2 bonus Momentum</strong> against you, and you cannot attempt any movement-related major actions. Bonus Momentum cannot be saved. You cannot Stand and Drop Prone in the same turn.",
           "chatSummary": "Drop prone or stand up."
         },
@@ -1353,10 +1371,19 @@
         "name": "Name",
         "value": "Current Value",
         "size": "Work Track Size (max 30)",
+        "type": "Type",
         "difficulty": "Difficulty (1–10)",
         "resistance": "Resistance (0–5)",
+        "impact": "Impact (1–10)",
+        "isConsequence": "Extended Consequence",
+        "isTimedChallenge": "Timed Challenge",
         "color": "Color",
         "private": "Private (GM only)"
+      },
+      "types": {
+        "task": "Extended Task",
+        "consequence": "Extended Consequence",
+        "timed": "Timed Challenge"
       },
       "deleteDialog": {
         "title": "Delete Tracker",
@@ -1386,7 +1413,15 @@
       "sentOne": "Roll request sent.",
       "sentMany": "Roll requests sent to {count} players."
     },
-    "launcher": {
+    "casualties": {
+    "title": "Casualty Report",
+    "breachesTitle": "How many breaches on your ship?",
+    "playersTitle": "How many players in the game?",
+    "submit": "Submit",
+    "injured": "Injured",
+    "killed": "Killed"
+  },
+  "launcher": {
       "title": "STA Utilities",
       "stardateCalculator": "Stardate Calculator",
       "warpCalculator": "Warp Calculator",
@@ -1400,6 +1435,18 @@
       "dicePoolMonitor": "Dice Pool Monitor",
       "noteStyler": "Note Styler",
       "rollRequest": "Roll Request",
+      "rollCasualties": "Roll Casualties",
+      "openSceneTraits": "Scene Traits",
+      "openWorldTraits": "World Traits",
+      "manualShaken": "Trigger Shaken",
+      "stressReset": "Stress Reset",
+      "stressResetPrompt": "Choose a rest type to apply stress recovery to active player characters.",
+      "stressResetTargets": "Affected characters",
+      "restTypeBreather": "Breather (Recover 4 Stress)",
+      "restTypeBreak": "Break (Recover 8 Stress)",
+      "restTypeSleep": "Sleep (Recover All Stress)",
+      "stressResetNoChanges": "Stress reset made no changes.",
+      "stressResetApplied": "Applied stress recovery to {count} active player character(s).",
       "section": {
         "staUtils": "STA Utilities",
         "officersLog": "Officers Log",

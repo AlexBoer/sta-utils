@@ -41,6 +41,15 @@ const DISCIPLINE_KEYS = [
 const actionSetRegistry = new Map();
 
 /**
+ * Stores the display label (i18n key) for each registered action set,
+ * keyed by action-set ID.  Populated by registerActionSet() so that the
+ * action-set dropdown in _prepareContext can be built synchronously without
+ * importing every action-set module.
+ * @type {Map<string, string>}
+ */
+const actionSetLabels = new Map();
+
+/**
  * Tracks which momentum-spend tab to default to for the next chat message
  * created by a roll originating from the action chooser.
  * Set just before executeTaskRoll and cleared in a finally block.
@@ -228,8 +237,27 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
   }
 });
 
-function registerActionSet(id, importFn) {
+/**
+ * Register an action set for use in the action chooser.
+ *
+ * @param {string} id        Unique action-set ID (e.g. "personal-conflict").
+ * @param {string|Function} labelOrImportFn
+ *   Either the i18n label key (string) — preferred — followed by the import
+ *   function as the third argument, or the import function directly (legacy
+ *   form, for external callers that omit the label).
+ * @param {Function} [maybeImportFn]  Import function when label is provided.
+ */
+function registerActionSet(id, labelOrImportFn, maybeImportFn) {
+  let label, importFn;
+  if (typeof labelOrImportFn === "string") {
+    label = labelOrImportFn;
+    importFn = maybeImportFn;
+  } else {
+    label = id; // fall back to raw ID as label
+    importFn = labelOrImportFn;
+  }
   actionSetRegistry.set(id, importFn);
+  actionSetLabels.set(id, label);
 }
 
 /**
@@ -397,13 +425,13 @@ class ActionChooserApp extends BaseApp {
     majorActions.sort(subtleLast);
     socialTools.sort(subtleLast);
 
+    // Build action-set list from the label registry (sync — no dynamic imports).
     const actionSets = [];
     if (actionSetRegistry.size > 1) {
-      for (const [id] of actionSetRegistry) {
-        const set = await loadActionSet(id);
+      for (const [id, labelKey] of actionSetLabels) {
         actionSets.push({
           id,
-          label: t(set.label ?? id),
+          label: t(labelKey),
           selected: id === this.actionSet?.id,
         });
       }
@@ -2115,43 +2143,67 @@ async function openActionChooser(
   return app;
 }
 
-registerActionSet("personal-conflict", () =>
-  import("./action-sets/personal-conflict.mjs").then((m) => m.default ?? m),
+registerActionSet(
+  "personal-conflict",
+  "sta-utils.actionChooser.sets.personalConflict",
+  () => import("./action-sets/personal-conflict.mjs").then((m) => m.default ?? m),
 );
 
-registerActionSet("command-station", () =>
-  import("./action-sets/command-station.mjs").then((m) => m.default ?? m),
+registerActionSet(
+  "command-station",
+  "sta-utils.actionChooser.sets.commandStation",
+  () => import("./action-sets/command-station.mjs").then((m) => m.default ?? m),
 );
 
-registerActionSet("communications-station", () =>
-  import("./action-sets/communications-station.mjs").then(
-    (m) => m.default ?? m,
-  ),
+registerActionSet(
+  "communications-station",
+  "sta-utils.actionChooser.sets.communicationsStation",
+  () => import("./action-sets/communications-station.mjs").then((m) => m.default ?? m),
 );
 
-registerActionSet("helm-station", () =>
-  import("./action-sets/helm-station.mjs").then((m) => m.default ?? m),
+registerActionSet(
+  "helm-station",
+  "sta-utils.actionChooser.sets.helmStation",
+  () => import("./action-sets/helm-station.mjs").then((m) => m.default ?? m),
 );
 
-registerActionSet("navigator-station", () =>
-  import("./action-sets/navigator-station.mjs").then((m) => m.default ?? m),
+registerActionSet(
+  "navigator-station",
+  "sta-utils.actionChooser.sets.navigatorStation",
+  () => import("./action-sets/navigator-station.mjs").then((m) => m.default ?? m),
 );
 
-registerActionSet("operations-station", () =>
-  import("./action-sets/operations-station.mjs").then((m) => m.default ?? m),
+registerActionSet(
+  "operations-station",
+  "sta-utils.actionChooser.sets.operationsStation",
+  () => import("./action-sets/operations-station.mjs").then((m) => m.default ?? m),
 );
 
-registerActionSet("sensors-station", () =>
-  import("./action-sets/sensors-station.mjs").then((m) => m.default ?? m),
+registerActionSet(
+  "sensors-station",
+  "sta-utils.actionChooser.sets.sensorsStation",
+  () => import("./action-sets/sensors-station.mjs").then((m) => m.default ?? m),
 );
 
-registerActionSet("tactical-station", () =>
-  import("./action-sets/tactical-station.mjs").then((m) => m.default ?? m),
+registerActionSet(
+  "tactical-station",
+  "sta-utils.actionChooser.sets.tacticalStation",
+  () => import("./action-sets/tactical-station.mjs").then((m) => m.default ?? m),
 );
 
-registerActionSet("social-conflict", () =>
-  import("./action-sets/social-conflict.mjs").then((m) => m.default ?? m),
+registerActionSet(
+  "social-conflict",
+  "sta-utils.actionChooser.sets.socialConflict",
+  () => import("./action-sets/social-conflict.mjs").then((m) => m.default ?? m),
 );
+
+// Pre-warm all action-set modules once the game is ready so the browser's
+// module cache is populated before the player first opens the action chooser.
+Hooks.once("ready", () => {
+  for (const loader of actionSetRegistry.values()) {
+    loader()?.catch?.(() => {}); // fire-and-forget; errors are non-critical
+  }
+});
 
 /**
  * Render the action chooser UI into an existing DOM container (embedded mode).

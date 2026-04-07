@@ -2798,10 +2798,10 @@ body.sta-officers-lcars-active {
     --ac-major:     var(--lcars-titlebar-biography);
     --ac-social:    var(--lcars-titlebar-injuries);
 
-    /* Per-type tab button colours */
-    --ac-minor-tab:        var(--lcars-secondary-color);
-    --ac-major-tab:        var(--lcars-primary-color);
-    --ac-social-tab:       var(--lcars-titlebar-injuries);
+    /* Per-type tab button colours — track the section accent so tabs and detail boxes match */
+    --ac-minor-tab:        var(--ac-minor);
+    --ac-major-tab:        var(--ac-major);
+    --ac-social-tab:       var(--ac-social);
 
     /* Per-type detail panel backgrounds */
     --ac-minor-panel-bg:   var(--lcars-bg-panel);
@@ -3354,10 +3354,10 @@ body.sta-officers-lcars-active {
     --ac-major:     var(--lcars-titlebar-biography);
     --ac-social:    var(--lcars-titlebar-injuries);
 
-    /* Per-type tab button colours */
-    --ac-minor-tab:        var(--lcars-secondary-color);
-    --ac-major-tab:        var(--lcars-primary-color);
-    --ac-social-tab:       var(--lcars-titlebar-injuries);
+    /* Per-type tab button colours — track the section accent so tabs and detail boxes match */
+    --ac-minor-tab:        var(--ac-minor);
+    --ac-major-tab:        var(--ac-major);
+    --ac-social-tab:       var(--ac-social);
 
     /* Per-type detail panel backgrounds */
     --ac-minor-panel-bg:   var(--lcars-bg-panel);

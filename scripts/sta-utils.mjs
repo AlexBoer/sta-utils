@@ -81,11 +81,13 @@ import {
 } from "./chat-header-merge/index.mjs";
 
 import { installShakenHook } from "./shaken/index.mjs";
+import { triggerManualShaken } from "./shaken/index.mjs";
 
 import { initExtendedTaskTracker } from "./extended-task-tracker/index.mjs";
 
 import { openNpcBuilder } from "./npc-builder/index.mjs";
 import { openSupportingBuilder } from "./supporting-builder/index.mjs";
+import { rollForCasualties } from "./casualties/casualties.mjs";
 
 import {
   treknobabble,
@@ -101,6 +103,7 @@ import {
   openLauncher,
   installTrackerLauncherButton,
 } from "./launcher/index.mjs";
+import { installTrackerMacroButtonsHook } from "./tracker-macro-buttons/index.mjs";
 
 import {
   isBacklinksEnabled,
@@ -123,8 +126,142 @@ import { LcarsSupportingSheet2e } from "./lcars-sheet/lcars-supporting-sheet2e.m
 import { LcarsNPCSheet2e } from "./lcars-sheet/lcars-npc-sheet2e.mjs";
 import { LcarsStarshipSheet2e } from "./lcars-sheet/lcars-starship-sheet2e.mjs";
 import { LcarsSmallCraftSheet2e } from "./lcars-sheet/lcars-smallcraft-sheet2e.mjs";
+import { t } from "./core/i18n.mjs";
 
 const MODULE_ID = "sta-utils";
+
+const STRESS_REST_TYPES = {
+  breather: { recover: 4 },
+  break: { recover: 8 },
+  sleep: { recover: null },
+};
+
+async function openSceneTraitsSheet() {
+  const scene = canvas?.scene;
+  if (!scene) {
+    ui.notifications.warn("No active scene.");
+    return false;
+  }
+
+  const actor = await getOrCreateProxyActor(scene.id);
+  actor.sheet?.render(true);
+  return true;
+}
+
+async function openWorldTraitsSheet() {
+  const uuid = getWorldTraitsActorUuid();
+  let actor;
+
+  if (uuid) {
+    actor = await fromUuid(uuid);
+    if (!actor) {
+      ui.notifications.warn(`World Traits actor not found for UUID: ${uuid}`);
+      return false;
+    }
+  } else {
+    actor = await getOrCreateWorldTraitActor();
+  }
+
+  actor.sheet?.render(true);
+  return true;
+}
+
+function getActivePlayerCharacters() {
+  const seen = new Set();
+  const actors = [];
+
+  for (const user of game.users ?? []) {
+    if (!user.active || user.isGM) continue;
+    const actor = user.character;
+    if (!actor || actor.type !== "character") continue;
+    if (seen.has(actor.id)) continue;
+    seen.add(actor.id);
+    actors.push(actor);
+  }
+
+  return actors;
+}
+
+async function openStressResetDialog() {
+  if (!game.user?.isGM) {
+    ui.notifications.warn("Only a GM can run stress reset.");
+    return false;
+  }
+
+  const actors = getActivePlayerCharacters();
+  if (!actors.length) {
+    ui.notifications.warn("No active player characters found.");
+    return false;
+  }
+
+  const actorList = actors.map((a) => `<li>${a.name}</li>`).join("");
+
+  const restType = await foundry.applications.api.DialogV2.wait({
+    window: {
+      title: t("sta-utils.launcher.stressReset"),
+      icon: "fa-solid fa-bed",
+    },
+    content: `
+      <p>${t("sta-utils.launcher.stressResetPrompt")}</p>
+      <p><strong>${t("sta-utils.launcher.stressResetTargets")} (${actors.length})</strong></p>
+      <ul>${actorList}</ul>
+    `,
+    buttons: [
+      {
+        action: "breather",
+        label: t("sta-utils.launcher.restTypeBreather"),
+      },
+      {
+        action: "break",
+        label: t("sta-utils.launcher.restTypeBreak"),
+      },
+      {
+        action: "sleep",
+        label: t("sta-utils.launcher.restTypeSleep"),
+      },
+      {
+        action: "cancel",
+        label: game.i18n.localize("Cancel"),
+      },
+    ],
+    default: "cancel",
+  });
+
+  if (!restType || restType === "cancel") return false;
+
+  const rest = STRESS_REST_TYPES[restType];
+  if (!rest) return false;
+
+  const updates = [];
+  for (const actor of actors) {
+    const current = Number(actor.system?.stress?.value ?? 0);
+    const max = Number(actor.system?.stress?.max ?? 0);
+    if (max <= 0) continue;
+
+    const next =
+      rest.recover === null ? 0 : Math.max(0, current - Number(rest.recover));
+    if (next === current) continue;
+
+    updates.push({
+      _id: actor.id,
+      "system.stress.value": next,
+    });
+  }
+
+  if (!updates.length) {
+    ui.notifications.info(t("sta-utils.launcher.stressResetNoChanges"));
+    return true;
+  }
+
+  await Actor.updateDocuments(updates);
+  ui.notifications.info(
+    t("sta-utils.launcher.stressResetApplied").replace(
+      "{count}",
+      String(updates.length),
+    ),
+  );
+  return true;
+}
 
 /* -------------------------------------------- */
 /*  Initialization                              */
@@ -270,6 +407,7 @@ Hooks.once("init", () => {
   // --- Hook installers (init-time) ---
   installRenderApplicationV2Hook();
   installTrackerLauncherButton();
+  installTrackerMacroButtonsHook();
   if (isFatigueEnabled()) {
     installStressMonitoringHook();
     console.log(`${MODULE_ID} | Fatigue Management feature enabled`);
@@ -319,15 +457,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
     order: Object.keys(controls.tokens.tools).length,
     button: true,
     visible: game.user.isGM,
-    onChange: async () => {
-      const scene = canvas.scene;
-      if (!scene) {
-        ui.notifications.warn("No active scene.");
-        return;
-      }
-      const actor = await getOrCreateProxyActor(scene.id);
-      actor.sheet?.render(true);
-    },
+    onChange: async () => openSceneTraitsSheet(),
   };
 
   controls.tokens.tools.worldTraits = {
@@ -337,22 +467,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
     order: Object.keys(controls.tokens.tools).length,
     button: true,
     visible: game.user.isGM,
-    onChange: async () => {
-      const uuid = getWorldTraitsActorUuid();
-      let actor;
-      if (uuid) {
-        actor = await fromUuid(uuid);
-        if (!actor) {
-          ui.notifications.warn(
-            `World Traits actor not found for UUID: ${uuid}`,
-          );
-          return;
-        }
-      } else {
-        actor = await getOrCreateWorldTraitActor();
-      }
-      actor.sheet?.render(true);
-    },
+    onChange: async () => openWorldTraitsSheet(),
   };
 });
 
@@ -432,6 +547,11 @@ Hooks.once("ready", async () => {
     npcBuilder: openNpcBuilder,
     supportingBuilder: openSupportingBuilder,
     rollRequest: isRollRequestEnabled() ? openRollRequestDialog : null,
+    rollForCasualties,
+    openSceneTraits: openSceneTraitsSheet,
+    openWorldTraits: openWorldTraitsSheet,
+    triggerShaken: triggerManualShaken,
+    openStressReset: openStressResetDialog,
     treknobabble,
     medicalbabble,
     launcher: openLauncher,

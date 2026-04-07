@@ -1824,20 +1824,6 @@ input.selector.attribute.sta-fatigued-attribute {
 }
 
 /* =============================================================================
- * CHAT WIDGET CONTAINER (shared row for stardate + alert status)
- * ============================================================================= */
-
-#sta-utils-chat-widgets {
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  gap: 0.5rem;
-  padding: 0;
-  pointer-events: auto !important;
-  margin-right: 0.5rem;
-}
-
-/* =============================================================================
  * STARDATE DISPLAY BAR
  * ============================================================================= */
 
@@ -1849,19 +1835,17 @@ input.selector.attribute.sta-fatigued-attribute {
   background-color: #6677bb;
   color: #e8e8f8;
   font-family: "Antonio", "Roboto Condensed", sans-serif;
-  cursor: copy !important;
+  cursor: copy;
   border-radius: 0 0 0.75rem 0;
   white-space: nowrap;
   user-select: none;
   overflow: hidden;
   transition: background-color 0.15s ease;
-  pointer-events: auto !important;
+  margin-right: 0.5rem;
 }
 
-#sta-utils-stardate-bar:hover,
-#sta-utils-stardate-bar.sta-utils-stardate-bar--hover {
-  background-color: #8899dd;
-  filter: brightness(1.15);
+#sta-utils-stardate-bar:hover {
+  background-color: #7788cc;
 }
 
 #sta-utils-stardate-bar.sta-utils-stardate-bar--copied {
@@ -1890,87 +1874,6 @@ input.selector.attribute.sta-fatigued-attribute {
   font-weight: 700;
   letter-spacing: 0.06em;
   color: #ffffff;
-}
-
-/* =============================================================================
- * ALERT STATUS BAR
- * ============================================================================= */
-
-#sta-utils-alert-status-bar {
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-  padding: 0;
-  color: #e8e8f8;
-  font-family: "Antonio", "Roboto Condensed", sans-serif;
-  border-radius: 0 0 0.75rem 0;
-  white-space: nowrap;
-  user-select: none;
-  overflow: hidden;
-  transition: background-color 0.2s ease;
-  pointer-events: auto !important;
-}
-
-#sta-utils-alert-status-bar[data-gm="true"] {
-  cursor: pointer;
-}
-
-#sta-utils-alert-status-bar[data-gm="false"] {
-  cursor: default;
-}
-
-/* Status-dependent background colors */
-#sta-utils-alert-status-bar[data-status="normal"] {
-  background-color: #3a5080;
-}
-
-#sta-utils-alert-status-bar[data-status="yellow"] {
-  background-color: #9a6e00;
-}
-
-#sta-utils-alert-status-bar[data-status="red"] {
-  background-color: #9a1f1f;
-  animation: sta-utils-red-alert-pulse 1.4s ease-in-out infinite;
-}
-
-/* Hover highlight — GM only, suppressed on normal since it's the resting state */
-#sta-utils-alert-status-bar[data-gm="true"].sta-utils-alert-bar--hover {
-  filter: brightness(1.2);
-}
-
-@keyframes sta-utils-red-alert-pulse {
-  0%,
-  100% {
-    background-color: #9a1f1f;
-  }
-  50% {
-    background-color: #cc2929;
-  }
-}
-
-.sta-utils-alert-label {
-  display: flex;
-  align-items: center;
-  padding: 0.3rem 0.55rem 0.3rem 0.7rem;
-  background-color: rgba(0, 0, 0, 0.2);
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(220, 225, 255, 0.75);
-  border-right: 1px solid rgba(255, 255, 255, 0.15);
-  pointer-events: none;
-}
-
-.sta-utils-alert-value {
-  display: flex;
-  align-items: center;
-  padding: 0.3rem 0.7rem 0.3rem 0.55rem;
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: #ffffff;
-  pointer-events: none;
 }
 
 /* =============================================================================
@@ -2298,23 +2201,7 @@ input.selector.attribute.sta-fatigued-attribute {
   padding-top: 0.75rem;
   border-top: 1px solid rgba(100, 150, 200, 0.3);
   flex-wrap: wrap;
-}
 
-/* Set World Time button — amber/gold to signal a GM-only world-affecting action */
-.sta-set-world-time-btn {
-  border-color: rgba(240, 184, 114, 0.5);
-  background: rgba(240, 184, 114, 0.1);
-  color: rgba(240, 184, 114, 0.9);
-  margin-right: auto;  /* push Send/Close to the right */
-
-  &:hover:not(:disabled) {
-    background: rgba(240, 184, 114, 0.25);
-    border-color: rgba(240, 184, 114, 0.8);
-    color: rgba(255, 210, 140, 1);
-  }
-}
-
-.sta-stardate-calculator-dialog {
   .dialog-button {
     padding: 0.5rem 1rem;
     border: 1px solid rgba(100, 150, 200, 0.4);
@@ -2337,6 +2224,21 @@ input.selector.attribute.sta-fatigued-attribute {
     i { margin-right: 0.4rem; }
   }
 }
+
+/* Set World Time button — amber/gold to signal a GM-only world-affecting action */
+.sta-set-world-time-btn {
+  border-color: rgba(240, 184, 114, 0.5);
+  background: rgba(240, 184, 114, 0.1);
+  color: rgba(240, 184, 114, 0.9);
+  margin-right: auto;  /* push Send/Close to the right */
+
+  &:hover:not(:disabled) {
+    background: rgba(240, 184, 114, 0.25);
+    border-color: rgba(240, 184, 114, 0.8);
+    color: rgba(255, 210, 140, 1);
+  }
+}
+
 
 /* =============================================================================
  * JOURNAL BACKLINKS (wiki-style "referenced by" links)
@@ -3694,6 +3596,7 @@ input.selector.attribute.sta-fatigued-attribute {
   transition: filter 0.15s ease, opacity 0.15s ease;
   text-align: left;
   white-space: nowrap;
+  width: 125px;
 
   &[data-type="minor"] { background: var(--ac-minor-tab); }
   &[data-type="major"] { background: var(--ac-major-tab); }
@@ -4944,6 +4847,14 @@ input.selector.attribute.sta-fatigued-attribute {
       .ext-stat.resistance {
         background: rgba(208, 80, 80, 0.35);
       }
+
+      .ext-stat.impact {
+        background: rgba(208, 80, 80, 0.35);
+      }
+
+      .ext-stat.timed {
+        background: rgba(136, 170, 255, 0.3);
+      }
     }
 
     .ext-tracker-controls {
@@ -4968,6 +4879,22 @@ input.selector.attribute.sta-fatigued-attribute {
   &.private .ext-tracker-name {
     background: var(--lcars-lavender);
     box-shadow: 0 0 6px inset rgba(138, 80, 255, 0.5);
+  }
+
+  &.consequence .ext-tracker-name {
+    background: var(--lcars-red);
+  }
+
+  &.consequence .ext-tracker-bar {
+    border-color: var(--lcars-red, #d05050);
+  }
+
+  &.timed-challenge .ext-tracker-name {
+    background: var(--lcars-sky, #88aaff);
+  }
+
+  &.timed-challenge .ext-tracker-bar {
+    border-color: var(--lcars-sky, #88aaff);
   }
 
   &.editable .ext-tracker-bar {
@@ -5122,6 +5049,51 @@ input.selector.attribute.sta-fatigued-attribute {
   &:hover .breakthrough-line::after {
     opacity: 1;
   }
+
+  /* --- Setback line (for Extended Consequences) --- */
+  .setback-line {
+    position: relative;
+    width: 0;
+    height: 100%;
+    flex: 0 0 0px;
+    margin-left: 2px;
+    margin-right: 2px;
+    z-index: 3;
+  }
+
+  .setback-line::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -1px;
+    width: 3px;
+    height: 100%;
+    background: var(--lcars-red, #d05050);
+    box-shadow: 0 0 6px rgba(208, 80, 80, 0.7);
+  }
+
+  .setback-line::after {
+    content: attr(title);
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--lcars-font);
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--lcars-red, #d05050);
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  &:hover .setback-line::after {
+    opacity: 1;
+  }
 }
 
 /* --- Dialog — LCARS themed --- */
@@ -5178,11 +5150,16 @@ input.selector.attribute.sta-fatigued-attribute {
   input[type="text"],
   input[type="number"],
   select {
-    background: rgba(155, 143, 194, 0.1);
+    background: #111;
     border: 1px solid rgba(155, 143, 194, 0.4);
     border-radius: 6px;
     color: #f0b872;
     font-family: "Antonio", "Roboto Condensed", sans-serif;
+  }
+
+  select option {
+    background: #111;
+    color: #f0b872;
   }
 
   input[type="text"]:focus,
@@ -5531,12 +5508,6 @@ input.selector.attribute.sta-fatigued-attribute {
     pointer-events: none;
   }
 
-  .sta-launcher-img {
-    width: 52px;
-    height: 52px;
-    object-fit: contain;
-  }
-
   &:hover {
     background: rgba(255, 255, 255, 0.06);
     border-color: var(--color-border-light-primary, #ccc);
@@ -5588,6 +5559,37 @@ input.selector.attribute.sta-fatigued-attribute {
     background: rgba(255, 255, 255, 0.1);
 
     i { color: #89CFF0; }
+  }
+}
+
+.sta-utils-tracker-macro-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .sta-utils-tracker-macro-icon {
+    width: 1rem;
+    height: 1rem;
+    object-fit: contain;
+    pointer-events: none;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
+  }
+}
+
+.sta-utils-tracker-macro-config {
+  .sta-utils-tracker-macro-fieldset {
+    margin: 0 0 0.8rem;
+    border: 1px solid var(--color-border-light-tertiary, #555);
+    border-radius: 4px;
+    padding: 0.55rem 0.65rem;
+
+    legend {
+      padding: 0 0.35rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-size: 0.72rem;
+    }
   }
 }
 

@@ -10,6 +10,9 @@ const DEFAULT_TRACKER = {
   resistance: 0,
   private: false,
   actorId: null,
+  isConsequence: false,
+  impact: 3,
+  isTimedChallenge: false,
 };
 
 /**
@@ -137,14 +140,16 @@ export class TrackerDatabase extends Collection {
     if (!game.user.hasPermission("SETTINGS_MODIFY")) return;
     const entry = this.contents.find((t) => t.actorId === actor.id);
     if (!entry) return;
-    await this.#updateSettingOnly({
+    const update = {
       id: entry.id,
       name: actor.name,
       value: actor.system.workprogress.value,
       max: actor.system.workprogress.max,
       difficulty: actor.system.difficulty,
       resistance: actor.system.resistance,
-    });
+    };
+    if (entry.isConsequence) update.impact = actor.system.difficulty;
+    await this.#updateSettingOnly(update);
   }
 
   async #syncToActor(trackerData) {
@@ -156,7 +161,9 @@ export class TrackerDatabase extends Collection {
         name: trackerData.name,
         "system.workprogress.value": trackerData.value,
         "system.workprogress.max": trackerData.max,
-        "system.difficulty": trackerData.difficulty,
+        "system.difficulty": trackerData.isConsequence
+          ? (trackerData.impact ?? trackerData.difficulty)
+          : trackerData.difficulty,
         "system.resistance": trackerData.resistance,
       });
     } finally {

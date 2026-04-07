@@ -77,14 +77,23 @@ export class TrackerPanel extends fapi.HandlebarsApplicationMixin(
       const bp50 = Math.ceil(data.max * 0.5);
       const bp75 = Math.ceil(data.max * 0.75);
 
-      // Build slash array with breakthrough markers
-      const slashes = Array.from({ length: data.max }, (_, i) => ({
-        filled: i < value,
-        // A breakthrough line appears *after* this slot
-        breakthrough: i + 1 === bp50 || i + 1 === bp75,
-        breakthroughLabel:
-          i + 1 === bp50 ? "50%" : i + 1 === bp75 ? "75%" : null,
-      }));
+      // Build slash array with breakthrough/setback markers
+      const slashes = Array.from({ length: data.max }, (_, i) => {
+        const isBreak =
+          !data.isTimedChallenge && (i + 1 === bp50 || i + 1 === bp75);
+        return {
+          filled: i < value,
+          // A breakthrough/setback line appears *after* this slot
+          breakthrough: isBreak,
+          breakthroughLabel:
+            i + 1 === bp50 ? "50%" : i + 1 === bp75 ? "75%" : null,
+          breakClass: isBreak
+            ? data.isConsequence
+              ? "setback-line"
+              : "breakthrough-line"
+            : null,
+        };
+      });
 
       // Resolve color: stored colorId → preset lookup, or direct color, or default
       const resolvedColor =
@@ -350,7 +359,9 @@ export class TrackerPanel extends fapi.HandlebarsApplicationMixin(
       type: "extendedtask",
       system: {
         workprogress: { value: entry.value, max: entry.max },
-        difficulty: entry.difficulty,
+        difficulty: entry.isConsequence
+          ? (entry.impact ?? entry.difficulty)
+          : entry.difficulty,
         resistance: entry.resistance,
       },
     });

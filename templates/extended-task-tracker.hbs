@@ -3,7 +3,7 @@
         <div class="ext-tracker-list">
             {{#each trackers as |tracker|}}
                 <div
-                    class="ext-tracker-entry {{#if tracker.editable}}editable{{/if}} {{#if tracker.private}}private{{/if}} {{#unless tracker.visible}}hidden{{/unless}}"
+                    class="ext-tracker-entry {{#if tracker.editable}}editable{{/if}} {{#if tracker.private}}private{{/if}} {{#if tracker.isConsequence}}consequence{{/if}} {{#if tracker.isTimedChallenge}}timed-challenge{{/if}} {{#unless tracker.visible}}hidden{{/unless}}"
                     data-id="{{tracker.id}}"
                     style="--max: {{tracker.max}}; --filled: {{tracker.value}}; --entry-color: {{tracker.color}}; --entry-background: {{tracker.backgroundColor}}"
                 >
@@ -13,7 +13,13 @@
                         </div>
                         <div class="ext-meta-row">
                             <span class="ext-tracker-stats">
-                                <span class="ext-stat" title="Difficulty">Difficulty: {{tracker.difficulty}}</span>
+                                {{#if tracker.isTimedChallenge}}
+                                    <span class="ext-stat timed" title="Clock Rate"><i class="fa-solid fa-clock"></i>: 2</span>
+                                {{else if tracker.isConsequence}}
+                                    <span class="ext-stat impact" title="Impact">Impact: {{tracker.impact}}</span>
+                                {{else}}
+                                    <span class="ext-stat" title="Difficulty">Difficulty: {{tracker.difficulty}}</span>
+                                {{/if}}
                                 {{#if tracker.resistance}}<span class="ext-stat resistance" title="Resistance">Resist: {{tracker.resistance}}</span>{{/if}}
                             </span>
                             {{#if @root.options.editable}}
@@ -21,7 +27,9 @@
                                     {{#if tracker.actorId}}
                                         <a data-action="openLinkedActor" title="{{localize "sta-utils.extendedTaskTracker.linkedActor"}}"><i class="fa-solid fa-fw fa-link"></i></a>
                                     {{else}}
-                                        <a data-action="saveToActor" title="{{localize "sta-utils.extendedTaskTracker.saveToActor"}}"><i class="fa-solid fa-fw fa-floppy-disk"></i></a>
+                                        {{#unless tracker.isTimedChallenge}}
+                                            <a data-action="saveToActor" title="{{localize "sta-utils.extendedTaskTracker.saveToActor"}}"><i class="fa-solid fa-fw fa-floppy-disk"></i></a>
+                                        {{/unless}}
                                     {{/if}}
                                     <a data-action="deleteEntry"><i class="fa-solid fa-fw fa-trash"></i></a>
                                     <a data-action="editEntry"><i class="fa-solid fa-fw fa-edit"></i></a>
@@ -37,7 +45,7 @@
                                     {{#each row}}
                                         <div class="slash {{#if this.filled}}filled{{/if}}"></div>
                                         {{#if this.breakthrough}}
-                                            <div class="breakthrough-line" title="{{this.breakthroughLabel}}"></div>
+                                            <div class="{{this.breakClass}}" title="{{this.breakthroughLabel}}"></div>
                                         {{/if}}
                                     {{/each}}
                                 </div>

@@ -326,17 +326,26 @@ function canWriteActor(actor) {
 
 /**
  * Checks if an actor should experience fatigue mechanics.
- * Minor NPCs on the NPC or NPC-LCARS sheet, and characters with stress.max = 0, do not experience fatigue.
+ * NPCs on the NPC or NPC-LCARS sheet, and characters with stress.max = 0, do not experience fatigue.
  * @param {Actor} actor - The character actor
  * @returns {boolean} True if the actor can experience fatigue
  */
 function canExperienceFatigue(actor) {
   try {
-    // Minor NPCs on the NPC or NPC LCARS sheet do not experience fatigue
-    const sheetClass = actor.getFlag?.("core", "sheetClass");
-    const isNpcSheet = sheetClass === "sta.STANPCSheet2e" || sheetClass === "sta-utils.LcarsNPCSheet2e";
-    const isMinorNpc = actor.system?.npcType === "minor";
-    if (isNpcSheet && isMinorNpc) return false;
+    // NPCs on the NPC or NPC LCARS sheet do not experience fatigue.
+    // Use both explicit sheetClass flag and runtime sheet class/name so this still
+    // works when the actor uses a default sheet and no core.sheetClass flag is stored.
+    const sheetClassFlag = actor.getFlag?.("core", "sheetClass");
+    const runtimeSheetName = actor.sheet?.constructor?.name ?? "";
+    const runtimeSheetId = actor.sheet?.id ?? "";
+    const isNpcSheet =
+      sheetClassFlag === "sta.STANPCSheet2e" ||
+      sheetClassFlag === "sta-utils.LcarsNPCSheet2e" ||
+      runtimeSheetName === "STANPCSheet2e" ||
+      runtimeSheetName === "LcarsNPCSheet2e" ||
+      runtimeSheetId.startsWith("STANPCSheet2e") ||
+      runtimeSheetId.startsWith("LcarsNPCSheet2e");
+    if (isNpcSheet) return false;
 
     // Check if actor has stress.max = 0
     const maxStress = Number(actor.system?.stress?.max ?? 0);

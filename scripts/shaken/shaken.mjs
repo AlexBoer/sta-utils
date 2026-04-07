@@ -102,6 +102,30 @@ export function installShakenHook() {
   console.log(`${MODULE_ID} | Shaken (Minor Damage) hook installed`);
 }
 
+/**
+ * Manually post a SHAKEN! chat card for the configured Group Ship.
+ * Intended for launcher/macros when the GM wants to trigger a Minor Damage
+ * choice outside of automatic shield-threshold detection.
+ *
+ * @returns {Promise<boolean>} True if a card was posted.
+ */
+export async function triggerManualShaken() {
+  if (!game.user?.isGM) {
+    ui.notifications?.warn("Only a GM can manually trigger Shaken.");
+    return false;
+  }
+
+  const shipId = getGroupShipActorId();
+  const ship = shipId ? game.actors?.get?.(shipId) : null;
+  if (!ship) {
+    ui.notifications?.warn("No Group Ship is configured for Shaken.");
+    return false;
+  }
+
+  await _postShakenMessage(ship);
+  return true;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Shield monitoring                                                  */
 /* ------------------------------------------------------------------ */

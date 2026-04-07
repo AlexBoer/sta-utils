@@ -512,8 +512,55 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
 
   // ── Render ────────────────────────────────────────────────────────────────
 
+  render(...args) {
+    this._syncFormToState();
+    this._savedScrollPositions = this._captureScrollPositions();
+    return super.render(...args);
+  }
+
+  _syncFormToState() {
+    const html = this.element;
+    if (!html) return;
+    // Use the precise selector so the "Talent Preview" wrapper div (which also
+    // carries .npc-custom-talent) is not counted as an index offset.
+    html
+      .querySelectorAll(".npc-custom-talent.npc-builder-field-row")
+      .forEach((row, i) => {
+        const talent = this._wizardState.customTalents[i];
+        if (!talent) return;
+        const nameEl = row.querySelector(".npc-custom-talent-name");
+        const descEl = row.querySelector(".npc-custom-talent-desc");
+        if (nameEl) talent.name = nameEl.value;
+        if (descEl) talent.description = descEl.value;
+      });
+  }
+
+  _captureScrollPositions() {
+    const html = this.element;
+    if (!html) return {};
+    const positions = {};
+    for (const el of html.querySelectorAll("*")) {
+      if (el.scrollTop > 0) {
+        const cls = el.classList[0];
+        if (cls && !(cls in positions)) positions[cls] = el.scrollTop;
+      }
+    }
+    return positions;
+  }
+
+  _restoreScrollPositions(positions) {
+    const html = this.element;
+    if (!html || !positions) return;
+    for (const [cls, scrollTop] of Object.entries(positions)) {
+      const el = html.querySelector(`.${CSS.escape(cls)}`);
+      if (el) el.scrollTop = scrollTop;
+    }
+  }
+
   _onRender(context, options) {
     super._onRender(context, options);
+    this._restoreScrollPositions(this._savedScrollPositions);
+    this._savedScrollPositions = null;
     const html = this.element;
 
     html
@@ -977,18 +1024,20 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       });
     }
 
-    html.querySelectorAll(".npc-custom-talent").forEach((row, i) => {
-      row
-        .querySelector(".npc-custom-talent-name")
-        ?.addEventListener("input", (e) => {
-          this._wizardState.customTalents[i].name = e.target.value;
-        });
-      row
-        .querySelector(".npc-custom-talent-desc")
-        ?.addEventListener("input", (e) => {
-          this._wizardState.customTalents[i].description = e.target.value;
-        });
-    });
+    html
+      .querySelectorAll(".npc-custom-talent.npc-builder-field-row")
+      .forEach((row, i) => {
+        row
+          .querySelector(".npc-custom-talent-name")
+          ?.addEventListener("input", (e) => {
+            this._wizardState.customTalents[i].name = e.target.value;
+          });
+        row
+          .querySelector(".npc-custom-talent-desc")
+          ?.addEventListener("input", (e) => {
+            this._wizardState.customTalents[i].description = e.target.value;
+          });
+      });
   }
 
   // ── Drag and drop ─────────────────────────────────────────────────────────
