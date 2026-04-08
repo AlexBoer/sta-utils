@@ -201,13 +201,20 @@ export class TrackerPanel extends fapi.HandlebarsApplicationMixin(
     }
     this.lastRendered = rendered;
 
-    // Click / right-click to increment / decrement
+    // Click / right-click / keyboard to increment / decrement
     for (const tracker of html.querySelectorAll(
       ".ext-tracker-entry.editable .ext-tracker-bar",
     )) {
+      tracker.setAttribute("role", "slider");
+      tracker.setAttribute("tabindex", "0");
+
+      const getEntry = (el) => {
+        const id = el.closest("[data-id]").dataset.id;
+        return this.db.get(id);
+      };
+
       tracker.addEventListener("click", (event) => {
-        const id = event.target.closest("[data-id]").dataset.id;
-        const entry = this.db.get(id);
+        const entry = getEntry(event.target);
         if (!entry) return;
         entry.value = entry.value >= entry.max ? 0 : entry.value + 1;
         this.db.update(entry);
@@ -215,11 +222,32 @@ export class TrackerPanel extends fapi.HandlebarsApplicationMixin(
 
       tracker.addEventListener("contextmenu", (event) => {
         event.preventDefault();
-        const id = event.target.closest("[data-id]").dataset.id;
-        const entry = this.db.get(id);
+        const entry = getEntry(event.target);
         if (!entry) return;
         entry.value = entry.value <= 0 ? entry.max : entry.value - 1;
         this.db.update(entry);
+      });
+
+      tracker.addEventListener("keydown", (event) => {
+        const entry = getEntry(tracker);
+        if (!entry) return;
+        if (event.key === "ArrowRight" || event.key === "ArrowUp") {
+          event.preventDefault();
+          entry.value = entry.value >= entry.max ? 0 : entry.value + 1;
+          this.db.update(entry);
+        } else if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
+          event.preventDefault();
+          entry.value = entry.value <= 0 ? entry.max : entry.value - 1;
+          this.db.update(entry);
+        } else if (event.key === "Home") {
+          event.preventDefault();
+          entry.value = 0;
+          this.db.update(entry);
+        } else if (event.key === "End") {
+          event.preventDefault();
+          entry.value = entry.max;
+          this.db.update(entry);
+        }
       });
     }
 

@@ -1056,13 +1056,18 @@ function _upgradeNpcBuilderCompendiumField(tab) {
   const input = field.querySelector(`input[name="${name}"]`);
   if (!input) return;
 
-  const selectedPackIds = _parseCompendiumPackIds(input.value);
+  // Use getAttribute instead of .value to avoid browser sanitization that strips
+  // newlines from type="text" inputs (which corrupts multi-pack saved values).
+  const selectedPackIds = _parseCompendiumPackIds(
+    input.getAttribute("value") ?? input.value,
+  );
   const optionLabels = new Map();
 
   const hiddenInput = document.createElement("input");
   hiddenInput.type = "hidden";
   hiddenInput.name = input.name;
-  hiddenInput.value = selectedPackIds.join("\n");
+  // Use comma separator — safe for both hidden and text inputs.
+  hiddenInput.value = selectedPackIds.join(",");
 
   const wrapper = document.createElement("div");
   wrapper.className = "sta-utils-pack-selector";
@@ -1093,7 +1098,7 @@ function _upgradeNpcBuilderCompendiumField(tab) {
   badgeContainer.style.marginTop = "0.45rem";
 
   const syncInputValue = () => {
-    hiddenInput.value = selectedPackIds.join("\n");
+    hiddenInput.value = selectedPackIds.join(",");
   };
 
   const renderBadges = () => {
@@ -1161,6 +1166,27 @@ function _upgradeNpcBuilderCompendiumField(tab) {
   input.replaceWith(hiddenInput);
   hiddenInput.after(wrapper);
   renderBadges();
+
+  // Hook the formdata event fired by FormDataExtended at submit time to
+  // directly inject the current selection. This is the most reliable path and
+  // works even if the hidden input is somehow skipped by form collection.
+  const form = tab.closest("form");
+  if (form) {
+    const formdataHandler = (event) => {
+      const fd = event.formData;
+      if (fd && typeof fd.set === "function") {
+        fd.set(name, selectedPackIds.join(","));
+      }
+    };
+    // Guard against duplicate listeners if the hook fires more than once
+    // for the same form (edge case during hot-reload / dev).
+    const handlerKey = `_staUtilsNpcPackHandler`;
+    if (form[handlerKey]) {
+      form.removeEventListener("formdata", form[handlerKey]);
+    }
+    form.addEventListener("formdata", formdataHandler);
+    form[handlerKey] = formdataHandler;
+  }
 
   void _populateCompendiumPackSelect(select, optionLabels, renderBadges);
 }

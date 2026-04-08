@@ -8,7 +8,7 @@
   <div class="split-section">
     <div class="left-column">
       <div class="image-field">
-        <img class="profile-img" src="{{actor.img}}" data-action="editImage" data-edit="img" title="{{actor.name}}" />
+        <img class="profile-img" src="{{actor.img}}" alt="{{actor.name}}" data-action="editImage" data-edit="img" title="{{actor.name}}" />
       </div>
 
       <div class="systems-block">
@@ -20,8 +20,8 @@
         </div>
         {{#each systems as |system key|}}
           <div class="stat row">
-            <div class="text list-entry">{{localize system.label}}</div>
-            <input class="selector system" id="{{key}}.selector" type="checkbox" name="system.systems.{{key}}.selected" data-action="onSelectSystem" data-dtype="Boolean" {{checked system.selected}}>
+            <label class="text list-entry" for="{{key}}">{{localize system.label}}</label>
+            <input class="selector system" id="{{key}}.selector" type="checkbox" name="system.systems.{{key}}.selected" data-action="onSelectSystem" data-dtype="Boolean" {{checked system.selected}} aria-label="{{localize system.label}} selector">
             <input class="field numeric-entry" id="{{key}}" name="system.systems.{{key}}.value" type="number" value="{{system.value}}" />
             <input class="field numeric-entry breaches" id="{{key}}.breaches" name="system.systems.{{key}}.breaches" type="number" value="{{system.breaches}}" />
           </div>
@@ -33,8 +33,8 @@
         {{#each departmentorder2e as |key|}}
           {{#with (lookup ../departments key)}}
             <div class="stat row">
-              <div class="text list-entry">{{localize label}}</div>
-              <input class="selector department" id="{{key}}.selector" type="checkbox" name="system.departments.{{key}}.selected" data-action="onSelectDepartment" data-dtype="Boolean" {{checked selected}}>
+              <label class="text list-entry" for="{{key}}">{{localize label}}</label>
+              <input class="selector department" id="{{key}}.selector" type="checkbox" name="system.departments.{{key}}.selected" data-action="onSelectDepartment" data-dtype="Boolean" {{checked selected}} aria-label="{{localize label}} selector">
               <input class="field numeric-entry" id="{{key}}" name="system.departments.{{key}}.value" type="text" value="{{value}}" placeholder="Name" />
             </div>
           {{/with}}
@@ -54,8 +54,8 @@
     <div class="right-column">
       <div class="name-row">
         <div class="name-field">
-          <div class="title" style="display:none">{{localize 'sta.actor.starship.name'}}</div>
-          <input name="name" class="text-entry" type="text" value="{{actor.name}}" placeholder="{{localize 'sta.actor.starship.name'}}" />
+          <label class="title sr-only" for="ship-name">{{localize 'sta.actor.starship.name'}}</label>
+          <input name="name" id="ship-name" class="text-entry" type="text" value="{{actor.name}}" placeholder="{{localize 'sta.actor.starship.name'}}" />
         </div>
 
         <button type="button" class="sta-lcars-theme-btn" title="Change LCARS color scheme">
@@ -82,22 +82,22 @@
 
       <div class="big-row">
         <div class="big-row-column">
-          <div class="tracktitle">{{localize 'sta.actor.starship.reservepower'}}:</div>
-          <input class="checkbox" type="checkbox" name="system.reservepower" data-dtype="Boolean" {{checked actor.system.reservepower}}>
+          <label class="tracktitle" for="reservepower">{{localize 'sta.actor.starship.reservepower'}}:</label>
+          <input class="checkbox" type="checkbox" id="reservepower" name="system.reservepower" data-dtype="Boolean" {{checked actor.system.reservepower}}>
         </div>
 
         <div class="big-row-column">
-          <div class="tracktitle">{{localize 'sta.actor.starship.shaken'}}:</div>
-          <input class="checkbox" type="checkbox" name="system.shaken" data-dtype="Boolean" {{checked actor.system.shaken}}>
+          <label class="tracktitle" for="shaken">{{localize 'sta.actor.starship.shaken'}}:</label>
+          <input class="checkbox" type="checkbox" id="shaken" name="system.shaken" data-dtype="Boolean" {{checked actor.system.shaken}}>
         </div>
 
         <div class="big-row-column">
-          <div class="tracktitle">{{localize 'sta.actor.starship.scale'}}:</div>
+          <label class="tracktitle" for="scale">{{localize 'sta.actor.starship.scale'}}:</label>
           <input class="field numeric-entry" name="system.scale" id="scale" type="number" value="{{actor.system.scale}}" />
         </div>
 
         <div class="big-row-column">
-          <div class="tracktitle">{{localize 'sta.actor.starship.resistance'}}:</div>
+          <label class="tracktitle" for="resistance">{{localize 'sta.actor.starship.resistance'}}:</label>
           <input class="field numeric-entry" name="system.resistance" id="resistance" type="number" value="{{actor.system.resistance}}" />
         </div>
       </div>

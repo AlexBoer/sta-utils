@@ -10,7 +10,11 @@
 
 import { MODULE_ID } from "../core/constants.mjs";
 import { t } from "../core/i18n.mjs";
-import { getAlertStatus, setAlertStatus, isAlertStatusPlayerControlEnabled } from "../core/settings.mjs";
+import {
+  getAlertStatus,
+  setAlertStatus,
+  isAlertStatusPlayerControlEnabled,
+} from "../core/settings.mjs";
 import { getModuleSocket } from "../core/socket.mjs";
 
 /**
@@ -24,7 +28,9 @@ async function _requestSetAlertStatus(status) {
   } else {
     const socket = getModuleSocket();
     if (!socket) {
-      console.warn(`${MODULE_ID} | Socket not available; cannot set alert status`);
+      console.warn(
+        `${MODULE_ID} | Socket not available; cannot set alert status`,
+      );
       return;
     }
     await socket.executeAsGM("setAlertStatus", { status });
@@ -57,7 +63,7 @@ const CYCLE = ["normal", "yellow", "red"];
 const STATUS_LABEL_KEYS = {
   normal: "sta-utils.alertStatus.normal",
   yellow: "sta-utils.alertStatus.yellow",
-  red:    "sta-utils.alertStatus.red",
+  red: "sta-utils.alertStatus.red",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -76,10 +82,12 @@ function _nextStatus(current) {
  * @param {string} status
  */
 function _applyStatus(bar, valueEl, status) {
-  CYCLE.forEach(s => bar.classList.remove(`sta-utils-alert-status--${s}`));
+  CYCLE.forEach((s) => bar.classList.remove(`sta-utils-alert-status--${s}`));
   bar.classList.add(`sta-utils-alert-status--${status}`);
   bar.dataset.status = status;
-  valueEl.textContent = t(STATUS_LABEL_KEYS[status] ?? STATUS_LABEL_KEYS.normal);
+  valueEl.textContent = t(
+    STATUS_LABEL_KEYS[status] ?? STATUS_LABEL_KEYS.normal,
+  );
 }
 
 /**
@@ -95,15 +103,15 @@ function _buildBar() {
     bar.title = t("sta-utils.alertStatus.clickToCycle");
   }
 
-  const label = document.createElement("span");
-  label.classList.add("sta-utils-alert-label");
-  label.textContent = t("sta-utils.alertStatus.label");
-
   const value = document.createElement("span");
   value.id = VALUE_ID;
   value.classList.add("sta-utils-alert-value");
 
-  bar.append(label, value);
+  const label = document.createElement("span");
+  label.classList.add("sta-utils-alert-label");
+  label.textContent = t("sta-utils.alertStatus.label");
+
+  bar.append(value, label);
 
   // Force pointer-events via inline style — Foundry applies pointer-events:none
   // to some sidebar children via CSS that outranks our stylesheet rule.
@@ -112,11 +120,24 @@ function _buildBar() {
   _applyStatus(bar, value, getAlertStatus());
 
   if (canControl) {
-    bar.addEventListener("mouseenter", () => bar.classList.add("sta-utils-alert-bar--hover"));
-    bar.addEventListener("mouseleave", () => bar.classList.remove("sta-utils-alert-bar--hover"));
-    bar.addEventListener("click", async () => {
+    bar.setAttribute("role", "button");
+    bar.setAttribute("tabindex", "0");
+    bar.addEventListener("mouseenter", () =>
+      bar.classList.add("sta-utils-alert-bar--hover"),
+    );
+    bar.addEventListener("mouseleave", () =>
+      bar.classList.remove("sta-utils-alert-bar--hover"),
+    );
+    const cycleStatus = async () => {
       const next = _nextStatus(getAlertStatus());
       await _requestSetAlertStatus(next);
+    };
+    bar.addEventListener("click", cycleStatus);
+    bar.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        cycleStatus();
+      }
     });
   }
 

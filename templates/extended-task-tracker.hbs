@@ -31,13 +31,13 @@
                                             <a data-action="saveToActor" title="{{localize "sta-utils.extendedTaskTracker.saveToActor"}}"><i class="fa-solid fa-fw fa-floppy-disk"></i></a>
                                         {{/unless}}
                                     {{/if}}
-                                    <a data-action="deleteEntry"><i class="fa-solid fa-fw fa-trash"></i></a>
-                                    <a data-action="editEntry"><i class="fa-solid fa-fw fa-edit"></i></a>
+                                    <a data-action="deleteEntry" aria-label="{{localize 'sta-utils.aria.deleteEntry'}}"><i class="fa-solid fa-fw fa-trash" aria-hidden="true"></i></a>
+                                    <a data-action="editEntry" aria-label="{{localize 'sta-utils.aria.editEntry'}}"><i class="fa-solid fa-fw fa-edit" aria-hidden="true"></i></a>
                                 </div>
                             {{/if}}
                         </div>
                     </div>
-                    <div class="ext-tracker-bar graphic">
+                    <div class="ext-tracker-bar graphic" aria-label="{{tracker.name}}" aria-valuemin="0" aria-valuemax="{{tracker.max}}" aria-valuenow="{{tracker.value}}">
                         <div class="ext-tracker-value">{{tracker.value}}/{{tracker.max}}</div>
                         <div class="ext-tracker-slashes">
                             {{#each tracker.rows as |row|}}

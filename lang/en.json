@@ -1469,6 +1469,11 @@
         "convertActor": "Convert Actor",
         "convertFolder": "Convert Folder"
       }
+    },
+    "aria": {
+      "deleteEntry": "Delete entry",
+      "editEntry": "Edit entry",
+      "toggleValueUsed": "Toggle value used"
     }
   }
 }

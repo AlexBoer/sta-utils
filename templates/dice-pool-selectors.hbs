@@ -1,6 +1,6 @@
 <div id="dice-pool-form" class="dialogue">
   <div class="row">
-    <div class="tracktitle">{{localize 'sta.actor.character.attribute.title'}}</div>
+    <label class="tracktitle" for="attribute">{{localize 'sta.actor.character.attribute.title'}}</label>
     <select name="attribute" id="attribute" class="form-select">
       {{#each attributes}}
         <option value="{{this.key}}" {{#if this.selected}}selected{{/if}}>
@@ -10,7 +10,7 @@
     </select>
   </div>
   <div class="row">
-    <div class="tracktitle">{{localize 'sta.actor.character.discipline.title'}}</div>
+    <label class="tracktitle" for="discipline">{{localize 'sta.actor.character.discipline.title'}}</label>
     <select name="discipline" id="discipline" class="form-select">
       {{#each disciplines}}
         <option value="{{this.key}}" {{#if this.selected}}selected{{/if}}>
@@ -20,24 +20,24 @@
     </select>
   </div>
   <div class="row">
-    <div class="tracktitle">{{localize 'sta.apps.focus'}}</div>
+    <label class="tracktitle" for="usingFocus">{{localize 'sta.apps.focus'}}</label>
     <input type="checkbox" name="usingFocus" id="usingFocus" {{#if focusChecked}}checked{{/if}}>
   </div>
   <div class="row">
-    <div class="tracktitle">{{localize 'sta.apps.dedicatedfocus'}}</div>
+    <label class="tracktitle" for="usingDedicatedFocus">{{localize 'sta.apps.dedicatedfocus'}}</label>
     <input type="checkbox" name="usingDedicatedFocus" id="usingDedicatedFocus" {{#if dedicatedFocusChecked}}checked{{/if}}>
   </div>
   <div class="row">
-    <div class="tracktitle">{{localize 'sta.apps.determination'}}</div>
+    <label class="tracktitle" for="usingDetermination">{{localize 'sta.apps.determination'}}</label>
     <input type="checkbox" name="usingDetermination" id="usingDetermination" {{#if determinationChecked}}checked{{/if}}>
   </div>
   <div class="row">
-    <div class="tracktitle">{{localize 'sta.apps.complicationrange'}}</div>
+    <label class="tracktitle" for="complicationRange">{{localize 'sta.apps.complicationrange'}}</label>
     <input class="numeric-entry" type="number" name="complicationRange" value="{{calculatedComplicationRange}}" id="complicationRange">
   </div>
   <div class="row">
     <div class="flex-1">
-      <div class="tracktitle">{{localize 'sta.apps.pool'}}</div>
+      <label class="tracktitle" for="dicePoolSlider">{{localize 'sta.apps.pool'}}</label>
     </div>
     <div class="flex-column flex-1">
       <div class="row">
@@ -55,12 +55,12 @@
     </div>
   </div>
   <div class="row">
-    <div class="tracktitle">{{localize 'sta.roll.shipassisting'}}</div>
+    <label class="tracktitle" for="starshipAssisting">{{localize 'sta.roll.shipassisting'}}</label>
     <input type="checkbox" name="starshipAssisting" id="starshipAssisting" {{#if shipAssistDefault}}checked{{/if}}>
   </div>
   <div class="starshipAssisting {{#unless shipAssistDefault}}hidden{{/unless}}">
     <div class="row">
-      <div class="tracktitle">{{localize 'TYPES.Actor.starship'}}</div>
+      <label class="tracktitle" for="starship">{{localize 'TYPES.Actor.starship'}}</label>
       <select id="starship" name="starship" class="form-select">
         {{#each starships}}
           <option value="{{this.id}}" {{#if (eq this.id ../selectedStarshipId)}}selected{{/if}}>
@@ -70,7 +70,7 @@
       </select>
     </div>
     <div class="row">
-      <div class="tracktitle">{{localize 'sta.actor.starship.system.title'}}</div>
+      <label class="tracktitle" for="system">{{localize 'sta.actor.starship.system.title'}}</label>
       <select id="system" name="system" class="form-select">
         {{#each systems}}
           <option value="{{this.key}}" {{#if this.selected}}selected{{/if}}>{{localize (concat 'sta.actor.starship.system.' this.key)}}</option>
@@ -78,7 +78,7 @@
       </select>
     </div>
     <div class="row">
-      <div class="tracktitle">{{localize 'sta.actor.starship.department.title'}}</div>
+      <label class="tracktitle" for="department">{{localize 'sta.actor.starship.department.title'}}</label>
       <select id="department" name="department" class="form-select">
         {{#each departments}}
           <option value="{{this.key}}" {{#if this.selected}}selected{{/if}}>{{localize (concat 'sta.actor.starship.department.' this.key)}}</option>
@@ -86,7 +86,7 @@
       </select>
     </div>
     <div class="row">
-      <div class="tracktitle">{{localize 'sta-utils.dicePool.useReservePower'}}</div>
+      <label class="tracktitle" for="usingReservePower">{{localize 'sta-utils.dicePool.useReservePower'}}</label>
       <input type="checkbox" name="usingReservePower" id="usingReservePower" {{#if reservePowerChecked}}checked{{/if}}>
     </div>
   </div>

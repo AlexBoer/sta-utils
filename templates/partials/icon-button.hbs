@@ -1,0 +1,17 @@
+{{!--
+  Accessible icon-only button partial.
+
+  Parameters:
+    icon       — FontAwesome class string, e.g. "fa-solid fa-pencil"
+    ariaLabel  — Accessible label (localized string or key for {{localize}})
+    action     — data-action value (optional)
+    title      — Tooltip text (optional, supplements aria-label)
+    classes    — Additional CSS classes (optional)
+    dataset    — Additional data-* attributes as "key=value key2=value2" (optional)
+--}}
+<button type="button"
+  class="{{#if classes}}{{classes}}{{/if}}"
+  aria-label="{{ariaLabel}}"
+  {{#if action}}data-action="{{action}}"{{/if}}
+  {{#if title}}title="{{title}}"{{/if}}
+><i class="{{icon}}" aria-hidden="true"></i></button>

@@ -60,34 +60,41 @@ function _buildBar() {
   bar.classList.add("sta-utils-stardate-bar");
   bar.title = t("sta-utils.stardateDisplay.copyTitle");
 
-  const label = document.createElement("span");
-  label.classList.add("sta-utils-stardate-label");
-  label.textContent = t("sta-utils.stardateDisplay.label");
-
   const value = document.createElement("span");
   value.id = VALUE_ID;
   value.classList.add("sta-utils-stardate-value");
   value.textContent = _computeCurrentStardate();
 
-  bar.append(label, value);
+  const label = document.createElement("span");
+  label.classList.add("sta-utils-stardate-label");
+  const normalLabel = t("sta-utils.stardateDisplay.label");
+  label.textContent = normalLabel;
+
+  bar.append(value, label);
 
   // Force pointer-events via inline style — Foundry applies pointer-events:none
   // to some sidebar children via CSS that outranks our stylesheet rule.
   bar.style.pointerEvents = "auto";
 
-  bar.addEventListener("mouseenter", () => bar.classList.add("sta-utils-stardate-bar--hover"));
-  bar.addEventListener("mouseleave", () => bar.classList.remove("sta-utils-stardate-bar--hover"));
+  bar.addEventListener("mouseenter", () =>
+    bar.classList.add("sta-utils-stardate-bar--hover"),
+  );
+  bar.addEventListener("mouseleave", () =>
+    bar.classList.remove("sta-utils-stardate-bar--hover"),
+  );
 
+  let _copiedTimer = null;
   bar.addEventListener("click", async () => {
     const stardate = value.textContent?.trim() ?? "";
 
-    // Show the flash immediately.
-    const originalLabel = label.textContent;
+    // Show the flash immediately, resetting any in-progress timer.
+    if (_copiedTimer) clearTimeout(_copiedTimer);
     bar.classList.add("sta-utils-stardate-bar--copied");
     label.textContent = t("sta-utils.stardateDisplay.copied");
-    setTimeout(() => {
+    _copiedTimer = setTimeout(() => {
       bar.classList.remove("sta-utils-stardate-bar--copied");
-      label.textContent = originalLabel;
+      label.textContent = normalLabel;
+      _copiedTimer = null;
     }, COPIED_TIMEOUT_MS);
 
     // Modern clipboard API with execCommand fallback.
@@ -96,19 +103,24 @@ function _buildBar() {
       try {
         await navigator.clipboard.writeText(stardate);
         copied = true;
-      } catch { /* fall through */ }
+      } catch {
+        /* fall through */
+      }
     }
     if (!copied) {
       try {
         const ta = document.createElement("textarea");
         ta.value = stardate;
-        ta.style.cssText = "position:fixed;top:0;left:0;opacity:0;pointer-events:none";
+        ta.style.cssText =
+          "position:fixed;top:0;left:0;opacity:0;pointer-events:none";
         document.body.appendChild(ta);
         ta.focus();
         ta.select();
         document.execCommand("copy");
         ta.remove();
-      } catch { /* both methods failed */ }
+      } catch {
+        /* both methods failed */
+      }
     }
   });
 

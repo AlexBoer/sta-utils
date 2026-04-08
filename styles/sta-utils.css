@@ -5,6 +5,23 @@
 /* -------------------------------------------- */
 
 /* =============================================================================
+ * ACCESSIBILITY UTILITIES
+ * ============================================================================= */
+
+/* Screen-reader-only content — visually hidden but accessible to assistive tech */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* =============================================================================
  * SETTINGS PANEL — group headers
  * ============================================================================= */
 
@@ -139,7 +156,7 @@
   background: transparent;
   transition: background 0.15s ease, color 0.15s ease;
 
-  &:hover {
+  &:hover, &:focus-visible {
     background: rgba(255, 255, 255, 0.08);
     color: #fff;
   }
@@ -601,8 +618,8 @@ li.row.entry.sta-utils-trait-hidden {
   background: rgba(0, 0, 0, 0.3);
   color: inherit;
 
-  &:focus {
-    outline: none;
+  &:focus-visible {
+    outline: 2px solid transparent;
     border-color: var(--color-warm-1, #ee9b3a);
   }
 }
@@ -658,8 +675,8 @@ li.row.entry.sta-utils-trait-hidden {
     color: #e0e0e0;
   }
 
-  &:focus {
-    outline: none;
+  &:focus-visible {
+    outline: 2px solid transparent;
     border-color: var(--color-warm-1, #ee9b3a);
   }
 }
@@ -845,7 +862,7 @@ input.selector.attribute.sta-fatigued-attribute {
 
   .sta-copy-btn {
     color: rgba(136, 170, 255, 0.35);
-    &:hover {
+    &:hover, &:focus-visible {
       color: var(--lcars-orange);
       background: rgba(136, 170, 255, 0.1);
     }
@@ -857,7 +874,7 @@ input.selector.attribute.sta-fatigued-attribute {
       border-color: rgba(136, 170, 255, 0.4);
       background: rgba(136, 170, 255, 0.08);
       color: var(--lcars-lavender);
-      &:hover:not(:disabled) {
+      &:hover:not(:disabled), &:focus-visible:not(:disabled) {
         background: rgba(136, 170, 255, 0.2);
         border-color: rgba(136, 170, 255, 0.7);
       }
@@ -942,9 +959,9 @@ input.selector.attribute.sta-fatigued-attribute {
     color: inherit;
     font-size: 1rem;
 
-    &:focus {
+    &:focus-visible {
       border-color: rgba(100, 200, 255, 0.7);
-      outline: none;
+      outline: 2px solid transparent;
       box-shadow: 0 0 4px rgba(100, 200, 255, 0.3);
     }
   }
@@ -980,7 +997,8 @@ input.selector.attribute.sta-fatigued-attribute {
   user-select: none;
 }
 
-.sta-copy-btn:hover {
+.sta-copy-btn:hover,
+.sta-copy-btn:focus-visible {
   color: rgba(100, 220, 255, 0.9);
   background: rgba(100, 200, 255, 0.1);
 }
@@ -1206,7 +1224,7 @@ input.selector.attribute.sta-fatigued-attribute {
   .sta-counter-btn {
     border-color: rgba(155, 143, 194, 0.4);
     background: rgba(155, 143, 194, 0.1);
-    &:hover {
+    &:hover, &:focus-visible {
       background: rgba(155, 143, 194, 0.25);
       border-color: var(--lcars-lilac);
     }
@@ -1216,7 +1234,7 @@ input.selector.attribute.sta-fatigued-attribute {
     border-color: rgba(155, 143, 194, 0.4);
     background: rgba(155, 143, 194, 0.1);
     color: var(--lcars-lavender);
-    &:hover {
+    &:hover, &:focus-visible {
       background: rgba(155, 143, 194, 0.25);
       border-color: var(--lcars-lilac);
     }
@@ -1252,7 +1270,7 @@ input.selector.attribute.sta-fatigued-attribute {
 
   .sta-copy-btn {
     color: rgba(155, 143, 194, 0.35);
-    &:hover {
+    &:hover, &:focus-visible {
       color: var(--lcars-lavender);
       background: rgba(155, 143, 194, 0.1);
     }
@@ -1262,7 +1280,7 @@ input.selector.attribute.sta-fatigued-attribute {
     background: rgba(155, 143, 194, 0.07);
     border-color: rgba(155, 143, 194, 0.3);
     color: var(--lcars-lavender);
-    &:hover {
+    &:hover, &:focus-visible {
       background: rgba(155, 143, 194, 0.18);
       border-color: rgba(155, 143, 194, 0.55);
     }
@@ -1407,9 +1425,9 @@ input.selector.attribute.sta-fatigued-attribute {
     color: inherit;
     font-size: 1rem;
 
-    &:focus {
+    &:focus-visible {
       border-color: rgba(100, 200, 255, 0.7);
-      outline: none;
+      outline: 2px solid transparent;
       box-shadow: 0 0 4px rgba(100, 200, 255, 0.3);
     }
   }
@@ -1491,7 +1509,7 @@ input.selector.attribute.sta-fatigued-attribute {
   padding: 0;
   transition: background 0.12s, border-color 0.12s;
 
-  &:hover {
+  &:hover, &:focus-visible {
     background: rgba(100, 150, 200, 0.35);
     border-color: rgba(100, 200, 255, 0.6);
     color: rgba(255, 255, 255, 1);
@@ -1726,7 +1744,7 @@ input.selector.attribute.sta-fatigued-attribute {
   cursor: pointer;
   text-align: center;
 
-  &:hover {
+  &:hover, &:focus-visible {
     background: rgba(100, 180, 255, 0.18);
     border-color: rgba(100, 180, 255, 0.55);
   }
@@ -1824,14 +1842,105 @@ input.selector.attribute.sta-fatigued-attribute {
 }
 
 /* =============================================================================
+ * CHAT WIDGET CONTAINER (shared row for stardate + alert status)
+ * ============================================================================= */
+
+#sta-utils-chat-widgets {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0.5rem;
+  padding: 0 5px;
+  width: 95%;
+  overflow: hidden;
+  pointer-events: auto !important;
+}
+
+/* =============================================================================
+ * ALERT STATUS BAR
+ * ============================================================================= */
+
+#sta-utils-alert-status-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem 0.5rem;
+  color: #e8e8f8;
+  white-space: nowrap;
+  overflow: hidden;
+  flex: 1 1 0;
+  min-width: 0;
+  transition: background-color 0.2s ease;
+  pointer-events: auto !important;
+}
+
+#sta-utils-alert-status-bar[data-gm="true"] {
+  cursor: pointer;
+}
+
+#sta-utils-alert-status-bar[data-gm="false"] {
+  cursor: default;
+}
+
+/* Status-dependent background colors */
+#sta-utils-alert-status-bar[data-status="normal"] {
+  background-color: #3a5080;
+}
+
+#sta-utils-alert-status-bar[data-status="yellow"] {
+  background-color: #9a6e00;
+}
+
+#sta-utils-alert-status-bar[data-status="red"] {
+  background-color: #9a1f1f;
+  animation: sta-utils-red-alert-pulse 1.4s ease-in-out infinite;
+}
+
+/* Hover highlight — GM only */
+#sta-utils-alert-status-bar[data-gm="true"].sta-utils-alert-bar--hover {
+  filter: brightness(1.2);
+}
+
+@keyframes sta-utils-red-alert-pulse {
+  0%,
+  100% {
+    background-color: #9a1f1f;
+  }
+  50% {
+    background-color: #cc2929;
+  }
+}
+
+.sta-utils-alert-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(220, 225, 255, 0.6);
+  pointer-events: none;
+  line-height: 1;
+}
+
+.sta-utils-alert-value {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+  pointer-events: none;
+  line-height: 1.2;
+}
+
+/* =============================================================================
  * STARDATE DISPLAY BAR
  * ============================================================================= */
 
 #sta-utils-stardate-bar {
   display: flex;
-  align-items: stretch;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  padding: 0;
+  padding: 0.3rem 0.5rem;
   background-color: #6677bb;
   color: #e8e8f8;
   font-family: "Antonio", "Roboto Condensed", sans-serif;
@@ -1840,8 +1949,9 @@ input.selector.attribute.sta-fatigued-attribute {
   white-space: nowrap;
   user-select: none;
   overflow: hidden;
+  flex: 1 1 0;
+  min-width: 0;
   transition: background-color 0.15s ease;
-  margin-right: 0.5rem;
 }
 
 #sta-utils-stardate-bar:hover {
@@ -1854,26 +1964,20 @@ input.selector.attribute.sta-fatigued-attribute {
 }
 
 .sta-utils-stardate-label {
-  display: flex;
-  align-items: center;
-  padding: 0.3rem 0.55rem 0.3rem 0.7rem;
-  background-color: rgba(0, 0, 0, 0.2);
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(220, 225, 255, 0.75);
-  border-right: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(220, 225, 255, 0.6);
+  line-height: 1;
 }
 
 .sta-utils-stardate-value {
-  display: flex;
-  align-items: center;
-  padding: 0.3rem 0.7rem 0.3rem 0.55rem;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   color: #ffffff;
+  line-height: 1.2;
 }
 
 /* =============================================================================
@@ -1938,7 +2042,7 @@ input.selector.attribute.sta-fatigued-attribute {
 
   .sta-copy-btn {
     color: rgba(197, 163, 217, 0.35);
-    &:hover {
+    &:hover, &:focus-visible {
       color: var(--lcars-orange);
       background: rgba(197, 163, 217, 0.1);
     }
@@ -1950,7 +2054,7 @@ input.selector.attribute.sta-fatigued-attribute {
       border-color: rgba(155, 143, 194, 0.4);
       background: rgba(197, 163, 217, 0.08);
       color: var(--lcars-lilac);
-      &:hover:not(:disabled) {
+      &:hover:not(:disabled), &:focus-visible:not(:disabled) {
         background: rgba(197, 163, 217, 0.2);
         border-color: rgba(197, 163, 217, 0.7);
       }
@@ -1959,7 +2063,7 @@ input.selector.attribute.sta-fatigued-attribute {
       border-color: rgba(240, 184, 114, 0.4);
       background: rgba(240, 184, 114, 0.08);
       color: var(--lcars-peach);
-      &:hover:not(:disabled) {
+      &:hover:not(:disabled), &:focus-visible:not(:disabled) {
         background: rgba(240, 184, 114, 0.2);
         border-color: rgba(240, 184, 114, 0.7);
       }
@@ -2050,9 +2154,9 @@ input.selector.attribute.sta-fatigued-attribute {
     color: inherit;
     font-size: 1rem;
 
-    &:focus {
+    &:focus-visible {
       border-color: rgba(100, 200, 255, 0.7);
-      outline: none;
+      outline: 2px solid transparent;
       box-shadow: 0 0 4px rgba(100, 200, 255, 0.3);
     }
   }
@@ -2077,7 +2181,7 @@ input.selector.attribute.sta-fatigued-attribute {
   white-space: nowrap;
   line-height: 1.2;
 
-  &:hover {
+  &:hover, &:focus-visible {
     background: rgba(100, 150, 200, 0.25);
     color: rgba(255, 255, 255, 0.95);
     border-color: rgba(100, 150, 200, 0.7);
@@ -2091,7 +2195,7 @@ input.selector.attribute.sta-fatigued-attribute {
   background: rgba(197, 163, 217, 0.08);
   color: var(--lcars-lilac);
 
-  &:hover {
+  &:hover, &:focus-visible {
     background: rgba(197, 163, 217, 0.2);
     border-color: rgba(197, 163, 217, 0.7);
     color: var(--lcars-orange);
@@ -3019,7 +3123,7 @@ input.selector.attribute.sta-fatigued-attribute {
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
 
-  &:hover:not(:disabled) {
+  &:hover:not(:disabled), &:focus-visible:not(:disabled) {
     background: rgba(197, 163, 217, 0.2);
     border-color: var(--lcars-orange);
     color: var(--lcars-orange);
@@ -3048,7 +3152,7 @@ input.selector.attribute.sta-fatigued-attribute {
   flex-shrink: 0;
   box-shadow: none;
 
-  &:hover { border-color: var(--lcars-orange); }
+  &:hover, &:focus-visible { border-color: var(--lcars-orange); }
 
   &:checked {
     background: var(--lcars-orange);
@@ -3502,7 +3606,7 @@ input.selector.attribute.sta-fatigued-attribute {
   border: none;
   border-bottom: 1px solid rgba(0, 0, 0, 0.2);
   padding: 0.3rem 0.4rem;
-  outline: none;
+  outline: 2px solid transparent;
   width: 100%;
   box-sizing: border-box;
 
@@ -3953,7 +4057,7 @@ input.selector.attribute.sta-fatigued-attribute {
   overflow: hidden;
   text-overflow: ellipsis;
 
-  &:hover {
+  &:hover, &:focus-visible {
     background: rgba(0, 0, 0, 0.15);
     border-color: var(--ac-chrome);
     color: var(--ac-chrome);
@@ -3966,7 +4070,7 @@ input.selector.attribute.sta-fatigued-attribute {
     font-weight: 700;
     box-shadow: 0 0 8px color-mix(in srgb, var(--ac-chrome) 40%, transparent);
 
-    &:hover {
+    &:hover, &:focus-visible {
       background: linear-gradient(135deg, color-mix(in srgb, var(--ac-chrome) 40%, transparent) 0%, color-mix(in srgb, var(--ac-social) 30%, transparent) 100%);
       box-shadow: 0 0 12px color-mix(in srgb, var(--ac-chrome) 60%, transparent);
     }
@@ -5445,14 +5549,14 @@ input.selector.attribute.sta-fatigued-attribute {
   width: 100%;
   box-sizing: border-box;
 
-  &:focus {
-    outline: none;
+  &:focus-visible {
+    outline: 2px solid transparent;
     border-color: #f1a43c;
     box-shadow: 0 0 4px rgba(241, 164, 60, 0.35);
   }
 
   &::placeholder {
-    color: rgba(240, 184, 114, 0.3);
+    color: rgba(240, 184, 114, 0.5);
   }
 
   &[multiple] option,
@@ -6188,8 +6292,8 @@ input.selector.attribute.sta-fatigued-attribute {
     color: #f0b872;
   }
 
-  &:focus {
-    outline: none;
+  &:focus-visible {
+    outline: 2px solid transparent;
     border-color: var(--lcars-orange, #f1a43c);
     box-shadow: 0 0 4px rgba(241, 164, 60, 0.3);
   }
@@ -6207,8 +6311,8 @@ input.selector.attribute.sta-fatigued-attribute {
   width: 64px;
   text-align: center;
 
-  &:focus {
-    outline: none;
+  &:focus-visible {
+    outline: 2px solid transparent;
     border-color: var(--lcars-orange, #f1a43c);
     box-shadow: 0 0 4px rgba(241, 164, 60, 0.3);
   }
@@ -6287,12 +6391,12 @@ input.selector.attribute.sta-fatigued-attribute {
   box-sizing: border-box;
 
   &::placeholder {
-    color: rgba(240, 184, 114, 0.3);
+    color: rgba(240, 184, 114, 0.5);
     font-style: italic;
   }
 
-  &:focus {
-    outline: none;
+  &:focus-visible {
+    outline: 2px solid transparent;
     border-color: var(--lcars-orange, #f1a43c);
     box-shadow: 0 0 4px rgba(241, 164, 60, 0.2);
   }
@@ -6448,5 +6552,85 @@ input.selector.attribute.sta-fatigued-attribute {
   opacity: 0.25;
   margin-right: 5px;
   font-size: 0.85em;
+}
+
+/* =============================================================================
+ * REDUCED MOTION — disable decorative animations for vestibular safety
+ * ============================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  .sta-ac-active-header::before {
+    animation: none;
+  }
+  .sta-utils-reserve-power-routed {
+    animation: none;
+  }
+  .image-field.sta-utils-active-turn .profile-img {
+    animation: none;
+  }
+  .sta-utils-turn-indicator {
+    animation: none;
+  }
+  .name-overflows:hover .ext-name-row .value {
+    animation: none;
+  }
+}
+
+/* =============================================================================
+ * HIGH CONTRAST — boost borders and text for users who prefer more contrast
+ * ============================================================================= */
+@media (prefers-contrast: more) {
+  .sta-counter-btn,
+  .sta-game-time-btn,
+  .sta-reroute-btn,
+  .sta-utils-weapon-calc-btn {
+    border-width: 2px;
+  }
+
+  .sta-copy-btn {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .sta-utils-ms-minus,
+  .sta-utils-ms-plus {
+    border-width: 3px;
+  }
+
+  .sta-utils-ms-checkbox,
+  .sta-utils-ms-dual-checkbox {
+    border-width: 3px;
+  }
+}
+
+/* =============================================================================
+ * FORCED COLORS — ensure semantic outlines and borders are visible in
+ * Windows High Contrast or other forced-color modes
+ * ============================================================================= */
+@media (forced-colors: active) {
+  .sta-counter-btn,
+  .sta-game-time-btn,
+  .sta-reroute-btn,
+  .sta-utils-weapon-calc-btn,
+  .sta-utils-babble-refresh {
+    border: 1px solid ButtonText;
+  }
+
+  .sta-utils-ms-minus,
+  .sta-utils-ms-plus {
+    border: 2px solid ButtonText;
+  }
+
+  .sta-utils-ms-checkbox,
+  .sta-utils-ms-dual-checkbox {
+    border: 2px solid ButtonText;
+  }
+
+  .sta-utils-turn-indicator {
+    border: 2px solid Highlight;
+    color: HighlightText;
+  }
+
+  .sta-utils-reserve-power-routed {
+    outline: 2px solid Highlight;
+  }
 }
 

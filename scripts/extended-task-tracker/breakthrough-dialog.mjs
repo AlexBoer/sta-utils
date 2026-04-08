@@ -146,7 +146,9 @@ export class BreakthroughDialog extends fapi.HandlebarsApplicationMixin(
       tab.addEventListener("click", (event) => {
         const target = event.currentTarget.dataset.tab;
         for (const t of html.querySelectorAll(".sta-bt-tab")) {
-          t.classList.toggle("active", t.dataset.tab === target);
+          const isActive = t.dataset.tab === target;
+          t.classList.toggle("active", isActive);
+          t.setAttribute("aria-selected", isActive ? "true" : "false");
         }
         for (const panel of html.querySelectorAll(".sta-bt-panel")) {
           panel.classList.toggle("active", panel.dataset.panel === target);

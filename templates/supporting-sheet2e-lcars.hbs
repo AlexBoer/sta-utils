@@ -8,14 +8,15 @@
   <div class="split-section">
     <div class="top-left-column">
       <div class="image-field">
-        <img class="profile-img" src="{{actor.img}}" data-action="editImage" data-edit="img" title="{{actor.name}}" />
+        <img class="profile-img" src="{{actor.img}}" alt="{{actor.name}}" data-action="editImage" data-edit="img" title="{{actor.name}}" />
       </div>
     </div>
 
     <div class="top-right-column">
       <div class="name-row">
         <div class="name-field">
-          <input name="name" class="text-entry" type="text" value="{{actor.name}}" placeholder="{{localize 'sta.actor.character.name'}}" />
+          <label class="sr-only" for="actor-name">{{localize 'sta.actor.character.name'}}</label>
+          <input name="name" id="actor-name" class="text-entry" type="text" value="{{actor.name}}" placeholder="{{localize 'sta.actor.character.name'}}" />
         </div>
 
         <button type="button" class="sta-lcars-theme-btn" title="Change LCARS color scheme">
@@ -57,8 +58,8 @@
         <a class="control create" title="Cheat Sheet" data-action="onCheatSheet"><i class="fa-solid fa-circle-info"></i></a></div>
         {{#each attributes as |attribute key|}}
           <div class="row-right">
-            <div class="list-entry">{{localize attribute.label}}</div>
-            <input class="selector attribute" id="{{key}}.selector" type="checkbox" name="system.attributes.{{key}}.selected" data-action="onSelectAttribute" data-dtype="Boolean" {{checked attribute.selected}}>
+            <label class="list-entry" for="{{key}}">{{localize attribute.label}}</label>
+            <input class="selector attribute" id="{{key}}.selector" type="checkbox" name="system.attributes.{{key}}.selected" data-action="onSelectAttribute" data-dtype="Boolean" {{checked attribute.selected}} aria-label="{{localize attribute.label}}">
             <input class="numeric-entry" id="{{key}}" name="system.attributes.{{key}}.value" type="text" value="{{attribute.value}}" />
           </div>
         {{/each}}
@@ -69,8 +70,8 @@
         {{#each disciplineorder2e as |key|}}
           {{#with (lookup ../disciplines key)}}
             <div class="row-right">
-              <div class="list-entry">{{localize label}}</div>
-              <input class="selector discipline" id="{{key}}.selector" type="checkbox" name="system.disciplines.{{key}}.selected" data-action="onSelectDiscipline" data-dtype="Boolean" {{checked selected}}>
+              <label class="list-entry" for="{{key}}">{{localize label}}</label>
+              <input class="selector discipline" id="{{key}}.selector" type="checkbox" name="system.disciplines.{{key}}.selected" data-action="onSelectDiscipline" data-dtype="Boolean" {{checked selected}} aria-label="{{localize label}}">
               <input class="numeric-entry" id="{{key}}" name="system.disciplines.{{key}}.value" type="text" value="{{value}}" placeholder="Name" />
             </div>
           {{/with}}
@@ -88,11 +89,11 @@
     </div>
 
     <div class="bottom-right-column">
-      <nav class="sheet-tabs tabs">
-        <a class="item {{tabs.biography.cssClass}}" data-group="primary" data-action="tab" data-tab="biography">{{localize 'sta.actor.character.character'}}</a>
-        <a class="item {{tabs.traits.cssClass}}" data-group="primary" data-action="tab" data-tab="traits">{{localize 'sta.actor.character.traits'}}</a>
-        <a class="item {{tabs.development.cssClass}}" data-group="primary" data-action="tab" data-tab="development">{{localize 'sta.actor.character.development'}}</a>
-        <a class="item {{tabs.notes.cssClass}}" data-group="primary" data-action="tab" data-tab="notes">{{localize 'sta.actor.note.title'}}</a>
+      <nav class="sheet-tabs tabs" role="tablist">
+        <a class="item {{tabs.biography.cssClass}}" data-group="primary" data-action="tab" data-tab="biography" role="tab" aria-selected="{{#if (eq tabs.biography.cssClass 'active')}}true{{else}}false{{/if}}">{{localize 'sta.actor.character.character'}}</a>
+        <a class="item {{tabs.traits.cssClass}}" data-group="primary" data-action="tab" data-tab="traits" role="tab" aria-selected="{{#if (eq tabs.traits.cssClass 'active')}}true{{else}}false{{/if}}">{{localize 'sta.actor.character.traits'}}</a>
+        <a class="item {{tabs.development.cssClass}}" data-group="primary" data-action="tab" data-tab="development" role="tab" aria-selected="{{#if (eq tabs.development.cssClass 'active')}}true{{else}}false{{/if}}">{{localize 'sta.actor.character.development'}}</a>
+        <a class="item {{tabs.notes.cssClass}}" data-group="primary" data-action="tab" data-tab="notes" role="tab" aria-selected="{{#if (eq tabs.notes.cssClass 'active')}}true{{else}}false{{/if}}">{{localize 'sta.actor.note.title'}}</a>
       </nav>
 
       <section class="sheet-body">
@@ -100,7 +101,7 @@
         {{!-- ═══════════════════════════════════════════════════════════════
              BIOGRAPHY TAB
              ═══════════════════════════════════════════════════════════════ --}}
-        <div class="tab {{tabs.biography.cssClass}}" name="biography" data-group="primary" data-tab="biography">
+        <div class="tab {{tabs.biography.cssClass}}" name="biography" data-group="primary" data-tab="biography" role="tabpanel">
           <div class="row">
             <div class="column pronouns">
               <div class="title">{{localize 'sta.actor.character.pronouns'}}</div>
@@ -222,7 +223,7 @@
              LCARS: Each section has chevron + collapsible wrapper baked in.
              Create buttons live in the .title instead of .header.row.
              ═══════════════════════════════════════════════════════════════ --}}
-        <div class="tab {{tabs.traits.cssClass}}" data-group="primary" name="traits" data-tab="traits">
+        <div class="tab {{tabs.traits.cssClass}}" data-group="primary" name="traits" data-tab="traits" role="tabpanel">
 
           {{!-- Values ──────────────────────────────────────────────────── --}}
           <div class="section sta-lcars-section values">
@@ -237,7 +238,7 @@
                   <li class="row entry" data-item-id="{{item.id}}" data-item-type="{{item.type}}" data-item-value="{{item.name}}">
                     <div class="image"><img class="chat" src="{{item.img}}" title="{{item.name}}" data-action="onItemtoChat" /></div>
                     <input type="text" class="item-name {{#if (eq item.system.used true)}}strike-through{{/if}}" value="{{item.name}}" data-item-id="{{item._id}}">
-                    <a class="value-used control toggle"><i class="fas fa-toggle-{{#if (eq item.system.used true)}}on{{else}}off{{/if}}" data-action="onStrikeThrough"></i></a>
+                    <a class="value-used control toggle" aria-label="{{localize 'sta-utils.aria.toggleValueUsed'}}"><i class="fas fa-toggle-{{#if (eq item.system.used true)}}on{{else}}off{{/if}}" data-action="onStrikeThrough" aria-hidden="true"></i></a>
                     <div class="control">
                       <a class="edit" data-action="onItemEdit" title="Edit Item"><i class="fas fa-edit"></i></a>
                       <a class="delete" data-action="onItemDelete" title="Delete Item"><i class="fas fa-trash"></i></a>
@@ -427,7 +428,7 @@
              DEVELOPMENT TAB
              LCARS: Create button relocated into .title element.
              ═══════════════════════════════════════════════════════════════ --}}
-        <div class="tab {{tabs.development.cssClass}}" data-group="primary" name="development" data-tab="development">
+        <div class="tab {{tabs.development.cssClass}}" data-group="primary" name="development" data-tab="development" role="tabpanel">
           <div class="section milestones">
             <div class="title" style="display:flex;align-items:center">
               {{localize 'sta.actor.milestone.title'}}
@@ -501,7 +502,7 @@
         {{!-- ═══════════════════════════════════════════════════════════════
              NOTES TAB
              ═══════════════════════════════════════════════════════════════ --}}
-        <div class="tab {{tabs.notes.cssClass}}" data-group="primary" name="notes" data-tab="notes">
+        <div class="tab {{tabs.notes.cssClass}}" data-group="primary" name="notes" data-tab="notes" role="tabpanel">
           <div class="section notes">
             <div class="title">{{localize 'sta.actor.note.title'}}</div>
           </div>

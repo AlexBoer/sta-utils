@@ -5,18 +5,18 @@
   <div class="split-section">
     <div class="top-left-column">
       <div class="image-field">
-        <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
+        <img class="profile-img" src="{{actor.img}}" alt="{{actor.name}}" data-edit="img" title="{{actor.name}}" />
       </div>
     </div>
 
     <div class="top-right-column">
       <div class="name-field">
-        <div class="title">{{localize 'sta.actor.character.name'}}</div>
-        <input name="name" class="text-entry" type="text" value="{{actor.name}}" placeholder="{{localize 'sta.actor.character.name'}}" />
+        <label class="title" for="limited-name">{{localize 'sta.actor.character.name'}}</label>
+        <input name="name" id="limited-name" class="text-entry" type="text" value="{{actor.name}}" placeholder="{{localize 'sta.actor.character.name'}}" />
       </div>
 
-      <div class="title">{{localize 'sta.actor.character.rank'}}</div>
-      <input name="system.rank" class="text-entry" type="text" value="{{actor.system.rank}}" placeholder="{{localize 'sta.actor.character.rank'}}" />
+      <label class="title" for="limited-rank">{{localize 'sta.actor.character.rank'}}</label>
+      <input name="system.rank" id="limited-rank" class="text-entry" type="text" value="{{actor.system.rank}}" placeholder="{{localize 'sta.actor.character.rank'}}" />
       {{#if showProseMirror}}
         <div class="title">{{localize 'sta.actor.note.title'}}</div>
         <div class="note2e">

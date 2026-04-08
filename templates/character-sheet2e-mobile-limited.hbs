@@ -1,16 +1,16 @@
 <div class="character-sheet character-sheet--mobile character-sheet--mobile-limited">
   <div class="mobile-header">
     <div class="mobile-header-avatar">
-      <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" />
+      <img class="profile-img" src="{{actor.img}}" alt="{{actor.name}}" data-edit="img" title="{{actor.name}}" />
     </div>
 
     <div class="mobile-header-info">
       <div class="name-field">
-        <div class="title">{{localize 'sta.actor.character.name'}}</div>
-        <input name="name" class="text-entry mobile-name-input" type="text" value="{{actor.name}}" placeholder="{{localize 'sta.actor.character.name'}}" />
+        <label class="title" for="limited-name">{{localize 'sta.actor.character.name'}}</label>
+        <input name="name" id="limited-name" class="text-entry mobile-name-input" type="text" value="{{actor.name}}" placeholder="{{localize 'sta.actor.character.name'}}" />
       </div>
-      <div class="title">{{localize 'sta.actor.character.rank'}}</div>
-      <input name="system.rank" class="text-entry" type="text" value="{{actor.system.rank}}" placeholder="{{localize 'sta.actor.character.rank'}}" />
+      <label class="title" for="limited-rank">{{localize 'sta.actor.character.rank'}}</label>
+      <input name="system.rank" id="limited-rank" class="text-entry" type="text" value="{{actor.system.rank}}" placeholder="{{localize 'sta.actor.character.rank'}}" />
     </div>
   </div>
 

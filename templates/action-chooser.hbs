@@ -2,7 +2,7 @@
   <section class="sta-action-chooser-header">
     <div class="sta-action-chooser-title">
       {{#if canSwitchSet}}
-        <select class="sta-action-chooser-title__select">
+        <select class="sta-action-chooser-title__select" aria-label="{{localize 'sta-utils.actionChooser.changeSet'}}">
           {{#each actionSets as |set|}}
             <option value="{{set.id}}" {{#if set.selected}}selected{{/if}}>{{set.label}}</option>
           {{/each}}
@@ -19,7 +19,7 @@
     <div class="sta-actor-indicator {{#unless hasActor}}sta-actor-indicator--empty{{/unless}}">
       <img class="sta-actor-indicator__img" src="{{actorImg}}" alt="{{actorName}}" />
       {{#if hasActorOptions}}
-        <select class="sta-actor-indicator__select">
+        <select class="sta-actor-indicator__select" aria-label="{{localize 'sta-utils.actionChooser.selectCharacter'}}">
           {{#unless hasActor}}
             <option value="" selected disabled>{{localize "sta-utils.actionChooser.selectCharacter"}}</option>
           {{/unless}}
@@ -35,7 +35,7 @@
     <div class="sta-actor-indicator sta-starship-indicator {{#unless hasStarship}}sta-actor-indicator--empty{{/unless}}">
       <img class="sta-starship-indicator__img" src="{{starshipImg}}" alt="{{starshipName}}" />
       {{#if hasStarshipOptions}}
-        <select class="sta-starship-indicator__select">
+        <select class="sta-starship-indicator__select" aria-label="{{localize 'sta-utils.actionChooser.selectStarship'}}">
           {{#unless hasStarship}}
             <option value="" selected disabled>{{localize "sta-utils.actionChooser.selectStarship"}}</option>
           {{/unless}}
