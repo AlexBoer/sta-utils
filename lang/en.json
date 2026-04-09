@@ -22,10 +22,6 @@
         "rollRequest": "Roll Request",
         "attackCalculator": "Attack Calculator"
       },
-      "enableStardateDisplay": {
-        "name": "Enable Stardate Display",
-        "hint": "Show a live stardate bar at the top of the chat panel, updated whenever the game time advances. Uses the same TNG stardate formula as the Stardate Calculator. Requires a world reload when changed."
-      },
       "enableAlertStatus": {
         "name": "Enable Ship Alert Status",
         "hint": "Show a ship alert status indicator at the top of the chat panel. The GM can click it to cycle between Normal, Yellow Alert, and Red Alert. All players see the change in real time. Requires a world reload when changed."
