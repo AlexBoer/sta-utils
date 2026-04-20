@@ -738,6 +738,19 @@ li.row.entry.sta-utils-trait-hidden {
   &:hover { opacity: 1; }
 }
 
+.sta-utils-configure-token-bar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.7;
+  font-size: 0.9em;
+  margin-left: 0.35rem;
+
+  &:hover { opacity: 1; }
+}
+
 /* Generic left container for title text + info button */
 .sta-title-left {
   display: inline-flex;
@@ -5289,6 +5302,33 @@ input.selector.attribute.sta-fatigued-attribute {
   .dialog-buttons button:hover {
     background: rgba(241, 164, 60, 0.15);
     color: #fff;
+  }
+
+  .presets-row .form-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .preset-btn {
+    padding: 3px 10px;
+    font-family: "Antonio", "Roboto Condensed", sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(155, 143, 194, 0.5);
+    border-radius: 10px;
+    background: rgba(155, 143, 194, 0.1);
+    color: #9b8fc2;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
+
+    &:hover {
+      background: rgba(155, 143, 194, 0.25);
+      border-color: #9b8fc2;
+      color: #fff;
+    }
   }
 
   .dropdown-wrapper {

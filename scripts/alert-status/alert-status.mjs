@@ -129,8 +129,16 @@ function _buildBar() {
       bar.classList.remove("sta-utils-alert-bar--hover"),
     );
     const cycleStatus = async () => {
-      const next = _nextStatus(getAlertStatus());
-      await _requestSetAlertStatus(next);
+      const previous = getAlertStatus();
+      const next = _nextStatus(previous);
+      _updateBar(next); // optimistic local update — server sync follows
+      try {
+        await _requestSetAlertStatus(next);
+      } catch (err) {
+        _updateBar(previous); // rollback
+        ui.notifications.error(t("sta-utils.alertStatus.updateFailed"));
+        console.error(`${MODULE_ID} | Failed to set alert status:`, err);
+      }
     };
     bar.addEventListener("click", cycleStatus);
     bar.addEventListener("keydown", (e) => {

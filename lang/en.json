@@ -182,6 +182,12 @@
       "momentumDesc": "Recover 1 stress per 2 Momentum spent after a successful task, max 3.",
       "ok": "OK"
     },
+    "personalThreat": {
+      "configureTokenBar": "Configure token: set Bar 1 to Stress and display always to everyone",
+      "tokenBarConfigured": "{name}: token configured — Bar 1 set to Stress, displayed always to everyone.",
+      "showPips": "Show Personal Threat pips",
+      "hidePips": "Hide Personal Threat pips"
+    },
     "determination": {
       "infoTooltip": "Determination Info",
       "infoTitle": "Determination",
@@ -381,7 +387,8 @@
       "normal": "NORMAL",
       "yellow": "YELLOW ALERT",
       "red": "RED ALERT",
-      "clickToCycle": "Click to change alert status"
+      "clickToCycle": "Click to change alert status",
+      "updateFailed": "Failed to update alert status. Please try again."
     },
     "stardateCalculator": {
       "title": "Stardate Calculator",
@@ -1380,6 +1387,14 @@
         "task": "Extended Task",
         "consequence": "Extended Consequence",
         "timed": "Timed Challenge"
+      },
+      "presets": {
+        "label": "Quick Preset",
+        "simple": "Simple",
+        "montage": "Montage",
+        "complex": "Complex",
+        "impendingDoom": "Impending Doom",
+        "timed": "Timed"
       },
       "deleteDialog": {
         "title": "Delete Tracker",

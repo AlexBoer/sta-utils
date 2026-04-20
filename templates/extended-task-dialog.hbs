@@ -1,5 +1,17 @@
 <form>
     <div class="dialog-content">
+        {{#unless entry}}
+        {{#if presets.length}}
+        <div class="form-group presets-row">
+            <label>{{localize "sta-utils.extendedTaskTracker.presets.label"}}</label>
+            <div class="form-fields">
+                {{#each presets as |preset|}}
+                    <button type="button" class="preset-btn" data-preset-id="{{preset.id}}">{{preset.name}}</button>
+                {{/each}}
+            </div>
+        </div>
+        {{/if}}
+        {{/unless}}
         <div class="form-group actor-row">
             <label>{{localize "sta-utils.extendedTaskTracker.dialog.actorLabel"}}</label>
             <div class="form-fields">

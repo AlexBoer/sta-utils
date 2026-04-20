@@ -14,6 +14,7 @@ import {
   isFatigueEnabled,
   isActionChooserEnabled,
   isActionChooserAsTabEnabled,
+  isPersonalThreatEnabled,
 } from "../core/settings.mjs";
 import { MODULE_ID } from "../core/constants.mjs";
 import {
@@ -36,6 +37,7 @@ import { t } from "../core/i18n.mjs";
 
 import { installMobileMode } from "../mobile-sheet/mobile-mode.mjs";
 import { installLcarsSheetMode } from "../lcars-sheet/lcars-mode.mjs";
+import { installConfigureStressBarButton } from "../personal-threat/index.mjs";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Handler: Dialogs
@@ -150,6 +152,14 @@ function handleLcarsSheetRender(app, root) {
 
   const isNpcOnNpcSheet = app?.id?.startsWith("LcarsNPCSheet2e");
 
+  if (isNpcOnNpcSheet && isPersonalThreatEnabled()) {
+    try {
+      installConfigureStressBarButton(root, actor);
+    } catch (_) {
+      // ignore
+    }
+  }
+
   if (isFatigueEnabled() && !isNpcOnNpcSheet) {
     try {
       installFatiguedAttributeDisplay(root, actor);
@@ -258,6 +268,14 @@ function handleCharacterSheetRender(app, root) {
   if (!actor || (actor.type !== "character" && actor.type !== "npc")) return;
 
   const isNpcOnNpcSheet = app?.id?.startsWith("STANPCSheet2e");
+
+  if (isNpcOnNpcSheet && isPersonalThreatEnabled()) {
+    try {
+      installConfigureStressBarButton(root, actor);
+    } catch (_) {
+      // ignore
+    }
+  }
 
   if (isFatigueEnabled() && !isNpcOnNpcSheet) {
     try {
@@ -553,6 +571,89 @@ async function installActionChooserTab(sheetApp, root, actor) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Handler: Starship / Small Craft Sheets — Shield Breakthrough Markers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Inject breakthrough-marker divs into #bar-shields-renderer at the correct
+ * pip boundaries (after floor(max×0.5) and floor(max×0.25)).
+ *
+ * The system rebuilds the bar DOM via innerHTML='' on every shield click and
+ * again on every full render.  We therefore set up a MutationObserver so that
+ * any time the bar's children change we re-inject immediately after — keeping
+ * the markers in sync without requiring any additional click-handler overrides.
+ *
+ * Only runs when the root contains .sta-lcars (LCARS theme active).
+ *
+ * @param {HTMLElement} root - The sheet root element.
+ */
+function _injectShieldBreakthroughMarkers(root) {
+  const bar = root.querySelector("#bar-shields-renderer");
+  if (!bar) return;
+
+  // Width of each injected marker in px.  Each marker is a real flex child,
+  // so pip widths must shrink proportionally to keep the total at 100%.
+  const MARKER_WIDTH_PX = 7;
+
+  function inject() {
+    // Remove any markers we placed previously and restore original pip widths.
+    bar
+      .querySelectorAll(".sta-lcars-shield-breakthrough")
+      .forEach((m) => m.remove());
+
+    const maxInput = root.querySelector("#max-shields");
+    const max = parseInt(maxInput?.value ?? 0, 10);
+    if (!max || max < 2) return;
+
+    // Breakthrough positions: after pip floor(max × 0.5) and floor(max × 0.25).
+    const positions = [Math.floor(max * 0.5), Math.floor(max * 0.25)].filter(
+      (pos) => pos > 0 && pos < max,
+    );
+
+    if (positions.length === 0) return;
+
+    // Shrink every pip width to compensate for the space the markers take.
+    // Original width = calc(100% / max).  New width = calc((100% - N*7px) / max).
+    const pipWidth = `calc((100% - ${positions.length * MARKER_WIDTH_PX}px) / ${max})`;
+    bar.querySelectorAll(".box.shields").forEach((pip) => {
+      pip.style.width = pipWidth;
+    });
+
+    // Insert each marker as a real flex child immediately after pip N
+    // (shields-{pos}), so the layout naturally makes room for it.
+    for (const pos of positions) {
+      const anchor = bar.querySelector(`#shields-${pos}`);
+      if (!anchor) continue;
+      const marker = document.createElement("div");
+      marker.className = "sta-lcars-shield-breakthrough";
+      anchor.insertAdjacentElement("afterend", marker);
+    }
+  }
+
+  // Initial injection (bar is already populated by the system's _onRender).
+  inject();
+
+  // Watch for subsequent bar rebuilds (shield pip clicks rebuild innerHTML).
+  // Guard against re-entrancy: skip MutationObserver callbacks that are
+  // triggered solely by our own marker insertions.
+  if (bar._lcarsBreakthroughObserver) return;
+  const observer = new MutationObserver((mutations) => {
+    const onlyOurChanges = mutations.every(
+      (m) =>
+        [...m.addedNodes].every((n) =>
+          n.classList?.contains("sta-lcars-shield-breakthrough"),
+        ) &&
+        [...m.removedNodes].every((n) =>
+          n.classList?.contains("sta-lcars-shield-breakthrough"),
+        ),
+    );
+    if (!onlyOurChanges) inject();
+  });
+  observer.observe(bar, { childList: true });
+  bar._lcarsBreakthroughObserver = observer;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Handler: Starship / Small Craft Sheets — Reserve Power System Glow & Menu
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -599,6 +700,11 @@ function handleStarshipSheetRender(app, root) {
 
   // Install right-click context menu on system name labels
   _installReservePowerContextMenu(systemsBlock, actor);
+
+  // Inject shield breakthrough markers on LCARS sheets only.
+  if (root.querySelector?.(".starship-sheet.sta-lcars-sheet")) {
+    _injectShieldBreakthroughMarkers(root);
+  }
 }
 
 /**

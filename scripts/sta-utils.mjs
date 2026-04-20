@@ -96,7 +96,10 @@ import {
   installMedicalbabbleHook,
 } from "./treknobabble/index.mjs";
 
-import { installPersonalThreatHook } from "./personal-threat/index.mjs";
+import {
+  installPersonalThreatHook,
+  installPersonalThreatHudButton,
+} from "./personal-threat/index.mjs";
 
 import { openRollRequestDialog } from "./roll-request/index.mjs";
 import {
@@ -439,6 +442,7 @@ Hooks.once("init", () => {
   // --- Personal Threat ---
   if (isPersonalThreatEnabled()) {
     installPersonalThreatHook();
+    installPersonalThreatHudButton();
     console.log(`${MODULE_ID} | Personal Threat feature enabled`);
   }
 });

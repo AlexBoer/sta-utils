@@ -127,6 +127,7 @@
   .left-column {
     background: transparent;
     border: none;
+    width: auto;
   }
 
   .right-column {
@@ -196,6 +197,40 @@
   .sta-lcars-theme-dot:hover,
   .sta-lcars-theme-dot:focus-visible {
     border-color: var(--lcars-chrome, var(--lcars-orange));
+  }
+
+  /* ===========================================================================
+   * STARSHIP — SHIELD BREAKTHROUGH MARKERS (50% and 25%)
+   * Placed here (sta-lcars-sheet) so all LCARS themes, including the STA
+   * original colour scheme, receive the markers.
+   * =========================================================================== */
+
+  /* Flex container so ::before is centred by layout rather than absolute math.
+   * align-self: stretch (from bar's cross-axis) gives it the full pip height. */
+  .sta-lcars-shield-breakthrough {
+    flex: 0 0 7px;
+    align-self: stretch;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* The actual visible line — a flex child that auto-stretches to full height.
+   * Colour: --lcars-titlebar-injuries (the per-theme danger/wound colour),
+   * so it reads as a critical threshold without needing absolute positioning. */
+  .sta-lcars-shield-breakthrough::before {
+    content: "";
+    width: 3px;
+    background: var(--lcars-titlebar-injuries, var(--lcars-red, #d05050));
+    box-shadow: 0 0 6px color-mix(in srgb, var(--lcars-titlebar-injuries, var(--lcars-red, #d05050)) 70%, transparent);
+  }
+
+  /* On fully-red themes the injury colour blends into the chrome — use white. */
+  &:is(.lcars-scheme-redAlert, .lcars-scheme-klingon, .lcars-scheme-sfCommand) {
+    .sta-lcars-shield-breakthrough::before {
+      background: #ffffff;
+      box-shadow: 0 0 6px rgba(255, 255, 255, 0.55);
+    }
   }
 }
 
@@ -1325,6 +1360,8 @@
     border: 2px solid var(--lcars-orange);
     border-radius: 8px;
     overflow: hidden;
+    width: 150px;
+    align-self: center;
   }
 
   .name-field .text-entry {
