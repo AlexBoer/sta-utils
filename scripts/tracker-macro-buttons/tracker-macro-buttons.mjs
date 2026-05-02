@@ -23,6 +23,7 @@ const ICON_FA_CLASS = {
   "warpcalc.webp": "fa-rocket",
   // sta-officers-log
   "addplayer.webp": "fa-person-circle-plus",
+  "creationwizard.svg": "fa-wand-magic-sparkles",
   "monitorsurveys.webp": "fa-eye",
   "newmission.webp": "fa-book",
   "newscene.webp": "fa-clapperboard",
@@ -30,6 +31,13 @@ const ICON_FA_CLASS = {
   "resetcallback.webp": "fa-phone-slash",
   "sendreputation.webp": "fa-award",
   "sendsurvey.webp": "fa-clipboard-list",
+};
+
+// Fallback map: macro UUID → FA class, for macros whose compendium image
+// may not match a filename entry above.
+const ICON_FA_BY_UUID = {
+  "Compendium.sta-officers-log.officers-log-macros.Macro.OAK1ND4D4PWpG1fb":
+    "fa-wand-magic-sparkles",
 };
 
 function isTrackerApp(app, root) {
@@ -86,7 +94,10 @@ function createMacroButton(macro, slotClass) {
 
   const img = String(macro?.img ?? "").trim();
   const filename = img.split("/").pop().toLowerCase();
-  const faClass = ICON_FA_CLASS[filename] ?? null;
+  const faClass =
+    ICON_FA_CLASS[filename] ??
+    ICON_FA_BY_UUID[String(macro?.uuid ?? "")] ??
+    null;
 
   if (faClass) {
     const icon = document.createElement("i");

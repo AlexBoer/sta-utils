@@ -20,7 +20,8 @@
         "trackerButtons": "Tracker Buttons",
         "personalThreat": "Personal Threat",
         "rollRequest": "Roll Request",
-        "attackCalculator": "Attack Calculator"
+        "attackCalculator": "Attack Calculator",
+        "officersLog": "Officers Log Integration"
       },
       "enableAlertStatus": {
         "name": "Enable Ship Alert Status",
@@ -71,6 +72,10 @@
       "enableRollRequest": {
         "name": "Enable Roll Request",
         "hint": "Allow the GM to prompt players with a dice roll request. Players receive a popup with the requested roll details and a one-click Roll button."
+      },
+      "showCreationWizardButton": {
+        "name": "Show Creation in Play Wizard Button",
+        "hint": "Show the Creation in Play Wizard button in the STA Tracker panel. Requires the STA Officers Log module. When disabled, the wizard is only accessible via macro."
       },
       "piercingMode": {
         "name": "Piercing Quality Mode",
@@ -986,8 +991,8 @@
           },
           "regenerateShields": {
             "name": "Regenerate Shields",
-            "description": "Requires Reserve Power. Roll <strong>Control + Engineering</strong> vs <strong>Difficulty 2</strong>. On success, regain shields equal to the ship's Security score.",
-            "chatSummary": "Requires Reserve Power. <strong>Difficulty 2</strong>. Regain shields equal to Security."
+            "description": "Requires Reserve Power. Roll <strong>Control + Engineering</strong> vs <strong>Difficulty 2</strong>, plus 1  Difficulty if the ship's shields are at 0. On success, regain shields equal to your Engineering score, plus 2 per 1 Momentum spent (Repeatable).",
+            "chatSummary": "Requires Reserve Power. <strong>Difficulty 2</strong>. Regain shields equal to Engineering +2 per Momentum spent."
           },
           "reroutePower": {
             "name": "Reroute Power",
@@ -997,7 +1002,7 @@
           "transport": {
             "name": "Transport",
             "description": "Beam people or objects over distances. Roll <strong>Control + Engineering</strong> assisted by the ship's <strong>Sensors + Science</strong>. Base <strong>Difficulty 0</strong>.<ul><li>+1 if away from transporter room.</li><li>+1 if Site A is not a transporter pad.</li><li>+1 if Site B is not a transporter pad.</li></ul>",
-            "chatSummary": "<strong>Control + Engineering</strong>, <strong>Difficulty 0+</strong>. Transport people or objects."
+            "chatSummary": "<strong>Control + Engineering</strong> assisted by <strong>Sensors + Science</strong>, <strong>Difficulty 0+</strong>. Transport people or objects."
           }
         }
       },
@@ -1472,7 +1477,8 @@
         "acclaimSurvey": "Reputation Survey",
         "surveyMonitor": "Survey Monitor",
         "gmSpend": "Manual Acclaim",
-        "resetCallbacks": "Reset Callbacks"
+        "resetCallbacks": "Reset Callbacks",
+        "creationWizard": "Creation in Play Wizard"
       },
       "tc": {
         "generatePoi": "Generate POI",

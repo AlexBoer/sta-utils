@@ -261,6 +261,15 @@ const LAUNCHER_SECTIONS = [
         available: () => !!game.staofficerslog?.resetMissionCallbacks,
         call: () => game.staofficerslog.resetMissionCallbacks(),
       },
+      {
+        id: "ol-creationWizard",
+        labelKey: "sta-utils.launcher.ol.creationWizard",
+        icon: "fa-wand-magic-sparkles",
+        img: `${OL_ASSET_BASE}/creationWizard.svg`,
+        gmOnly: false,
+        available: () => !!game.staofficerslog?.openCreationWizard,
+        call: () => game.staofficerslog.openCreationWizard(),
+      },
     ],
   },
 
@@ -318,6 +327,23 @@ const LAUNCHER_SECTIONS = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Choose 3 or 4 grid columns to avoid a lone button on the last row.
+ * When divisible by both (e.g. 12) defaults to 4.
+ */
+function columnsForCount(n) {
+  const r4 = n % 4;
+  const r3 = n % 3;
+  if (r4 === 0) return 4; // cleanly divisible by 4 (covers 12, etc.)
+  if (r3 === 0) return 3; // cleanly divisible by 3 only
+  if (r4 === 1 && r3 !== 1) return 3; // 4 would orphan 1; 3 wouldn't
+  return 4; // default
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // APPLICATION
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -334,7 +360,7 @@ class LauncherApp extends Base {
     id: `${MODULE_ID}-launcher`,
     window: { title: "STA Utilities", icon: "fa-solid fa-rocket" },
     classes: ["sta-utils", "sta-utils-launcher"],
-    position: { width: 460, height: "auto" },
+    position: { width: 520, height: "auto" },
     resizable: false,
   };
 
@@ -364,7 +390,16 @@ class LauncherApp extends Base {
             icon: item.icon,
           }));
       });
-      return { sections: [{ id: "sta-utils", label: null, items: allItems }] };
+      return {
+        sections: [
+          {
+            id: "sta-utils",
+            label: null,
+            items: allItems,
+            columns: columnsForCount(allItems.length),
+          },
+        ],
+      };
     }
 
     // GMs see items grouped by module with section headers.
@@ -387,6 +422,7 @@ class LauncherApp extends Base {
         id: sectionDef.id,
         label: t(sectionDef.labelKey),
         items,
+        columns: columnsForCount(items.length),
       });
     }
 

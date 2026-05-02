@@ -149,8 +149,7 @@ const actions = [
       ...rollDefaults,
       attribute: "presence",
       discipline: "engineering",
-      difficulty: 2,
-      shipAssist: { system: "structure", department: "engineering" },
+      difficulty: 2
     },
     momentumCost: 0,
     callback: sendActionChat,
@@ -167,8 +166,7 @@ const actions = [
       ...rollDefaults,
       attribute: "control",
       discipline: "engineering",
-      difficulty: 1,
-      shipAssist: { system: "engines", department: "engineering" },
+      difficulty: 1
     },
     momentumCost: 0,
     callback: sendActionChat,

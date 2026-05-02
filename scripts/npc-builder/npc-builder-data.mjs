@@ -378,6 +378,35 @@ function _isInStarshipFolder(doc, pack) {
   return false;
 }
 
+/**
+ * Search the configured Special Rules packs for a talent whose name matches
+ * `abilityName` (case-insensitive). Returns the first matching UUID or null.
+ *
+ * @param {string} abilityName
+ * @returns {Promise<string|null>}
+ */
+async function _findSpeciesTalentByName(abilityName) {
+  if (!abilityName?.trim()) return null;
+  const normalizedName = abilityName.trim().toLowerCase();
+  for (const packId of _getSpecialRulesPackIds()) {
+    const pack = game.packs.get(packId);
+    if (!pack) continue;
+    try {
+      const index = await pack.getIndex();
+      const entry = index.find(
+        (e) => e.type === "talent" && e.name.toLowerCase() === normalizedName,
+      );
+      if (entry) return entry.uuid;
+    } catch (err) {
+      console.warn(
+        `${MODULE_ID} | NPC Builder: could not search pack "${packId}" for species talent`,
+        err,
+      );
+    }
+  }
+  return null;
+}
+
 /** Returns true when a special-rules compendium pack is configured. */
 export function getSpecialRulesPackConfigured() {
   return _getSpecialRulesPackIds().length > 0;
@@ -539,8 +568,11 @@ export async function createNpcActor({
     name?.trim() || (isNotable ? "New Notable NPC" : "New Minor NPC");
 
   // Resolve species attribute bonuses
+  const _speciesKey = species?.trim().toLowerCase();
   const speciesEntry = speciesCatalog.find(
-    (s) => s.name.toLowerCase() === species?.trim().toLowerCase(),
+    (s) =>
+      s.name.toLowerCase() === _speciesKey ||
+      (s.aliases ?? []).some((a) => a.toLowerCase() === _speciesKey),
   );
   const bonuses =
     speciesEntry?.attributeBonuses ??
@@ -578,14 +610,21 @@ export async function createNpcActor({
     embeddedItems.push({ name: species.trim(), type: "trait" });
   if (role?.trim()) embeddedItems.push({ name: role.trim(), type: "trait" });
 
-  // Species ability talent — added automatically when the catalog has a UUID
-  if (speciesEntry?.talentUuid) {
+  // Species ability talent — lookup order:
+  //   1. Explicit talentUuid in catalog (always wins)
+  //   2. abilityName search across configured Special Rules packs
+  const speciesTalentUuid =
+    speciesEntry?.talentUuid ??
+    (speciesEntry?.abilityName
+      ? await _findSpeciesTalentByName(speciesEntry.abilityName)
+      : null);
+  if (speciesTalentUuid) {
     try {
-      const talent = await fromUuid(speciesEntry.talentUuid);
+      const talent = await fromUuid(speciesTalentUuid);
       if (talent) embeddedItems.push(talent.toObject());
     } catch (e) {
       console.warn(
-        `${MODULE_ID} | NPC Builder: could not load species talent ${speciesEntry.talentUuid}`,
+        `${MODULE_ID} | NPC Builder: could not load species talent ${speciesTalentUuid}`,
         e,
       );
     }

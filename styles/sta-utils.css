@@ -5620,7 +5620,7 @@ input.selector.attribute.sta-fatigued-attribute {
 
 .sta-launcher-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
 }
 
@@ -5710,6 +5710,12 @@ input.selector.attribute.sta-fatigued-attribute {
   display: flex;
   align-items: center;
   justify-content: center;
+
+  i {
+    font-size: 1.5em;
+    color: #FAF9F6;
+    pointer-events: none;
+  }
 
   .sta-utils-tracker-macro-icon {
     width: 1rem;

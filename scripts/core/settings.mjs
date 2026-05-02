@@ -44,6 +44,7 @@ const ENABLE_ROLL_REQUEST_SETTING = "enableRollRequest";
 const MOBILE_THEME_SETTING = "mobileSheetTheme";
 const PIERCING_MODE_SETTING = "piercingMode";
 const OFFICERS_LOG_MODULE_ID = "sta-officers-log";
+const SHOW_CREATION_WIZARD_BUTTON_SETTING = "showCreationWizardButton";
 
 /** Localized group labels for the settings menu. */
 const GROUP_WORLD = "sta-utils.settings.groups.world";
@@ -109,6 +110,10 @@ const SUBGROUPS = [
   {
     firstKey: PIERCING_MODE_SETTING,
     label: "sta-utils.settings.subgroups.attackCalculator",
+  },
+  {
+    firstKey: SHOW_CREATION_WIZARD_BUTTON_SETTING,
+    label: "sta-utils.settings.subgroups.officersLog",
   },
 ];
 
@@ -333,7 +338,7 @@ export function registerSettings() {
   // ----- Tracker Buttons (cross-module) -----
 
   game.settings.register(MODULE_ID, TRACKER_MACRO_LAYOUT_SETTING, {
-    scope: "world",
+    scope: "client",
     config: false,
     type: Object,
     default: {
@@ -349,8 +354,8 @@ export function registerSettings() {
     hint: t("sta-utils.trackerMacroButtons.menu.hint"),
     icon: "fas fa-table-columns",
     type: TrackerMacroButtonsConfig,
-    restricted: true,
-    group: GROUP_WORLD,
+    restricted: false,
+    group: GROUP_CLIENT,
   });
 
   // ----- Chat & UI -----
@@ -511,6 +516,18 @@ export function registerSettings() {
     type: Boolean,
     default: false,
     requiresReload: true,
+    group: GROUP_WORLD,
+  });
+
+  // ----- Officers Log Integration -----
+
+  game.settings.register(MODULE_ID, SHOW_CREATION_WIZARD_BUTTON_SETTING, {
+    name: t("sta-utils.settings.showCreationWizardButton.name"),
+    hint: t("sta-utils.settings.showCreationWizardButton.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
     group: GROUP_WORLD,
   });
 
@@ -906,6 +923,17 @@ export function getWorldTraitsActorUuid() {
 export function isRollRequestEnabled() {
   try {
     return Boolean(game.settings.get(MODULE_ID, ENABLE_ROLL_REQUEST_SETTING));
+  } catch (_) {
+    return false;
+  }
+}
+
+/** @returns {boolean} */
+export function isCreationWizardButtonEnabled() {
+  try {
+    return Boolean(
+      game.settings.get(MODULE_ID, SHOW_CREATION_WIZARD_BUTTON_SETTING),
+    );
   } catch (_) {
     return false;
   }
