@@ -12,7 +12,10 @@ const cleanedUpFatigueActors = new Set();
  */
 export function installFatiguedAttributeDisplay(root, actor) {
   const fatiguedTrait = findFatiguedTrait(actor);
-  const fatiguedAttribute = actor.getFlag?.(MODULE_ID, "fatiguedAttribute");
+  const fatiguedAttribute =
+    actor.system?.fatiguedAttribute ??
+    actor.getFlag?.(MODULE_ID, "fatiguedAttribute") ??
+    null;
 
   // Clean up orphaned flags if no trait exists but flags are set
   if (!fatiguedTrait && fatiguedAttribute) {
@@ -22,8 +25,8 @@ export function installFatiguedAttributeDisplay(root, actor) {
       console.log(
         `${MODULE_ID} | Cleaning up orphaned fatigue flags for ${actor.name}`,
       );
-      void actor.unsetFlag?.(MODULE_ID, "fatiguedAttribute");
-      void actor.unsetFlag?.(MODULE_ID, "fatiguedTraitUuid");
+      void actor.update?.({ "system.fatiguedAttribute": null });
+      void actor.update?.({ "system.fatiguedTraitUuid": null });
       // Allow future cleanups after the async updates settle
       setTimeout(() => cleanedUpFatigueActors.delete(actorKey), 2000);
     }

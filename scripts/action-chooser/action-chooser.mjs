@@ -469,12 +469,11 @@ class ActionChooserApp extends BaseApp {
       // Extract reserve power information (boolean property)
       const hasReservePowerFlag = starship.system?.reservepower ?? false;
 
-      // Get which system reserve power is assigned to from actor flag
+      // Get which system reserve power is assigned to from actor system field
       // Can be null/undefined if not assigned to a specific system
-      const reservePowerSystem = starship.getFlag(
-        MODULE_ID,
-        "reservePowerSystem",
-      );
+      const reservePowerSystem =
+        starship.system?.reservePowerSystem ??
+        starship.getFlag(MODULE_ID, "reservePowerSystem");
       const hasAssignedSystem = reservePowerSystem != null;
 
       // Reserve power is available whenever the ship has it, regardless of assignment
@@ -843,10 +842,10 @@ class ActionChooserApp extends BaseApp {
             "structure",
             "weapons",
           ];
-          const currentSystem = this.selectedStarship.getFlag(
-            MODULE_ID,
-            "reservePowerSystem",
-          );
+          const currentSystem =
+            this.selectedStarship.system?.reservePowerSystem ??
+            this.selectedStarship.getFlag(MODULE_ID, "reservePowerSystem") ??
+            null;
           const systemButtons = systemNames
             .map((sys) => {
               const label = game.i18n.localize(
@@ -905,11 +904,9 @@ class ActionChooserApp extends BaseApp {
             btn.addEventListener("click", async (ev) => {
               ev.preventDefault();
               const system = btn.dataset.system;
-              await this.selectedStarship.setFlag(
-                MODULE_ID,
-                "reservePowerSystem",
-                system,
-              );
+              await this.selectedStarship.update({
+                "system.reservePowerSystem": system,
+              });
               // Send chat message about the reroute
               const systemLabel = game.i18n.localize(
                 `sta.actor.starship.system.${system}`,
@@ -1379,7 +1376,7 @@ class ActionChooserApp extends BaseApp {
             actor.id === this.selectedStarship.id &&
             changes.system?.reservepower === false
           ) {
-            actor.setFlag(MODULE_ID, "reservePowerSystem", null);
+            actor.update({ "system.reservePowerSystem": null });
           }
 
           // Re-render if the updated actor is our selected starship
@@ -1389,6 +1386,7 @@ class ActionChooserApp extends BaseApp {
               changes.system?.shields !== undefined ||
               changes.system?.reservepower !== undefined ||
               changes.system?.systems !== undefined ||
+              changes.system?.reservePowerSystem !== undefined ||
               changes.flags?.[MODULE_ID]?.reservePowerSystem !== undefined;
 
             if (affectsShipStatus) {
@@ -2146,7 +2144,8 @@ async function openActionChooser(
 registerActionSet(
   "personal-conflict",
   "sta-utils.actionChooser.sets.personalConflict",
-  () => import("./action-sets/personal-conflict.mjs").then((m) => m.default ?? m),
+  () =>
+    import("./action-sets/personal-conflict.mjs").then((m) => m.default ?? m),
 );
 
 registerActionSet(
@@ -2158,7 +2157,10 @@ registerActionSet(
 registerActionSet(
   "communications-station",
   "sta-utils.actionChooser.sets.communicationsStation",
-  () => import("./action-sets/communications-station.mjs").then((m) => m.default ?? m),
+  () =>
+    import("./action-sets/communications-station.mjs").then(
+      (m) => m.default ?? m,
+    ),
 );
 
 registerActionSet(
@@ -2170,13 +2172,15 @@ registerActionSet(
 registerActionSet(
   "navigator-station",
   "sta-utils.actionChooser.sets.navigatorStation",
-  () => import("./action-sets/navigator-station.mjs").then((m) => m.default ?? m),
+  () =>
+    import("./action-sets/navigator-station.mjs").then((m) => m.default ?? m),
 );
 
 registerActionSet(
   "operations-station",
   "sta-utils.actionChooser.sets.operationsStation",
-  () => import("./action-sets/operations-station.mjs").then((m) => m.default ?? m),
+  () =>
+    import("./action-sets/operations-station.mjs").then((m) => m.default ?? m),
 );
 
 registerActionSet(
@@ -2188,7 +2192,8 @@ registerActionSet(
 registerActionSet(
   "tactical-station",
   "sta-utils.actionChooser.sets.tacticalStation",
-  () => import("./action-sets/tactical-station.mjs").then((m) => m.default ?? m),
+  () =>
+    import("./action-sets/tactical-station.mjs").then((m) => m.default ?? m),
 );
 
 registerActionSet(

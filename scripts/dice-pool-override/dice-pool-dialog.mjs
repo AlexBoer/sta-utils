@@ -155,7 +155,9 @@ function _computeReservePowerState(ship, selectedSystem = null) {
   if (!hasReservePower) return { checked: false, disabled: true };
 
   const reservePowerSystem =
-    ship?.getFlag?.(MODULE_ID, "reservePowerSystem") ?? null;
+    ship?.system?.reservePowerSystem ??
+    ship?.getFlag?.(MODULE_ID, "reservePowerSystem") ??
+    null;
 
   if (reservePowerSystem) {
     // Power is routed to a specific system
@@ -608,6 +610,7 @@ export async function showDicePoolDialog(opts) {
         // Only care about reservepower or the routing flag
         const rpChanged =
           changes.system?.reservepower !== undefined ||
+          changes.system?.reservePowerSystem !== undefined ||
           changes.flags?.[MODULE_ID]?.reservePowerSystem !== undefined;
         if (!rpChanged) return;
 

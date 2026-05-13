@@ -1883,6 +1883,7 @@ input.selector.attribute.sta-fatigued-attribute {
   white-space: nowrap;
   overflow: hidden;
   flex: 1 1 0;
+  border-radius: 0.75rem;
   min-width: 0;
   transition: background-color 0.2s ease;
   pointer-events: auto !important;
@@ -1954,11 +1955,11 @@ input.selector.attribute.sta-fatigued-attribute {
   align-items: center;
   justify-content: center;
   padding: 0.3rem 0.5rem;
-  background-color: #6677bb;
+  background-color: #582013;
   color: #e8e8f8;
   font-family: "Antonio", "Roboto Condensed", sans-serif;
   cursor: copy;
-  border-radius: 0 0 0.75rem 0;
+  border-radius: 0.75rem;
   white-space: nowrap;
   user-select: none;
   overflow: hidden;

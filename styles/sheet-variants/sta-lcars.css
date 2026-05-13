@@ -3088,10 +3088,23 @@ body.sta-officers-lcars-active {
 
   .sta-officers-log .window-content label {
     color: var(--lcars-peach);
-    font-family: var(--lcars-font-body);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 0.85rem;
+    /* font-family: var(--lcars-font-body); */
+    /* text-transform: uppercase; */
+    /* letter-spacing: 1px; */
+    font-size: 0.7rem;
+  }
+
+  /* Chain & Arc section — compact controls, bypass full LCARS treatment */
+  .sta-officers-log .window-content .ol-chain-field > label:not(.checkbox),
+  .sta-officers-log .window-content .ol-chain-field > label.checkbox {
+    color: #667788;
+  }
+  .sta-officers-log .ol-chain-content select,
+  .sta-officers-log .ol-chain-content input[type="number"] {
+    border-radius: 3px;
+    font-family: inherit;
+    font-size: 12px;
+    padding: 1px 4px;
   }
 
   .sta-officers-log .window-content strong {

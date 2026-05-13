@@ -7,6 +7,12 @@ import {
   initSocket,
 } from "./core/index.mjs";
 
+// Data models
+import { registerUtilsCharacterDataModel } from "./data/characterDataModel.mjs";
+import { registerUtilsStarshipDataModel } from "./data/starshipDataModel.mjs";
+import { registerUtilsSmallCraftDataModel } from "./data/smallcraftDataModel.mjs";
+import { registerUtilsTraitDataModel } from "./data/traitDataModel.mjs";
+
 // Features
 import {
   initTraitVisibility,
@@ -40,7 +46,10 @@ import { registerNoteStylerHooks, noteStyler } from "./note-styler/index.mjs";
 
 import { warpCalculator } from "./warp-calculator/index.mjs";
 
-import { stardateCalculator } from "./stardate/index.mjs";
+import {
+  stardateCalculator,
+  calendarDateToStardateTng,
+} from "./stardate/index.mjs";
 import { installStardateDisplay } from "./stardate-display/index.mjs";
 import { installAlertStatus } from "./alert-status/index.mjs";
 
@@ -272,6 +281,16 @@ async function openStressResetDialog() {
 
 Hooks.once("init", () => {
   console.log(`${MODULE_ID} | Initializing STA Utilities`);
+
+  // --- Register TypeDataModel extensions (must run before anything reads system.*) ---
+  try {
+    registerUtilsCharacterDataModel();
+    registerUtilsStarshipDataModel();
+    registerUtilsSmallCraftDataModel();
+    registerUtilsTraitDataModel();
+  } catch (err) {
+    console.error(`${MODULE_ID} | Failed to register data models`, err);
+  }
 
   // --- Preload templates ---
   foundry.applications.handlebars.loadTemplates([
@@ -559,6 +578,7 @@ Hooks.once("ready", async () => {
     treknobabble,
     medicalbabble,
     launcher: openLauncher,
+    calendarDateToStardate: calendarDateToStardateTng,
   };
   console.log(`${MODULE_ID} | Public API exposed at game.staUtils`);
 });

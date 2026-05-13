@@ -1,8 +1,9 @@
 /**
  * Flag Migration
  *
- * One-time migration of fatigue-related flags from the sta-officers-log
- * namespace to the sta-utils namespace. Runs on "ready" for the GM only.
+ * v1 — copy fatigue flags from sta-officers-log → sta-utils namespace (one-time rename).
+ * v2 — copy sta-utils flags → system.* fields introduced by UtilsCharacterData,
+ *       UtilsStarshipData, UtilsSmallCraftData, and UtilsTraitData.
  *
  * @module migration
  */
@@ -43,6 +44,11 @@ export async function runMigrations() {
   if (currentVersion < 1) {
     await _migration1_fatigueFlagsToStaUtils();
     await game.settings.set(MODULE_ID, MIGRATION_SETTING, 1);
+  }
+
+  if (currentVersion < 2) {
+    await _migration2_flagsToSystemFields();
+    await game.settings.set(MODULE_ID, MIGRATION_SETTING, 2);
   }
 }
 
@@ -93,5 +99,101 @@ async function _migration1_fatigueFlagsToStaUtils() {
 
   console.log(
     `${MODULE_ID} | Migration complete: migrated ${actorCount} actors, ${itemCount} trait items`,
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Migration 2 — copy flags → system.* fields                        */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Copy sta-utils flags into the system.* fields now declared by the
+ * UtilsCharacterData / UtilsStarshipData / UtilsSmallCraftData / UtilsTraitData
+ * TypeDataModels.  Skips fields already populated in system.*.
+ *
+ * @private
+ */
+async function _migration2_flagsToSystemFields() {
+  console.log(`${MODULE_ID} | Running migration v2 (flags → system fields)…`);
+
+  let actorCount = 0;
+  let traitCount = 0;
+  let shipCount = 0;
+
+  /** Character actors — fatiguedAttribute, fatiguedTraitUuid */
+  const CHARACTER_ACTOR_FLAGS = ["fatiguedAttribute", "fatiguedTraitUuid"];
+
+  /** Starship + smallcraft actors — reservePowerSystem */
+  const SHIP_ACTOR_FLAGS = ["reservePowerSystem"];
+
+  /** Trait items — isFatigue */
+  const TRAIT_ITEM_FLAGS = ["isFatigue"];
+
+  for (const actor of game.actors ?? []) {
+    if (actor.type === "character") {
+      const updates = {};
+      for (const key of CHARACTER_ACTOR_FLAGS) {
+        const flagVal = actor.getFlag?.(MODULE_ID, key);
+        if (flagVal == null || flagVal === false || flagVal === "") continue;
+        updates[`system.${key}`] = flagVal;
+      }
+      if (Object.keys(updates).length) {
+        try {
+          await actor.update(updates, { render: false });
+          actorCount++;
+        } catch (err) {
+          console.warn(
+            `${MODULE_ID} | v2 migration failed for actor "${actor.name}":`,
+            err,
+          );
+        }
+      }
+
+      // Migrate trait items on this actor
+      for (const item of actor.items ?? []) {
+        if (item.type !== "trait") continue;
+        const traitUpdates = {};
+        for (const key of TRAIT_ITEM_FLAGS) {
+          const flagVal = item.getFlag?.(MODULE_ID, key);
+          if (flagVal == null || flagVal === false) continue;
+          traitUpdates[`system.${key}`] = flagVal;
+        }
+        if (Object.keys(traitUpdates).length) {
+          try {
+            await item.update(traitUpdates, { render: false });
+            traitCount++;
+          } catch (err) {
+            console.warn(
+              `${MODULE_ID} | v2 migration failed for trait "${item.name}":`,
+              err,
+            );
+          }
+        }
+      }
+    }
+
+    if (actor.type === "starship" || actor.type === "smallcraft") {
+      const updates = {};
+      for (const key of SHIP_ACTOR_FLAGS) {
+        const flagVal = actor.getFlag?.(MODULE_ID, key);
+        if (flagVal == null || flagVal === false || flagVal === "") continue;
+        updates[`system.${key}`] = flagVal;
+      }
+      if (Object.keys(updates).length) {
+        try {
+          await actor.update(updates, { render: false });
+          shipCount++;
+        } catch (err) {
+          console.warn(
+            `${MODULE_ID} | v2 migration failed for ship "${actor.name}":`,
+            err,
+          );
+        }
+      }
+    }
+  }
+
+  console.log(
+    `${MODULE_ID} | Migration v2 complete — ${actorCount} characters, ${traitCount} traits, ${shipCount} ships updated.`,
   );
 }

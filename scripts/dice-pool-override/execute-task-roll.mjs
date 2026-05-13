@@ -203,8 +203,11 @@ export async function executeTaskRoll(
         // Also clear the routing flag (which system power was assigned to).
         // The action-chooser's updateActor hook does this too, but we clear
         // it here as well for robustness when the chooser isn't open.
-        if (shipToUpdate.getFlag(MODULE_ID, "reservePowerSystem") != null) {
-          await shipToUpdate.setFlag(MODULE_ID, "reservePowerSystem", null);
+        if (
+          (shipToUpdate.system?.reservePowerSystem ??
+            shipToUpdate.getFlag(MODULE_ID, "reservePowerSystem")) != null
+        ) {
+          await shipToUpdate.update({ "system.reservePowerSystem": null });
         }
       } catch (err) {
         console.warn(

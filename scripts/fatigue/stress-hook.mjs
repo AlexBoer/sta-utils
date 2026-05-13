@@ -63,9 +63,9 @@ export async function showAttributeSelectionDialog(traitItem, actor) {
     try {
       const newName = ATTRIBUTE_TO_FATIGUED_NAME[result];
       await traitItem.update({ name: newName });
-      // Store which attribute is fatigued in the actor flags
+      // Store which attribute is fatigued in the actor's system field
       if (actor) {
-        await actor.setFlag?.(MODULE_ID, FATIGUED_ATTRIBUTE_FLAG_KEY, result);
+        await actor.update?.({ "system.fatiguedAttribute": result });
         // Deselect the fatigued attribute to prevent it from being permanently selected
         await actor.update({
           [`system.attributes.${result}.selected`]: false,
@@ -88,7 +88,10 @@ export function hasFatiguedAttributeChosen(traitItem, actor) {
   if (!traitItem || traitItem.type !== "trait") return false;
   try {
     // Check if actor has the fatiguedAttribute flag set
-    const attr = actor?.getFlag?.(MODULE_ID, FATIGUED_ATTRIBUTE_FLAG_KEY);
+    const attr =
+      actor?.system?.fatiguedAttribute ??
+      actor?.getFlag?.(MODULE_ID, FATIGUED_ATTRIBUTE_FLAG_KEY) ??
+      null;
     if (attr && ATTRIBUTE_TO_FATIGUED_NAME[attr]) return true;
 
     // Also check if the trait name matches one of the chosen attribute names
@@ -111,20 +114,24 @@ export function hasFatiguedAttributeChosen(traitItem, actor) {
 export function findFatiguedTrait(actor) {
   if (!actor?.items) return null;
   try {
-    // First, try to find by ID stored in actor flags
-    const storedId = actor.getFlag?.(MODULE_ID, FATIGUED_TRAIT_FLAG_KEY);
+    // First, try to find by ID stored in actor system field
+    const storedId =
+      actor.system?.fatiguedTraitUuid ??
+      actor.getFlag?.(MODULE_ID, FATIGUED_TRAIT_FLAG_KEY) ??
+      null;
     if (storedId) {
       const traitById = actor.items.get(storedId);
       if (traitById && traitById.type === "trait") return traitById;
-      // ID didn't match; flag is stale, clear it asynchronously
-      void actor.unsetFlag?.(MODULE_ID, FATIGUED_TRAIT_FLAG_KEY);
+      // ID didn't match; system field is stale, clear it asynchronously
+      void actor.update?.({ "system.fatiguedTraitUuid": null });
     }
 
-    // Fall back to flag-based lookup: find any trait with isFatigue flag set to true
+    // Fall back to system-field lookup: find any trait with isFatigue set to true
     const byFlag = Array.from(actor.items).find(
       (item) =>
         item?.type === "trait" &&
-        item.getFlag?.(MODULE_ID, IS_FATIGUE_FLAG_KEY) === true,
+        (item.system?.isFatigue === true ||
+          item.getFlag?.(MODULE_ID, IS_FATIGUE_FLAG_KEY) === true),
     );
     if (byFlag) return byFlag;
 
@@ -205,13 +212,13 @@ async function createFatiguedTrait(actor) {
 
     if (!created) return null;
 
-    // Store the ID in actor flags so we can find it even if renamed
+    // Store the ID in actor system field so we can find it even if renamed
     if (created.id) {
-      await actor.setFlag?.(MODULE_ID, FATIGUED_TRAIT_FLAG_KEY, created.id);
+      await actor.update?.({ "system.fatiguedTraitUuid": created.id });
     }
 
-    // Set the isFatigue flag on the trait itself (must be done after creation)
-    await created.setFlag?.(MODULE_ID, IS_FATIGUE_FLAG_KEY, true);
+    // Set the isFatigue field on the trait itself (must be done after creation)
+    await created.update({ "system.isFatigue": true });
 
     // Note: Attribute selection is now done via a button on the character sheet
     // instead of auto-popping up a dialog.
@@ -250,22 +257,27 @@ async function deleteFatiguedTrait(actor, traitItem) {
       const flagged = Array.from(actor.items).find(
         (i) =>
           i?.type === "trait" &&
-          i.getFlag?.(MODULE_ID, IS_FATIGUE_FLAG_KEY) === true,
+          (i.system?.isFatigue === true ||
+            i.getFlag?.(MODULE_ID, IS_FATIGUE_FLAG_KEY) === true),
       );
       if (flagged) idToDelete = flagged.id;
     }
 
-    // If nothing found, clear flags and return gracefully.
+    // If nothing found, clear system fields and return gracefully.
     if (!idToDelete) {
-      await actor.unsetFlag?.(MODULE_ID, FATIGUED_TRAIT_FLAG_KEY);
-      await actor.unsetFlag?.(MODULE_ID, FATIGUED_ATTRIBUTE_FLAG_KEY);
+      await actor.update?.({
+        "system.fatiguedTraitUuid": null,
+        "system.fatiguedAttribute": null,
+      });
       return;
     }
 
     await actor.deleteEmbeddedDocuments("Item", [idToDelete]);
-    // Clear the stored UUID flag and fatigued attribute flag
-    await actor.unsetFlag?.(MODULE_ID, FATIGUED_TRAIT_FLAG_KEY);
-    await actor.unsetFlag?.(MODULE_ID, FATIGUED_ATTRIBUTE_FLAG_KEY);
+    // Clear the stored ID and fatigued attribute
+    await actor.update?.({
+      "system.fatiguedTraitUuid": null,
+      "system.fatiguedAttribute": null,
+    });
   } catch (err) {
     console.warn(`${MODULE_ID} | deleteFatiguedTrait failed`, err);
   }
@@ -280,17 +292,20 @@ async function deleteFatiguedTrait(actor, traitItem) {
 async function deleteAllFatigueTraits(actor) {
   if (!actor?.deleteEmbeddedDocuments) return;
   try {
-    // Find ALL traits with the isFatigue flag
+    // Find ALL traits with isFatigue set
     const fatigueTraits = actor.items.filter(
       (i) =>
         i?.type === "trait" &&
-        i.getFlag?.(MODULE_ID, IS_FATIGUE_FLAG_KEY) === true,
+        (i.system?.isFatigue === true ||
+          i.getFlag?.(MODULE_ID, IS_FATIGUE_FLAG_KEY) === true),
     );
 
     if (fatigueTraits.length === 0) {
-      // No flagged traits, just clear the actor flags
-      await actor.unsetFlag?.(MODULE_ID, FATIGUED_TRAIT_FLAG_KEY);
-      await actor.unsetFlag?.(MODULE_ID, FATIGUED_ATTRIBUTE_FLAG_KEY);
+      // No fatigue traits, just clear the actor system fields
+      await actor.update?.({
+        "system.fatiguedTraitUuid": null,
+        "system.fatiguedAttribute": null,
+      });
       return;
     }
 
@@ -298,9 +313,11 @@ async function deleteAllFatigueTraits(actor) {
     const idsToDelete = fatigueTraits.map((t) => t.id);
     await actor.deleteEmbeddedDocuments("Item", idsToDelete);
 
-    // Clear the stored flags
-    await actor.unsetFlag?.(MODULE_ID, FATIGUED_TRAIT_FLAG_KEY);
-    await actor.unsetFlag?.(MODULE_ID, FATIGUED_ATTRIBUTE_FLAG_KEY);
+    // Clear the stored system fields
+    await actor.update?.({
+      "system.fatiguedTraitUuid": null,
+      "system.fatiguedAttribute": null,
+    });
   } catch (err) {
     console.warn(`${MODULE_ID} | deleteAllFatigueTraits failed`, err);
   }

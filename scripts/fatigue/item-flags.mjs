@@ -17,7 +17,10 @@ const TRAIT_FATIGUE_FLAG = "isFatigue";
 export function isTraitFatigue(item) {
   if (!item || item.type !== "trait") return false;
   try {
-    return Boolean(item.getFlag?.(MODULE_ID, TRAIT_FATIGUE_FLAG));
+    return (
+      item.system?.isFatigue === true ||
+      Boolean(item.getFlag?.(MODULE_ID, TRAIT_FATIGUE_FLAG))
+    );
   } catch (_) {
     return false;
   }
@@ -30,5 +33,5 @@ export function isTraitFatigue(item) {
  */
 export async function setTraitFatigueFlag(item, value) {
   if (!item || item.type !== "trait") return;
-  await item.setFlag(MODULE_ID, TRAIT_FATIGUE_FLAG, Boolean(value));
+  await item.update({ "system.isFatigue": Boolean(value) });
 }

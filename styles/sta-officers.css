@@ -1183,8 +1183,12 @@ div.section.character-log li.row.entry a.value-used.control.toggle {
 }
 
 /* Icon-only control: show the source log that calls back to this log */
-div.section.milestones li.row.entry[data-item-type="log"] a.value-used.control.toggle .sta-show-source-btn,
-div.section.character-log li.row.entry[data-item-type="log"] a.value-used.control.toggle .sta-show-source-btn {
+.sta-show-source-btn {
+  /* reset <button> defaults */
+  background: none;
+  border: none;
+  box-shadow: none;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1194,15 +1198,18 @@ div.section.character-log li.row.entry[data-item-type="log"] a.value-used.contro
   cursor: pointer;
 }
 
-div.section.milestones li.row.entry[data-item-type="log"] a.value-used.control.toggle .sta-show-source-btn:hover,
-div.section.milestones li.row.entry[data-item-type="log"] a.value-used.control.toggle .sta-show-source-btn:focus-visible,
-div.section.character-log li.row.entry[data-item-type="log"] a.value-used.control.toggle .sta-show-source-btn:hover,
-div.section.character-log li.row.entry[data-item-type="log"] a.value-used.control.toggle .sta-show-source-btn:focus-visible {
+.sta-show-source-btn:hover,
+.sta-show-source-btn:focus-visible {
   opacity: 1;
 }
 
 /* Icon-only control: show associated logs from milestone rows */
 div.section.milestones li.row.entry[data-item-type="milestone"] .sta-show-milestone-logs-btn {
+  /* reset <button> defaults */
+  background: none;
+  border: none;
+  box-shadow: none;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1210,6 +1217,7 @@ div.section.milestones li.row.entry[data-item-type="milestone"] .sta-show-milest
   height: 22px;
   opacity: 0.75;
   cursor: pointer;
+  color: currentColor;
 }
 
 div.section.milestones li.row.entry[data-item-type="milestone"] .sta-show-milestone-logs-btn:hover,
@@ -1263,14 +1271,34 @@ div.section.character-log li.row.entry .sta-current-mission-indicator {
     align-items: center;
 }
 
+/* Button order within .sta-log-inline-actions: Choose Arc → Write Log → Camera → Show Links */
+.sta-choose-milestone-btn { order: 1; }
+.sta-write-log-btn        { order: 2; }
+.sta-current-mission-indicator { order: 3; }
+.sta-show-source-btn      { order: 4; }
+
 .sta-inline-sheet-btn {
+    /* reset <button> defaults */
+    background: none;
+    box-shadow: none;
+
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.1rem 0.45rem;
-    border: thin solid white;
-    border-radius: 10px;
+    gap: 0.3em;
+    padding: 0.1rem 0.4rem;
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 8px;
     white-space: nowrap;
+    font-size: 0.78em;
+    line-height: 1.4;
+    color: rgba(255,255,255,0.65);
+    cursor: pointer;
+}
+
+.theme-light .sta-inline-sheet-btn {
+    border-color: rgba(0,0,0,0.3);
+    color: rgba(0,0,0,0.55);
 }
 
 .sta-inline-sheet-btn.is-disabled {
@@ -1279,14 +1307,13 @@ div.section.character-log li.row.entry .sta-current-mission-indicator {
 }
 
 .sta-choose-milestone-btn.sta-choose-btn-disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: not-allowed;
-  border-style: dotted;
 }
 
 .sta-inline-sheet-btn:hover,
 .sta-inline-sheet-btn:focus-visible {
-    border-color:goldenrod;
+    border-color: goldenrod;
     color: goldenrod;
 }
 

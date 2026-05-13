@@ -1438,7 +1438,15 @@ export function injectSheetVariantCss(linkId, filename, enabled) {
     link.rel = "stylesheet";
     link.href = `modules/${MODULE_ID}/${filename}`;
     document.head.appendChild(link);
+    // Return a Promise that resolves once the stylesheet has loaded so callers
+    // can await it before doing layout-dependent work.
+    return new Promise((resolve) => {
+      link.addEventListener("load", resolve, { once: true });
+      link.addEventListener("error", resolve, { once: true }); // don't hang on 404
+    });
   } else if (!enabled && existing) {
     existing.remove();
   }
+  // Already present (or removed) — resolve immediately.
+  return Promise.resolve();
 }

@@ -290,13 +290,11 @@ export function _installItemContextMenu(sheetApp, root) {
         if (!actor) return;
 
         try {
-          // Set the flag directly (same as Officers Log does internally)
+          // Update the system field directly (sta-officers-log migrated currentMissionLogId to system.*)
           if (game.user?.isGM) {
-            await actor.setFlag(
-              "sta-officers-log",
-              "currentMissionLogId",
-              String(logId),
-            );
+            await actor.update({
+              "system.currentMissionLogId": String(logId),
+            });
           } else {
             // Non-GM: use the Officers Log socket if available
             const socket = game.modules?.get?.("sta-officers-log")?.socket?.();

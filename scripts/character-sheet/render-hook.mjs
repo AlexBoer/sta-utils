@@ -679,9 +679,11 @@ function handleStarshipSheetRender(app, root) {
   const systemsBlock = root?.querySelector?.(".systems-block");
   if (!systemsBlock) return;
 
-  // Read the routed system from our module flag
+  // Read the routed system from our system field
   const reservePowerSystem =
-    actor.getFlag(MODULE_ID, "reservePowerSystem") ?? null;
+    actor.system?.reservePowerSystem ??
+    actor.getFlag(MODULE_ID, "reservePowerSystem") ??
+    null;
   const hasReservePower = actor.system?.reservepower ?? false;
 
   // Iterate every system row and toggle the glow class
@@ -765,18 +767,21 @@ function _installReservePowerContextMenu(systemsBlock, actor) {
               : null;
         const systemKey = _systemKeyFromTarget(el);
         if (!systemKey) return;
-        await actor.setFlag(MODULE_ID, "reservePowerSystem", systemKey);
+        await actor.update({ "system.reservePowerSystem": systemKey });
       },
     },
     {
       name: t("sta-utils.reservePowerMenu.clearRouting"),
       icon: '<i class="fas fa-power-off"></i>',
       condition: () => {
-        const current = actor.getFlag(MODULE_ID, "reservePowerSystem") ?? null;
+        const current =
+          actor.system?.reservePowerSystem ??
+          actor.getFlag(MODULE_ID, "reservePowerSystem") ??
+          null;
         return current != null;
       },
       callback: async (target) => {
-        await actor.setFlag(MODULE_ID, "reservePowerSystem", null);
+        await actor.update({ "system.reservePowerSystem": null });
       },
     },
   ];

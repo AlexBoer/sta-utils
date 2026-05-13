@@ -282,7 +282,7 @@ function _installThemePicker(sheetApp, sheet) {
  * @param {Application} sheetApp - The LcarsCharacterSheet2e ApplicationV2 instance.
  * @param {HTMLElement} root - The root element of the character sheet window.
  */
-export function installLcarsSheetMode(sheetApp, root) {
+export async function installLcarsSheetMode(sheetApp, root) {
   // Find the sheet root — with or without the sta-lcars class (the "sta"
   // / STA Original scheme intentionally omits it).
   const sheet =
@@ -296,7 +296,8 @@ export function installLcarsSheetMode(sheetApp, root) {
 
   // Always load the LCARS CSS — even the STA Original scheme needs it for
   // the name-row layout, flex columns, and theme picker styles.
-  injectSheetVariantCss(LCARS_CSS_LINK_ID, LCARS_CSS_PATH, true);
+  // Await so the sheet never renders before CSS variables are available.
+  await injectSheetVariantCss(LCARS_CSS_LINK_ID, LCARS_CSS_PATH, true);
 
   if (isOriginal) {
     // STA Original scheme — no LCARS structural enhancements, but CSS is
