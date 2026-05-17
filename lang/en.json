@@ -86,6 +86,10 @@
           "sciencePiercing": "Science Piercing — Piercing reduces resistance by \u2308Science/2\u2309 on all hits"
         }
       },
+      "showAdvancedCalculator": {
+        "name": "Show Advanced Calculator Button",
+        "hint": "Show the 'Advanced' button inside the Attack Calculator dialog. When enabled, players can open the full Attack Calculator from the sentence-style dialog."
+      },
       "playerAmbientAudioSelectionOnly": {
         "name": "Player Ambient Audio Uses Selected Tokens",
         "hint": "If enabled, non-GM users only hear ambient audio near tokens they currently have selected/controlled (matching GM behavior). If disabled, Foundry's default behavior applies (players hear audio near all owned tokens)."
@@ -318,8 +322,8 @@
       "weaponName": "Weapon",
       "weaponQualities": "Weapon Qualities",
       "actions": "Actions Taken",
-      "calibrateWeapons": "Calibrate Weapons (minor action)",
-      "calibrateWeaponsHint": "+1 to base damage",
+      "calibrateWeapons": "Calibrate Weapons",
+      "calibrateWeaponsHint": "minor action · +1 base damage",
       "baseDamage": "Base Damage",
       "resistance": "Resistance",
       "scienceRating": "Science Rating (Piercing)",
@@ -342,8 +346,18 @@
       "enterBaseDamage": "Enter a base damage value to calculate.",
       "piercingIgnored": "ignored",
       "activeQualities": "Active Qualities",
-      "openCalculator": "Calculate Damage",
+      "openCalculator": "Attack Calculator",
+      "presetTitle": "Starship Attack",
+      "confirmSend": "Send to Chat",
+      "advanced": "Advanced",
+      "setBaseDamage": "Set Base Dmg",
+      "setBaseDamageTitle": "Set Base Damage",
       "addQuality": "Add quality…",
+      "addQualityTitle": "Add Quality",
+      "noAvailableQualities": "All qualities have already been added.",
+      "apply": "Apply",
+      "add": "Add",
+      "addQualityLabel": "Add Quality",
       "sendToChat": "Send to Chat",
       "close": "Close",
       "qualities": {

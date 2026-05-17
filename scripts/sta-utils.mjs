@@ -54,9 +54,13 @@ import { installStardateDisplay } from "./stardate-display/index.mjs";
 import { installAlertStatus } from "./alert-status/index.mjs";
 
 import {
-  attackCalculator,
+  openAttackCalculator as attackCalculatorAdvanced,
+  openAttackPresetDialog,
   installAttackCalculatorChatHook,
 } from "./attack-calculator/index.mjs";
+
+const openPublicAttackCalculator = (defaults = {}) =>
+  openAttackPresetDialog({ ...defaults, publicApi: true });
 
 import { actionChooser } from "./action-chooser/index.mjs";
 
@@ -561,7 +565,8 @@ Hooks.once("ready", async () => {
   game.staUtils = {
     warpCalculator,
     stardateCalculator,
-    attackCalculator,
+    attackCalculator: openPublicAttackCalculator,
+    attackCalculatorAdvanced,
     noteStyler,
     openDicePoolMonitor,
     crewManifest,

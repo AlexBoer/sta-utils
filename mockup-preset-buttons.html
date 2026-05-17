@@ -1,0 +1,466 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Attack Preset Buttons � Mockup</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #1a1a2e; color: #d0d8f0;
+      font-family: "Segoe UI", "Roboto Condensed", sans-serif;
+      padding: 2rem; display: flex; flex-direction: column; gap: 2.5rem;
+    }
+    h2 {
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.12em; color: rgba(255,255,255,0.25);
+      margin-bottom: 0.75rem; padding-bottom: 0.3rem;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .note { font-size: 0.73rem; color: rgba(255,255,255,0.3); font-style: italic; margin-top: 0.4rem; }
+    .chat-msg {
+      background: #0d1117; border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 5px; padding: 0.4rem 0.5rem; font-size: 13px;
+    }
+    .chat-header {
+      display: flex; align-items: center; gap: 0.45rem;
+      margin-bottom: 0.4rem; opacity: 0.45; font-size: 0.75rem;
+    }
+    .chat-avatar {
+      width: 24px; height: 24px; border-radius: 50%; background: #2a4060;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; color: rgba(255,255,255,0.5); flex-shrink: 0;
+    }
+    .chatcard {
+      background: #0f1520; border: 1px solid rgba(100,150,200,0.2);
+      border-radius: 4px; overflow: hidden;
+    }
+    .chatcard .flavor {
+      font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em;
+      padding: 0.18rem 0.5rem; color: rgba(255,255,255,0.35);
+      background: rgba(255,255,255,0.03);
+    }
+    .chatcard .flavor.item { color: #89CFF0; }
+    .chatcard .itemheader { padding: 0.3rem 0.5rem 0.15rem; }
+    .goldtext { color: #f0b872; font-weight: 700; }
+    .chatcard .row { display: flex; padding: 0.08rem 0.5rem; font-size: 0.8rem; }
+    .chatcard .columna { flex: 0 0 58px; color: rgba(255,255,255,0.4); font-size: 0.73rem; }
+    .chatcard .columnb { flex: 1; }
+    .chatcard .tags { display: flex; flex-wrap: wrap; gap: 0.2rem; padding: 0.25rem 0.5rem; }
+    .chatcard .tag {
+      font-size: 0.7rem; padding: 0.08rem 0.38rem;
+      background: rgba(100,150,200,0.1); border: 1px solid rgba(100,150,200,0.25);
+      border-radius: 3px; color: rgba(180,220,255,0.7);
+    }
+
+    /* -- Widget -- */
+    .sta-preset-widget { border-top: 1px solid rgba(100,150,200,0.1); }
+
+    .sta-preset-btn-row {
+      display: flex; align-items: stretch; gap: 0.3rem;
+      padding: 0.35rem 0.5rem 0.3rem;
+    }
+    .sta-preset-btn {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 0.12rem; padding: 0.3rem 0.4rem;
+      border: 1px solid rgba(155,143,194,0.3); border-radius: 4px;
+      background: rgba(155,143,194,0.07); cursor: pointer;
+      transition: all 0.12s; font-family: inherit;
+    }
+    .sta-preset-btn--calc {
+      font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+      display: flex; align-items: center; justify-content: center; gap: 0.3rem;
+      border-color: rgba(155,143,194,0.3); background: rgba(155,143,194,0.07);
+      color: rgba(197,163,217,0.65);
+    }
+    .sta-preset-btn--calc:hover {
+      background: rgba(155,143,194,0.16); border-color: rgba(155,143,194,0.5); color: #c5a3d9;
+    }
+
+    .examples { display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: flex-start; }
+    .example-block { display: flex; flex-direction: column; gap: 0.3rem; }
+    .example-label {
+      font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.2);
+    }
+
+    /* -- Dialog shell -- */
+    .dlg {
+      width: 380px; background: #08080f;
+      border: 2px solid rgba(100,150,200,0.3); border-radius: 8px; overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      font-family: "Segoe UI","Roboto Condensed",sans-serif;
+      --lo: #f1a43c; --lp: #f0b872; --lv: #c5a3d9; --ll: #9b8fc2; --ls: #88aaff;
+    }
+    .dlg-title {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.45rem 0.75rem; background: rgba(155,143,194,0.1);
+      border-bottom: 1px solid rgba(155,143,194,0.2);
+      font-size: 0.76rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--lv);
+    }
+    .dlg-footer {
+      display: flex; gap: 0.4rem; padding: 0.55rem 0.7rem;
+      border-top: 1px solid rgba(155,143,194,0.18); background: rgba(0,0,0,0.2);
+    }
+    .dlg-btn {
+      display: flex; align-items: center; gap: 0.3rem; padding: 0.4rem 0.75rem;
+      border-radius: 4px; font-size: 0.78rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer; font-family: inherit;
+    }
+    .dlg-btn--confirm {
+      flex: 1; justify-content: center;
+      background: rgba(241,164,60,0.18); border: 1px solid rgba(241,164,60,0.55); color: var(--lo);
+    }
+    .dlg-btn--confirm:hover { background: rgba(241,164,60,0.3); }
+    .dlg-btn--open { background: rgba(155,143,194,0.1); border: 1px solid rgba(155,143,194,0.3); color: var(--lv); }
+    .dlg-btn--open:hover { background: rgba(155,143,194,0.2); }
+    .dlg-btn--close { background: rgba(100,100,100,0.1); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); }
+
+    /* -- Dialog header rows -- */
+    .dlg-info-bar {
+      display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+      padding: 0.35rem 0.75rem;
+      background: rgba(155,143,194,0.04); border-bottom: 1px solid rgba(155,143,194,0.1);
+    }
+    .dlg-info-label {
+      font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: rgba(255,255,255,0.2); flex-shrink: 0;
+    }
+    .dlg-weapon-name { font-weight: 700; color: #c5a3d9; font-size: 0.9rem; }
+    .dlg-mode-badge {
+      margin-left: auto; padding: 0.1rem 0.5rem;
+      background: rgba(137,207,240,0.12); border: 1px solid rgba(137,207,240,0.35);
+      border-radius: 10px; color: #89CFF0;
+      font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .dlg-qualities {
+      display: flex; align-items: center; gap: 0.3rem; flex-wrap: wrap;
+      padding: 0.22rem 0.75rem 0.3rem;
+      border-bottom: 1px solid rgba(100,150,200,0.1);
+    }
+    .dlg-qtag {
+      font-size: 0.7rem; padding: 0.07rem 0.38rem;
+      background: rgba(100,150,200,0.1); border: 1px solid rgba(100,150,200,0.25);
+      border-radius: 3px; color: rgba(180,220,255,0.7);
+    }
+    .dlg-qtag--inplay {
+      background: rgba(155,143,194,0.1); border: 1px solid rgba(155,143,194,0.35); color: #c5a3d9;
+    }
+
+    /* -- Sentence body -- */
+    .dlg-sentences {
+      padding: 1rem 1rem 0.6rem;
+      font-size: 0.9rem;
+      display: flex; flex-direction: column; gap: 0;
+    }
+    .dlg-sentence {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem; line-height: 1;
+    }
+    .dlg-sentence--intro { margin-bottom: 0; font-size: 0.97rem; }
+    .dlg-sentence--mom {
+      margin-top: 0.65rem; padding-top: 0.5rem;
+      border-top: 1px solid rgba(155,143,194,0.15);
+      font-size: 0.82rem; color: rgba(255,255,255,0.5);
+    }
+
+    /* -- Inline spinner (? stacked over value over ?) -- */
+    .spin {
+      display: inline-flex; flex-direction: column; align-items: center;
+      vertical-align: middle; line-height: 1; gap: 0;
+    }
+    .spin-btn {
+      background: none; border: none; cursor: pointer; line-height: 1;
+      padding: 0 0.4rem; font-size: 0.4rem;
+      color: rgba(241,164,60,0.3); transition: color 0.1s;
+    }
+    .spin-btn:hover { color: #f1a43c; }
+    .spin-val {
+      font-family: monospace; font-size: 1.2rem; font-weight: 700;
+      color: #f1a43c; min-width: 1.6rem; text-align: center; line-height: 1.15;
+    }
+    .spin--blue .spin-btn { color: rgba(137,207,240,0.3); }
+    .spin--blue .spin-btn:hover { color: #89CFF0; }
+    .spin--blue .spin-val { color: #89CFF0; }
+
+    /* Hit lines grid � number column right-aligned, text column fills remaining */
+    .hit-lines {
+      display: grid; grid-template-columns: 2.4rem 1fr;
+      gap: 0 0.4rem; align-items: center;
+    }
+    .hit-lines .spin { justify-self: end; }
+    .hit-lines .spin-val { text-align: right; }
+
+    /* Hit damage values */
+    .hit-dmg { font-family: monospace; font-weight: 700; font-size: 1.05rem; color: #f0b872; }
+    .hit-dmg--sub {
+      font-family: monospace; font-weight: 700; font-size: 0.95rem;
+      color: rgba(240,184,114,0.5);
+      display: block; text-align: right;
+    }
+
+    /* Momentum cost line */
+    .mom-used { font-family: monospace; font-weight: 700; font-size: 0.95rem; color: #88aaff; }
+    .mom-used--over { color: #d05050; }
+    .mom-pool { color: rgba(255,255,255,0.28); }
+
+    /* Calibrate row */
+    .dlg-calibrate-row {
+      display: flex; align-items: center; gap: 0.45rem;
+      padding: 0 0.75rem 0.65rem;
+      font-size: 0.8rem; color: rgba(255,255,255,0.38); cursor: pointer;
+    }
+    .dlg-calibrate-row input { accent-color: #f1a43c; cursor: pointer; }
+    .dlg-calibrate-row .hint { font-size: 0.68rem; font-style: italic; color: rgba(255,255,255,0.22); }
+  </style>
+</head>
+<body>
+
+<!-- --- SECTION 1: Chat Card Widget --- -->
+<div>
+  <h2>Chat Card Widget � Quality Toggles + Preset Buttons</h2>
+  <div class="examples">
+
+    <!-- Example 1: no mech. qualities ? both toggles -->
+    <div class="example-block">
+      <div class="example-label">No mech. qualities on weapon</div>
+      <div class="chat-msg">
+        <div class="chat-header"><div class="chat-avatar"><i class="fas fa-user"></i></div><span>Worf</span></div>
+        <div class="chatcard">
+          <div class="flavor item">Starship Weapon</div>
+          <div class="itemheader"><span class="goldtext">Photon Torpedo</span></div>
+          <div class="row"><div class="columna">Damage</div><div class="columnb"></div></div>
+          <div class="row"><div class="columna"></div><div class="columnb"><span class="goldtext">6</span></div></div>
+          <div class="tags"><span class="tag">High Yield</span></div>
+          <div class="sta-preset-widget" id="w1">
+            <div class="sta-preset-btn-row">
+              <button class="sta-preset-btn sta-preset-btn--calc"><i class="fas fa-calculator"></i> Attack Calculator</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Example 2: Intense only ? both toggles -->
+    <div class="example-block">
+      <div class="example-label">Weapon has Intense</div>
+      <div class="chat-msg">
+        <div class="chat-header"><div class="chat-avatar"><i class="fas fa-user"></i></div><span>Worf</span></div>
+        <div class="chatcard">
+          <div class="flavor item">Starship Weapon</div>
+          <div class="itemheader"><span class="goldtext">Phaser Array</span></div>
+          <div class="row"><div class="columna">Damage</div><div class="columnb"></div></div>
+          <div class="row"><div class="columna"></div><div class="columnb"><span class="goldtext">7</span></div></div>
+          <div class="tags"><span class="tag">Intense</span></div>
+          <div class="sta-preset-widget" id="w2">
+            <div class="sta-preset-btn-row">
+              <button class="sta-preset-btn sta-preset-btn--calc"><i class="fas fa-calculator"></i> Attack Calculator</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Example 3: Intense + Spread -->
+    <div class="example-block">
+      <div class="example-label">Weapon has Intense + Spread</div>
+      <div class="chat-msg">
+        <div class="chat-header"><div class="chat-avatar"><i class="fas fa-user"></i></div><span>Worf</span></div>
+        <div class="chatcard">
+          <div class="flavor item">Starship Weapon</div>
+          <div class="itemheader"><span class="goldtext">Phaser Array</span></div>
+          <div class="row"><div class="columna">Damage</div><div class="columnb"></div></div>
+          <div class="row"><div class="columna"></div><div class="columnb"><span class="goldtext">7</span></div></div>
+          <div class="tags"><span class="tag">Intense</span><span class="tag">Spread</span></div>
+          <div class="sta-preset-widget" id="w3">
+            <div class="sta-preset-btn-row">
+              <button class="sta-preset-btn sta-preset-btn--calc"><i class="fas fa-calculator"></i> Attack Calculator</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Example 4: Piercing + Spread on weapon ? no toggle row -->
+    <div class="example-block">
+      <div class="example-label">Weapon has Piercing + Spread</div>
+      <div class="chat-msg">
+        <div class="chat-header"><div class="chat-avatar"><i class="fas fa-user"></i></div><span>Worf</span></div>
+        <div class="chatcard">
+          <div class="flavor item">Starship Weapon</div>
+          <div class="itemheader"><span class="goldtext">Quantum Torpedo</span></div>
+          <div class="row"><div class="columna">Damage</div><div class="columnb"></div></div>
+          <div class="row"><div class="columna"></div><div class="columnb"><span class="goldtext">8</span></div></div>
+          <div class="tags"><span class="tag">Piercing</span><span class="tag">Spread</span><span class="tag">High Yield</span></div>
+          <div class="sta-preset-widget" id="w4">
+            <div class="sta-preset-btn-row">
+              <button class="sta-preset-btn sta-preset-btn--calc"><i class="fas fa-calculator"></i> Attack Calculator</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <p class="note">Clicking the button opens the sentence-style attack calculator dialog.</p>
+</div>
+
+
+<!-- --- SECTION 2: Confirmation Dialog --- -->
+<div>
+  <h2>Confirmation Dialog (sentence-style with inline spinners)</h2>
+  <div style="margin-top:0.75rem;">
+    <div class="dlg">
+      <div class="dlg-title">
+        <span><i class="fas fa-crosshairs" style="margin-right:0.35rem;opacity:0.7;"></i>Starship Attack</span>
+        <button style="background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:0.85rem;">?</button>
+      </div>
+      <div class="dlg-info-bar">
+        <span class="dlg-info-label">Weapon</span>
+        <span class="dlg-weapon-name">Phaser Array</span>
+      </div>
+      <div class="dlg-qualities">
+        <span class="dlg-info-label">Qualities</span>
+        <span class="dlg-qtag">Intense</span>
+
+      </div>
+      <div class="dlg-sentences" id="dlg-sentences"></div>
+      <label class="dlg-calibrate-row">
+        <input type="checkbox" id="dlg-calibrate2" onchange="recalcDialog2()" />
+        Calibrate Weapons
+        <span class="hint">(minor action � +1 base damage)</span>
+      </label>
+      <div class="dlg-footer">
+        <button class="dlg-btn dlg-btn--confirm"><i class="fas fa-comment"></i> Confirm &amp; Send to Chat</button>
+        <button class="dlg-btn dlg-btn--open"><i class="fas fa-calculator"></i> Advanced</button>
+        <button class="dlg-btn dlg-btn--close"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- --- SECTION 3: Resulting Chat Message --- -->
+<div>
+  <h2>Resulting Chat Message (after Confirm)</h2>
+  <div style="margin-top:0.75rem;">
+    <div style="width:255px;background:#0d1117;border:1px solid rgba(100,150,200,0.12);border-radius:5px;padding:0.4rem 0.5rem;">
+      <div style="font-family:'Segoe UI',sans-serif;background:rgba(137,207,240,0.08);border:2px solid #89CFF0;border-radius:8px;padding:10px 14px;">
+        <h3 style="font-size:0.88rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#89CFF0;margin:0 0 4px;border:none;">
+          <i class="fas fa-crosshairs" style="margin-right:6px;"></i>Starship Attack
+        </h3>
+        <div style="font-size:0.85rem;font-weight:700;color:rgba(180,220,255,0.9);margin-bottom:0.5rem;">Phaser Array</div>
+        <!-- per-hit breakdown -->
+        <div style="display:flex;flex-direction:column;gap:0.28rem;font-size:0.82rem;">
+          <div style="color:rgba(255,255,255,0.55);">The attack deals <strong style="color:rgba(180,220,255,0.85);">4 hits</strong>.</div>
+          <div style="display:flex;flex-direction:column;gap:0.18rem;margin-top:0.15rem;padding-left:0.3rem;border-left:2px solid rgba(241,164,60,0.35);">
+            <div style="display:flex;align-items:baseline;gap:0.35rem;">
+              <span style="font-family:monospace;font-weight:700;font-size:0.95rem;color:#f1a43c;">7</span>
+              <span style="color:rgba(255,255,255,0.6);">damage on the <strong>1st</strong> hit</span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:0.35rem;">
+              <span style="font-family:monospace;font-weight:700;font-size:0.88rem;color:rgba(240,184,114,0.55);">4</span>
+              <span style="color:rgba(255,255,255,0.45);font-size:0.8rem;">damage on the <strong>2nd</strong> hit</span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:0.35rem;">
+              <span style="font-family:monospace;font-weight:700;font-size:0.88rem;color:rgba(240,184,114,0.55);">4</span>
+              <span style="color:rgba(255,255,255,0.45);font-size:0.8rem;">damage on the <strong>3rd</strong> hit</span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:0.35rem;">
+              <span style="font-family:monospace;font-weight:700;font-size:0.88rem;color:rgba(240,184,114,0.55);">4</span>
+              <span style="color:rgba(255,255,255,0.45);font-size:0.8rem;">damage on the <strong>4th</strong> hit</span>
+            </div>
+          </div>
+          <div style="margin-top:0.3rem;padding-top:0.3rem;border-top:1px solid rgba(255,255,255,0.1);display:flex;gap:0.3rem;align-items:baseline;font-size:0.78rem;">
+            <span style="color:rgba(255,255,255,0.38);">Momentum spent:</span>
+            <span style="font-family:monospace;font-weight:700;color:#88aaff;">4</span>
+            <span style="color:rgba(255,255,255,0.22);">/</span>
+            <span style="color:rgba(255,255,255,0.22);">4 pool</span>
+          </div>
+          <div style="font-size:0.75rem;color:rgba(255,255,255,0.38);">Qualities: Intense, Spread, Piercing</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  // Dialog state (Phaser Array, budget 4, intense+spread both from qualities/in-play) --
+  const dlg2 = { base: 7, intense: true, spread: true, budget: 4, weaponName: 'Phaser Array', hits: 1, dmg: 7 };
+
+  function adjHits(delta) {
+    dlg2.hits = Math.max(1, dlg2.hits + delta);
+    recalcDialog2();
+  }
+
+  function adjDmg(delta) {
+    const calibrate = document.getElementById('dlg-calibrate2')?.checked || false;
+    const minDmg = dlg2.base + (calibrate ? 1 : 0);
+    dlg2.dmg = Math.max(minDmg, dlg2.dmg + delta);
+    recalcDialog2();
+  }
+
+  function ordinal(n) {
+    const s = ['th','st','nd','rd'], v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  }
+
+  function recalcDialog2() {
+    const calibrate = document.getElementById('dlg-calibrate2')?.checked || false;
+    const { base, intense, spread, budget, weaponName } = dlg2;
+    const eb = base + (calibrate ? 1 : 0);
+    const incCost = intense ? 1 : 2;
+    const devCost = spread  ? 1 : 2;
+    // clamp dmg so it can't go below effective base
+    dlg2.dmg = Math.max(eb, dlg2.dmg);
+    const { hits, dmg } = dlg2;
+    const dev = hits - 1;
+    const incCount = dmg - eb;
+    const devHit = Math.ceil(dmg / 2);
+    const spent = dev * devCost + incCount * incCost;
+    const over = spent > budget;
+
+    // Build one row pair per subsequent hit (grid children � no wrapper div)
+    let hitLines = '';
+    for (let i = 2; i <= hits; i++) {
+      hitLines += `
+        <span class="hit-dmg--sub">${devHit}</span>
+        <span style="color:rgba(255,255,255,0.45);font-size:0.85rem;">damage on the <strong>${ordinal(i)}</strong> hit</span>`;
+    }
+
+    const momClass = over ? 'mom-used mom-used--over' : 'mom-used';
+    const overText = over ? ' ? over budget' : '';
+
+    document.getElementById('dlg-sentences').innerHTML = `
+      <div class="dlg-sentence dlg-sentence--intro">
+        The ${weaponName} attack deals
+        <span class="spin spin--blue">
+          <button class="spin-btn" onclick="adjHits(1)">?</button>
+          <span class="spin-val">${hits}</span>
+          <button class="spin-btn" onclick="adjHits(-1)">?</button>
+        </span>
+        hit${hits === 1 ? '' : 's'}!
+      </div>
+      <div class="hit-lines">
+        <span class="spin">
+          <button class="spin-btn" onclick="adjDmg(1)">?</button>
+          <span class="spin-val">${dmg}</span>
+          <button class="spin-btn" onclick="adjDmg(-1)">?</button>
+        </span>
+        <span style="color:rgba(255,255,255,0.55);">damage on the <strong>1st</strong> hit</span>
+        ${hitLines}
+      </div>
+      <div class="dlg-sentence dlg-sentence--mom">
+        Momentum cost:
+        <span class="${momClass}">${spent}${overText}</span>
+        <span class="mom-pool">/ ${budget} pool</span>
+      </div>`;
+  }
+
+  recalcDialog2();
+</script>
+</body>
+</html>

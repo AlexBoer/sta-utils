@@ -43,6 +43,7 @@ const ENABLE_PERSONAL_THREAT_SETTING = "enablePersonalThreat";
 const ENABLE_ROLL_REQUEST_SETTING = "enableRollRequest";
 const MOBILE_THEME_SETTING = "mobileSheetTheme";
 const PIERCING_MODE_SETTING = "piercingMode";
+const SHOW_ADVANCED_CALCULATOR_SETTING = "showAdvancedCalculator";
 const OFFICERS_LOG_MODULE_ID = "sta-officers-log";
 const SHOW_CREATION_WIZARD_BUTTON_SETTING = "showCreationWizardButton";
 
@@ -506,6 +507,16 @@ export function registerSettings() {
     group: GROUP_WORLD,
   });
 
+  game.settings.register(MODULE_ID, SHOW_ADVANCED_CALCULATOR_SETTING, {
+    name: t("sta-utils.settings.showAdvancedCalculator.name"),
+    hint: t("sta-utils.settings.showAdvancedCalculator.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    group: GROUP_WORLD,
+  });
+
   // ----- Personal Threat -----
 
   game.settings.register(MODULE_ID, ENABLE_PERSONAL_THREAT_SETTING, {
@@ -902,6 +913,17 @@ export function isExtendedTaskTrackerEnabled() {
     );
   } catch (_) {
     return false;
+  }
+}
+
+/** @returns {boolean} */
+export function showAdvancedCalculatorButton() {
+  try {
+    return Boolean(
+      game.settings.get(MODULE_ID, SHOW_ADVANCED_CALCULATOR_SETTING),
+    );
+  } catch (_) {
+    return true;
   }
 }
 

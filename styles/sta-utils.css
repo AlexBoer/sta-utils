@@ -1766,6 +1766,406 @@ input.selector.attribute.sta-fatigued-attribute {
 }
 
 /* =============================================================================
+ * ATTACK PRESET WIDGET (chat card "Attack Calculator" button)
+ * ============================================================================= */
+
+.sta-preset-widget {
+  border-top: 1px solid rgba(100, 150, 200, 0.1);
+}
+
+.sta-preset-btn-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.3rem;
+  padding: 0.35rem 0.5rem 0.3rem;
+}
+
+.sta-preset-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.12rem;
+  padding: 0.3rem 0.4rem;
+  border: 1px solid rgba(155, 143, 194, 0.3);
+  border-radius: 4px;
+  background: rgba(155, 143, 194, 0.07);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.sta-preset-btn--calc {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  color: rgba(197, 163, 217, 0.65);
+
+  &:hover, &:focus-visible {
+    background: rgba(155, 143, 194, 0.16);
+    border-color: rgba(155, 143, 194, 0.5);
+    color: #c5a3d9;
+  }
+}
+
+/* =============================================================================
+ * ATTACK PRESET DIALOG (sentence-style calculator)
+ * ============================================================================= */
+
+.sta-attack-preset-dialog {
+  --lcars-orange: #f1a43c;
+  --lcars-peach: #f0b872;
+  --lcars-lavender: #c5a3d9;
+  --lcars-lilac: #9b8fc2;
+  --lcars-sky: #88aaff;
+  --lcars-red: #d05050;
+  min-width: 340px;
+
+  /* Info bar — weapon name */
+  .sad-info-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.75rem;
+    background: rgba(155, 143, 194, 0.04);
+    border-bottom: 1px solid rgba(155, 143, 194, 0.1);
+  }
+
+  .sad-info-label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: rgba(255, 255, 255, 0.2);
+    flex-shrink: 0;
+  }
+
+  .sad-weapon-name {
+    font-weight: 700;
+    color: var(--lcars-lavender);
+    font-size: 0.9rem;
+  }
+
+  /* Qualities bar */
+  .sad-qualities {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+    padding: 0.22rem 0.75rem 0.3rem;
+    border-bottom: 1px solid rgba(100, 150, 200, 0.1);
+  }
+
+  .sad-qtag {
+    font-size: 0.7rem;
+    padding: 0.07rem 0.38rem;
+    background: rgba(100, 150, 200, 0.1);
+    border: 1px solid rgba(100, 150, 200, 0.25);
+    border-radius: 3px;
+    color: rgba(180, 220, 255, 0.7);
+  }
+
+  .sad-quality-tags {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+  }
+
+  .sad-mini-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    border: 1px solid rgba(155, 143, 194, 0.28);
+    background: rgba(155, 143, 194, 0.08);
+    color: rgba(255, 255, 255, 0.7);
+    border-radius: 3px;
+    padding: 0.08rem 0.4rem;
+    font-size: 0.58rem;
+    font-weight: 700;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+  }
+
+  .sad-mini-btn:hover,
+  .sad-mini-btn:focus-visible {
+    color: #fff;
+    border-color: rgba(241, 164, 60, 0.55);
+    background: rgba(241, 164, 60, 0.12);
+  }
+
+  .sad-mini-btn--quality {
+    margin-left: auto;
+    padding-inline: 0.35rem;
+    min-width: 1.2rem;
+  }
+
+  .hit-main-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    justify-self: end;
+  }
+
+  .sad-mini-btn--base {
+    white-space: nowrap;
+  }
+
+  /* Sentence body */
+  .sad-sentences {
+    padding: 1rem 1rem 0.6rem;
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .dlg-sentence {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    line-height: 1;
+  }
+
+  .dlg-sentence--intro { font-size: 0.97rem; }
+
+  .dlg-sentence--mom {
+    margin-top: 0.65rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(155, 143, 194, 0.15);
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  /* Hit lines grid — number column (2.4rem) | label column (rest) */
+  .hit-lines {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0 0.4rem;
+    align-items: center;
+  }
+
+  .hit-lines .spin { justify-self: end; }
+  .hit-lines .spin-val { text-align: right; }
+
+  .sad-hit-label {
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.88rem;
+  }
+
+  .sad-hit-label--main { font-size: 0.92rem; }
+
+  /* Subsequent hit damage value (muted) */
+  .hit-dmg--sub {
+    font-family: monospace;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: rgba(240, 184, 114, 0.5);
+    display: block;
+    text-align: right;
+  }
+
+  /* Inline spinner (▲ / value / ▼ stacked vertically) */
+  .spin {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    vertical-align: middle;
+    line-height: 1;
+    gap: 0;
+  }
+
+  .spin-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0.1rem 0.75rem;
+    font-size: 0.4rem;
+    color: rgba(241, 164, 60, 0.3);
+    border-radius: 3px;
+    transition: color 0.1s, background 0.1s;
+    &:hover {
+      color: var(--lcars-orange);
+      background: rgba(241, 164, 60, 0.1);
+    }
+  }
+
+  .spin-val {
+    font-family: monospace;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--lcars-orange);
+    min-width: 1.6rem;
+    text-align: center;
+    line-height: 1.15;
+  }
+
+  .spin-val--above { color: var(--lcars-orange); }
+  .spin-val--at    { color: rgba(255, 255, 255, 0.65); }
+  .spin-val--below { color: var(--lcars-red); }
+
+  /* Blue variant (hits spinner) */
+  .spin--blue .spin-btn {
+    color: rgba(136, 170, 255, 0.3);
+    &:hover {
+      color: var(--lcars-sky);
+      background: rgba(136, 170, 255, 0.1);
+    }
+  }
+  .spin--blue .spin-val { color: var(--lcars-sky); }
+
+  /* Momentum cost */
+  .mom-used {
+    font-family: monospace;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--lcars-sky);
+  }
+  .mom-used--over { color: var(--lcars-red); }
+  .mom-pool { color: rgba(255, 255, 255, 0.28); }
+
+  /* Calibrate row */
+  .sad-calibrate-row {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0 0.75rem 0.65rem;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.38);
+    cursor: pointer;
+    input { accent-color: var(--lcars-orange); cursor: pointer; }
+  }
+
+  .sad-calibrate-hint {
+    font-size: 0.68rem;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.22);
+  }
+
+  /* Footer */
+  .sad-footer {
+    display: flex;
+    gap: 0.4rem;
+    padding: 0.55rem 0.7rem;
+    border-top: 1px solid rgba(155, 143, 194, 0.18);
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .sad-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .sad-btn--confirm {
+    flex: 1;
+    justify-content: center;
+    background: rgba(241, 164, 60, 0.18);
+    border: 1px solid rgba(241, 164, 60, 0.55);
+    color: var(--lcars-orange);
+    &:hover, &:focus-visible { background: rgba(241, 164, 60, 0.3); }
+  }
+
+  .sad-btn--advanced {
+    background: rgba(155, 143, 194, 0.1);
+    border: 1px solid rgba(155, 143, 194, 0.3);
+    color: var(--lcars-lavender);
+    &:hover, &:focus-visible { background: rgba(155, 143, 194, 0.2); }
+  }
+
+  .sad-btn--close {
+    background: rgba(100, 100, 100, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.4);
+    &:hover, &:focus-visible {
+      background: rgba(100, 100, 100, 0.2);
+      color: rgba(255, 255, 255, 0.7);
+    }
+  }
+}
+
+/* Chat message output from the preset dialog */
+.sta-attack-result {
+  background: rgba(137, 207, 240, 0.08);
+  border: 2px solid #89cff0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: "Segoe UI", sans-serif;
+
+  h3 {
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #89cff0;
+    margin: 0 0 4px;
+    border: none;
+  }
+
+  .sar-weapon {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: rgba(180, 220, 255, 0.9);
+    margin-bottom: 0.5rem;
+  }
+
+  .sar-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.28rem;
+    font-size: 0.82rem;
+
+    p { color: rgba(255, 255, 255, 0.55); }
+  }
+
+  .sar-hit-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 0.18rem;
+    margin-top: 0.15rem;
+    padding-left: 0.3rem;
+    border-left: 2px solid rgba(241, 164, 60, 0.35);
+  }
+
+  .sar-momentum {
+    margin-top: 0.3rem;
+    padding-top: 0.3rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    gap: 0.3rem;
+    align-items: baseline;
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.38);
+  }
+
+  .sar-qualities {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.38);
+  }
+}
+
+/* =============================================================================
  * NOTE STYLER DIALOG
  * ============================================================================= */
 

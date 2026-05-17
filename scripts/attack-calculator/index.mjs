@@ -6,3 +6,5 @@ export {
 } from "./attack-calculator.mjs";
 
 export { installAttackCalculatorChatHook } from "./chat-hook.mjs";
+
+export { openAttackPresetDialog } from "./preset-dialog.mjs";

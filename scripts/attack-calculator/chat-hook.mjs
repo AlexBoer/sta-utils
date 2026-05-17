@@ -8,7 +8,7 @@
 
 import { MODULE_ID } from "../core/constants.mjs";
 import { t } from "../core/i18n.mjs";
-import { openAttackCalculator } from "./attack-calculator.mjs";
+import { openAttackPresetDialog } from "./preset-dialog.mjs";
 
 // Map STA system tag text prefix (lowercase) to AttackCalculatorApp state key.
 // Prefix matching handles quality-with-value variants like "Hidden X", "Versatile 3".
@@ -73,32 +73,44 @@ function extractWeaponData(chatCard) {
   return { damage, weaponName, initialState };
 }
 
+// IDs of ChatMessages created in this browser session.
+// The button is only injected for these — it disappears after a page refresh.
+const sessionMessageIds = new Set();
+
 export function installAttackCalculatorChatHook() {
-  Hooks.on("renderChatMessageHTML", (_message, html) => {
+  Hooks.on("createChatMessage", (message) => {
+    sessionMessageIds.add(message.id);
+  });
+
+  Hooks.on("renderChatMessageHTML", (message, html) => {
     try {
+      if (!sessionMessageIds.has(message.id)) return;
       const chatCard = html.querySelector(".chatcard");
       if (!chatCard) return;
       if (!isStarshipWeaponCard(chatCard)) return;
 
-      // Avoid duplicate buttons if the hook fires more than once for the same element.
-      if (chatCard.querySelector(".sta-utils-weapon-calc-btn")) return;
+      // Avoid duplicate widgets if the hook fires more than once for the same element.
+      if (chatCard.querySelector(".sta-preset-widget")) return;
 
-      const btn = document.createElement("button");
-      btn.classList.add("sta-utils-weapon-calc-btn");
-      btn.type = "button";
-      btn.innerHTML = `<i class="fas fa-crosshairs"></i> ${t("sta-utils.attackCalculator.openCalculator")}`;
+      const widget = document.createElement("div");
+      widget.classList.add("sta-preset-widget");
+      widget.innerHTML = `<div class="sta-preset-btn-row">
+        <button class="sta-preset-btn sta-preset-btn--calc" type="button">
+          <i class="fas fa-calculator"></i> ${t("sta-utils.attackCalculator.openCalculator")}
+        </button>
+      </div>`;
 
-      btn.addEventListener("click", () => {
+      widget.querySelector("button").addEventListener("click", () => {
         const { damage, weaponName, initialState } =
           extractWeaponData(chatCard);
-        openAttackCalculator({
-          baseDamage: String(damage),
+        openAttackPresetDialog({
+          baseDamage: damage,
           weaponName,
           ...initialState,
         });
       });
 
-      chatCard.appendChild(btn);
+      chatCard.appendChild(widget);
     } catch (err) {
       console.warn(`${MODULE_ID} | Attack Calculator chat hook error`, err);
     }

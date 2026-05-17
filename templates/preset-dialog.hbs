@@ -1,0 +1,35 @@
+<div class="sad-body">
+  <div class="sad-info-bar">
+    <span class="sad-info-label">Weapon</span>
+    <span class="sad-weapon-name">{{weaponName}}</span>
+  </div>
+  {{#if showQualitiesRow}}
+  <div class="sad-qualities" data-hook="qualities-row">
+    <span class="sad-info-label">{{qualitiesLabel}}</span>
+    <span class="sad-quality-tags" data-hook="quality-tags">
+      {{#each qualityTags}}<span class="sad-qtag">{{this}}</span>{{/each}}
+    </span>
+    {{#if showQualityAddButton}}
+    <button class="sad-mini-btn sad-mini-btn--quality" data-action="add-quality" type="button" aria-label="{{addQualityLabel}}">
+      <i class="fas fa-plus"></i>
+    </button>
+    {{/if}}
+  </div>
+  {{/if}}
+  <div class="sad-sentences" data-hook="sentences"></div>
+  <label class="sad-calibrate-row">
+    <input type="checkbox" name="calibrate" {{#if calibrate}}checked{{/if}} />
+    {{calibrateLabel}}
+    <span class="sad-calibrate-hint">{{calibrateHint}}</span>
+  </label>
+  <div class="sad-footer">
+    <button class="sad-btn sad-btn--confirm" data-action="confirm" type="button">
+      <i class="fas fa-comment"></i> {{confirmLabel}}
+    </button>
+    {{#if showAdvanced}}
+    <button class="sad-btn sad-btn--advanced" data-action="advanced" type="button">
+      <i class="fas fa-calculator"></i> {{advancedLabel}}
+    </button>
+    {{/if}}
+  </div>
+</div>
