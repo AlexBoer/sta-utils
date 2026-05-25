@@ -8,7 +8,6 @@ export {
   installSettingsHeaderHook,
   shouldShowInfoButtons,
   isFatigueEnabled,
-  isBacklinksEnabled,
   isTalentAutomationsEnabled,
   isMomentumSpendEnabled,
   isMomentumMergerEnabled,

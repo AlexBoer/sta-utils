@@ -1,7 +1,6 @@
 import { MODULE_ID } from "./constants.mjs";
 import { t } from "./i18n.mjs";
 import { setPlayerAmbientAudioSelectionOnlyEnabled } from "../misc/ambient-audio-patch.mjs";
-import { SyncDialog } from "../journal-backlinks/sync-dialog.mjs";
 import {
   TrackerMacroButtonsConfig,
   TRACKER_MACRO_LAYOUT_SETTING,
@@ -11,7 +10,6 @@ import {
 const SHOW_INFO_BUTTONS_SETTING = "showInfoButtons";
 const AMBIENT_AUDIO_SELECTION_ONLY_SETTING = "playerAmbientAudioSelectionOnly";
 const ENABLE_FATIGUE_SETTING = "enableFatigue";
-const ENABLE_BACKLINKS_SETTING = "enableBacklinks";
 const ENABLE_STYLE_ENHANCE_SETTING = "enableStyleEnhance";
 const ENABLE_TALENT_AUTOMATIONS_SETTING = "enableTalentAutomations";
 const DISABLE_TOOLTIPS_SETTING = "disableTooltips";
@@ -29,12 +27,6 @@ const ALERT_STATUS_SETTING = "alertStatus";
 const SETTING_TRAIT_TOKENS = "enableTraitTokens";
 const SETTING_TRAIT_TOKEN_AUTO_LAYER = "traitTokenAutoLayerSwitch";
 const SETTING_WORLD_TRAITS_ACTOR_UUID = "worldTraitsActorUuid";
-const SETTING_BACKLINKS_REBUILD_ON_SAVE = "backlinksRebuildOnSave";
-const SETTING_BACKLINKS_HEADING_TAG = "backlinksHeadingTag";
-const SETTING_BACKLINKS_MIN_PERMISSION = "backlinksMinPermission";
-const SETTING_BACKLINKS_DEBUG = "backlinksDebug";
-const SETTING_BACKLINKS_LAST_SYNCED = "backlinksLastSyncedVersion";
-const SETTING_BACKLINKS_SYNC_BUTTON = "backlinksSyncButton";
 const SETTING_TRACKER_MACRO_MENU = "trackerMacroButtonsConfig";
 const GROUP_SHIP_ACTOR_SETTING = "groupShipActorId";
 const ENABLE_EXTENDED_TASK_TRACKER_SETTING = "enableExtendedTaskTracker";
@@ -46,6 +38,7 @@ const PIERCING_MODE_SETTING = "piercingMode";
 const SHOW_ADVANCED_CALCULATOR_SETTING = "showAdvancedCalculator";
 const OFFICERS_LOG_MODULE_ID = "sta-officers-log";
 const SHOW_CREATION_WIZARD_BUTTON_SETTING = "showCreationWizardButton";
+const ENABLE_TALENT_USES_SETTING = "enableTalentUses";
 
 /** Localized group labels for the settings menu. */
 const GROUP_WORLD = "sta-utils.settings.groups.world";
@@ -63,10 +56,6 @@ const SUBGROUPS = [
   {
     firstKey: ENABLE_ACTION_CHOOSER_SETTING,
     label: "sta-utils.settings.subgroups.actionChooser",
-  },
-  {
-    firstKey: ENABLE_BACKLINKS_SETTING,
-    label: "sta-utils.settings.subgroups.journalBacklinks",
   },
   {
     firstKey: SETTING_TRAIT_TOKENS,
@@ -197,73 +186,6 @@ export function registerSettings() {
     default: false,
     requiresReload: true,
     group: GROUP_WORLD,
-  });
-
-  // ----- Journal Backlinks -----
-
-  game.settings.register(MODULE_ID, ENABLE_BACKLINKS_SETTING, {
-    name: t("sta-utils.settings.enableBacklinks.name"),
-    hint: t("sta-utils.settings.enableBacklinks.hint"),
-    scope: "world",
-    config: true,
-    type: Boolean,
-    default: false,
-    requiresReload: true,
-    group: GROUP_WORLD,
-  });
-
-  game.settings.register(MODULE_ID, SETTING_BACKLINKS_REBUILD_ON_SAVE, {
-    name: t("sta-utils.journalBacklinks.rebuildOnSave.name"),
-    hint: t("sta-utils.journalBacklinks.rebuildOnSave.hint"),
-    scope: "world",
-    config: true,
-    type: Boolean,
-    default: true,
-    group: GROUP_WORLD,
-  });
-
-  game.settings.register(MODULE_ID, SETTING_BACKLINKS_HEADING_TAG, {
-    name: t("sta-utils.journalBacklinks.headingTag.name"),
-    hint: t("sta-utils.journalBacklinks.headingTag.hint"),
-    scope: "world",
-    config: true,
-    type: String,
-    default: "h2",
-    group: GROUP_WORLD,
-  });
-
-  const permissions = Object.fromEntries(
-    Object.entries(CONST.DOCUMENT_OWNERSHIP_LEVELS).map(([k, v]) => [
-      v,
-      game.i18n.localize("OWNERSHIP." + k),
-    ]),
-  );
-  game.settings.register(MODULE_ID, SETTING_BACKLINKS_MIN_PERMISSION, {
-    name: t("sta-utils.journalBacklinks.minPermission.name"),
-    hint: t("sta-utils.journalBacklinks.minPermission.hint"),
-    scope: "world",
-    config: true,
-    type: Number,
-    choices: permissions,
-    default: 1,
-    group: GROUP_WORLD,
-  });
-
-  game.settings.registerMenu(MODULE_ID, SETTING_BACKLINKS_SYNC_BUTTON, {
-    name: t("sta-utils.journalBacklinks.syncButton.name"),
-    label: t("sta-utils.journalBacklinks.syncButton.label"),
-    icon: "fas fa-sync-alt",
-    type: SyncDialog,
-    restricted: true,
-    group: GROUP_WORLD,
-  });
-
-  game.settings.register(MODULE_ID, SETTING_BACKLINKS_LAST_SYNCED, {
-    name: "Journal Backlinks — last synced version",
-    scope: "world",
-    config: false,
-    type: Number,
-    default: 0,
   });
 
   // ----- Trait Tokens -----
@@ -432,6 +354,16 @@ export function registerSettings() {
   });
 
   // ----- Standalone Features -----
+
+  game.settings.register(MODULE_ID, ENABLE_TALENT_USES_SETTING, {
+    name: t("sta-utils.settings.enableTalentUses.name"),
+    hint: t("sta-utils.settings.enableTalentUses.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    group: GROUP_WORLD,
+  });
 
   game.settings.register(MODULE_ID, ENABLE_TALENT_AUTOMATIONS_SETTING, {
     name: t("sta-utils.settings.enableTalentAutomations.name"),
@@ -688,17 +620,6 @@ export function registerSettings() {
     group: GROUP_CLIENT,
   });
 
-  game.settings.register(MODULE_ID, SETTING_BACKLINKS_DEBUG, {
-    name: t("sta-utils.journalBacklinks.debug.name"),
-    scope: "world",
-    config: true,
-    requiresReload: false,
-    restricted: true,
-    type: Boolean,
-    default: false,
-    group: GROUP_WORLD,
-  });
-
   game.settings.register(MODULE_ID, MOBILE_THEME_SETTING, {
     name: t("sta-utils.settings.mobileSheetTheme.name"),
     hint: t("sta-utils.settings.mobileSheetTheme.hint"),
@@ -735,15 +656,6 @@ export function shouldShowInfoButtons() {
 export function isFatigueEnabled() {
   try {
     return Boolean(game.settings.get(MODULE_ID, ENABLE_FATIGUE_SETTING));
-  } catch (_) {
-    return false;
-  }
-}
-
-/** @returns {boolean} */
-export function isBacklinksEnabled() {
-  try {
-    return Boolean(game.settings.get(MODULE_ID, ENABLE_BACKLINKS_SETTING));
   } catch (_) {
     return false;
   }
@@ -972,6 +884,15 @@ export function isPersonalThreatEnabled() {
   }
 }
 
+/** @returns {boolean} */
+export function isTalentUsesEnabled() {
+  try {
+    return Boolean(game.settings.get(MODULE_ID, ENABLE_TALENT_USES_SETTING));
+  } catch (_) {
+    return false;
+  }
+}
+
 /**
  * Returns the actor ID of the configured Group Ship.
  * If sta-officers-log is active, delegates to its setting instead.
@@ -1023,16 +944,6 @@ const SETTING_DEPENDENCIES = [
   {
     parent: ENABLE_ACTION_CHOOSER_SETTING,
     children: [ACTION_CHOOSER_AS_TAB_SETTING],
-  },
-  {
-    parent: ENABLE_BACKLINKS_SETTING,
-    children: [
-      SETTING_BACKLINKS_REBUILD_ON_SAVE,
-      SETTING_BACKLINKS_HEADING_TAG,
-      SETTING_BACKLINKS_MIN_PERMISSION,
-      SETTING_BACKLINKS_SYNC_BUTTON,
-      SETTING_BACKLINKS_DEBUG,
-    ],
   },
 ];
 

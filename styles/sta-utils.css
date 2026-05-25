@@ -308,6 +308,38 @@ li.row.entry.sta-utils-trait-hidden {
 }
 
 /* =============================================================================
+ * TALENT USES — Per-Mission Pip Tracker
+ * ============================================================================= */
+
+.talent-uses-pips {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0 0.4rem;
+  flex-shrink: 0;
+}
+
+.talent-uses-pip {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  opacity: 0.5;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: opacity 0.1s, background-color 0.1s;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &.filled {
+    background-color: currentColor;
+    opacity: 0.8;
+  }
+}
+
+/* =============================================================================
  * TALENT AUTOMATIONS — Dice Pool Dialog Toggle Section
  * ============================================================================= */
 
@@ -2757,83 +2789,6 @@ input.selector.attribute.sta-fatigued-attribute {
   }
 }
 
-
-/* =============================================================================
- * JOURNAL BACKLINKS (wiki-style "referenced by" links)
- * ============================================================================= */
-
-.journal-backlinks {
-  border-top: 1px solid var(--color-border-light-tertiary, #ccc);
-  margin-top: 1em;
-  padding-top: 0.5em;
-  opacity: 0.85;
-
-  ul {
-    list-style: none;
-    padding-left: 0.5em;
-    margin: 0.25em 0 0;
-  }
-
-  li { margin-bottom: 0.25em; }
-
-  .content-link { cursor: pointer; }
-
-  .backlinks-type-heading {
-    font-size: 0.8em;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0.75em 0 0.2em;
-    color: var(--color-text-dark-secondary, #555);
-    border-bottom: 1px solid var(--color-border-light-tertiary, #ccc);
-    padding-bottom: 0.1em;
-  }
-
-  .backlinks-parent-label {
-    font-size: 0.8em;
-    font-style: italic;
-    color: var(--color-text-dark-secondary, #555);
-    margin: 0.4em 0 0.1em 0.25em;
-  }
-
-  .backlinks-journal-label {
-    font-size: 0.8em;
-    font-style: italic;
-    color: var(--color-text-dark-secondary, #555);
-    margin: 0.3em 0 0.1em 1.25em;
-  }
-
-  .backlinks-inline-list {
-    padding-left: 1.25em;
-    margin: 0.1em 0 0.25em;
-    line-height: 1.8;
-  }
-}
-
-@media print {
-  .journal-backlinks { display: none; }
-}
-
-/* LCARS sheet overrides — use LCARS palette when inside an LCARS actor sheet */
-.sta-lcars .journal-backlinks {
-  border-top-color: var(--lcars-chrome, #d4a050);
-  opacity: 1;
-
-  .backlinks-type-heading {
-    font-family: var(--lcars-font-heading, inherit);
-    color: var(--lcars-chrome, #d4a050);
-    border-bottom-color: color-mix(in srgb, var(--lcars-chrome, #d4a050) 40%, transparent);
-  }
-
-  .backlinks-parent-label,
-  .backlinks-journal-label {
-    color: var(--lcars-tracktitle, #b89caa);
-  }
-
-  .backlinks-inline-list {
-    color: var(--lcars-primary, #ccc);
-  }
-}
 
 /* =============================================================================
  * CREW MANIFEST — Journal Entry crew roster

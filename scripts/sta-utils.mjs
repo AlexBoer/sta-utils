@@ -13,6 +13,15 @@ import { registerUtilsStarshipDataModel } from "./data/starshipDataModel.mjs";
 import { registerUtilsSmallCraftDataModel } from "./data/smallcraftDataModel.mjs";
 import { registerUtilsTraitDataModel } from "./data/traitDataModel.mjs";
 
+// Talent Uses
+import {
+  registerUtilsTalentDataModel,
+  installTalentUsesSheetHook,
+  installTalentItemSheetHook,
+  installTalentTypeExtensionHook,
+  resetActorTalentUses,
+} from "./talent-uses/index.mjs";
+
 // Features
 import {
   initTraitVisibility,
@@ -69,8 +78,6 @@ import {
   installAmbientAudioSelectionListenerPatch,
 } from "./misc/index.mjs";
 
-import { JournalBacklinks } from "./journal-backlinks/index.mjs";
-
 import { crewManifest } from "./crew-manifest/index.mjs";
 
 import {
@@ -122,7 +129,6 @@ import {
 import { installTrackerMacroButtonsHook } from "./tracker-macro-buttons/index.mjs";
 
 import {
-  isBacklinksEnabled,
   isDicePoolOverrideEnabled,
   isTalentAutomationsEnabled,
   isMomentumSpendEnabled,
@@ -292,6 +298,7 @@ Hooks.once("init", () => {
     registerUtilsStarshipDataModel();
     registerUtilsSmallCraftDataModel();
     registerUtilsTraitDataModel();
+    registerUtilsTalentDataModel();
   } catch (err) {
     console.error(`${MODULE_ID} | Failed to register data models`, err);
   }
@@ -431,6 +438,9 @@ Hooks.once("init", () => {
   }
 
   // --- Hook installers (init-time) ---
+  installTalentUsesSheetHook();
+  installTalentItemSheetHook();
+  installTalentTypeExtensionHook();
   installRenderApplicationV2Hook();
   installTrackerLauncherButton();
   installTrackerMacroButtonsHook();
@@ -446,15 +456,6 @@ Hooks.once("init", () => {
   if (isTalentAutomationsEnabled()) {
     initTalentAutomations();
     console.log(`${MODULE_ID} | Talent Automations feature enabled`);
-  }
-
-  // --- Journal Backlinks ---
-  const backlinks = new JournalBacklinks();
-  game.journalBacklinks = backlinks;
-
-  if (isBacklinksEnabled()) {
-    backlinks.registerHooks();
-    console.log(`${MODULE_ID} | Journal Backlinks feature enabled`);
   }
 
   // --- Extended Task Tracker ---
@@ -544,11 +545,6 @@ Hooks.once("ready", async () => {
     await runMigrations();
   }
 
-  // --- Journal Backlinks initial sync ---
-  if (isBacklinksEnabled() && game.journalBacklinks && game.user.isGM) {
-    game.journalBacklinks.checkInitialSync();
-  }
-
   // --- Dice Pool Override (independent feature) ---
   if (isDicePoolOverrideEnabled()) {
     installDicePoolOverride();
@@ -584,6 +580,7 @@ Hooks.once("ready", async () => {
     medicalbabble,
     launcher: openLauncher,
     calendarDateToStardate: calendarDateToStardateTng,
+    resetTalentUses: resetActorTalentUses,
   };
   console.log(`${MODULE_ID} | Public API exposed at game.staUtils`);
 });

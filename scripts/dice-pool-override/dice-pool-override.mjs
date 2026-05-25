@@ -20,6 +20,7 @@
  */
 
 import { MODULE_ID } from "../core/constants.mjs";
+import { getGroupShipActorId } from "../core/settings.mjs";
 import { showDicePoolDialog } from "./dice-pool-dialog.mjs";
 import {
   executeTaskRoll,
@@ -298,11 +299,16 @@ async function _overriddenAttributeTest(event, _original) {
   };
 
   /* ---- Render template ---- */
+  const groupShipId = getGroupShipActorId();
+  const defaultStarshipId =
+    (groupShipId && visibleStarships.some((s) => s.id === groupShipId)
+      ? groupShipId
+      : null) ?? visibleStarships[0]?.id;
   const html = await foundry.applications.handlebars.renderTemplate(template, {
     defaultValue,
     calculatedComplicationRange,
     starships: visibleStarships,
-    selectedStarshipId: visibleStarships[0]?.id,
+    selectedStarshipId: defaultStarshipId,
     systems,
     departments,
   });

@@ -40,6 +40,28 @@ import { installLcarsSheetMode } from "../lcars-sheet/lcars-mode.mjs";
 import { installConfigureStressBarButton } from "../personal-threat/index.mjs";
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Utilities
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Wrap a ContextMenu entry for compatibility with both Foundry v13
+ * (`name`/`condition`/`callback`) and v14+ (`label`/`visible`/`onClick`).
+ *
+ * @param {{ label: string, icon?: string, condition?: Function, callback: Function }} e
+ * @returns {object}
+ */
+function _compatEntry({ label, icon, condition, callback }) {
+  return {
+    name: label,
+    label,
+    icon,
+    ...(condition != null ? { condition, visible: condition } : {}),
+    callback,
+    onClick: (_event, target) => callback(target),
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Handler: Dialogs
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -752,8 +774,8 @@ function _installReservePowerContextMenu(systemsBlock, actor) {
 
   /** @type {ContextMenuEntry[]} */
   const menuItems = [
-    {
-      name: t("sta-utils.reservePowerMenu.routeHere"),
+    _compatEntry({
+      label: t("sta-utils.reservePowerMenu.routeHere"),
       icon: '<i class="fas fa-bolt"></i>',
       condition: () => {
         return actor.system?.reservepower ?? false;
@@ -769,9 +791,9 @@ function _installReservePowerContextMenu(systemsBlock, actor) {
         if (!systemKey) return;
         await actor.update({ "system.reservePowerSystem": systemKey });
       },
-    },
-    {
-      name: t("sta-utils.reservePowerMenu.clearRouting"),
+    }),
+    _compatEntry({
+      label: t("sta-utils.reservePowerMenu.clearRouting"),
       icon: '<i class="fas fa-power-off"></i>',
       condition: () => {
         const current =
@@ -783,7 +805,7 @@ function _installReservePowerContextMenu(systemsBlock, actor) {
       callback: async (target) => {
         await actor.update({ "system.reservePowerSystem": null });
       },
-    },
+    }),
   ];
 
   _reservePowerContextMenu = new foundry.applications.ux.ContextMenu(
@@ -867,14 +889,16 @@ let _combatTurnHooksInstalled = false;
  */
 function _refreshOpenSheetTurnIndicators() {
   if (!isActionChooserEnabled()) return;
-  for (const actor of game.actors) {
+  for (const app of Object.values(ui.windows)) {
+    const actor = app.actor ?? app.object;
     if (
+      app.rendered &&
+      actor &&
       (actor.type === "character" || actor.type === "npc") &&
-      actor.sheet?.rendered &&
-      actor.sheet.element
+      app.element
     ) {
       try {
-        installTurnIndicator(actor.sheet.element, actor);
+        installTurnIndicator(app.element, actor);
       } catch (_) {
         // ignore
       }

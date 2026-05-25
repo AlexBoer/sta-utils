@@ -9,7 +9,6 @@
       "subgroups": {
         "dicePoolMomentum": "Dice Pool & Momentum",
         "actionChooser": "Action Chooser",
-        "journalBacklinks": "Journal Backlinks",
         "traitTokens": "Trait Tokens",
         "groupShip": "Group Ship",
         "chatUi": "Chat & UI",
@@ -94,10 +93,6 @@
         "name": "Player Ambient Audio Uses Selected Tokens",
         "hint": "If enabled, non-GM users only hear ambient audio near tokens they currently have selected/controlled (matching GM behavior). If disabled, Foundry's default behavior applies (players hear audio near all owned tokens)."
       },
-      "enableBacklinks": {
-        "name": "Enable Journal Backlinks",
-        "hint": "Add wiki-style 'referenced by' links to journals, actors, and items that reference each other. Requires a world reload when changed."
-      },
       "enableStyleEnhance": {
         "name": "Enable Style Enhancements",
         "hint": "Apply additional CSS styling tweaks to STA sheets and chat cards. Takes effect immediately."
@@ -105,6 +100,10 @@
       "enableTalentAutomations": {
         "name": "Enable Talent Automations",
         "hint": "Automatically apply effects based on talents a character possesses (e.g. modify attributes, post reminders). Requires a world reload when changed."
+      },
+      "enableTalentUses": {
+        "name": "Enable Talent Uses Tracker",
+        "hint": "Track limited-use talents on character sheets with clickable pips. Open a talent to set its 'Max Uses per Mission'. A max of 0 means unlimited and hides the tracker."
       },
       "disableTooltips": {
         "name": "Disable Item Tooltips",
@@ -222,6 +221,13 @@
       "infoTitle": "Talents",
       "desc": "Talents give you special abilities that let you do things outside the normal rules.",
       "ok": "OK"
+    },
+    "talentUses": {
+      "limitedUsesLabel": "Limited uses?",
+      "usedLabel": "Used",
+      "maxLabel": "Uses per Mission",
+      "maxHint": "Maximum uses per mission. Set to 0 for unlimited (tracker hidden).",
+      "awardType": "Award"
     },
     "focusesInfo": {
       "infoTooltip": "Focuses Info",
@@ -457,35 +463,6 @@
       "borderGap": "Gap Length",
       "reset": "Reset to Defaults",
       "save": "Save"
-    },
-    "journalBacklinks": {
-      "rebuildOnSave": {
-        "name": "Rebuild links on save",
-        "hint": "Automatically rebuild reference links whenever a journal page, actor, or item is saved."
-      },
-      "headingTag": {
-        "name": "Backlinks heading tag",
-        "hint": "HTML heading element for the backlinks section (e.g. h1, h2, h3)."
-      },
-      "minPermission": {
-        "name": "Backlinks minimum permission",
-        "hint": "A user needs at least this permission level on the target document for a backlink to be visible."
-      },
-      "debug": {
-        "name": "Backlinks debug logging"
-      },
-      "syncButton": {
-        "name": "Sync backlinks",
-        "label": "Sync now"
-      },
-      "linkedFrom": "Linked from",
-      "type": {
-        "Actor": "Characters",
-        "JournalEntryPage": "Journal Entries",
-        "Item": "Items",
-        "RollTable": "Roll Tables",
-        "Other": "Other"
-      }
     },
     "crewManifest": {
       "dialogTitle": "Crew Manifest Generator",

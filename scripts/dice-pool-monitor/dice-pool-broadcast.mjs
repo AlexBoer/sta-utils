@@ -295,17 +295,17 @@ function _attachBroadcastListeners(root, actor, dialogId) {
     checkbox.addEventListener("change", broadcast);
   }
 
-  // Number input changes
+  // Number input changes — broadcast on commit (change), not on every keystroke.
+  // The initial open broadcast covers the current state; the GM sees the update
+  // when the player commits the value (Enter / tab away).
   const numberInputs = form.querySelectorAll?.('input[type="number"]') ?? [];
   for (const input of numberInputs) {
-    input.addEventListener("input", broadcast);
     input.addEventListener("change", broadcast);
   }
 
-  // Range slider changes
+  // Range slider changes — broadcast on release (change), not while dragging.
   const rangeInputs = form.querySelectorAll?.('input[type="range"]') ?? [];
   for (const input of rangeInputs) {
-    input.addEventListener("input", broadcast);
     input.addEventListener("change", broadcast);
   }
 

@@ -154,6 +154,24 @@ function _actorFromTarget(el) {
 }
 
 /**
+ * Wrap a ContextMenu entry for compatibility with both Foundry v13
+ * (`name`/`condition`/`callback`) and v14+ (`label`/`visible`/`onClick`).
+ *
+ * @param {{ label: string, icon?: string, condition?: Function, callback: Function }} e
+ * @returns {object}
+ */
+function _compatEntry({ label, icon, condition, callback }) {
+  return {
+    name: label,
+    label,
+    icon,
+    ...(condition != null ? { condition, visible: condition } : {}),
+    callback,
+    onClick: (_event, target) => callback(target),
+  };
+}
+
+/**
  * Install a Foundry ContextMenu on `.section .row.entry` elements so
  * users can right-click to Edit / Delete / Send to Chat.
  *
@@ -187,8 +205,8 @@ export function _installItemContextMenu(sheetApp, root) {
   }
 
   const menuItems = [
-    {
-      name: t("sta-utils.compactMenu.chatItem"),
+    _compatEntry({
+      label: t("sta-utils.compactMenu.chatItem"),
       icon: '<i class="fas fa-comment"></i>',
       condition: (target) => {
         const el = target instanceof HTMLElement ? target : target?.[0];
@@ -199,9 +217,9 @@ export function _installItemContextMenu(sheetApp, root) {
         const chatImg = el?.querySelector?.(".image .chat");
         if (chatImg) chatImg.click();
       },
-    },
-    {
-      name: t("sta-utils.compactMenu.editItem"),
+    }),
+    _compatEntry({
+      label: t("sta-utils.compactMenu.editItem"),
       icon: '<i class="fas fa-edit"></i>',
       callback: async (target) => {
         const el = target instanceof HTMLElement ? target : target?.[0];
@@ -225,9 +243,9 @@ export function _installItemContextMenu(sheetApp, root) {
         );
         if (editBtn) editBtn.click();
       },
-    },
-    {
-      name: t("sta-utils.compactMenu.deleteItem"),
+    }),
+    _compatEntry({
+      label: t("sta-utils.compactMenu.deleteItem"),
       icon: '<i class="fas fa-trash"></i>',
       callback: (target) => {
         const el = target instanceof HTMLElement ? target : target?.[0];
@@ -261,7 +279,7 @@ export function _installItemContextMenu(sheetApp, root) {
           }
         }
       },
-    },
+    }),
   ];
 
   // ── STA Officers Log integration ────────────────────────────────────
@@ -271,54 +289,59 @@ export function _installItemContextMenu(sheetApp, root) {
     game.modules?.get?.("sta-officers-log")?.active ?? false;
 
   if (officersLogActive) {
-    menuItems.push({
-      name:
-        game.i18n?.localize?.("sta-officers-log.logs.makeCurrentMissionLog") ??
-        "Set Current Mission",
-      icon: '<i class="fas fa-map-pin"></i>',
-      condition: (target) => {
-        const el = target instanceof HTMLElement ? target : target?.[0];
-        return el?.dataset?.itemType === "log";
-      },
-      callback: async (target) => {
-        const el = target instanceof HTMLElement ? target : target?.[0];
-        if (!el) return;
-        const logId = el.dataset?.itemId;
-        if (!logId) return;
+    menuItems.push(
+      _compatEntry({
+        label:
+          game.i18n?.localize?.(
+            "sta-officers-log.logs.makeCurrentMissionLog",
+          ) ?? "Set Current Mission",
+        icon: '<i class="fas fa-map-pin"></i>',
+        condition: (target) => {
+          const el = target instanceof HTMLElement ? target : target?.[0];
+          return el?.dataset?.itemType === "log";
+        },
+        callback: async (target) => {
+          const el = target instanceof HTMLElement ? target : target?.[0];
+          if (!el) return;
+          const logId = el.dataset?.itemId;
+          if (!logId) return;
 
-        const actor = _actorFromTarget(el);
-        if (!actor) return;
+          const actor = _actorFromTarget(el);
+          if (!actor) return;
 
-        try {
-          // Update the system field directly (sta-officers-log migrated currentMissionLogId to system.*)
-          if (game.user?.isGM) {
-            await actor.update({
-              "system.currentMissionLogId": String(logId),
-            });
-          } else {
-            // Non-GM: use the Officers Log socket if available
-            const socket = game.modules?.get?.("sta-officers-log")?.socket?.();
-            if (socket?.executeAsGM) {
-              await socket.executeAsGM("setCurrentMissionLogForActor", {
-                actorId: String(actor.id ?? ""),
-                logId: String(logId),
+          try {
+            // Update the system field directly (sta-officers-log migrated currentMissionLogId to system.*)
+            if (game.user?.isGM) {
+              await actor.update({
+                "system.currentMissionLogId": String(logId),
               });
             } else {
-              // Fall back to direct flag set (may fail without GM permissions)
-              await actor.setFlag(
-                "sta-officers-log",
-                "currentMissionLogId",
-                String(logId),
-              );
+              // Non-GM: use the Officers Log socket if available
+              const socket = game.modules
+                ?.get?.("sta-officers-log")
+                ?.socket?.();
+              if (socket?.executeAsGM) {
+                await socket.executeAsGM("setCurrentMissionLogForActor", {
+                  actorId: String(actor.id ?? ""),
+                  logId: String(logId),
+                });
+              } else {
+                // Fall back to direct flag set (may fail without GM permissions)
+                await actor.setFlag(
+                  "sta-officers-log",
+                  "currentMissionLogId",
+                  String(logId),
+                );
+              }
             }
+            // Re-render the sheet to show the updated indicator
+            actor.sheet?.render?.();
+          } catch (err) {
+            console.error("sta-utils | failed to set current mission log", err);
           }
-          // Re-render the sheet to show the updated indicator
-          actor.sheet?.render?.();
-        } catch (err) {
-          console.error("sta-utils | failed to set current mission log", err);
-        }
-      },
-    });
+        },
+      }),
+    );
   }
 
   console.debug(

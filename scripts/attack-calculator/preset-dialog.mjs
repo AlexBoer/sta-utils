@@ -223,7 +223,7 @@ class AttackPresetDialog extends HandlebarsApplicationMixin(ApplicationV2) {
       <div class="dlg-sentence dlg-sentence--mom">
         Momentum cost:
         <span class="${momClass}">${spent}</span>
-        <span class="mom-pool">/ ${budget} pool</span>
+        <span class="mom-pool">/ ${budget}</span>
       </div>`;
   }
 
