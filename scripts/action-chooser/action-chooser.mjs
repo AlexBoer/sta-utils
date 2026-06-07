@@ -1,6 +1,7 @@
 import { MODULE_ID } from "../core/constants.mjs";
 import { ATTRIBUTE_KEYS, ATTRIBUTE_LABELS } from "../core/gameConstants.mjs";
 import { t, tf } from "../core/i18n.mjs";
+import { getGroupShipActorId } from "../core/settings.mjs";
 import { showDicePoolDialog } from "../dice-pool-override/dice-pool-dialog.mjs";
 import {
   executeTaskRoll,
@@ -2008,14 +2009,16 @@ async function buildTaskData(actor, rollTemplate, { defaultStarshipId } = {}) {
 
   /* ---- Render template ---- */
   const template = `modules/${MODULE_ID}/templates/dice-pool-selectors.hbs`;
+  const groupShipId = getGroupShipActorId();
+  const resolvedStarshipId = defaultStarshipId ?? visibleStarships[0]?.id;
   let html = await foundry.applications.handlebars.renderTemplate(template, {
     defaultValue,
     calculatedComplicationRange,
     attributes,
     disciplines,
     starships: visibleStarships,
-    selectedStarshipId: defaultStarshipId ?? visibleStarships[0]?.id,
-    shipAssistDefault: !!rollTemplate.shipAssist,
+    selectedStarshipId: resolvedStarshipId,
+    shipAssistDefault: !!rollTemplate.shipAssist || !!groupShipId,
     systems,
     departments,
   });

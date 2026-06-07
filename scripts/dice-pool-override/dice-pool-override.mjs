@@ -309,6 +309,7 @@ async function _overriddenAttributeTest(event, _original) {
     calculatedComplicationRange,
     starships: visibleStarships,
     selectedStarshipId: defaultStarshipId,
+    shipAssistDefault: !!groupShipId,
     systems,
     departments,
   });
