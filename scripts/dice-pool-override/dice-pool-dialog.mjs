@@ -448,6 +448,8 @@ function _ensureMomentumThreatHelper(dialogEl) {
  * @param {string|null} [opts.preSelectDeterminationValue=null] - When
  *   sta-officers-log is active and replaces the determination checkbox
  *   with a value dropdown, pre-select the value item with this ID.
+ * @param {string|null} [opts.title=null] - Override the dialog window
+ *   title. Defaults to the localized "sta.apps.dicepoolwindow" value.
  * @returns {Promise<{ formData: FormData, automationStates: Record<string, boolean> } | null>}
  *   Resolved with the collected form data and automation checkbox states,
  *   or `null` if the dialog was cancelled.
@@ -459,6 +461,8 @@ export async function showDicePoolDialog(opts) {
     hasShipAssistUI = true,
     injectReservePower = true,
     preSelectDeterminationValue = null,
+    defaultStarshipId = null,
+    title = null,
   } = opts;
 
   const api = foundry.applications.api;
@@ -467,7 +471,7 @@ export async function showDicePoolDialog(opts) {
 
   const formData = await api.DialogV2.wait({
     window: {
-      title: game.i18n.localize("sta.apps.dicepoolwindow"),
+      title: title ?? game.i18n.localize("sta.apps.dicepoolwindow"),
     },
     position: {
       height: "auto",
@@ -477,6 +481,19 @@ export async function showDicePoolDialog(opts) {
     classes: ["dialogue"],
     render: (event, dialog) => {
       const el = dialog.element;
+
+      // --- Pre-select group ship in dropdown (before anything else reads it) ---
+      // Only set the select value; leave the checkbox unchecked and section
+      // hidden so the user still has to explicitly opt in to ship assist.
+      if (hasShipAssistUI && defaultStarshipId) {
+        const starshipSelect = el.querySelector("#starship");
+        if (
+          starshipSelect &&
+          starshipSelect.querySelector(`option[value="${defaultStarshipId}"]`)
+        ) {
+          starshipSelect.value = defaultStarshipId;
+        }
+      }
 
       // --- Determine initial ship for reserve power check ---
       let currentShip = null;

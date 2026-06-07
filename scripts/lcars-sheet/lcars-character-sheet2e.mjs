@@ -12,6 +12,7 @@
 import { STACharacterSheet2e } from "/systems/sta/module/actors/character-sheet2e.mjs";
 
 import { LCARS_THEMES } from "./lcars-mode.mjs";
+import { performAssistRoll } from "./lcars-assist.mjs";
 
 const MODULE_ID = "sta-utils";
 
@@ -37,6 +38,11 @@ export class LcarsCharacterSheet2e extends STACharacterSheet2e {
    */
   static DEFAULT_OPTIONS = {
     position: { width: 756, height: "auto" },
+    actions: {
+      onAssistTask: function (ev) {
+        return performAssistRoll.call(this, ev);
+      },
+    },
   };
 
   get title() {

@@ -16,6 +16,7 @@
 import { STAStarshipSheet2e } from "/systems/sta/module/actors/starship-sheet2e.mjs";
 
 import { LCARS_THEMES } from "./lcars-mode.mjs";
+import { performShipAssistRoll } from "./lcars-assist.mjs";
 
 const MODULE_ID = "sta-utils";
 
@@ -37,6 +38,11 @@ export class LcarsStarshipSheet2e extends STAStarshipSheet2e {
 
   static DEFAULT_OPTIONS = {
     position: { width: 1050, height: "auto" },
+    actions: {
+      onAssistTask: function (ev) {
+        return performShipAssistRoll.call(this, ev);
+      },
+    },
   };
 
   get title() {

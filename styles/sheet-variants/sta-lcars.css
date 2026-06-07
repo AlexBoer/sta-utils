@@ -297,6 +297,7 @@
   --lcars-titlebar-development: var(--lcars-lavender);
   --lcars-btn-primary: var(--lcars-lavender);
   --lcars-btn-secondary: var(--lcars-blue);
+  --lcars-btn-assist: var(--lcars-peach);
   --lcars-btn-reputation: var(--lcars-tan);
   --lcars-chrome: var(--lcars-orange);         /* structural accent: tab bg, left border, focus rings, scrollbar */
   --lcars-chrome-hover: var(--lcars-peach);    /* tab hover */
@@ -519,6 +520,18 @@
   }
   .buttons .check-button.btn:hover,
   .buttons .check-button.btn:focus-visible {
+    filter: brightness(1.2);
+    transform: scale(1.03);
+  }
+
+  /* Assist — peach capsule */
+  .buttons .check-button.btn-assist {
+    background: var(--lcars-btn-assist, var(--lcars-peach)) !important;
+    color: var(--lcars-text-title, var(--lcars-text-dark));
+    border-width: 0 !important;
+  }
+  .buttons .check-button.btn-assist:hover,
+  .buttons .check-button.btn-assist:focus-visible {
     filter: brightness(1.2);
     transform: scale(1.03);
   }
@@ -1264,6 +1277,7 @@
   --lcars-titlebar-bio-fields: var(--lcars-peach);
   --lcars-btn-primary: var(--lcars-lavender);
   --lcars-btn-secondary: var(--lcars-blue);
+  --lcars-btn-assist: var(--lcars-peach);
   --lcars-btn-reputation: var(--lcars-tan);
   --lcars-chrome: var(--lcars-orange);
   --lcars-chrome-hover: var(--lcars-peach);
@@ -1560,6 +1574,19 @@
 
   .buttons .check-button.btn:hover,
   .buttons .check-button.btn:focus-visible {
+    filter: brightness(1.2);
+    transform: scale(1.03);
+  }
+
+  /* Assist — secondary colour capsule */
+  .buttons .check-button.btn-assist {
+    background: var(--lcars-btn-assist, var(--lcars-peach)) !important;
+    color: var(--lcars-text-title, var(--lcars-text-dark));
+    border-width: 0 !important;
+  }
+
+  .buttons .check-button.btn-assist:hover,
+  .buttons .check-button.btn-assist:focus-visible {
     filter: brightness(1.2);
     transform: scale(1.03);
   }
@@ -2818,6 +2845,7 @@ body.sta-officers-lcars-active {
   --lcars-titlebar: var(--lcars-orange);
   --lcars-titlebar-talents: var(--lcars-lavender);
   --lcars-btn-primary: var(--lcars-lavender);
+  --lcars-btn-assist: var(--lcars-peach);
   --lcars-btn-reputation: var(--lcars-tan);
   --lcars-chrome: var(--lcars-orange);
   --lcars-chrome-hover: var(--lcars-peach);

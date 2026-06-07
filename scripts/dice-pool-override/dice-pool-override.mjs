@@ -176,14 +176,19 @@ async function _overriddenAttributeTest(event, _original) {
   const template = this.taskRollData.template;
 
   /* ---- Starship list ---- */
+  // Resolve the group ship ID up front so it can be force-included below.
+  const _groupShipId = getGroupShipActorId();
   const visibleStarships = game.actors
     .filter(
       (a) =>
         (a.type === "starship" || a.type === "smallcraft") &&
-        a.testUserPermission(
+        (a.testUserPermission(
           game.user,
           CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER,
-        ),
+        ) ||
+          // Always include the configured group ship so it can be pre-selected
+          // even when the current user hasn't been granted OBSERVER access.
+          a.id === _groupShipId),
     )
     .sort((a, b) => (b.system?.scale || 0) - (a.system?.scale || 0));
 
@@ -299,7 +304,7 @@ async function _overriddenAttributeTest(event, _original) {
   };
 
   /* ---- Render template ---- */
-  const groupShipId = getGroupShipActorId();
+  const groupShipId = _groupShipId;
   const defaultStarshipId =
     (groupShipId && visibleStarships.some((s) => s.id === groupShipId)
       ? groupShipId
@@ -309,17 +314,22 @@ async function _overriddenAttributeTest(event, _original) {
     calculatedComplicationRange,
     starships: visibleStarships,
     selectedStarshipId: defaultStarshipId,
-    shipAssistDefault: !!groupShipId,
+    shipAssistDefault: false,
     systems,
     departments,
   });
 
   /* ---- Show dialog (delegates to shared dice-pool-dialog module) ---- */
+  const _dialogTitle =
+    this._overrideDialogTitle ?? game.i18n.localize("sta.actor.attdis.task");
+  delete this._overrideDialogTitle;
   const dialogResult = await showDicePoolDialog({
     html,
     applicabilityContext: applicabilityCtx,
     hasShipAssistUI,
     injectReservePower: true,
+    defaultStarshipId,
+    title: _dialogTitle,
   });
 
   if (!dialogResult) return;

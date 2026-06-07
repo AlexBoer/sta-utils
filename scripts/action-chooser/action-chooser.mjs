@@ -1973,14 +1973,18 @@ async function buildTaskData(actor, rollTemplate, { defaultStarshipId } = {}) {
   }));
 
   /* ---- Starship list (mirrors dice pool override) ---- */
+  const groupShipId = getGroupShipActorId();
   const visibleStarships = game.actors
     .filter(
       (a) =>
         (a.type === "starship" || a.type === "smallcraft") &&
-        a.testUserPermission(
+        (a.testUserPermission(
           game.user,
           CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER,
-        ),
+        ) ||
+          // Always include the configured group ship so it can be pre-selected
+          // even when the current user hasn't been granted OBSERVER access.
+          a.id === groupShipId),
     )
     .sort((a, b) => (b.system?.scale || 0) - (a.system?.scale || 0));
 
@@ -2009,8 +2013,12 @@ async function buildTaskData(actor, rollTemplate, { defaultStarshipId } = {}) {
 
   /* ---- Render template ---- */
   const template = `modules/${MODULE_ID}/templates/dice-pool-selectors.hbs`;
-  const groupShipId = getGroupShipActorId();
-  const resolvedStarshipId = defaultStarshipId ?? visibleStarships[0]?.id;
+  const resolvedStarshipId =
+    defaultStarshipId ??
+    (groupShipId && visibleStarships.some((s) => s.id === groupShipId)
+      ? groupShipId
+      : null) ??
+    visibleStarships[0]?.id;
   let html = await foundry.applications.handlebars.renderTemplate(template, {
     defaultValue,
     calculatedComplicationRange,
@@ -2018,7 +2026,7 @@ async function buildTaskData(actor, rollTemplate, { defaultStarshipId } = {}) {
     disciplines,
     starships: visibleStarships,
     selectedStarshipId: resolvedStarshipId,
-    shipAssistDefault: !!rollTemplate.shipAssist || !!groupShipId,
+    shipAssistDefault: !!rollTemplate.shipAssist,
     systems,
     departments,
   });
@@ -2041,6 +2049,7 @@ async function buildTaskData(actor, rollTemplate, { defaultStarshipId } = {}) {
     },
     hasShipAssistUI: true,
     injectReservePower: false, // dice-pool-selectors.hbs already has it
+    defaultStarshipId: resolvedStarshipId,
   });
 
   if (!dialogResult) return null;

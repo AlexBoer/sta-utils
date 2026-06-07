@@ -274,7 +274,8 @@
     },
     "dicePool": {
       "useReservePower": "Use Reserve Power",
-      "useValue": "Use Value"
+      "useValue": "Use Value",
+      "assistButton": "Assist"
     },
     "reservePowerMenu": {
       "routeHere": "Route Reserve Power Here",

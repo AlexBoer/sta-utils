@@ -35,6 +35,7 @@ body.sta-officers-lcars-active[class*="lcars-scheme-"] {
   --lcars-titlebar-bio-fields:     var(--lcars-secondary-color);
   --lcars-btn-primary:             var(--lcars-primary-color);
   --lcars-btn-secondary:           var(--lcars-secondary-color);
+  --lcars-btn-assist:              var(--lcars-secondary-color);
   --lcars-btn-reputation:          var(--lcars-tertiary-color);
   --lcars-chrome:                  var(--lcars-primary-color);
   --lcars-tracktitle:              var(--lcars-tertiary-color);

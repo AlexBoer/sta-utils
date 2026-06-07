@@ -18,6 +18,7 @@
 import { STASmallCraftSheet2e } from "/systems/sta/module/actors/smallcraft-sheet2e.mjs";
 
 import { LCARS_THEMES } from "./lcars-mode.mjs";
+import { performShipAssistRoll } from "./lcars-assist.mjs";
 
 const MODULE_ID = "sta-utils";
 
@@ -39,6 +40,11 @@ export class LcarsSmallCraftSheet2e extends STASmallCraftSheet2e {
 
   static DEFAULT_OPTIONS = {
     position: { width: 1050, height: "auto" },
+    actions: {
+      onAssistTask: function (ev) {
+        return performShipAssistRoll.call(this, ev);
+      },
+    },
   };
 
   get title() {
