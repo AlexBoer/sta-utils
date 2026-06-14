@@ -443,7 +443,7 @@
     "traitDrawingSettings": {
       "title": "Trait Drawing Style",
       "fontSize": "Font Size",
-      "fontSizeHint": "Percentage of grid size (e.g. 100 = one grid square tall).",
+      "fontSizeHint": "Font size in pixels (e.g. 24).",
       "fontFamily": "Font Family",
       "textColor": "Text Color",
       "textStyleSection": "Text Style",

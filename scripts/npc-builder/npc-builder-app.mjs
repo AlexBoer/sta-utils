@@ -8,6 +8,9 @@ import {
   NOTABLE_ATTR_CHIPS,
   MINOR_DISC_CHIPS,
   NOTABLE_DISC_CHIPS,
+  INCIDENTAL_QUALITIES,
+  QUICK_TEMPERAMENTS,
+  QUICK_ROLES,
   EQUIPMENT_LOADOUTS,
   TALENT_TEMPLATES,
   getSpecialRulesPackConfigured,
@@ -38,6 +41,8 @@ const NOTABLE_STEPS = [
   "special-rules",
   "equipment",
 ];
+const INCIDENTAL_STEPS = ["info"];
+const QUICK_STEPS = ["info", "temperament", "role-selection", "equipment"];
 
 const fapi = foundry.applications.api;
 
@@ -61,6 +66,9 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       npcType: "minor",
       species: "",
       role: "",
+      incidentalQuality: "proficient",
+      quickTemperament: null,
+      quickNpcRole: null,
       attributes: Object.fromEntries(ATTRIBUTE_KEYS.map((k) => [k, null])),
       disciplines: Object.fromEntries(DISCIPLINE_KEYS.map((k) => [k, null])),
       focuses: ["", "", ""],
@@ -100,9 +108,16 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
   // ── Helpers ──────────────────────────────────────────────────────────────
 
   _getSteps() {
-    return this._wizardState.npcType === "notable"
-      ? NOTABLE_STEPS
-      : MINOR_STEPS;
+    switch (this._wizardState.npcType) {
+      case "notable":
+        return NOTABLE_STEPS;
+      case "incidental":
+        return INCIDENTAL_STEPS;
+      case "quick":
+        return QUICK_STEPS;
+      default:
+        return MINOR_STEPS;
+    }
   }
 
   _getAvailableAttrChips() {
@@ -226,6 +241,10 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
           pool.length
         );
       }
+      case "temperament":
+        return state.quickTemperament !== null;
+      case "role-selection":
+        return state.quickNpcRole !== null;
       default:
         return true;
     }
@@ -354,12 +373,16 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         details: this._currentStep === "details",
         "special-rules": this._currentStep === "special-rules",
         equipment: this._currentStep === "equipment",
+        temperament: this._currentStep === "temperament",
+        "role-selection": this._currentStep === "role-selection",
       },
       // Info
       name: state.name,
       npcType: state.npcType,
       isMinor: state.npcType === "minor",
       isNotable: state.npcType === "notable",
+      isIncidental: state.npcType === "incidental",
+      isQuick: state.npcType === "quick",
       species: state.species,
       role: state.role,
       speciesList: state.speciesCatalog.map((s) => ({
@@ -368,6 +391,29 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         hasTalent: s.talentUuid !== null,
       })),
       speciesFromCatalog: state.speciesCatalog.length > 0,
+      // Incidental
+      incidentalQualities: INCIDENTAL_QUALITIES.map((q) => ({
+        ...q,
+        selected: q.key === state.incidentalQuality,
+      })),
+      // Quick — Temperament
+      quickTemperaments: QUICK_TEMPERAMENTS.map((t) => ({
+        ...t,
+        selected: t.key === state.quickTemperament,
+        attributeRows: ATTRIBUTE_KEYS.map((k) => ({
+          label: ATTRIBUTE_LABELS[k],
+          value: t.attributes[k],
+        })),
+      })),
+      // Quick — Role selection
+      quickRoles: QUICK_ROLES.map((r) => ({
+        ...r,
+        selected: r.key === state.quickNpcRole,
+        disciplineRows: DISCIPLINE_KEYS.map((k) => ({
+          label: DISCIPLINE_LABELS[k],
+          value: r.disciplines[k],
+        })),
+      })),
       // Attributes
       availableAttrChips,
       attrPoolEmpty: availableAttrChips.length === 0,
@@ -596,6 +642,12 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       case "equipment":
         this._setupEquipmentStep(html);
         break;
+      case "temperament":
+        this._setupTemperamentStep(html);
+        break;
+      case "role-selection":
+        this._setupRoleSelectionStep(html);
+        break;
     }
 
     this._refreshNextButton(html);
@@ -623,13 +675,6 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       radio.addEventListener("change", () => {
         const oldType = this._wizardState.npcType;
         this._wizardState.npcType = radio.value;
-        // Update label active class without re-rendering
-        for (const lbl of html.querySelectorAll(".npc-radio-label")) {
-          lbl.classList.toggle(
-            "active",
-            lbl.querySelector("input").value === radio.value,
-          );
-        }
         // Reset chip assignments when pool sizes change
         if (oldType !== radio.value) {
           this._wizardState.attributes = Object.fromEntries(
@@ -638,7 +683,12 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
           this._wizardState.disciplines = Object.fromEntries(
             DISCIPLINE_KEYS.map((k) => [k, null]),
           );
+          this._wizardState.quickTemperament = null;
+          this._wizardState.quickNpcRole = null;
         }
+        // Re-render so the footer (Next vs Create NPC) and conditional
+        // info fields update correctly for the new type's step count.
+        this.render();
       });
     }
 
@@ -646,6 +696,46 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
     html.querySelector("[name='role']")?.addEventListener("input", (e) => {
       this._wizardState.role = e.target.value;
     });
+    html
+      .querySelector("[name='incidentalQuality']")
+      ?.addEventListener("change", (e) => {
+        this._wizardState.incidentalQuality = e.target.value;
+      });
+
+    // Per-field randomize buttons
+    html
+      .querySelector("[data-action='random-name']")
+      ?.addEventListener("click", () => {
+        this._wizardState.name = this._pick(RANDOM_NAMES);
+        this.render();
+      });
+
+    html
+      .querySelector("[data-action='random-species']")
+      ?.addEventListener("click", () => {
+        const catalog = this._wizardState.speciesCatalog;
+        if (catalog.length > 0) {
+          const picked = this._pick(catalog);
+          this._wizardState.species = picked.name;
+          this._wizardState.selectedAttributeBonuses = [];
+        }
+        this.render();
+      });
+
+    html
+      .querySelector("[data-action='random-role']")
+      ?.addEventListener("click", () => {
+        this._wizardState.role = this._pick(RANDOM_ROLES);
+        this.render();
+      });
+
+    html
+      .querySelector("[data-action='random-quality']")
+      ?.addEventListener("click", () => {
+        this._wizardState.incidentalQuality =
+          this._pick(INCIDENTAL_QUALITIES).key;
+        this.render();
+      });
   }
 
   _setupSpeciesCombobox(html) {
@@ -908,6 +998,19 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
   }
 
   _setupEquipmentStep(html) {
+    const refreshLoadoutButtons = () => {
+      for (const btn of html.querySelectorAll(".npc-loadout-btn")) {
+        const loadout = EQUIPMENT_LOADOUTS[parseInt(btn.dataset.loadout)];
+        if (!loadout) continue;
+        const active = this._isLoadoutActive(
+          loadout,
+          this._wizardState.equipmentItems,
+          this._wizardState.selectedEquipment,
+        );
+        btn.classList.toggle("active", active);
+      }
+    };
+
     for (const cb of html.querySelectorAll(".npc-equip-checkbox")) {
       cb.addEventListener("change", () => {
         const uuid = cb.value;
@@ -915,7 +1018,9 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         if (cb.checked) set.add(uuid);
         else set.delete(uuid);
         this._wizardState.selectedEquipment = [...set];
-        this.render();
+        // Update loadout button states without a full re-render so the
+        // scroll position is preserved.
+        refreshLoadoutButtons();
       });
     }
 
@@ -937,6 +1042,36 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
           for (const uuid of uuids) set.add(uuid);
         }
         this._wizardState.selectedEquipment = [...set];
+        // Sync checkbox states and loadout buttons without a full re-render.
+        for (const cb of html.querySelectorAll(".npc-equip-checkbox")) {
+          cb.checked = this._wizardState.selectedEquipment.includes(cb.value);
+        }
+        refreshLoadoutButtons();
+      });
+    }
+  }
+
+  _setupTemperamentStep(html) {
+    for (const card of html.querySelectorAll(
+      "[data-panel='temperament'] .npc-selection-card",
+    )) {
+      card.addEventListener("click", () => {
+        const key = card.dataset.key;
+        if (!key) return;
+        this._wizardState.quickTemperament = key;
+        this.render();
+      });
+    }
+  }
+
+  _setupRoleSelectionStep(html) {
+    for (const card of html.querySelectorAll(
+      "[data-panel='role-selection'] .npc-selection-card",
+    )) {
+      card.addEventListener("click", () => {
+        const key = card.dataset.key;
+        if (!key) return;
+        this._wizardState.quickNpcRole = key;
         this.render();
       });
     }
@@ -1130,13 +1265,22 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       case "info": {
         const prevType = state.npcType;
         state.name = this._pick(RANDOM_NAMES);
-        state.npcType = Math.random() < 0.35 ? "notable" : "minor";
+        const roll = Math.random();
+        state.npcType =
+          roll < 0.35
+            ? "notable"
+            : roll < 0.55
+              ? "quick"
+              : roll < 0.7
+                ? "incidental"
+                : "minor";
         state.species =
           state.speciesCatalog.length > 0
             ? this._pick(state.speciesCatalog).name
             : "";
         state.role = this._pick(RANDOM_ROLES);
         state.selectedAttributeBonuses = [];
+        state.incidentalQuality = this._pick(INCIDENTAL_QUALITIES).key;
         if (prevType !== state.npcType) {
           state.attributes = Object.fromEntries(
             ATTRIBUTE_KEYS.map((k) => [k, null]),
@@ -1144,6 +1288,8 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
           state.disciplines = Object.fromEntries(
             DISCIPLINE_KEYS.map((k) => [k, null]),
           );
+          state.quickTemperament = null;
+          state.quickNpcRole = null;
         }
         break;
       }
@@ -1209,6 +1355,14 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         ).slice(0, eqCount);
         break;
       }
+      case "temperament": {
+        state.quickTemperament = this._pick(QUICK_TEMPERAMENTS).key;
+        break;
+      }
+      case "role-selection": {
+        state.quickNpcRole = this._pick(QUICK_ROLES).key;
+        break;
+      }
     }
 
     this.render();
@@ -1250,6 +1404,68 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
     }
 
     const state = this._wizardState;
+
+    // ── Incidental NPC ────────────────────────────────────────────────────
+    if (state.npcType === "incidental") {
+      const quality =
+        INCIDENTAL_QUALITIES.find((q) => q.key === state.incidentalQuality) ??
+        INCIDENTAL_QUALITIES[2];
+      const attrs = Object.fromEntries(
+        ATTRIBUTE_KEYS.map((k) => [k, quality.attribute]),
+      );
+      const discs = Object.fromEntries(
+        DISCIPLINE_KEYS.map((k) => [k, quality.department]),
+      );
+      await createNpcActor({
+        name: state.name,
+        npcType: "minor",
+        species: "",
+        role: state.role,
+        attributes: attrs,
+        disciplines: discs,
+        focuses: [],
+        value: "",
+        selectedEquipmentUuids: [],
+        selectedSpecialRulesUuids: [],
+        customTalents: [],
+        speciesCatalog: [],
+        selectedAttributeBonuses: [],
+      });
+      this.close();
+      return;
+    }
+
+    // ── Quick NPC ─────────────────────────────────────────────────────────
+    if (state.npcType === "quick") {
+      const temperament =
+        QUICK_TEMPERAMENTS.find((t) => t.key === state.quickTemperament) ??
+        QUICK_TEMPERAMENTS[0];
+      const quickRole =
+        QUICK_ROLES.find((r) => r.key === state.quickNpcRole) ?? QUICK_ROLES[0];
+      // Convert attributes object to the format createNpcActor expects
+      // (it will add species bonuses on top)
+      const attrs = { ...temperament.attributes };
+      const discs = { ...quickRole.disciplines };
+      await createNpcActor({
+        name: state.name,
+        npcType: "minor",
+        species: state.species,
+        role: state.role,
+        attributes: attrs,
+        disciplines: discs,
+        focuses: [],
+        value: "",
+        selectedEquipmentUuids: state.selectedEquipment,
+        selectedSpecialRulesUuids: [],
+        customTalents: [],
+        speciesCatalog: state.speciesCatalog,
+        selectedAttributeBonuses: state.selectedAttributeBonuses,
+      });
+      this.close();
+      return;
+    }
+
+    // ── Minor / Notable NPC (existing behaviour) ──────────────────────────
     await createNpcActor({
       name: state.name,
       npcType: state.npcType,

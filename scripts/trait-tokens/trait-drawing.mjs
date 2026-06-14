@@ -101,10 +101,10 @@ function _onRefreshDrawing(drawing) {
  * @returns {object}
  */
 function _getDrawingStyle() {
-  const gridSize = canvas?.scene?.grid?.size ?? 100;
-  const sizePct = game.settings.get(MODULE_ID, "traitDrawingFontSize");
-  const size = (gridSize * sizePct) / 100;
-  const fontSize = Math.min(256, Math.max(8, Math.round(size / 2)));
+  const fontSize = Math.min(
+    256,
+    Math.max(8, game.settings.get(MODULE_ID, "traitDrawingFontSize")),
+  );
 
   return {
     fontSize,
@@ -131,44 +131,47 @@ function _getDrawingStyle() {
 }
 
 /**
- * Compute the rectangle dimensions for a text drawing.
- * Aims for a compact box that allows the text to wrap to at most two
- * lines.  Short names stay on one line; longer names wrap naturally.
- * @param {string} text      The display text.
- * @param {number} fontSize  The font size in pixels.
+ * Compute the rectangle dimensions for a text drawing using real PIXI
+ * text metrics rather than a character-width estimate.
+ * @param {string} text      The display text (no embedded newlines).
+ * @param {object} style     The drawing style object from _getDrawingStyle().
  * @param {number} gridSize  The scene grid size in pixels.
- * @returns {{ width: number, height: number }}
+ * @returns {{ width: number, height: number, wraps: boolean }}
  */
-function _computeDrawingSize(text, fontSize, gridSize) {
-  const sizePct = game.settings.get(MODULE_ID, "traitDrawingFontSize");
-  const size = (gridSize * sizePct) / 100;
+function _computeDrawingSize(text, style, gridSize) {
+  const { fontSize, fontFamily, fontWeight } = style;
+  const flatText = text.replace(/\n/g, " ");
+  const wordCount = flatText.trim().split(/\s+/).length;
 
-  // Estimate single-line text width (rough: ~0.55 em per character)
-  const charWidth = fontSize * 0.55;
-  const singleLineWidth = text.length * charWidth;
+  const pixiStyle = new PIXI.TextStyle({
+    fontFamily: fontFamily || "Arial",
+    fontSize,
+    fontWeight: fontWeight || "normal",
+  });
 
-  // Only attempt two-line wrapping for longer multi-word names.
-  // Short names (fewer than 2 words or under ~16 characters) stay
-  // on a single line with comfortable padding.
-  const wordCount = text.trim().split(/\s+/).length;
-  const allowWrap = wordCount >= 2 && text.length >= 16;
+  // Measure the text as a single line first.
+  const singleMetrics = PIXI.TextMetrics.measureText(flatText, pixiStyle);
 
-  const minWidth = size * 2;
+  // Decide whether to wrap: only for multi-word text wider than ~2.5 grid squares.
+  const wrapThreshold = gridSize * 2.5;
+  const allowWrap = wordCount >= 2 && singleMetrics.width > wrapThreshold;
 
-  let width;
+  let textWidth, textHeight, wraps;
   if (allowWrap) {
-    // Target width: ~60 % of single-line so text wraps to 2 lines.
-    const twoLineWidth = Math.max(minWidth, singleLineWidth * 0.6);
-    width = Math.min(singleLineWidth + fontSize, twoLineWidth);
+    const wrapped = balancedLineBreak(flatText);
+    const wrappedMetrics = PIXI.TextMetrics.measureText(wrapped, pixiStyle);
+    textWidth = wrappedMetrics.width;
+    textHeight = wrappedMetrics.height;
+    wraps = true;
   } else {
-    // Short name — single-line box with padding
-    width = Math.max(minWidth, singleLineWidth + fontSize);
+    textWidth = singleMetrics.width;
+    textHeight = singleMetrics.height;
+    wraps = false;
   }
 
-  // Height: allow room for up to 2 lines of text
-  const wraps = allowWrap && singleLineWidth > width;
-  const lines = wraps ? 2 : 1;
-  const height = Math.max(size, fontSize * lines * 1.45);
+  const minSize = Math.max(gridSize * 0.5, fontSize);
+  const width = Math.max(minSize, textWidth + fontSize);
+  const height = Math.max(minSize, textHeight + fontSize * 0.4);
 
   return { width, height, wraps };
 }
@@ -202,8 +205,9 @@ async function _onDropCanvasData(canvas, data) {
     });
     if (!confirmed) return;
 
-    const fillColor = await pickTraitColor();
-    if (!fillColor) return;
+    const pick = await pickTraitColor();
+    if (!pick) return;
+    const { color: fillColor, sizeMultiplier } = pick;
 
     const msg = {
       uuid: null,
@@ -212,6 +216,7 @@ async function _onDropCanvasData(canvas, data) {
       x: data.x,
       y: data.y,
       fillColor,
+      sizeMultiplier,
       sceneId: canvas.scene.id,
     };
 
@@ -233,8 +238,9 @@ async function _onDropCanvasData(canvas, data) {
   }
 
   // Trait item — pick a fill color
-  const fillColor = await pickTraitColor();
-  if (!fillColor) return;
+  const pick = await pickTraitColor();
+  if (!pick) return;
+  const { color: fillColor, sizeMultiplier } = pick;
 
   const msg = {
     uuid: data.uuid,
@@ -243,6 +249,7 @@ async function _onDropCanvasData(canvas, data) {
     x: data.x,
     y: data.y,
     fillColor,
+    sizeMultiplier,
     sceneId: canvas.scene.id,
   };
 
@@ -278,13 +285,14 @@ export async function handleCreateTraitDrawingRPC(msg) {
  * Core creation logic — always runs on the GM's client.
  *
  * @param {object} msg
- * @param {string|null} msg.uuid       Source item UUID (null for brand-new traits)
- * @param {string}      msg.name       Trait name
- * @param {number}      msg.quantity   Trait quantity
- * @param {number}      msg.x          Canvas X coordinate
- * @param {number}      msg.y          Canvas Y coordinate
- * @param {string}      msg.fillColor  Fill colour hex string
- * @param {string}      msg.sceneId    Target scene ID
+ * @param {string|null} msg.uuid          Source item UUID (null for brand-new traits)
+ * @param {string}      msg.name          Trait name
+ * @param {number}      msg.quantity      Trait quantity
+ * @param {number}      msg.x             Canvas X coordinate
+ * @param {number}      msg.y             Canvas Y coordinate
+ * @param {string}      msg.fillColor     Fill colour hex string
+ * @param {number}      [msg.sizeMultiplier=1] Size multiplier from S/M/L picker
+ * @param {string}      msg.sceneId       Target scene ID
  */
 async function _createTraitDrawing({
   uuid,
@@ -293,6 +301,7 @@ async function _createTraitDrawing({
   x,
   y,
   fillColor,
+  sizeMultiplier = 1,
   sceneId,
 }) {
   const displayName = traitDisplayName(name, quantity);
@@ -370,9 +379,13 @@ async function _createTraitDrawing({
   // Read drawing style settings
   const style = _getDrawingStyle();
   const gridSize = scene.grid?.size ?? 100;
+  const effectiveStyle =
+    sizeMultiplier !== 1
+      ? { ...style, fontSize: Math.round(style.fontSize * sizeMultiplier) }
+      : style;
   const { width, height, wraps } = _computeDrawingSize(
     displayName,
-    style.fontSize,
+    effectiveStyle,
     gridSize,
   );
 
@@ -397,9 +410,9 @@ async function _createTraitDrawing({
     strokeColor: style.borderColor,
     strokeAlpha: style.borderOpacity,
     text: drawingText,
-    fontSize: style.fontSize,
-    fontFamily: style.fontFamily,
-    textColor: style.textColor,
+    fontSize: effectiveStyle.fontSize,
+    fontFamily: effectiveStyle.fontFamily,
+    textColor: effectiveStyle.textColor,
     hidden: !isTraitVisible(embeddedItem),
     points: [],
     flags: {
@@ -533,11 +546,7 @@ async function _onUpdateItem(item, changes, _options, _userId) {
         // Re-apply balanced line-break using the drawing's current size
         const style = _getDrawingStyle();
         const gridSize = scene.grid?.size ?? 100;
-        const { wraps } = _computeDrawingSize(
-          newDisplayName,
-          style.fontSize,
-          gridSize,
-        );
+        const { wraps } = _computeDrawingSize(newDisplayName, style, gridSize);
         const newText = wraps
           ? balancedLineBreak(newDisplayName)
           : newDisplayName;

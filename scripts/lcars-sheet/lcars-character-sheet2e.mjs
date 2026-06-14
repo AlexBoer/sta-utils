@@ -88,9 +88,6 @@ export class LcarsCharacterSheet2e extends STACharacterSheet2e {
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const scheme = this.getLcarsScheme();
-    // "sta" scheme = STA Original: disable all LCARS visual styles,
-    // fall back to the system's default appearance.
-    context.isOriginalTheme = scheme === "sta";
     context.lcarsSchemeClass = scheme
       ? `lcars-scheme-${scheme}`
       : "lcars-scheme-tng";

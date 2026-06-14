@@ -142,7 +142,58 @@ export function initTraitDrawingClick() {
     _installTokenLayerTraitDrawingHandler();
   });
 
+  /* ----- Unlink button on the Drawing HUD (right-click menu) ------ */
+  Hooks.on("renderDrawingHUD", _onRenderDrawingHUD);
+
   console.log(`${MODULE_ID} | Trait drawing interaction overrides registered`);
+}
+
+/* -------------------------------------------- */
+/*  Drawing HUD — unlink button                 */
+/* -------------------------------------------- */
+
+/**
+ * Inject an "Unlink" button into the right column of the Drawing HUD
+ * whenever the drawing is a trait drawing.  GM-only.
+ */
+function _onRenderDrawingHUD(app, element) {
+  if (!game.user.isGM) return;
+  const doc = app.object?.document ?? app.document;
+  const flags = doc?.flags?.[MODULE_ID];
+  if (!flags?.isTraitDrawing) return;
+
+  const el = element instanceof HTMLElement ? element : app.element;
+  if (!el) return;
+  const colRight = el.querySelector(".col.right");
+  if (!colRight) return;
+
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.classList.add("control-icon");
+  btn.dataset.tooltip = "Unlink Trait Drawing";
+  btn.innerHTML = `<i class="fa-solid fa-unlink" inert></i>`;
+
+  btn.addEventListener("click", async (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+
+    const confirmed = await foundry.applications.api.DialogV2.confirm({
+      window: { title: "Unlink Trait Drawing" },
+      content:
+        "<p>Unlink this drawing from its trait item? The drawing will become a plain drawing and will no longer sync with the trait.</p>",
+      yes: { default: true },
+    });
+    if (!confirmed) return;
+
+    // Strip all sta-utils flags by nulling each key
+    const nulledFlags = Object.fromEntries(
+      Object.keys(flags).map((k) => [k, null]),
+    );
+    await doc.update({ [`flags.${MODULE_ID}`]: nulledFlags });
+    app.close();
+  });
+
+  colRight.appendChild(btn);
 }
 
 /* -------------------------------------------- */

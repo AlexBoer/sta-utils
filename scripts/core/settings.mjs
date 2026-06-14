@@ -500,7 +500,7 @@ export function registerSettings() {
     scope: "world",
     config: false,
     type: Number,
-    default: 100,
+    default: 24,
   });
   game.settings.register(MODULE_ID, "traitDrawingFontFamily", {
     scope: "world",

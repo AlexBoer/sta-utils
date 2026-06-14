@@ -98,7 +98,7 @@ export class TraitDrawingSettings extends HandlebarsApplicationMixin(
     const data = formData.object;
 
     let fontSize = data.font_size;
-    if (fontSize !== 0) fontSize = Math.min(400, Math.max(8, fontSize));
+    if (fontSize !== 0) fontSize = Math.min(256, Math.max(8, fontSize));
 
     await game.settings.set(
       MODULE_ID,

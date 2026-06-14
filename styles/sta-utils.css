@@ -6194,6 +6194,7 @@ input.selector.attribute.sta-fatigued-attribute {
 .npc-type-radios {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .npc-radio-label {
@@ -6226,6 +6227,71 @@ input.selector.attribute.sta-fatigued-attribute {
     background: rgba(241, 164, 60, 0.12);
     color: #f1a43c;
   }
+}
+
+/* Hide/show conditional info fields */
+.npc-standard-fields.hidden,
+.npc-incidental-fields.hidden {
+  display: none;
+}
+
+/* ── Quick NPC selection cards ─────────────────────────────────────── */
+.npc-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+}
+
+.npc-selection-card {
+  padding: 0.65rem 0.75rem;
+  border: 2px solid rgba(155, 143, 194, 0.25);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+  user-select: none;
+
+  &:hover {
+    border-color: rgba(241, 164, 60, 0.5);
+  }
+
+  &.selected {
+    border-color: #f1a43c;
+    background: rgba(241, 164, 60, 0.1);
+  }
+}
+
+.npc-selection-card-title {
+  font-family: "Antonio", "Roboto Condensed", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #f1a43c;
+  margin-bottom: 0.2rem;
+}
+
+.npc-selection-card-desc {
+  margin-bottom: 0.45rem;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.npc-stat-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.1rem 0.5rem;
+}
+
+.npc-stat-label {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+.npc-stat-value {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: right;
+  color: #9b8fc2;
 }
 
 /* ── Chip pool ── */

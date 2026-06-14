@@ -1,7 +1,7 @@
 ﻿/* ----------------------------------------------------------------------- */
 /*  STA SYSTEM                                                              */
-/*  Mirrors the look of the native STA sheet: flat navy title bars,        */
-/*  STA blue/red/gold buttons, Foundry default transparent background.     */
+/*  Full LCARS layout with the STA color palette: navy title bars,         */
+/*  STA blue/red/gold buttons, deep navy background.                       */
 /*  Note: theme-neutral base — no .theme-dark prefix — so it applies       */
 /*  regardless of Foundry's active theme.                                  */
 /* ----------------------------------------------------------------------- */
@@ -9,8 +9,8 @@
 :is(.character-sheet, .starship-sheet).sta-lcars-sheet.lcars-scheme-sta,
 .sta-lcars-dialogue-app.lcars-scheme-sta,
 body.sta-officers-lcars-active.lcars-scheme-sta {
-  --lcars-bg:              transparent; /* let Foundry bg show through */
-  --lcars-bg-panel:        transparent;
+  --lcars-bg:              rgb(0 5 22 / 93%); /* deep navy */
+  --lcars-bg-panel:        rgba(0, 5, 30, 0.25);
   --lcars-primary-color:   #003399; /* STA navy — all titlebars uniform */
   --lcars-secondary-color: #003399;
   --lcars-tertiary-color:  #003399;
@@ -36,24 +36,35 @@ body.sta-officers-lcars-active.lcars-scheme-sta {
 .theme-light :is(.character-sheet, .starship-sheet).sta-lcars-sheet.lcars-scheme-sta,
 .theme-light .sta-lcars-dialogue-app.lcars-scheme-sta,
 body.theme-light.sta-officers-lcars-active.lcars-scheme-sta {
-  --lcars-bg:         #f0f5ff;
-  --lcars-bg-panel:   rgba(255, 255, 255, 0.50); /* panel tint: neutral white brightening */
-  --lcars-text-light: #002266;
-  --lcars-text-dark:  #000;
-  --lcars-orange:     #006fcc;
-  --lcars-peach:      #3388dd;
-  --lcars-lavender:   #4466cc;
-  --lcars-lilac:      #3355bb;
-  --lcars-blue:       #003d88;
-  --lcars-sky:        #5599ee;
-  --lcars-red:        #aa0000;
-  --lcars-tan:        #957a00;
+  --lcars-bg:            #f0f5ff;
+  --lcars-bg-panel:      rgba(255, 255, 255, 0.60);
+  /* Body text: base rule sets cream (#e7d1b1) — must be dark on light bg */
+  --lcars-text-body:     #0a0e1a;
+  --lcars-text-item:     #0a0e1a;
+  --lcars-text-title:    #ffffff; /* stays white: text sits on navy title bars */
+  --lcars-text-header:   #ffffff;
+  --lcars-text-light:    #002266;
+  --lcars-text-dark:     #000000;
+  /* Accent blues darkened for contrast on light background */
+  --lcars-input-text:    #0055bb;
+  --lcars-tracktitle:    #0055bb;
+  --lcars-btn-primary:   #0077cc;
+  --lcars-chrome-hover:  #1a4fa8;
+  --lcars-input-border:  #003399;
+  /* Raw palette aliases */
+  --lcars-orange:        #006fcc;
+  --lcars-peach:         #3388dd;
+  --lcars-lavender:      #4466cc;
+  --lcars-lilac:         #3355bb;
+  --lcars-blue:          #003d88;
+  --lcars-sky:           #5599ee;
+  --lcars-red:           #aa0000;
+  --lcars-tan:           #957a00;
 }
 
 /* ── Window-root background overrides (:has() targets the ancestor .application element) ── */
-/* STA neutral/dark: window must be transparent to match the STA system default */
 .sta-lcars-window.application:has(.lcars-scheme-sta) {
-  --lcars-bg: transparent;
+  --lcars-bg: rgb(0 5 22 / 93%);
 }
 /* STA light mode: restore the light bg on the window */
 .theme-light .sta-lcars-window.application:has(.lcars-scheme-sta) {
@@ -61,4 +72,25 @@ body.theme-light.sta-officers-lcars-active.lcars-scheme-sta {
 }
 .sta-lcars-window.application.theme-light:has(.lcars-scheme-sta) {
   --lcars-bg: #f0f5ff;
+}
+
+/* ── Action chooser: STA color overrides ── */
+/* The action chooser element always has lcars-scheme-tng hardcoded on it
+   (action-chooser.mjs line 346). Target it via its ancestor instead:
+   the character sheet element carries lcars-scheme-sta, and the
+   body gets it too via syncOfficersLogLcars(). Both the embedded
+   chooser and standalone popout are descendants of one of those. */
+.lcars-scheme-sta .sta-action-chooser.popout {
+  --ac-minor:  #009dff; /* STA blue  */
+  --ac-major:  #F2CC0D; /* STA gold  */
+  --ac-social: #cc4444; /* bright red */
+
+  /* Detail panel label headers */
+  .sta-action-detail__name,
+  .sta-action-detail__weapon-label { color: #6699ff; }
+
+  /* Momentum spends block header + bullet markers */
+  .sta-momentum-spends { border-left-color: #6699ff; }
+  .sta-momentum-spends__header,
+  .sta-momentum-spends__item::before { color: #6699ff; }
 }

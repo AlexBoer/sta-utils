@@ -260,6 +260,20 @@
   background: var(--lcars-bg);
 }
 
+/* ── Arc group boxes: light mode overrides ── */
+/* Base styles use white border + black bg (designed for dark mode).
+   Applies to all themes. */
+.theme-light .sta-callbacks-arc-group,
+.sta-lcars-window.application.theme-light .sta-callbacks-arc-group {
+  border-color: rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.06);
+}
+.theme-light .sta-callbacks-arc-title,
+.sta-lcars-window.application.theme-light .sta-callbacks-arc-title {
+  border-bottom-color: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.08);
+}
+
 .character-sheet.sta-lcars {
   --lcars-orange: #d4a050;
   --lcars-peach: #d8b878;
@@ -2912,8 +2926,10 @@ body.sta-officers-lcars-active {
   }
 
   /* -- Action Chooser popout: hardcoded TNG values, no --lcars-* dependencies - */
+  /* --ac-bg is intentionally omitted here — it defaults to #000 via the base
+   * .sta-action-chooser rule in sta-utils.css, and .theme-light overrides it
+   * to a light value. Re-declaring it here would defeat that light-mode rule. */
   .sta-action-chooser.popout {
-    --ac-bg:              #000;
     --ac-radius:          24px;
     --ac-font:            "Antonio", "Roboto Condensed", sans-serif;
     --ac-chrome:          #f1a43c;

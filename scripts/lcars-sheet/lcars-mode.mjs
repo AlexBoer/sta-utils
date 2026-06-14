@@ -283,30 +283,14 @@ function _installThemePicker(sheetApp, sheet) {
  * @param {HTMLElement} root - The root element of the character sheet window.
  */
 export async function installLcarsSheetMode(sheetApp, root) {
-  // Find the sheet root — with or without the sta-lcars class (the "sta"
-  // / STA Original scheme intentionally omits it).
   const sheet =
     root?.querySelector?.(".character-sheet.sta-lcars") ||
-    root?.querySelector?.(".character-sheet") ||
-    root?.querySelector?.(".starship-sheet.sta-lcars") ||
-    root?.querySelector?.(".starship-sheet");
+    root?.querySelector?.(".starship-sheet.sta-lcars");
   if (!sheet) return;
 
-  const isOriginal = !sheet.classList.contains("sta-lcars");
-
-  // Always load the LCARS CSS — even the STA Original scheme needs it for
-  // the name-row layout, flex columns, and theme picker styles.
-  // Await so the sheet never renders before CSS variables are available.
+  // Load the LCARS CSS before the sheet renders so CSS variables are
+  // available immediately.
   await injectSheetVariantCss(LCARS_CSS_LINK_ID, LCARS_CSS_PATH, true);
-
-  if (isOriginal) {
-    // STA Original scheme — no LCARS structural enhancements, but CSS is
-    // already loaded above for name-row / picker styles.
-    root?.classList.remove("sta-lcars-window");
-    _installItemContextMenu(sheetApp, root);
-    _installThemePicker(sheetApp, sheet);
-    return;
-  }
 
   root?.classList.add("sta-lcars-window");
 

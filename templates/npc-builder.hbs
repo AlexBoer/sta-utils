@@ -6,8 +6,12 @@
 
     <div class="npc-builder-field-row">
       <label class="npc-builder-label">Name <span class="npc-required">*</span></label>
-      <input class="npc-builder-input" type="text" name="npc-name" value="{{name}}"
-        placeholder="NPC Name" autofocus>
+      <div class="npc-field-rand-wrap">
+        <input class="npc-builder-input" type="text" name="npc-name" value="{{name}}"
+          placeholder="NPC Name" autofocus>
+        <button class="npc-field-random-btn npc-builder-btn npc-builder-btn--ghost" type="button"
+          title="Random name" data-action="random-name"><i class="fa-solid fa-shuffle"></i></button>
+      </div>
     </div>
 
     <div class="npc-builder-field-row">
@@ -21,38 +25,86 @@
           <input type="radio" name="npcType" value="notable" {{#if isNotable}}checked{{/if}}>
           Notable
         </label>
+        <label class="npc-radio-label{{#if isIncidental}} active{{/if}}">
+          <input type="radio" name="npcType" value="incidental" {{#if isIncidental}}checked{{/if}}>
+          Incidental
+        </label>
+        <label class="npc-radio-label{{#if isQuick}} active{{/if}}">
+          <input type="radio" name="npcType" value="quick" {{#if isQuick}}checked{{/if}}>
+          Quick
+        </label>
       </div>
     </div>
 
-    <div class="npc-builder-field-row">
-      <label class="npc-builder-label">
-        Species <span class="npc-hint">(becomes a trait)</span>
-      </label>
-      {{#if speciesFromCatalog}}
-      <div class="npc-species-combobox">
-        <input class="npc-builder-input" type="text" name="species" value="{{species}}"
-          placeholder="Search species…" autocomplete="off" role="combobox"
-          aria-expanded="false" aria-autocomplete="list">
-        <ul class="npc-species-dropdown" role="listbox">
-          {{#each speciesList}}
-          <li class="npc-species-option" role="option" data-value="{{name}}">
-            {{name}}{{#if hasTalent}} <span class="npc-species-talent-badge" title="Has species talent">✦</span>{{/if}}
-          </li>
-          {{/each}}
-        </ul>
+    {{!-- Fields shown for Minor / Notable / Quick NPCs --}}
+    <div class="npc-standard-fields{{#if isIncidental}} hidden{{/if}}">
+      <div class="npc-builder-field-row">
+        <label class="npc-builder-label">
+          Species <span class="npc-hint">(becomes a trait)</span>
+        </label>
+        <div class="npc-field-rand-wrap">
+          {{#if speciesFromCatalog}}
+          <div class="npc-species-combobox">
+            <input class="npc-builder-input" type="text" name="species" value="{{species}}"
+              placeholder="Search species…" autocomplete="off" role="combobox"
+              aria-expanded="false" aria-autocomplete="list">
+            <ul class="npc-species-dropdown" role="listbox">
+              {{#each speciesList}}
+              <li class="npc-species-option" role="option" data-value="{{name}}">
+                {{name}}{{#if hasTalent}} <span class="npc-species-talent-badge" title="Has species talent">✦</span>{{/if}}
+              </li>
+              {{/each}}
+            </ul>
+          </div>
+          {{else}}
+          <input class="npc-builder-input" type="text" name="species" value="{{species}}"
+            placeholder="e.g. Vulcan">
+          {{/if}}
+          <button class="npc-field-random-btn npc-builder-btn npc-builder-btn--ghost" type="button"
+            title="Random species" data-action="random-species"><i class="fa-solid fa-shuffle"></i></button>
+        </div>
       </div>
-      {{else}}
-      <input class="npc-builder-input" type="text" name="species" value="{{species}}"
-        placeholder="e.g. Vulcan">
-      {{/if}}
+
+      <div class="npc-builder-field-row">
+        <label class="npc-builder-label">
+          {{#if isQuick}}Job / Purpose <span class="npc-hint">(becomes a trait)</span>{{else}}Role / Career <span class="npc-hint">(becomes a trait)</span>{{/if}}
+        </label>
+        <div class="npc-field-rand-wrap">
+          <input class="npc-builder-input" type="text" name="role" value="{{role}}"
+            placeholder="{{#if isQuick}}e.g. Starfleet Officer{{else}}e.g. Security Officer{{/if}}">
+          <button class="npc-field-random-btn npc-builder-btn npc-builder-btn--ghost" type="button"
+            title="Random role" data-action="random-role"><i class="fa-solid fa-shuffle"></i></button>
+        </div>
+      </div>
     </div>
 
-    <div class="npc-builder-field-row">
-      <label class="npc-builder-label">
-        Role / Career <span class="npc-hint">(becomes a trait)</span>
-      </label>
-      <input class="npc-builder-input" type="text" name="role" value="{{role}}"
-        placeholder="e.g. Security Officer">
+    {{!-- Fields shown only for Incidental NPCs --}}
+    <div class="npc-incidental-fields{{#unless isIncidental}} hidden{{/unless}}">
+      <div class="npc-builder-field-row">
+        <label class="npc-builder-label">NPC Quality</label>
+        <div class="npc-field-rand-wrap">
+          <select class="npc-builder-input" name="incidentalQuality">
+            {{#each incidentalQualities}}
+            <option value="{{key}}" {{#if selected}}selected{{/if}}>
+              {{label}} (Attribute {{attribute}}, Department {{department}})
+            </option>
+            {{/each}}
+          </select>
+          <button class="npc-field-random-btn npc-builder-btn npc-builder-btn--ghost" type="button"
+            title="Random quality" data-action="random-quality"><i class="fa-solid fa-shuffle"></i></button>
+        </div>
+      </div>
+      <div class="npc-builder-field-row">
+        <label class="npc-builder-label">
+          Trait <span class="npc-hint">(e.g. Ferengi Waiter)</span>
+        </label>
+        <div class="npc-field-rand-wrap">
+          <input class="npc-builder-input" type="text" name="role" value="{{role}}"
+            placeholder="e.g. Ferengi Waiter">
+          <button class="npc-field-random-btn npc-builder-btn npc-builder-btn--ghost" type="button"
+            title="Random trait" data-action="random-role"><i class="fa-solid fa-shuffle"></i></button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -333,6 +385,46 @@
         <code>scripts/npc-builder/npc-builder-data.mjs</code> to enable this step.</p>
     </div>
     {{/if}}
+  </div>
+
+  {{!-- ── Step: Temperament (Quick NPC) ───────────────────────────── --}}
+  <div class="npc-builder-panel{{#if (lookup stepPanels 'temperament')}} active{{/if}}" data-panel="temperament">
+    <h3 class="npc-builder-panel-title">Choose Temperament</h3>
+    <p class="npc-builder-hint">The temperament defines this NPC's attribute scores.</p>
+    <div class="npc-card-grid">
+      {{#each quickTemperaments}}
+      <div class="npc-selection-card{{#if selected}} selected{{/if}}" data-key="{{key}}">
+        <div class="npc-selection-card-title">{{label}}</div>
+        <div class="npc-selection-card-desc npc-builder-hint">{{description}}</div>
+        <div class="npc-stat-grid">
+          {{#each attributeRows}}
+          <span class="npc-stat-label">{{label}}</span>
+          <span class="npc-stat-value">{{value}}</span>
+          {{/each}}
+        </div>
+      </div>
+      {{/each}}
+    </div>
+  </div>
+
+  {{!-- ── Step: Role Selection (Quick NPC) ─────────────────────────── --}}
+  <div class="npc-builder-panel{{#if (lookup stepPanels 'role-selection')}} active{{/if}}" data-panel="role-selection">
+    <h3 class="npc-builder-panel-title">Choose Role</h3>
+    <p class="npc-builder-hint">The role defines this NPC's department scores.</p>
+    <div class="npc-card-grid">
+      {{#each quickRoles}}
+      <div class="npc-selection-card{{#if selected}} selected{{/if}}" data-key="{{key}}">
+        <div class="npc-selection-card-title">{{label}}</div>
+        <div class="npc-selection-card-desc npc-builder-hint">{{description}}</div>
+        <div class="npc-stat-grid">
+          {{#each disciplineRows}}
+          <span class="npc-stat-label">{{label}}</span>
+          <span class="npc-stat-value">{{value}}</span>
+          {{/each}}
+        </div>
+      </div>
+      {{/each}}
+    </div>
   </div>
 
   {{!-- ── Footer ──────────────────────────────────────────────── --}}

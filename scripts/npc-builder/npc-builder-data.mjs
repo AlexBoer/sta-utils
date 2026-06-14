@@ -41,6 +41,159 @@ export const NOTABLE_ATTR_CHIPS = [10, 9, 9, 8, 8, 7];
 export const MINOR_DISC_CHIPS = [2, 2, 1, 1]; // 2 of 6 disciplines remain 0
 export const NOTABLE_DISC_CHIPS = [3, 2, 2, 1, 1]; // 1 of 6 disciplines remains 0
 
+// ── Incidental NPC quality table ──────────────────────────────────────────────
+export const INCIDENTAL_QUALITIES = [
+  { key: "poor", label: "Poor", attribute: 7, department: 0 },
+  { key: "basic", label: "Basic", attribute: 8, department: 1 },
+  { key: "proficient", label: "Proficient", attribute: 9, department: 2 },
+  { key: "talented", label: "Talented", attribute: 10, department: 3 },
+  { key: "exceptional", label: "Exceptional", attribute: 11, department: 4 },
+];
+
+// ── Quick NPC temperaments (define attribute arrays) ─────────────────────────
+export const QUICK_TEMPERAMENTS = [
+  {
+    key: "choleric",
+    label: "Choleric",
+    description: "Passionate, direct, and decisive, but also quick-tempered.",
+    attributes: {
+      control: 8,
+      daring: 9,
+      fitness: 8,
+      insight: 7,
+      presence: 9,
+      reason: 7,
+    },
+  },
+  {
+    key: "phlegmatic",
+    label: "Phlegmatic",
+    description:
+      "Quiet, empathetic, and thoughtful, but sometimes avoidant or timid.",
+    attributes: {
+      control: 9,
+      daring: 7,
+      fitness: 8,
+      insight: 9,
+      presence: 7,
+      reason: 8,
+    },
+  },
+  {
+    key: "melancholic",
+    label: "Melancholic",
+    description:
+      "Detail-oriented, organized, and introspective, but sometimes blunt or brooding.",
+    attributes: {
+      control: 9,
+      daring: 8,
+      fitness: 7,
+      insight: 8,
+      presence: 7,
+      reason: 9,
+    },
+  },
+  {
+    key: "sanguine",
+    label: "Sanguine",
+    description:
+      "Cheerful, confident, and energetic, but often reckless and unpredictable.",
+    attributes: {
+      control: 7,
+      daring: 8,
+      fitness: 9,
+      insight: 8,
+      presence: 9,
+      reason: 7,
+    },
+  },
+];
+
+// ── Quick NPC roles (define discipline arrays) ────────────────────────────────
+export const QUICK_ROLES = [
+  {
+    key: "mediator",
+    label: "Mediator",
+    description:
+      "Skilled at working with people, mediating disputes, and facilitating positive outcomes.",
+    disciplines: {
+      command: 2,
+      conn: 1,
+      engineering: 1,
+      security: 2,
+      science: 0,
+      medicine: 0,
+    },
+  },
+  {
+    key: "engineer",
+    label: "Engineer",
+    description:
+      "Highly adept at technical tasks and often found tinkering with machines.",
+    disciplines: {
+      command: 0,
+      conn: 1,
+      engineering: 2,
+      security: 1,
+      science: 2,
+      medicine: 0,
+    },
+  },
+  {
+    key: "pilot",
+    label: "Pilot",
+    description: "Well-versed in flying spacecraft.",
+    disciplines: {
+      command: 0,
+      conn: 2,
+      engineering: 2,
+      security: 1,
+      science: 1,
+      medicine: 0,
+    },
+  },
+  {
+    key: "expert",
+    label: "Expert",
+    description: "Well studied and knowledgeable.",
+    disciplines: {
+      command: 1,
+      conn: 0,
+      engineering: 1,
+      security: 0,
+      science: 2,
+      medicine: 2,
+    },
+  },
+  {
+    key: "warrior",
+    label: "Warrior",
+    description: "An effective combatant, trained to face danger.",
+    disciplines: {
+      command: 1,
+      conn: 0,
+      engineering: 2,
+      security: 2,
+      science: 0,
+      medicine: 1,
+    },
+  },
+  {
+    key: "medic",
+    label: "Medic",
+    description:
+      "A healer, skilled at saving lives and patching up the injured.",
+    disciplines: {
+      command: 1,
+      conn: 0,
+      engineering: 0,
+      security: 2,
+      science: 1,
+      medicine: 2,
+    },
+  },
+];
+
 // ── Randomization pools ───────────────────────────────────────────────────────
 export const RANDOM_NAMES = [
   "Arex",
@@ -598,6 +751,13 @@ export async function createNpcActor({
         DISCIPLINE_KEYS.map((k) => [k, { value: disciplines[k] ?? 0 }]),
       ),
     },
+    // Notable NPCs have a Stress track — show it on the token for everyone.
+    prototypeToken: isNotable
+      ? {
+          bar1: { attribute: "stress" },
+          displayBars: CONST.TOKEN_DISPLAY_MODES.ALWAYS,
+        }
+      : {},
     flags: { core: { sheetClass: "sta.STANPCSheet2e" } },
   });
 

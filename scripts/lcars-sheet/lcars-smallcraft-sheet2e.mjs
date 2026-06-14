@@ -68,7 +68,6 @@ export class LcarsSmallCraftSheet2e extends STASmallCraftSheet2e {
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const scheme = this.getLcarsScheme();
-    context.isOriginalTheme = scheme === "sta";
     context.lcarsSchemeClass = scheme
       ? `lcars-scheme-${scheme}`
       : "lcars-scheme-tng";
