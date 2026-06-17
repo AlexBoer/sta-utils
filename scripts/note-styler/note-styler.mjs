@@ -1,4 +1,5 @@
 import { MODULE_ID } from "../core/constants.mjs";
+import { t, tf } from "../core/i18n.mjs";
 
 /**
  * Note Styler - Allows customizing the text styling of selected map note placeables
@@ -614,14 +615,18 @@ class NoteStylerApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static async #onApplySelected() {
     const style = extractStyleFromElement(this.element);
     const count = await applyStyleToSelectedNotes(style);
-    ui.notifications.info(`Applied style to ${count} note(s).`);
+    ui.notifications.info(
+      tf("sta-utils.noteStyler.notifAppliedToCount", { count }),
+    );
     this.close();
   }
 
   static async #onApplyAll() {
     const style = extractStyleFromElement(this.element);
     const count = await applyStyleToAllNotes(style);
-    ui.notifications.info(`Applied style to ${count} note(s).`);
+    ui.notifications.info(
+      tf("sta-utils.noteStyler.notifAppliedToCount", { count }),
+    );
     this.close();
   }
 
@@ -637,7 +642,7 @@ export async function openNoteStylerDialog() {
   const selected = canvas.notes?.controlled || [];
 
   if (selected.length === 0) {
-    ui.notifications.warn("Select one or more map notes first.");
+    ui.notifications.warn(t("sta-utils.noteStyler.warnNoNoteSelected"));
     return;
   }
 

@@ -13,6 +13,11 @@
 @import url("color-schemes/lcars-scheme-academy.css");
 @import url("color-schemes/lcars-scheme-romulan.css");
 @import url("color-schemes/lcars-scheme-klingon.css");
+@import url("color-schemes/lcars-scheme-dominion.css");
+@import url("color-schemes/lcars-scheme-cardassian.css");
+@import url("color-schemes/lcars-scheme-borg.css");
+@import url("color-schemes/lcars-scheme-ferengi.css");
+@import url("color-schemes/lcars-scheme-orion.css");
 @import url("color-schemes/lcars-scheme-sfCommand.css");
 @import url("color-schemes/lcars-scheme-sfSciences.css");
 @import url("color-schemes/lcars-scheme-sfOperations.css");
@@ -1388,8 +1393,7 @@
     border: 2px solid var(--lcars-orange);
     border-radius: 8px;
     overflow: hidden;
-    width: 150px;
-    align-self: center;
+    width: 100%;
   }
 
   .name-field .text-entry {
@@ -1790,6 +1794,11 @@
   .control i:hover,
   .control i:focus-visible {
     color: var(--lcars-orange);
+  }
+
+  /* Hide edit/delete controls — replaced by right-click context menu. */
+  .section .row.entry > div.control {
+    display: none;
   }
 
   /* ===========================================================================

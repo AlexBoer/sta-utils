@@ -37,7 +37,7 @@ export class LcarsStarshipSheet2e extends STAStarshipSheet2e {
   };
 
   static DEFAULT_OPTIONS = {
-    position: { width: 1050, height: "auto" },
+    position: { width: 750, height: "auto" },
     actions: {
       onAssistTask: function (ev) {
         return performShipAssistRoll.call(this, ev);
@@ -56,7 +56,7 @@ export class LcarsStarshipSheet2e extends STAStarshipSheet2e {
    * @returns {string} Scheme key, e.g. "tng", "voyager", "ds9".
    */
   getLcarsScheme() {
-    return this.actor.getFlag(MODULE_ID, "lcarsSheetScheme") || "sta";
+    return this.actor.getFlag(MODULE_ID, "lcarsSheetScheme") || "tng";
   }
 
   /**

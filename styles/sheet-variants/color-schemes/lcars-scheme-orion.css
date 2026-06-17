@@ -1,0 +1,67 @@
+/* ----------------------------------------------------------------------- */
+/*  ORION SYNDICATE                                                         */
+/*  Near-black bg with warm teal cast; deep teal-green chrome; emerald     */
+/*  floating pills; warm gold input text & track labels. Syndicate style:  */
+/*  dangerous beauty, exotic markets, and shadow dealings.                 */
+/* ----------------------------------------------------------------------- */
+.theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-orion,
+.theme-dark .sta-lcars-dialogue-app.lcars-scheme-orion,
+body.theme-dark.sta-officers-lcars-active.lcars-scheme-orion {
+  --lcars-bg:              rgb(4 12 10 / 94%);
+  --lcars-bg-panel:        rgba(4, 20, 14, 0.30);            /* panel tint: deep teal-green tint */
+  --lcars-primary-color:   #287858; /* deep teal-green */
+  --lcars-secondary-color: #5c2880; /* deep purple — Orion underworld */
+  --lcars-tertiary-color:  #c8a040; /* warm gold — Orion wealth */
+  --lcars-titlebar-injuries:             #8c2828; /* red — distinct from teal chrome */
+  --lcars-titlebar-belongings-colheader: #3c1860;
+  --lcars-titlebar-launchbay:            #5c2880;
+  --lcars-chrome-hover:                  #348868; /* lighter teal on hover */
+  --lcars-input-border:                  #1e5c40;
+  --lcars-text-body:                     #90c8a8; /* pale teal-green body text */
+  --lcars-text-item:                     #90c8a8;
+  --lcars-text-title:                    #000000;
+  --lcars-text-header:                   #000000;
+}
+
+.theme-light :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-orion,
+.theme-light .sta-lcars-dialogue-app.lcars-scheme-orion,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-orion {
+  --lcars-bg:              #e4f2ec; /* pale seafoam */
+  --lcars-bg-panel:        rgba(210, 248, 228, 0.50); /* panel tint: soft teal brightening */
+  --lcars-primary-color:   #185838; /* deep teal */
+  --lcars-secondary-color: #421860; /* deep purple */
+  --lcars-tertiary-color:  #8a6800; /* dark gold for readability on light bg */
+  --lcars-titlebar-injuries:             #701818;
+  --lcars-titlebar-belongings-colheader: #2e1048;
+  --lcars-titlebar-launchbay:            #421860;
+  --lcars-chrome-hover:                  #206848;
+  --lcars-input-border:                  #144830;
+  --lcars-text-body:                     #040e08;
+  --lcars-text-item:                     #040e08;
+  --lcars-text-title:                    #e8fff4;
+  --lcars-text-header:                   #e8fff4;
+  /* ── Raw palette aliases (light mode) ── */
+  --lcars-orange:     var(--lcars-chrome);
+  --lcars-peach:      var(--lcars-chrome-hover);
+  --lcars-lavender:   var(--lcars-titlebar);
+  --lcars-lilac:      var(--lcars-input-border);
+  --lcars-blue:       var(--lcars-btn-secondary);
+  --lcars-sky:        var(--lcars-input-text);
+  --lcars-red:        var(--lcars-titlebar-injuries);
+  --lcars-tan:        var(--lcars-btn-reputation);
+  --lcars-text-light: var(--lcars-text-body);
+}
+
+/* ── Window-root background overrides (:has() targets the ancestor .application element) ── */
+.theme-dark .sta-lcars-window.application:has(.lcars-scheme-orion) {
+  --lcars-bg: rgb(4 12 10 / 94%);
+}
+.theme-light .sta-lcars-window.application:has(.lcars-scheme-orion) {
+  --lcars-bg: #e4f2ec;
+}
+.sta-lcars-window.application.theme-dark:has(.lcars-scheme-orion) {
+  --lcars-bg: rgb(4 12 10 / 94%);
+}
+.sta-lcars-window.application.theme-light:has(.lcars-scheme-orion) {
+  --lcars-bg: #e4f2ec;
+}

@@ -1,4 +1,5 @@
 import { RollRequestDialog } from "./roll-request-dialog.mjs";
+import { t } from "../core/i18n.mjs";
 
 /**
  * Open the GM Roll Request dialog.
@@ -6,7 +7,7 @@ import { RollRequestDialog } from "./roll-request-dialog.mjs";
  */
 export function openRollRequestDialog() {
   if (!game.user.isGM) {
-    ui.notifications.warn("Only the GM can send roll requests.");
+    ui.notifications.warn(t("sta-utils.rollRequest.warnGmOnly"));
     return;
   }
   const app = new RollRequestDialog();

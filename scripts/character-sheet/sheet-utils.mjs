@@ -188,7 +188,12 @@ function _compatEntry({ label, icon, condition, callback }) {
  * @param {HTMLElement} root - The root element of the character sheet.
  */
 export function _installItemContextMenu(sheetApp, root) {
-  const sheetBody = root?.querySelector?.(".sheet-body");
+  // Character sheets use .sheet-body; starship/small-craft sheets use
+  // .starship-sheet directly (no .sheet-body wrapper).
+  const sheetBody =
+    root?.querySelector?.(".sheet-body") ??
+    root?.querySelector?.(".starship-sheet") ??
+    root?.querySelector?.(".smallcraft-sheet");
   if (!sheetBody) return;
 
   console.debug(
@@ -345,7 +350,7 @@ export function _installItemContextMenu(sheetApp, root) {
   }
 
   console.debug(
-    `[sta-utils] Creating ContextMenu on .sheet-body with selector ".section .row.entry"`,
+    `[sta-utils] Creating ContextMenu on sheet container with selector ".section .row.entry"`,
     `menuItems count=${menuItems.length}`,
     `names=[${menuItems.map((m) => m.name).join(", ")}]`,
   );

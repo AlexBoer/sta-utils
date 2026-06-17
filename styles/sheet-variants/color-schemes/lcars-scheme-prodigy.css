@@ -6,21 +6,21 @@
 .theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-prodigy,
 .theme-dark .sta-lcars-dialogue-app.lcars-scheme-prodigy,
 body.theme-dark.sta-officers-lcars-active.lcars-scheme-prodigy {
-  --lcars-bg:              #0d0820da; /* deep-space purple-black */
-  --lcars-bg-panel:        rgba(8, 0, 24, 0.25);           /* panel tint: deep purple darkening */
-  --lcars-primary-color:   #5828b0; /* royal purple */
-  --lcars-secondary-color: #2850c8; /* cobalt blue */
-  --lcars-tertiary-color:  #7838c0; /* vivid violet */
+  --lcars-bg:              #0a0a1eda; /* deep-space blue-black */
+  --lcars-bg-panel:        rgba(4, 4, 28, 0.28);           /* panel tint: deep blue-purple darkening */
+  --lcars-primary-color:   #3838c0; /* blue-purple — shifted bluer */
+  --lcars-secondary-color: #1860d8; /* vivid cobalt blue */
+  --lcars-tertiary-color:  #5858e0; /* blue-violet */
   /* biography/bio-fields/traits are violet not cobalt */
   --lcars-titlebar-biography:       #9030c0;
   --lcars-titlebar-traits:          var(--lcars-tertiary-color);
   --lcars-titlebar-bio-fields:      #9030c0;
   /* belongings are cobalt (matches secondary — shared default is fine) */
   --lcars-titlebar-injuries:        #b81860; /* cosmic magenta-crimson */
-  --lcars-titlebar-belongings-colheader: #2858c0;
-  --lcars-titlebar-launchbay:       #1c3890;
-  --lcars-chrome-hover:             #7848d0;
-  --lcars-input-border:             #5030b8;
+  --lcars-titlebar-belongings-colheader: #1868d0;
+  --lcars-titlebar-launchbay:       #1048a8;
+  --lcars-chrome-hover:             #4858e8; /* bright blue-violet on hover */
+  --lcars-input-border:             #2840c8;
   --lcars-text-body:                #d4c4f8;
   --lcars-text-item:                #d4c4f8;
   --lcars-text-title:               #f8f2ff;

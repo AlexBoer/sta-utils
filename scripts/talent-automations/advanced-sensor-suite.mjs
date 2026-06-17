@@ -48,7 +48,7 @@ export function registerAdvancedSensorSuite() {
       }
     },
     {
-      description: `Ship rolls ${BOOSTED_DICE} dice with Sensors`,
+      description: `Ship rolls ${BOOSTED_DICE} dice at assist with Sensors`,
       showToggle: false,
       showInfo: true,
       appliesTo: (ctx) => {

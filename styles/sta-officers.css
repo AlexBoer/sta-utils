@@ -1118,7 +1118,8 @@
 /* Character sheet: draggable divider to resize Character Log/Milestones list height */
 div.section.milestones > .staol-log-resizer,
 div.section.character-log > .staol-log-resizer,
-div.section.milestones > .staol-milestone-resizer {
+div.section.milestones > .staol-milestone-resizer,
+div.sta-sup-advancement-logs > .staol-sup-advancement-resizer {
   height: 8px;
   margin: 2px 0 6px 0;
   cursor: row-resize;
@@ -1132,7 +1133,8 @@ div.section.milestones > .staol-milestone-resizer {
 
 div.section.milestones > .staol-log-resizer::after,
 div.section.character-log > .staol-log-resizer::after,
-div.section.milestones > .staol-milestone-resizer::after {
+div.section.milestones > .staol-milestone-resizer::after,
+div.sta-sup-advancement-logs > .staol-sup-advancement-resizer::after {
   content: "";
   position: absolute;
   left: 10px;
@@ -1146,7 +1148,8 @@ div.section.milestones > .staol-milestone-resizer::after {
 
 div.section.milestones > .staol-log-resizer:hover,
 div.section.character-log > .staol-log-resizer:hover,
-div.section.milestones > .staol-milestone-resizer:hover {
+div.section.milestones > .staol-milestone-resizer:hover,
+div.sta-sup-advancement-logs > .staol-sup-advancement-resizer:hover {
   background: rgba(250, 223, 71, 0.10);
   border-color: rgba(250, 223, 71, 0.35);
 }
@@ -1154,6 +1157,12 @@ div.section.milestones > .staol-milestone-resizer:hover {
 body.staol-resize-dragging {
   user-select: none;
   cursor: row-resize;
+}
+
+/* Force scrolling on the Mission Introductions list (sta-lcars may inherit overflow:hidden) */
+.sta-sup-advancement-logs .item-list-scrollable {
+  overflow-y: auto !important;
+  max-height: 150px;
 }
 
 /* Keep injected text actions inside the STA sheet columns */
@@ -3231,4 +3240,85 @@ transition: background 0.15s, border-color 0.15s;
   .talent-loading-dialog .sta-talent-loading-spinner {
     animation-duration: 1.5s;
   }
+}
+
+/* ───────────────────────────────────────────────────────────────────────────── */
+/* Introduced Crew list — LCARS starship sheet                                */
+/* ───────────────────────────────────────────────────────────────────────────── */
+
+.starship-sheet .sta-officers-introduced-crew {
+  margin-bottom: 4px;
+}
+
+.starship-sheet .sta-officers-introduced-crew-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 2px 0 4px;
+}
+
+.starship-sheet .sta-officers-crew-chip {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+  background: var(--lcars-chrome, var(--lcars-orange, #c88b2a));
+  border: none;
+  border-radius: 4px;
+  padding: 3px 7px 3px 3px;
+  cursor: pointer;
+  color: var(--lcars-text-title, #000);
+  font-size: 0.6rem;
+  font-family: var(--lcars-font-heading, inherit);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+  white-space: nowrap;
+  opacity: 0.9;
+  transition: opacity 0.12s;
+}
+
+.starship-sheet .sta-officers-crew-chip:hover,
+.starship-sheet .sta-officers-crew-chip:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--lcars-chrome, var(--lcars-orange, #c88b2a));
+  outline-offset: 1px;
+}
+
+.starship-sheet .sta-officers-crew-chip img {
+  width: 33px;
+  height: 33px;
+  object-fit: cover;
+  border-radius: 2px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.starship-sheet .sta-officers-crew-chip span {
+  display: block;
+}
+
+.starship-sheet .sta-officers-introduced-crew-empty {
+  font-size: 0.7rem;
+  color: var(--lcars-tracktitle, var(--lcars-lavender, #c8a0d8));
+  font-style: italic;
+  padding: 2px 0;
+}
+
+.starship-sheet .sta-officers-crew-chip--supervisor {
+  outline: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.starship-sheet .sta-officers-crew-chip-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.45);
+  font-size: 0.75rem;
+  font-weight: bold;
+  letter-spacing: 0;
+  flex-shrink: 0;
 }

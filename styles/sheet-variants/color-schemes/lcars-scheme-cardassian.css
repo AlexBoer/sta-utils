@@ -1,0 +1,66 @@
+/* ----------------------------------------------------------------------- */
+/*  CARDASSIAN UNION                                                        */
+/*  Warm dark grey bg with sandy-ochre cast; tan-ochre chrome; deep burnt  */
+/*  sienna floating pills; amber input text & track labels.                */
+/* ----------------------------------------------------------------------- */
+.theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-cardassian,
+.theme-dark .sta-lcars-dialogue-app.lcars-scheme-cardassian,
+body.theme-dark.sta-officers-lcars-active.lcars-scheme-cardassian {
+  --lcars-bg:              rgb(14 11 7 / 93%);
+  --lcars-bg-panel:        rgba(28, 20, 8, 0.28);            /* panel tint: warm dark brown tint */
+  --lcars-primary-color:   #a07840; /* tan-ochre */
+  --lcars-secondary-color: #7a4820; /* burnt sienna */
+  --lcars-tertiary-color:  #c89848; /* warm amber */
+  --lcars-titlebar-injuries:             #9c2820; /* deep red-brown — distinct from ochre chrome */
+  --lcars-titlebar-belongings-colheader: #5c3010;
+  --lcars-titlebar-launchbay:            #7a4820;
+  --lcars-chrome-hover:                  #b08850; /* lighter ochre on hover */
+  --lcars-input-border:                  #805830;
+  --lcars-text-body:                     #d8c8a0; /* warm sandy text */
+  --lcars-text-item:                     #d8c8a0;
+  --lcars-text-title:                    #000000;
+  --lcars-text-header:                   #000000;
+}
+
+.theme-light :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-cardassian,
+.theme-light .sta-lcars-dialogue-app.lcars-scheme-cardassian,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-cardassian {
+  --lcars-bg:              #f4ede0; /* pale warm sand */
+  --lcars-bg-panel:        rgba(252, 240, 210, 0.50); /* panel tint: warm parchment brightening */
+  --lcars-primary-color:   #7a5820; /* deep ochre */
+  --lcars-secondary-color: #5e3010; /* deep burnt sienna */
+  --lcars-tertiary-color:  #8a6010; /* dark amber for readability on light bg */
+  --lcars-titlebar-injuries:             #801808;
+  --lcars-titlebar-belongings-colheader: #482008;
+  --lcars-titlebar-launchbay:            #5e3010;
+  --lcars-chrome-hover:                  #8c6830;
+  --lcars-input-border:                  #604018;
+  --lcars-text-body:                     #180c00;
+  --lcars-text-item:                     #180c00;
+  --lcars-text-title:                    #fff8e8;
+  --lcars-text-header:                   #fff8e8;
+  /* ── Raw palette aliases (light mode) ── */
+  --lcars-orange:     var(--lcars-chrome);
+  --lcars-peach:      var(--lcars-chrome-hover);
+  --lcars-lavender:   var(--lcars-titlebar);
+  --lcars-lilac:      var(--lcars-input-border);
+  --lcars-blue:       var(--lcars-btn-secondary);
+  --lcars-sky:        var(--lcars-input-text);
+  --lcars-red:        var(--lcars-titlebar-injuries);
+  --lcars-tan:        var(--lcars-btn-reputation);
+  --lcars-text-light: var(--lcars-text-body);
+}
+
+/* ── Window-root background overrides (:has() targets the ancestor .application element) ── */
+.theme-dark .sta-lcars-window.application:has(.lcars-scheme-cardassian) {
+  --lcars-bg: rgb(14 11 7 / 93%);
+}
+.theme-light .sta-lcars-window.application:has(.lcars-scheme-cardassian) {
+  --lcars-bg: #f4ede0;
+}
+.sta-lcars-window.application.theme-dark:has(.lcars-scheme-cardassian) {
+  --lcars-bg: rgb(14 11 7 / 93%);
+}
+.sta-lcars-window.application.theme-light:has(.lcars-scheme-cardassian) {
+  --lcars-bg: #f4ede0;
+}

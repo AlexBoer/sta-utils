@@ -1,43 +1,44 @@
 ﻿/* ----------------------------------------------------------------------- */
 /*  TOS — THE ORIGINAL SERIES                                               */
-/*  Command gold chrome; sciences blue biography/traits; teal focuses.     */
+/*  Warm dark brown bg; command-gold chrome; operations red section pills;  */
+/*  sciences blue input text & track labels.                               */
+/*  Three-division colors: gold command, red operations, blue sciences.    */
 /* ----------------------------------------------------------------------- */
 .theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-tos,
 .theme-dark .sta-lcars-dialogue-app.lcars-scheme-tos,
 body.theme-dark.sta-officers-lcars-active.lcars-scheme-tos {
-  --lcars-primary-color:                 #C89018; /* command division gold */
-  --lcars-secondary-color:               #1A5A90; /* sciences division blue */
-  --lcars-tertiary-color:                #0E7888; /* teal-cyan */
-  --lcars-titlebar-injuries:             #B02020;
-  --lcars-titlebar-traits:               #6A8020; /* olive */
-  --lcars-titlebar-belongings-colheader: #A87018;
-  --lcars-titlebar-launchbay:            #0E6070;
-  --lcars-chrome-hover:                  #D8A828;
-  --lcars-input-border:                  #A87818;
-  --lcars-text-body:                     #ECD890;
-  --lcars-text-item:                     #ECD890;
+  --lcars-bg:                            rgb(10 10 10 / 93%);  /* mid grey — TOS bridge */
+  --lcars-bg-panel:                      rgba(16, 16, 16, 0.28); /* panel tint: neutral dark */
+  --lcars-primary-color:                 #c8a818; /* command division gold — mustard yellow */
+  --lcars-secondary-color:               #b82a18; /* operations division red — redshirt */
+  --lcars-tertiary-color:                #2880c0; /* sciences division blue */
+  --lcars-titlebar-injuries:             #d02020; /* vivid red — consistent with secondary */
+  --lcars-titlebar-belongings-colheader: #8c2010;
+  --lcars-titlebar-launchbay:            #b82a18;
+  --lcars-chrome-hover:                  #d8b828; /* brighter mustard on hover */
+  --lcars-input-border:                  #a08010;
+  --lcars-text-body:                     #e8d090; /* warm parchment — TOS viewer text */
+  --lcars-text-item:                     #e8d090;
   --lcars-text-title:                    #080808;
   --lcars-text-header:                   #080808;
-  --lcars-bg-panel:                      rgba(0, 0, 0, 0.25);          /* panel tint: command-deck darkening */
 }
 .theme-light :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-tos,
 .theme-light .sta-lcars-dialogue-app.lcars-scheme-tos,
 body.theme-light.sta-officers-lcars-active.lcars-scheme-tos {
-  --lcars-bg:                            #f8f4e8;
-  --lcars-bg-panel:                      rgba(255, 252, 230, 0.50); /* panel tint: warm gold-cream brightening */
-  --lcars-primary-color:                 #8A6008;
-  --lcars-secondary-color:               #0E3E70;
-  --lcars-tertiary-color:                #085868;
-  --lcars-titlebar-injuries:             #780808;
-  --lcars-titlebar-traits:               #4A5A10;
-  --lcars-titlebar-belongings-colheader: #6A4208;
-  --lcars-titlebar-launchbay:            #063848;
-  --lcars-chrome-hover:                  #A07210;
-  --lcars-input-border:                  var(--lcars-primary-color);
-  --lcars-text-body:                     #1c1408;
-  --lcars-text-item:                     #1c1408;
-  --lcars-text-title:                    #f8f4e0;
-  --lcars-text-header:                   #f8f4e0;
+  --lcars-bg:                            #e8e8e8; /* pale neutral grey */
+  --lcars-bg-panel:                      rgba(210, 210, 210, 0.50); /* panel tint: cool brightening */
+  --lcars-primary-color:                 #9a8008; /* deep mustard gold */
+  --lcars-secondary-color:               #8c1c0c; /* deep operations red */
+  --lcars-tertiary-color:                #1458a0; /* deep sciences blue */
+  --lcars-titlebar-injuries:             #901010;
+  --lcars-titlebar-belongings-colheader: #681008;
+  --lcars-titlebar-launchbay:            #8c1c0c;
+  --lcars-chrome-hover:                  #b06c10;
+  --lcars-input-border:                  #804808;
+  --lcars-text-body:                     #1c1008;
+  --lcars-text-item:                     #1c1008;
+  --lcars-text-title:                    #fff8e8;
+  --lcars-text-header:                   #fff8e8;
   --lcars-orange:     var(--lcars-chrome);
   --lcars-peach:      var(--lcars-chrome-hover);
   --lcars-lavender:   var(--lcars-titlebar);
@@ -50,9 +51,15 @@ body.theme-light.sta-officers-lcars-active.lcars-scheme-tos {
 }
 
 /* ── Window-root background overrides (:has() targets the ancestor .application element) ── */
+.theme-dark .sta-lcars-window.application:has(.lcars-scheme-tos) {
+  --lcars-bg: rgb(10 10 10 / 93%);
+}
 .theme-light .sta-lcars-window.application:has(.lcars-scheme-tos) {
-  --lcars-bg: #f8f4e8;
+  --lcars-bg: #e8e8e8;
+}
+.sta-lcars-window.application.theme-dark:has(.lcars-scheme-tos) {
+  --lcars-bg: rgb(10 10 10 / 93%);
 }
 .sta-lcars-window.application.theme-light:has(.lcars-scheme-tos) {
-  --lcars-bg: #f8f4e8;
+  --lcars-bg: #e8e8e8;
 }

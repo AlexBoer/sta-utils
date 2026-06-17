@@ -188,7 +188,9 @@
       "sleepDesc": "A full night's rest or similar amount of time. Recover all stress.",
       "momentumTitle": "Momentum:",
       "momentumDesc": "Recover 1 stress per 2 Momentum spent after a successful task, max 3.",
-      "ok": "OK"
+      "ok": "OK",
+      "warnGmOnly": "Only a GM can run stress reset.",
+      "warnNoActivePlayers": "No active player characters found."
     },
     "personalThreat": {
       "configureTokenBar": "Configure token: set Bar 1 to Stress and display always to everyone",
@@ -438,7 +440,8 @@
         "name": "Scene Traits Actor",
         "hint": "Choose an existing Scene Traits actor for this scene, or leave as auto-create to generate one when first needed.",
         "autoCreate": "— Auto-create when needed —"
-      }
+      },
+      "warnNoActiveScene": "No active scene."
     },
     "traitDrawingSettings": {
       "title": "Trait Drawing Style",
@@ -627,6 +630,15 @@
       "chiefTacticalOfficer": "Chief Tactical Officer",
       "chooseWeapon": "Choose Weapon",
       "selectWeapon": "Select",
+      "warnNotAuthor": "Only the roller or GM may use this.",
+      "errShipGone": "Ship no longer exists.",
+      "errRegainPowerFailed": "Failed to regain reserve power.",
+      "regainPowerBtn": "Regain Power ({ship})",
+      "reservePowerActiveBtn": "Reserve Power Active",
+      "regainPowerHeading": "Regain Power",
+      "regainPowerSuccess": "{ship} has regained Reserve Power.",
+      "reroutePowerHeading": "Reroute Power",
+      "reroutePowerSuccess": "{starship} rerouted Reserve Power to {system}.",
       "commonSpends": {
         "extraMajor": "Extra Major: 2M",
         "extraMinor": "Extra Minor: 1M",
@@ -1419,7 +1431,8 @@
       "noActorForRoll": "No character found to roll with. Open your character sheet first.",
       "rollFailed": "Unable to trigger the roll automatically. Please click the attribute on your character sheet.",
       "sentOne": "Roll request sent.",
-      "sentMany": "Roll requests sent to {count} players."
+      "sentMany": "Roll requests sent to {count} players.",
+      "warnGmOnly": "Only the GM can send roll requests."
     },
     "casualties": {
     "title": "Casualty Report",
@@ -1483,6 +1496,15 @@
       "deleteEntry": "Delete entry",
       "editEntry": "Edit entry",
       "toggleValueUsed": "Toggle value used"
+    },
+    "talentAutomations": {
+      "warnNotAuthor": "Only the roller or GM may use this.",
+      "errUntappedPotentialFailed": "Failed to process Untapped Potential roll.",
+      "errVeteranFailed": "Failed to process Veteran roll."
+    },
+    "noteStyler": {
+      "warnNoNoteSelected": "Select one or more map notes first.",
+      "notifAppliedToCount": "Applied style to {count} note(s)."
     }
   }
 }

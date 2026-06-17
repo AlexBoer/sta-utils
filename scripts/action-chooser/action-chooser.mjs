@@ -186,11 +186,11 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
     btn.type = "button";
     btn.className =
       "sta-utils-momentum-spend-btn-small sta-utils-regain-power-btn";
-    btn.innerHTML = `<i class="fas fa-bolt"></i> Regain Power (${shipName})`;
+    btn.innerHTML = `<i class="fas fa-bolt"></i> ${tf("sta-utils.actionChooser.regainPowerBtn", { ship: foundry.utils.escapeHTML(shipName) })}`;
 
     // If reserve power is already true, show as done
     if (ship?.system?.reservepower) {
-      btn.innerHTML = `<i class="fas fa-check"></i> Reserve Power Active`;
+      btn.innerHTML = `<i class="fas fa-check"></i> ${t("sta-utils.actionChooser.reservePowerActiveBtn")}`;
       btn.disabled = true;
     }
 
@@ -199,7 +199,7 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
 
       // Only the message author or GM may click
       if (!(message.author?.id === game.user?.id || game.user.isGM)) {
-        ui.notifications.warn("Only the roller or GM may use this.");
+        ui.notifications.warn(t("sta-utils.actionChooser.warnNotAuthor"));
         return;
       }
 
@@ -208,26 +208,28 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
       try {
         const targetShip = game.actors.get(shipId);
         if (!targetShip) {
-          ui.notifications.error("Ship no longer exists.");
+          ui.notifications.error(t("sta-utils.actionChooser.errShipGone"));
           return;
         }
 
         await targetShip.update({ "system.reservepower": true });
 
-        btn.innerHTML = `<i class="fas fa-check"></i> Reserve Power Active`;
+        btn.innerHTML = `<i class="fas fa-check"></i> ${t("sta-utils.actionChooser.reservePowerActiveBtn")}`;
 
         // Announce in chat
         await ChatMessage.create({
           content: `<div class="sta-utils-chat-card sta-utils-chat-card--orange">
-            <h3><i class="fas fa-bolt"></i> Regain Power</h3>
-            <p><span class="greentext">${targetShip.name} has regained Reserve Power.</span></p>
+            <h3><i class="fas fa-bolt"></i> ${t("sta-utils.actionChooser.regainPowerHeading")}</h3>
+            <p><span class="greentext">${tf("sta-utils.actionChooser.regainPowerSuccess", { ship: foundry.utils.escapeHTML(targetShip.name) })}</span></p>
           </div>`,
           speaker: ChatMessage.getSpeaker({ actor: targetShip }),
         });
       } catch (err) {
         btn.disabled = false;
         console.warn(`${MODULE_ID} | Regain Power: failed`, err);
-        ui.notifications.error("Failed to regain reserve power.");
+        ui.notifications.error(
+          t("sta-utils.actionChooser.errRegainPowerFailed"),
+        );
       }
     });
 
@@ -794,7 +796,7 @@ class ActionChooserApp extends BaseApp {
                 const range = game.i18n.localize(
                   `sta.actor.belonging.weapon.${w.system.range?.toLowerCase()}`,
                 );
-                return `<option value="${w.id}">${w.name} (${range})</option>`;
+                return `<option value="${w.id}">${foundry.utils.escapeHTML(w.name)} (${range})</option>`;
               })
               .join("");
             weaponPickerHtml = `
@@ -814,7 +816,10 @@ class ActionChooserApp extends BaseApp {
             weaponPickerHtml = `<p class="sta-action-detail__no-weapons">${t("sta-utils.actionChooser.noStarshipWeapons")}</p>`;
           } else {
             const opts = weapons
-              .map((w) => `<option value="${w.id}">${w.name}</option>`)
+              .map(
+                (w) =>
+                  `<option value="${w.id}">${foundry.utils.escapeHTML(w.name)}</option>`,
+              )
               .join("");
             weaponPickerHtml = `
               <div class="sta-action-detail__weapon-picker">
@@ -914,8 +919,8 @@ class ActionChooserApp extends BaseApp {
               );
               await ChatMessage.create({
                 content: `<div class="sta-utils-chat-card sta-utils-chat-card--orange">
-                  <h3><i class="fas fa-bolt"></i> Reroute Power</h3>
-                  <p><strong>${this.selectedStarship.name}</strong> rerouted Reserve Power to <strong>${systemLabel}</strong>.</p>
+                  <h3><i class="fas fa-bolt"></i> ${t("sta-utils.actionChooser.reroutePowerHeading")}</h3>
+                  <p><strong>${foundry.utils.escapeHTML(this.selectedStarship.name)}</strong> ${tf("sta-utils.actionChooser.reroutePowerSuccess", { starship: foundry.utils.escapeHTML(this.selectedStarship.name), system: foundry.utils.escapeHTML(systemLabel) })}</p>
                 </div>`,
                 speaker: ChatMessage.getSpeaker({
                   actor: this.selectedStarship,
@@ -1252,7 +1257,7 @@ class ActionChooserApp extends BaseApp {
             weaponInfo.innerHTML = `
               <div class="sta-weapon-info__row">
                 <span class="sta-weapon-info__label">Type:</span>
-                <span class="sta-weapon-info__value">${typeLabel}</span>
+                <span class="sta-weapon-info__value">${foundry.utils.escapeHTML(typeLabel)}</span>
               </div>
               <div class="sta-weapon-info__row">
                 <span class="sta-weapon-info__label">Damage:</span>
@@ -1936,7 +1941,7 @@ function actionAnnouncementMessage(actor, action) {
     : t(action.description);
   return `<div class="sta-utils-chat-card sta-utils-chat-card--orange">
     <h3><i class="fas fa-crosshairs"></i> ${t(action.name)}</h3>
-    <p><strong>${actor.name}</strong>: ${summary}</p>
+    <p><strong>${foundry.utils.escapeHTML(actor.name)}</strong>: ${summary}</p>
   </div>`;
 }
 

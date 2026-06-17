@@ -56,7 +56,6 @@ function _buildAutomationsHtml(visible, preservedStates = {}) {
           <div class="sta-utils-automation-label" title="${mw.description || mw.name}">
             <span class="sta-utils-automation-name">${mw.name}</span>${desc}
           </div>
-          <i class="fa-solid fa-circle-info sta-utils-automation-info-icon"></i>
         </div>`;
     })
     .join("\n");
@@ -121,6 +120,85 @@ function _refreshAutomationsSection(dialogEl, baseCtx) {
   if (newHtml) {
     const form = dialogEl.querySelector("#dice-pool-form");
     if (form) form.insertAdjacentHTML("afterend", newHtml);
+  }
+}
+
+/**
+ * Run all applicable middleware on `previewData` synchronously (fire-and-
+ * forget for any async functions — these talent helpers are all sync in
+ * practice) to compute what values the dialog should default to.
+ *
+ * @param {object} previewData - Mutable preview taskData object.
+ * @param {object} ctx         - Middleware context.
+ */
+function _runPreviewMiddleware(previewData, ctx) {
+  for (const mw of _middleware()) {
+    if (mw.appliesTo && !mw.appliesTo(ctx)) continue;
+    try {
+      mw.fn(previewData, ctx);
+    } catch {
+      // ignore preview errors
+    }
+  }
+}
+
+/**
+ * Update the dialog's complication range input to reflect any talent
+ * automations that apply to the currently selected ship-assist context.
+ * When ship assist is off, restores to the original scene base.
+ *
+ * Only relevant for the character-sheet path (hasShipAssistUI=true).
+ * The starship-sheet path sets complication range via pre-dialog middleware.
+ *
+ * @param {HTMLElement} dialogEl           - The dialog element.
+ * @param {object}      baseCtx            - Seed context (actor, etc.).
+ * @param {number}      baseComplicationRange - Original (pre-talent) scene range.
+ */
+function _refreshComplicationRange(dialogEl, baseCtx, baseComplicationRange) {
+  const compInput = dialogEl.querySelector("#complicationRange");
+  if (!compInput) return;
+
+  const isAssisting =
+    dialogEl.querySelector("#starshipAssisting")?.checked ?? false;
+
+  if (!isAssisting) {
+    // Restore to the unmodified scene base.
+    compInput.value = baseComplicationRange;
+    return;
+  }
+
+  const shipId = dialogEl.querySelector("#starship")?.value;
+  const ship = shipId ? game.actors.get(shipId) : null;
+  const selectedSystem = dialogEl.querySelector("#system")?.value ?? null;
+  const selectedDepartment =
+    dialogEl.querySelector("#department")?.value ?? null;
+
+  const ctx = {
+    actor: baseCtx.actor,
+    starship: ship,
+    formData: null,
+    isShipAssist: true,
+    selectedSystem,
+    selectedDepartment,
+    baseComplicationRange,
+  };
+
+  const previewData = {
+    complicationRange: baseComplicationRange,
+    dicePool: 1,
+    selectedSystem,
+    selectedDepartment,
+  };
+
+  _runPreviewMiddleware(previewData, ctx);
+
+  // Only update if a talent actually changed the complication range,
+  // to avoid stomping a value the user manually typed.
+  if (previewData.complicationRange !== baseComplicationRange) {
+    compInput.value = previewData.complicationRange;
+  } else {
+    // No talent effect — restore base in case a previous ship had one.
+    compInput.value = baseComplicationRange;
   }
 }
 
@@ -515,7 +593,17 @@ export async function showDicePoolDialog(opts) {
       }
 
       // --- Automations section ---
+      // Capture the initial complication range (pre-talent scene value) once,
+      // so dynamic updates can restore to it when ship-assist is turned off.
+      const _baseCompRange = parseInt(
+        el.querySelector("#complicationRange")?.value ?? "1",
+        10,
+      );
+
       _refreshAutomationsSection(el, applicabilityContext);
+      if (hasShipAssistUI) {
+        _refreshComplicationRange(el, applicabilityContext, _baseCompRange);
+      }
 
       // --- Momentum / Threat helper ---
       _ensureMomentumThreatHelper(el);
@@ -568,6 +656,7 @@ export async function showDicePoolDialog(opts) {
         checkbox.addEventListener("change", () => {
           section.classList.toggle("hidden", !checkbox.checked);
           _refreshAutomationsSection(el, applicabilityContext);
+          _refreshComplicationRange(el, applicabilityContext, _baseCompRange);
 
           // Update reserve power checkbox when ship assist changes
           if (checkbox.checked) {
@@ -589,6 +678,13 @@ export async function showDicePoolDialog(opts) {
         if (dropdown) {
           dropdown.addEventListener("change", () => {
             _refreshAutomationsSection(el, applicabilityContext);
+            if (hasShipAssistUI) {
+              _refreshComplicationRange(
+                el,
+                applicabilityContext,
+                _baseCompRange,
+              );
+            }
 
             // Update reserve power checkbox when ship or system changes
             if (sel === "#starship" || sel === "#system") {

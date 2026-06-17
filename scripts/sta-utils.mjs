@@ -161,7 +161,7 @@ const STRESS_REST_TYPES = {
 async function openSceneTraitsSheet() {
   const scene = canvas?.scene;
   if (!scene) {
-    ui.notifications.warn("No active scene.");
+    ui.notifications.warn(t("sta-utils.sceneConfig.warnNoActiveScene"));
     return false;
   }
 
@@ -206,13 +206,13 @@ function getActivePlayerCharacters() {
 
 async function openStressResetDialog() {
   if (!game.user?.isGM) {
-    ui.notifications.warn("Only a GM can run stress reset.");
+    ui.notifications.warn(t("sta-utils.stress.warnGmOnly"));
     return false;
   }
 
   const actors = getActivePlayerCharacters();
   if (!actors.length) {
-    ui.notifications.warn("No active player characters found.");
+    ui.notifications.warn(t("sta-utils.stress.warnNoActivePlayers"));
     return false;
   }
 

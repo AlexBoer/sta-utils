@@ -6,35 +6,38 @@ export function installRerollOverride() {
   if (_installed) return;
   _installed = true;
 
-  const STARoll = window.STARoll;
-  if (!STARoll?.prototype?.handleReroll) {
+  if (!window.STARoll?.prototype?.handleReroll) {
     console.warn(
       `${MODULE_ID} | Reroll Override: STARoll.handleReroll not found — cannot patch.`,
     );
     return;
   }
 
-  const originalHandleReroll = STARoll.prototype.handleReroll;
+  // Use libWrapper so other modules can co-exist on STARoll.prototype.handleReroll.
+  libWrapper.register(
+    MODULE_ID,
+    "STARoll.prototype.handleReroll",
+    async function (wrapped, messageId) {
+      const message = game.messages.get(messageId);
+      const rollData = message?.flags?.sta ?? {};
+      const splitData = message?.flags?.[MODULE_ID]?.splitNpcAssistReroll;
 
-  STARoll.prototype.handleReroll = async function (messageId) {
-    const message = game.messages.get(messageId);
-    const rollData = message?.flags?.sta ?? {};
-    const splitData = message?.flags?.[MODULE_ID]?.splitNpcAssistReroll;
+      if (!message || rollData.rollType !== "npc" || !splitData) {
+        return wrapped(messageId);
+      }
 
-    if (!message || rollData.rollType !== "npc" || !splitData) {
-      return originalHandleReroll.call(this, messageId);
-    }
-
-    try {
-      await _handleSplitNpcReroll.call(this, rollData, splitData);
-    } catch (err) {
-      console.warn(
-        `${MODULE_ID} | Reroll Override: split NPC reroll failed, falling back to system handler.`,
-        err,
-      );
-      return originalHandleReroll.call(this, messageId);
-    }
-  };
+      try {
+        await _handleSplitNpcReroll.call(this, rollData, splitData);
+      } catch (err) {
+        console.warn(
+          `${MODULE_ID} | Reroll Override: split NPC reroll failed, falling back to system handler.`,
+          err,
+        );
+        return wrapped(messageId);
+      }
+    },
+    "MIXED",
+  );
 }
 
 async function _handleSplitNpcReroll(rollData, splitData) {

@@ -1,0 +1,66 @@
+/* ----------------------------------------------------------------------- */
+/*  FERENGI ALLIANCE                                                        */
+/*  Dark warm-brown bg; gold chrome; deep bronze floating pills; warm      */
+/*  gold-orange input text & track labels. Latinum gleams throughout.      */
+/* ----------------------------------------------------------------------- */
+.theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-ferengi,
+.theme-dark .sta-lcars-dialogue-app.lcars-scheme-ferengi,
+body.theme-dark.sta-officers-lcars-active.lcars-scheme-ferengi {
+  --lcars-bg:              rgb(14 10 4 / 93%);
+  --lcars-bg-panel:        rgba(30, 20, 4, 0.30);            /* panel tint: deep gold-brown tint */
+  --lcars-primary-color:   #c09020; /* latinum gold */
+  --lcars-secondary-color: #4a6018; /* olive green — earned with Rule of Acquisition */
+  --lcars-tertiary-color:  #e0a820; /* bright gold — latinum shimmer */
+  --lcars-titlebar-injuries:             #943018; /* deep red-orange — distinct from gold chrome */
+  --lcars-titlebar-belongings-colheader: #384810;
+  --lcars-titlebar-launchbay:            #4a6018;
+  --lcars-chrome-hover:                  #d0a030; /* brighter gold on hover */
+  --lcars-input-border:                  #906018;
+  --lcars-text-body:                     #e0c878; /* warm golden text */
+  --lcars-text-item:                     #e0c878;
+  --lcars-text-title:                    #000000;
+  --lcars-text-header:                   #000000;
+}
+
+.theme-light :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-ferengi,
+.theme-light .sta-lcars-dialogue-app.lcars-scheme-ferengi,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-ferengi {
+  --lcars-bg:              #f5edd0; /* pale warm parchment */
+  --lcars-bg-panel:        rgba(255, 242, 196, 0.50); /* panel tint: soft gold brightening */
+  --lcars-primary-color:   #906800; /* deep gold */
+  --lcars-secondary-color: #344808; /* deep olive */
+  --lcars-tertiary-color:  #7a5000; /* dark gold-brown for readability on light bg */
+  --lcars-titlebar-injuries:             #781800;
+  --lcars-titlebar-belongings-colheader: #283808;
+  --lcars-titlebar-launchbay:            #344808;
+  --lcars-chrome-hover:                  #a07800;
+  --lcars-input-border:                  #6a4800;
+  --lcars-text-body:                     #1c1000;
+  --lcars-text-item:                     #1c1000;
+  --lcars-text-title:                    #fff8d8;
+  --lcars-text-header:                   #fff8d8;
+  /* ── Raw palette aliases (light mode) ── */
+  --lcars-orange:     var(--lcars-chrome);
+  --lcars-peach:      var(--lcars-chrome-hover);
+  --lcars-lavender:   var(--lcars-titlebar);
+  --lcars-lilac:      var(--lcars-input-border);
+  --lcars-blue:       var(--lcars-btn-secondary);
+  --lcars-sky:        var(--lcars-input-text);
+  --lcars-red:        var(--lcars-titlebar-injuries);
+  --lcars-tan:        var(--lcars-btn-reputation);
+  --lcars-text-light: var(--lcars-text-body);
+}
+
+/* ── Window-root background overrides (:has() targets the ancestor .application element) ── */
+.theme-dark .sta-lcars-window.application:has(.lcars-scheme-ferengi) {
+  --lcars-bg: rgb(14 10 4 / 93%);
+}
+.theme-light .sta-lcars-window.application:has(.lcars-scheme-ferengi) {
+  --lcars-bg: #f5edd0;
+}
+.sta-lcars-window.application.theme-dark:has(.lcars-scheme-ferengi) {
+  --lcars-bg: rgb(14 10 4 / 93%);
+}
+.sta-lcars-window.application.theme-light:has(.lcars-scheme-ferengi) {
+  --lcars-bg: #f5edd0;
+}

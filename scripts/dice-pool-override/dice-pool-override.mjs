@@ -96,6 +96,15 @@ let _installed = false;
 /**
  * Monkey-patch `_onAttributeTest` on every STA actor sheet class that
  * inherits from STAActors.  Called once during init (gated externally).
+ *
+ * NOTE: libWrapper is intentionally NOT used here. The STA system defines
+ * `_onAttributeTest` on multiple concrete sheet classes (discovered dynamically
+ * via `game.sta.applications` at runtime). libWrapper requires static dotted-path
+ * registration per class, which would mean hard-coding every current and future STA
+ * sheet class name — brittle and easy to miss. The direct prototype patch is the
+ * correct design for this multi-class, dynamically-discovered use case. All other
+ * prototype patches in this module use libWrapper (see personal-threat.mjs,
+ * trait-drawing-click.mjs, reroll-override.mjs).
  */
 export function installDicePoolOverride() {
   if (_installed) return;
@@ -212,16 +221,26 @@ async function _overriddenAttributeTest(event, _original) {
   /* ---------------------------------------------------------------- */
   /*  PRE-DIALOG middleware pass                                       */
   /*                                                                   */
-  /*  On sheets whose dialog contains a ship-assist / NPC-ship toggle  */
-  /*  we cannot know all inputs before the dialog opens, so middleware  */
-  /*  runs after the dialog instead.  For starship/smallcraft sheets   */
-  /*  without such a toggle we run middleware now.                     */
+  /*  Character sheets (attribute2e) have a ship-assist section whose  */
+  /*  inputs (which ship, which system) aren't known until the user    */
+  /*  interacts with the dialog, so middleware must run post-dialog.   */
+  /*                                                                   */
+  /*  Starship/smallcraft sheets (attributess) roll for the ship       */
+  /*  directly — the selected system is already known from the sheet   */
+  /*  checkboxes, so we can run middleware now and pre-fill the dialog  */
+  /*  with the correct defaults.  The optional NPC-crew toggle (also   */
+  /*  "starshipAssisting" in the template) is handled post-dialog      */
+  /*  via the isShipAssist branch below.                               */
   /* ---------------------------------------------------------------- */
   const hasShipAssistUI =
-    template.includes("starshipAssisting") ||
-    template.includes("attribute2e") ||
-    template.includes("attributess");
+    template.includes("starshipAssisting") || template.includes("attribute2e");
   const preDialogApplied = !hasShipAssistUI && _middleware.length > 0;
+
+  // Save the scene's raw values before pre-dialog middleware potentially
+  // modifies them.  These are used to reset taskData when the user has
+  // disabled a toggleable automation and we need to re-run cleanly.
+  const _originalDicePool = parseInt(defaultValue, 10);
+  const _originalComplicationRange = calculatedComplicationRange;
 
   if (preDialogApplied) {
     // Pre-read selected system/department from the sheet checkboxes
@@ -250,6 +269,8 @@ async function _overriddenAttributeTest(event, _original) {
       starship: null,
       formData: null,
       isShipAssist: false,
+      selectedSystem: preSelectedSystem,
+      selectedDepartment: preSelectedDepartment,
       baseComplicationRange: calculatedComplicationRange,
     };
 
@@ -497,21 +518,27 @@ async function _overriddenAttributeTest(event, _original) {
     baseComplicationRange: calculatedComplicationRange,
   };
 
-  // Only run post-dialog middleware when pre-dialog didn't run
-  // (i.e. the character sheet path where ship-assist is selected in-dialog).
-  // For the starship sheet path, pre-dialog already applied middleware and
-  // the dialog defaults were adjusted, so the form values already include
-  // the modifications.
-  if (!preDialogApplied) {
+  // Character sheet path (preDialogApplied=false): middleware always runs
+  // post-dialog because ship-assist choices aren't known until then.
+  //
+  // Starship/smallcraft sheet path (preDialogApplied=true):
+  //   • Direct roll (isShipAssist=false): pre-dialog already set the dialog
+  //     defaults, so the user's form values already reflect the talent
+  //     modifications.  Skip re-running to respect the user's choices.
+  //   • NPC-crew roll (isShipAssist=true): the split-assist path needs
+  //     per-leg overrides (shipDicePool, shipComplicationRange, etc.) that
+  //     can only be set after we know which skill level was chosen, so we
+  //     must run middleware now.
+  if (!preDialogApplied || isShipAssist) {
     await runMiddleware(taskData, middlewareContext, _automationStates);
   } else {
-    // Pre-dialog path — check if user unchecked any automation.
-    // If so, we need to re-run without the disabled ones.
+    // Pre-dialog direct-roll path — check if user unchecked any automation.
+    // If so, reset to the scene's original (pre-talent) values and re-run
+    // with the disabled automation excluded.
     const hasDisabled = Object.values(_automationStates).some((v) => !v);
     if (hasDisabled) {
-      // Reset to original values from the form (user may have edited them)
-      taskData.complicationRange = complicationRange;
-      taskData.dicePool = dicePool;
+      taskData.complicationRange = _originalComplicationRange;
+      taskData.dicePool = _originalDicePool;
       delete taskData.shipDicePool;
       delete taskData.shipComplicationRange;
       delete taskData.characterComplicationRange;

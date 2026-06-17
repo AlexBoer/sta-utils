@@ -1,0 +1,67 @@
+/* ----------------------------------------------------------------------- */
+/*  THE DOMINION                                                            */
+/*  Near-black bg with deep purple-grey cast; mid grey-purple chrome;      */
+/*  deep purple floating pills; muted sage green input text & tracktitles. */
+/*  Monochromatic grey-purple — the faint green whispers of ketracel-white. */
+/* ----------------------------------------------------------------------- */
+.theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-dominion,
+.theme-dark .sta-lcars-dialogue-app.lcars-scheme-dominion,
+body.theme-dark.sta-officers-lcars-active.lcars-scheme-dominion {
+  --lcars-bg:              rgb(10 10 12 / 93%);
+  --lcars-bg-panel:        rgba(14, 14, 18, 0.28);            /* panel tint: near-neutral dark */
+  --lcars-primary-color:   #787880; /* neutral mid-grey — Dominion stone */
+  --lcars-secondary-color: #3a1870; /* deep contrasting purple — Founder authority */
+  --lcars-tertiary-color:  #4e7860; /* muted sage green — hint of ketracel-white */
+  --lcars-titlebar-injuries:             #8c2050; /* deep magenta-red — distinct from chrome */
+  --lcars-titlebar-belongings-colheader: #2a1058;
+  --lcars-titlebar-launchbay:            #3a1870;
+  --lcars-chrome-hover:                  #909098; /* lighter grey on hover */
+  --lcars-input-border:                  #585860;
+  --lcars-text-body:                     #c8c8d0; /* pale cool grey */
+  --lcars-text-item:                     #c8c8d0;
+  --lcars-text-title:                    #f0ecff; /* pale lavender-white — readable on both grey and dark purple */
+  --lcars-text-header:                   #f0ecff;
+}
+
+.theme-light :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-dominion,
+.theme-light .sta-lcars-dialogue-app.lcars-scheme-dominion,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-dominion {
+  --lcars-bg:              #ebebed; /* pale neutral grey */
+  --lcars-bg-panel:        rgba(218, 218, 228, 0.50); /* panel tint: cool brightening */
+  --lcars-primary-color:   #585860; /* dark neutral grey */
+  --lcars-secondary-color: #2a0e58; /* deep dark purple */
+  --lcars-tertiary-color:  #2c5840; /* dark sage green for readability on light bg */
+  --lcars-titlebar-injuries:             #702050;
+  --lcars-titlebar-belongings-colheader: #1e0840;
+  --lcars-titlebar-launchbay:            #2a0e58;
+  --lcars-chrome-hover:                  #686870;
+  --lcars-input-border:                  #404048;
+  --lcars-text-body:                     #100c1c;
+  --lcars-text-item:                     #100c1c;
+  --lcars-text-title:                    #f0ecfc;
+  --lcars-text-header:                   #f0ecfc;
+  /* ── Raw palette aliases (light mode) ── */
+  --lcars-orange:     var(--lcars-chrome);
+  --lcars-peach:      var(--lcars-chrome-hover);
+  --lcars-lavender:   var(--lcars-titlebar);
+  --lcars-lilac:      var(--lcars-input-border);
+  --lcars-blue:       var(--lcars-btn-secondary);
+  --lcars-sky:        var(--lcars-input-text);
+  --lcars-red:        var(--lcars-titlebar-injuries);
+  --lcars-tan:        var(--lcars-btn-reputation);
+  --lcars-text-light: var(--lcars-text-body);
+}
+
+/* ── Window-root background overrides (:has() targets the ancestor .application element) ── */
+.theme-dark .sta-lcars-window.application:has(.lcars-scheme-dominion) {
+  --lcars-bg: rgb(10 10 12 / 93%);
+}
+.theme-light .sta-lcars-window.application:has(.lcars-scheme-dominion) {
+  --lcars-bg: #ebebed;
+}
+.sta-lcars-window.application.theme-dark:has(.lcars-scheme-dominion) {
+  --lcars-bg: rgb(10 10 12 / 93%);
+}
+.sta-lcars-window.application.theme-light:has(.lcars-scheme-dominion) {
+  --lcars-bg: #ebebed;
+}

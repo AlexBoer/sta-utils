@@ -53,8 +53,8 @@ export const LCARS_THEMES = [
   },
   {
     key: "tos",
-    color: "#C89018",
-    secondaryColor: "#1A5A90",
+    color: "#c8a818",
+    secondaryColor: "#b82a18",
     label: "TOS — The Original Series",
   },
   {
@@ -83,8 +83,8 @@ export const LCARS_THEMES = [
   },
   {
     key: "prodigy",
-    color: "#5828b0",
-    secondaryColor: "#2850c8",
+    color: "#3838c0",
+    secondaryColor: "#1860d8",
     label: "Prodigy",
   },
   {
@@ -104,6 +104,36 @@ export const LCARS_THEMES = [
     color: "#8a2c22",
     secondaryColor: "#c87818",
     label: "Klingon Empire",
+  },
+  {
+    key: "dominion",
+    color: "#787880",
+    secondaryColor: "#3a1870",
+    label: "The Dominion",
+  },
+  {
+    key: "cardassian",
+    color: "#a07840",
+    secondaryColor: "#7a4820",
+    label: "Cardassian Union",
+  },
+  {
+    key: "borg",
+    color: "#303030",
+    secondaryColor: "#c03030",
+    label: "Borg Collective",
+  },
+  {
+    key: "ferengi",
+    color: "#c09020",
+    secondaryColor: "#4a6018",
+    label: "Ferengi Alliance",
+  },
+  {
+    key: "orion",
+    color: "#287858",
+    secondaryColor: "#5c2880",
+    label: "Orion Syndicate",
   },
   {
     key: "sfCommand",

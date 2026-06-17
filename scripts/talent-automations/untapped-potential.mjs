@@ -10,6 +10,7 @@
 //  4. The roll used more than 2 dice
 
 import { MODULE_ID } from "../core/constants.mjs";
+import { t } from "../core/i18n.mjs";
 import { findTalents } from "./talent-automations.mjs";
 
 /* ------------------------------------------------------------------ */
@@ -103,7 +104,7 @@ function _appendButtonToCard(message, root) {
 
     // Only the message author or GM may click
     if (!(message.author?.id === game.user?.id || game.user.isGM)) {
-      ui.notifications.warn("Only the roller or GM may use this.");
+      ui.notifications.warn(t("sta-utils.talentAutomations.warnNotAuthor"));
       return;
     }
 
@@ -162,7 +163,9 @@ function _appendButtonToCard(message, root) {
     } catch (err) {
       btn.disabled = false;
       console.warn(`${MODULE_ID} | Untapped Potential: failed`, err);
-      ui.notifications.error("Failed to process Untapped Potential roll.");
+      ui.notifications.error(
+        t("sta-utils.talentAutomations.errUntappedPotentialFailed"),
+      );
     }
   });
 

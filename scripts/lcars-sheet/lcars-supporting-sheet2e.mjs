@@ -53,7 +53,7 @@ export class LcarsSupportingSheet2e extends STASupportingSheet2e {
    * @returns {string} Scheme key, e.g. "tng", "voyager", "ds9".
    */
   getLcarsScheme() {
-    return this.actor.getFlag(MODULE_ID, "lcarsSheetScheme") || "sta";
+    return this.actor.getFlag(MODULE_ID, "lcarsSheetScheme") || "tng";
   }
 
   /**

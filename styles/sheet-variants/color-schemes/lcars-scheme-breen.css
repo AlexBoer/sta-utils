@@ -1,0 +1,67 @@
+/* ----------------------------------------------------------------------- */
+/*  BREEN CONFEDERACY                                                       */
+/*  Near-black bg with cold blue cast; icy steel-blue chrome; cold deep    */
+/*  navy floating pills; pale silver-white input text & track labels.      */
+/*  Cold and inscrutable — like the Breen homeworld.                       */
+/* ----------------------------------------------------------------------- */
+.theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-breen,
+.theme-dark .sta-lcars-dialogue-app.lcars-scheme-breen,
+body.theme-dark.sta-officers-lcars-active.lcars-scheme-breen {
+  --lcars-bg:              rgb(4 8 16 / 94%);
+  --lcars-bg-panel:        rgba(4, 10, 28, 0.30);            /* panel tint: deep cold blue tint */
+  --lcars-primary-color:   #4878a8; /* icy steel-blue */
+  --lcars-secondary-color: #1c3870; /* cold deep navy */
+  --lcars-tertiary-color:  #a8c8e8; /* pale silver-blue — suit display readout */
+  --lcars-titlebar-injuries:             #7c2840; /* cold crimson — distinct from blue chrome */
+  --lcars-titlebar-belongings-colheader: #142858;
+  --lcars-titlebar-launchbay:            #1c3870;
+  --lcars-chrome-hover:                  #5888b8; /* lighter icy blue on hover */
+  --lcars-input-border:                  #2c4878;
+  --lcars-text-body:                     #a0c0e0; /* cool pale-blue body text */
+  --lcars-text-item:                     #a0c0e0;
+  --lcars-text-title:                    #000000;
+  --lcars-text-header:                   #000000;
+}
+
+.theme-light :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-breen,
+.theme-light .sta-lcars-dialogue-app.lcars-scheme-breen,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-breen {
+  --lcars-bg:              #e4ecf8; /* pale ice-blue */
+  --lcars-bg-panel:        rgba(210, 228, 255, 0.50); /* panel tint: cool blue brightening */
+  --lcars-primary-color:   #2858a0; /* deep steel-blue */
+  --lcars-secondary-color: #102858; /* deep navy */
+  --lcars-tertiary-color:  #1a4080; /* dark cold blue for readability on light bg */
+  --lcars-titlebar-injuries:             #601830;
+  --lcars-titlebar-belongings-colheader: #0a1c40;
+  --lcars-titlebar-launchbay:            #102858;
+  --lcars-chrome-hover:                  #3068b0;
+  --lcars-input-border:                  #1c3870;
+  --lcars-text-body:                     #040810;
+  --lcars-text-item:                     #040810;
+  --lcars-text-title:                    #e8f0fc;
+  --lcars-text-header:                   #e8f0fc;
+  /* ── Raw palette aliases (light mode) ── */
+  --lcars-orange:     var(--lcars-chrome);
+  --lcars-peach:      var(--lcars-chrome-hover);
+  --lcars-lavender:   var(--lcars-titlebar);
+  --lcars-lilac:      var(--lcars-input-border);
+  --lcars-blue:       var(--lcars-btn-secondary);
+  --lcars-sky:        var(--lcars-input-text);
+  --lcars-red:        var(--lcars-titlebar-injuries);
+  --lcars-tan:        var(--lcars-btn-reputation);
+  --lcars-text-light: var(--lcars-text-body);
+}
+
+/* ── Window-root background overrides (:has() targets the ancestor .application element) ── */
+.theme-dark .sta-lcars-window.application:has(.lcars-scheme-breen) {
+  --lcars-bg: rgb(4 8 16 / 94%);
+}
+.theme-light .sta-lcars-window.application:has(.lcars-scheme-breen) {
+  --lcars-bg: #e4ecf8;
+}
+.sta-lcars-window.application.theme-dark:has(.lcars-scheme-breen) {
+  --lcars-bg: rgb(4 8 16 / 94%);
+}
+.sta-lcars-window.application.theme-light:has(.lcars-scheme-breen) {
+  --lcars-bg: #e4ecf8;
+}

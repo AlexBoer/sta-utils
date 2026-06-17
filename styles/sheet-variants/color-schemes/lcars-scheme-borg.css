@@ -1,0 +1,67 @@
+/* ----------------------------------------------------------------------- */
+/*  BORG COLLECTIVE                                                         */
+/*  Near-black bg; dark-grey chrome; Borg green floating pills;            */
+/*  assimilation-red input text & track labels.                            */
+/*  Resistance is futile.                                                   */
+/* ----------------------------------------------------------------------- */
+.theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-borg,
+.theme-dark .sta-lcars-dialogue-app.lcars-scheme-borg,
+body.theme-dark.sta-officers-lcars-active.lcars-scheme-borg {
+  --lcars-bg:              rgb(4 8 4 / 97%);
+  --lcars-bg-panel:        rgba(0, 14, 4, 0.40);              /* panel tint: faint green-black */
+  --lcars-primary-color:   #303030; /* dark grey — Borg hull */
+  --lcars-secondary-color: #3a9040; /* Borg green — alcove & implant glow */
+  --lcars-tertiary-color:  #c03030; /* assimilation red — warning readouts */
+  --lcars-titlebar-injuries:             #c03030; /* red — matches tertiary */
+  --lcars-titlebar-belongings-colheader: #286838;
+  --lcars-titlebar-launchbay:            #3a9040;
+  --lcars-chrome-hover:                  #3a9040; /* green on hover — Borg implant pulse */
+  --lcars-input-border:                  #2a6030;
+  --lcars-text-body:                     #80b888; /* muted green body text */
+  --lcars-text-item:                     #80b888;
+  --lcars-text-title:                    #e0e0e0;
+  --lcars-text-header:                   #e0e0e0;
+}
+
+.theme-light :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-borg,
+.theme-light .sta-lcars-dialogue-app.lcars-scheme-borg,
+body.theme-light.sta-officers-lcars-active.lcars-scheme-borg {
+  --lcars-bg:              #e8e8e8; /* pale neutral grey */
+  --lcars-bg-panel:        rgba(210, 210, 210, 0.50); /* panel tint: soft grey brightening */
+  --lcars-primary-color:   #282828; /* dark charcoal */
+  --lcars-secondary-color: #185c20; /* deep Borg green */
+  --lcars-tertiary-color:  #901818; /* dark red for readability on light bg */
+  --lcars-titlebar-injuries:             #901818;
+  --lcars-titlebar-belongings-colheader: #104018;
+  --lcars-titlebar-launchbay:            #185c20;
+  --lcars-chrome-hover:                  #404040;
+  --lcars-input-border:                  #303030;
+  --lcars-text-body:                     #0c0c0c;
+  --lcars-text-item:                     #0c0c0c;
+  --lcars-text-title:                    #f0f0f0;
+  --lcars-text-header:                   #f0f0f0;
+  /* ── Raw palette aliases (light mode) ── */
+  --lcars-orange:     var(--lcars-chrome);
+  --lcars-peach:      var(--lcars-chrome-hover);
+  --lcars-lavender:   var(--lcars-titlebar);
+  --lcars-lilac:      var(--lcars-input-border);
+  --lcars-blue:       var(--lcars-btn-secondary);
+  --lcars-sky:        var(--lcars-input-text);
+  --lcars-red:        var(--lcars-titlebar-injuries);
+  --lcars-tan:        var(--lcars-btn-reputation);
+  --lcars-text-light: var(--lcars-text-body);
+}
+
+/* ── Window-root background overrides (:has() targets the ancestor .application element) ── */
+.theme-dark .sta-lcars-window.application:has(.lcars-scheme-borg) {
+  --lcars-bg:              rgb(4 8 4 / 97%);
+}
+.theme-light .sta-lcars-window.application:has(.lcars-scheme-borg) {
+  --lcars-bg: #e8e8e8;
+}
+.sta-lcars-window.application.theme-dark:has(.lcars-scheme-borg) {
+  --lcars-bg: rgb(4 8 4 / 97%);
+}
+.sta-lcars-window.application.theme-light:has(.lcars-scheme-borg) {
+  --lcars-bg: #e8e8e8;
+}
