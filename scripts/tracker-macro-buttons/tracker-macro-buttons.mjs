@@ -1,44 +1,9 @@
 import { MODULE_ID } from "../core/constants.mjs";
-import { getTrackerMacroLayout } from "./settings-menu.mjs";
+import { getTrackerMacroLayout, TRACKER_ACTIONS } from "./settings-menu.mjs";
+import { openLauncher } from "../launcher/launcher.mjs";
+import { openRollRequestDialog } from "../roll-request/index.mjs";
 
 const BUTTON_CLASS = "sta-utils-tracker-macro-btn";
-
-// Maps macro icon filenames (lowercase) to Font Awesome classes.
-// Files not listed here fall back to rendering the raw image.
-const ICON_FA_CLASS = {
-  // sta-utils
-  "actionchooser.svg": "fa-hexagon-nodes",
-  "createnpc.svg": "fa-user-secret",
-  "createsupporting.svg": "fa-user-plus",
-  "crewmanifest.webp": "fa-users",
-  "damagecalc.svg": "fa-burst",
-  "launcher.svg": "fa-grip",
-  "medicalbabble.svg": "fa-staff-snake",
-  "notestyler.webp": "fa-clipboard",
-  "poolmonitor.webp": "fa-cubes",
-  "rollcasualities.webp": "fa-user-injured",
-  "rollrequest.svg": "fa-arrow-up-from-bracket",
-  "stardatecalc.webp": "fa-calendar-day",
-  "treknobabble.svg": "fa-atom",
-  "warpcalc.webp": "fa-rocket",
-  // sta-officers-log
-  "addplayer.webp": "fa-person-circle-plus",
-  "creationwizard.svg": "fa-wand-magic-sparkles",
-  "monitorsurveys.webp": "fa-eye",
-  "newmission.webp": "fa-book",
-  "newscene.webp": "fa-clapperboard",
-  "promptcallback.svg": "fa-reply",
-  "resetcallback.webp": "fa-phone-slash",
-  "sendreputation.webp": "fa-award",
-  "sendsurvey.webp": "fa-clipboard-list",
-};
-
-// Fallback map: macro UUID → FA class, for macros whose compendium image
-// may not match a filename entry above.
-const ICON_FA_BY_UUID = {
-  "Compendium.sta-officers-log.officers-log-macros.Macro.OAK1ND4D4PWpG1fb":
-    "fa-wand-magic-sparkles",
-};
 
 function isTrackerApp(app, root) {
   const ctorName = String(app?.constructor?.name ?? "");
@@ -46,6 +11,89 @@ function isTrackerApp(app, root) {
     ctorName === "STATracker" ||
     !!root.querySelector?.("#sta-roll-task-button") ||
     !!root.querySelector?.("#sta-momentum-tracker")
+  );
+}
+
+function getActionDefinition(actionId) {
+  const cleanId = String(actionId ?? "").trim();
+  return TRACKER_ACTIONS.find((action) => action.id === cleanId) ?? null;
+}
+
+function createActionButton(action, slotClass) {
+  const btn = document.createElement("div");
+  btn.className = `button ${BUTTON_CLASS} ${slotClass}`;
+  btn.title = String(action?.label ?? "Button");
+  btn.dataset.actionId = String(action?.id ?? "");
+
+  const icon = document.createElement("i");
+  icon.className = `fas ${action?.icon ?? "fa-bolt"}`;
+  btn.appendChild(icon);
+
+  btn.addEventListener("click", async (event) => {
+    try {
+      event.preventDefault();
+      event.stopPropagation();
+    } catch (_) {
+      // synthetic event
+    }
+
+    try {
+      const root =
+        event.currentTarget?.closest?.(".tracker-container") ?? document;
+
+      switch (action?.id) {
+        case "incidental-npc-roll":
+          rootClick("#sta-roll-npc-button", root);
+          break;
+        case "perform-task":
+          rootClick("#sta-roll-task-button", root);
+          break;
+        case "sta-utils":
+          openLauncher();
+          break;
+        case "conflict-reference":
+          game.staUtils?.actionChooser?.open?.();
+          break;
+        case "mission-manager":
+          game.staofficerslog?.openMissionManager?.();
+          break;
+        case "request-roll":
+          openRollRequestDialog();
+          break;
+        default:
+          break;
+      }
+    } catch (err) {
+      console.error(`${MODULE_ID} | tracker button action failed`, err);
+      ui.notifications?.error?.("Tracker button failed. See console.");
+    }
+  });
+
+  return btn;
+}
+
+function createActionGroup(actions, groupClass) {
+  const group = document.createElement("div");
+  group.className = groupClass;
+
+  actions.forEach((action, idx) => {
+    const button = createActionButton(action, `${groupClass}-slot-${idx + 1}`);
+    group.appendChild(button);
+  });
+
+  return group;
+}
+
+function rootClick(selector, scope = document) {
+  const target =
+    scope?.querySelector?.(selector) ?? document.querySelector(selector);
+  if (!target) return;
+  target.dispatchEvent(
+    new MouseEvent("click", {
+      bubbles: true,
+      cancelable: true,
+      view: window,
+    }),
   );
 }
 
@@ -75,77 +123,25 @@ function ensureColumns(iconContainer) {
   return { columns, systemGroup };
 }
 
-async function resolveMacro(uuid) {
-  const cleanUuid = String(uuid ?? "").trim();
-  if (!cleanUuid) return null;
-
-  try {
-    return await fromUuid(cleanUuid);
-  } catch (_) {
-    return null;
-  }
-}
-
-function createMacroButton(macro, slotClass) {
-  const btn = document.createElement("div");
-  btn.className = `button ${BUTTON_CLASS} ${slotClass}`;
-  btn.title = String(macro?.name ?? "Macro");
-  btn.dataset.macroUuid = String(macro?.uuid ?? "");
-
-  const img = String(macro?.img ?? "").trim();
-  const filename = img.split("/").pop().toLowerCase();
-  const faClass =
-    ICON_FA_CLASS[filename] ??
-    ICON_FA_BY_UUID[String(macro?.uuid ?? "")] ??
-    null;
-
-  if (faClass) {
-    const icon = document.createElement("i");
-    icon.className = `fas ${faClass}`;
-    btn.appendChild(icon);
-  } else if (img) {
-    const imgEl = document.createElement("img");
-    imgEl.className = "sta-utils-tracker-macro-icon";
-    imgEl.src = img;
-    imgEl.alt = String(macro?.name ?? "Macro");
-    btn.appendChild(imgEl);
-  } else {
-    const icon = document.createElement("i");
-    icon.className = "fas fa-bolt";
-    btn.appendChild(icon);
-  }
-
-  btn.addEventListener("click", async (event) => {
-    try {
-      event.preventDefault();
-      event.stopPropagation();
-    } catch (_) {
-      // synthetic event
-    }
-
-    try {
-      await macro.execute();
-    } catch (err) {
-      console.error(`${MODULE_ID} | tracker macro execute failed`, err);
-      ui.notifications?.error?.("Tracker macro failed. See console.");
-    }
-  });
-
-  return btn;
-}
-
-async function applyColumnCustomization(group, slotUuids, slotPrefix) {
+async function applyColumnCustomization(root, group, slotUuids, slotPrefix) {
   if (!group || !Array.isArray(slotUuids)) return;
 
   for (let idx = 0; idx < 3; idx += 1) {
-    const uuid = String(slotUuids[idx] ?? "").trim();
-    if (!uuid) continue;
+    const actionId = String(slotUuids[idx] ?? "").trim();
+    if (!actionId) continue;
 
-    const macro = await resolveMacro(uuid);
-    if (!macro || String(macro?.documentName ?? "") !== "Macro") continue;
+    const action = getActionDefinition(actionId);
+    if (!action) continue;
+
+    if (
+      action.id === "sta-utils" &&
+      root?.querySelector?.(".sta-utils-tracker-launcher-btn")
+    ) {
+      continue;
+    }
 
     const slotClass = `${slotPrefix}-slot-${idx + 1}`;
-    const replacement = createMacroButton(macro, slotClass);
+    const replacement = createActionButton(action, slotClass);
 
     const currentButtons = Array.from(
       group.querySelectorAll(":scope > .button"),
@@ -157,6 +153,40 @@ async function applyColumnCustomization(group, slotUuids, slotPrefix) {
       group.appendChild(replacement);
     }
   }
+}
+
+function ensureSecondColumn(columns, layout) {
+  let secondGroup = columns.querySelector?.(
+    ":scope > .sta-utils-tracker-second-column-group",
+  );
+
+  if (!layout.showSecondColumn) {
+    secondGroup?.remove?.();
+    return null;
+  }
+
+  const actions = Array.isArray(layout.secondColumn)
+    ? layout.secondColumn
+        .map((actionId) => getActionDefinition(actionId))
+        .filter(Boolean)
+    : [];
+
+  if (!secondGroup) {
+    secondGroup = createActionGroup(
+      actions,
+      "sta-tracker-button-group sta-utils-tracker-second-column-group",
+    );
+    columns.appendChild(secondGroup);
+  } else {
+    secondGroup.innerHTML = "";
+    actions.forEach((action, idx) => {
+      secondGroup.appendChild(
+        createActionButton(action, `sta-utils-tracker-second-slot-${idx + 1}`),
+      );
+    });
+  }
+
+  return secondGroup;
 }
 
 function waitForOfficersGroup(columns, timeout = 3000) {
@@ -183,7 +213,6 @@ function waitForOfficersGroup(columns, timeout = 3000) {
 
 async function customizeTrackerButtons(root) {
   if (!(root instanceof HTMLElement)) return;
-  if (!game.modules.get("sta-officers-log")?.active) return;
 
   const row =
     root.querySelector?.(".tracker-container .row") ??
@@ -194,21 +223,20 @@ async function customizeTrackerButtons(root) {
   const iconContainer = row.querySelector?.(":scope > .icon-container");
   if (!iconContainer) return;
 
-  const { columns, systemGroup } = ensureColumns(iconContainer);
-  const officersGroup = await waitForOfficersGroup(columns);
-  if (!officersGroup) return;
-
   const layout = getTrackerMacroLayout();
+  root.dataset.staUtilsSecondColumn = layout.showSecondColumn
+    ? "true"
+    : "false";
+  const { columns, systemGroup } = ensureColumns(iconContainer);
+
   await applyColumnCustomization(
+    root,
     systemGroup,
     layout.firstColumn,
     "sta-utils-tracker-first",
   );
-  await applyColumnCustomization(
-    officersGroup,
-    layout.secondColumn,
-    "sta-utils-tracker-second",
-  );
+
+  ensureSecondColumn(columns, layout);
 }
 
 let _hookInstalled = false;

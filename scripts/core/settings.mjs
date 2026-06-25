@@ -266,8 +266,9 @@ export function registerSettings() {
     type: Object,
     default: {
       version: 1,
-      firstColumn: ["", "", ""],
-      secondColumn: ["", "", ""],
+      showSecondColumn: null,
+      firstColumn: ["conflict-reference", "perform-task", "sta-utils"],
+      secondColumn: [],
     },
   });
 

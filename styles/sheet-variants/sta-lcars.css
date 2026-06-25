@@ -3512,3 +3512,17 @@ body.sta-officers-lcars-active {
     --ac-text:      var(--lcars-tracktitle);
   }
 }
+
+/* Ensure the Value challenged toggle remains visible in dark/LCARS sheets.
+   This must override generic `.control i { color: black; }` rules. */
+.sta-lcars-sheet div.section.values li.row.entry[data-item-type="value"] a.value-used.control.toggle,
+.sta-lcars-sheet div.section.values li.row.entry[data-item-type="value"] a.value-used.control.toggle i[data-action="onStrikeThrough"] {
+  color: var(--lcars-tracktitle, var(--lcars-lavender)) !important;
+}
+
+.sta-lcars-sheet div.section.values li.row.entry[data-item-type="value"] a.value-used.control.toggle:hover,
+.sta-lcars-sheet div.section.values li.row.entry[data-item-type="value"] a.value-used.control.toggle:focus-visible,
+.sta-lcars-sheet div.section.values li.row.entry[data-item-type="value"] a.value-used.control.toggle i[data-action="onStrikeThrough"]:hover,
+.sta-lcars-sheet div.section.values li.row.entry[data-item-type="value"] a.value-used.control.toggle i[data-action="onStrikeThrough"]:focus-visible {
+  color: var(--lcars-chrome, var(--lcars-orange)) !important;
+}

@@ -2,26 +2,114 @@ import { MODULE_ID } from "../core/constants.mjs";
 import { t } from "../core/i18n.mjs";
 
 export const TRACKER_MACRO_LAYOUT_SETTING = "trackerMacroButtonLayout";
+export const TRACKER_MACRO_SECOND_COLUMN_SETTING =
+  "trackerMacroButtonsShowSecondColumn";
 
-const ALLOWED_MODULE_IDS = ["sta-utils", "sta-officers-log"];
+export const TRACKER_ACTIONS = [
+  {
+    id: "incidental-npc-roll",
+    label: "Incidental NPC Roller",
+    icon: "combadge",
+    canUse: () => true,
+  },
+  {
+    id: "perform-task",
+    label: "Perform Task",
+    icon: "fa-dice-d20",
+    canUse: () => true,
+  },
+  {
+    id: "sta-utils",
+    label: "STA Utilities",
+    icon: "fa-grip",
+    canUse: () => true,
+  },
+  {
+    id: "conflict-reference",
+    label: "Conflict Reference",
+    icon: "fa-sitemap",
+    canUse: () =>
+      Boolean(game.settings.get("sta-utils", "enableActionChooser")),
+  },
+  {
+    id: "mission-manager",
+    label: "Mission Manager",
+    icon: "fa-book",
+    canUse: () => game.user?.isGM && Boolean(game.staofficerslog),
+  },
+  {
+    id: "request-roll",
+    label: "Request Roll",
+    icon: "fa-arrow-up-from-bracket",
+    canUse: () =>
+      Boolean(game.user?.isGM) && Boolean(game.staUtils?.rollRequest),
+  },
+];
+
 const DEFAULT_LAYOUT = {
   version: 1,
-  firstColumn: ["", "", ""],
-  secondColumn: ["", "", ""],
+  showSecondColumn: null,
+  firstColumn: ["conflict-reference", "perform-task", "sta-utils"],
+  secondColumn: [],
 };
+
+const GM_DEFAULT_SECOND_COLUMN = [
+  "incidental-npc-roll",
+  "mission-manager",
+  "request-roll",
+];
+
+const LOCKED_FIRST_COLUMN_SLOT_INDEX = 2;
+const LOCKED_FIRST_COLUMN_ACTION_ID = "sta-utils";
 
 export function getTrackerMacroLayout() {
   try {
     const raw = game.settings.get(MODULE_ID, TRACKER_MACRO_LAYOUT_SETTING);
     return normalizeLayout(raw);
   } catch (_) {
-    return { ...DEFAULT_LAYOUT };
+    return buildDefaultLayout();
   }
+}
+
+function buildDefaultLayout() {
+  const firstColumn = [...DEFAULT_LAYOUT.firstColumn];
+  const secondColumn = game.user?.isGM ? [...GM_DEFAULT_SECOND_COLUMN] : [];
+
+  return {
+    version: 1,
+    showSecondColumn: Boolean(game.user?.isGM),
+    firstColumn: [
+      firstColumn[0],
+      firstColumn[1],
+      LOCKED_FIRST_COLUMN_ACTION_ID,
+    ],
+    secondColumn,
+  };
 }
 
 function normalizeLayout(raw) {
   const firstRaw = Array.isArray(raw?.firstColumn) ? raw.firstColumn : [];
   const secondRaw = Array.isArray(raw?.secondColumn) ? raw.secondColumn : [];
+  const showSecondColumn =
+    typeof raw?.showSecondColumn === "boolean"
+      ? raw.showSecondColumn
+      : Boolean(game.user?.isGM);
+
+  const looksLikeDefaultLayout =
+    raw?.version === DEFAULT_LAYOUT.version &&
+    [0, 1].every(
+      (idx) =>
+        String(firstRaw[idx] ?? "").trim() === DEFAULT_LAYOUT.firstColumn[idx],
+    ) &&
+    String(firstRaw[LOCKED_FIRST_COLUMN_SLOT_INDEX] ?? "").trim() ===
+      LOCKED_FIRST_COLUMN_ACTION_ID &&
+    secondRaw.length === 0;
+
+  if (looksLikeDefaultLayout) {
+    const defaultLayout = buildDefaultLayout();
+    defaultLayout.showSecondColumn = showSecondColumn;
+    return defaultLayout;
+  }
 
   const firstColumn = [0, 1, 2].map((idx) =>
     String(firstRaw[idx] ?? "").trim(),
@@ -30,76 +118,26 @@ function normalizeLayout(raw) {
     String(secondRaw[idx] ?? "").trim(),
   );
 
+  firstColumn[LOCKED_FIRST_COLUMN_SLOT_INDEX] = LOCKED_FIRST_COLUMN_ACTION_ID;
+
   return {
     version: 1,
+    showSecondColumn,
     firstColumn,
     secondColumn,
   };
 }
 
-async function getMacroChoices() {
-  const out = {
-    "sta-utils": [],
-    "sta-officers-log": [],
-  };
-
-  const packs = Array.from(game.packs?.values?.() ?? game.packs ?? []);
-  for (const pack of packs) {
-    const moduleId = String(
-      pack?.metadata?.packageName ?? pack?.metadata?.package ?? "",
-    ).trim();
-    if (!ALLOWED_MODULE_IDS.includes(moduleId)) continue;
-
-    const docName = String(pack?.documentName ?? pack?.metadata?.type ?? "")
-      .trim()
-      .toLowerCase();
-    if (docName !== "macro") continue;
-
-    try {
-      await pack.getIndex({ fields: ["name", "img"] });
-      const entries = Array.from(pack.index?.values?.() ?? []);
-      const mapped = entries
-        .map((entry) => {
-          const id = String(entry?._id ?? "").trim();
-          if (!id) return null;
-          return {
-            uuid: `Compendium.${pack.collection}.${id}`,
-            name: String(entry?.name ?? "Unnamed Macro"),
-            img: String(entry?.img ?? ""),
-            packTitle: String(
-              pack?.title ?? pack?.metadata?.label ?? "",
-            ).trim(),
-          };
-        })
-        .filter(Boolean)
-        .sort((a, b) => a.name.localeCompare(b.name));
-
-      out[moduleId].push(...mapped);
-    } catch (err) {
-      console.warn(`${MODULE_ID} | failed to index macro pack`, pack, err);
-    }
-  }
-
-  for (const moduleId of ALLOWED_MODULE_IDS) {
-    out[moduleId].sort((a, b) => {
-      const packCmp = a.packTitle.localeCompare(b.packTitle);
-      if (packCmp !== 0) return packCmp;
-      return a.name.localeCompare(b.name);
-    });
-  }
-
-  return out;
-}
-
-function buildChoicesForTemplate(choicesByModule) {
+function buildChoicesForTemplate() {
   return [
     {
-      label: "STA Utilities",
-      options: choicesByModule["sta-utils"] ?? [],
-    },
-    {
-      label: "STA Officers Log",
-      options: choicesByModule["sta-officers-log"] ?? [],
+      label: t("sta-utils.trackerMacroButtons.form.builtInActions"),
+      options: TRACKER_ACTIONS.map((action) => ({
+        uuid: action.id,
+        name: action.label,
+        img: action.icon,
+        packTitle: "Built-in",
+      })),
     },
   ];
 }
@@ -111,6 +149,11 @@ function buildSlots(choices, selectedValues, labels, noneLabel) {
     label: String(labels?.[idx] ?? `Slot ${idx + 1}`),
     noneLabel: String(noneLabel ?? "— None —"),
     selected: String(safeValues[idx] ?? ""),
+    locked: idx === LOCKED_FIRST_COLUMN_SLOT_INDEX,
+    lockedValue:
+      idx === LOCKED_FIRST_COLUMN_SLOT_INDEX
+        ? LOCKED_FIRST_COLUMN_ACTION_ID
+        : null,
     groups: choices.map((group) => ({
       label: group.label,
       options: group.options.map((opt) => ({
@@ -138,8 +181,7 @@ export class TrackerMacroButtonsConfig extends FormApplication {
   async getData(options = {}) {
     const data = await super.getData(options);
     const layout = getTrackerMacroLayout();
-    const choicesByModule = await getMacroChoices();
-    const choices = buildChoicesForTemplate(choicesByModule);
+    const choices = buildChoicesForTemplate();
     const slotLabels = [
       t("sta-utils.trackerMacroButtons.form.slotOne"),
       t("sta-utils.trackerMacroButtons.form.slotTwo"),
@@ -148,10 +190,12 @@ export class TrackerMacroButtonsConfig extends FormApplication {
 
     return {
       ...data,
-      ready:
-        game.modules.get("sta-utils")?.active &&
-        game.modules.get("sta-officers-log")?.active,
+      ready: game.modules.get("sta-utils")?.active,
       guidance: t("sta-utils.trackerMacroButtons.form.guidance"),
+      secondColumnEnabled: Boolean(layout.showSecondColumn),
+      secondColumnToggleLabel: t(
+        "sta-utils.trackerMacroButtons.form.enableSecondColumn",
+      ),
       firstColumnLabel: t("sta-utils.trackerMacroButtons.form.firstColumn"),
       secondColumnLabel: t("sta-utils.trackerMacroButtons.form.secondColumn"),
       noneLabel: t("sta-utils.trackerMacroButtons.form.none"),
@@ -171,17 +215,40 @@ export class TrackerMacroButtonsConfig extends FormApplication {
   }
 
   async _updateObject(_event, formData) {
+    const currentLayout = getTrackerMacroLayout();
+    const secondColumnValue =
+      formData?.showSecondColumn ?? formData?.get?.("showSecondColumn");
+
+    const resolveSlotValue = (submittedValue, currentValue) => {
+      const normalized = String(submittedValue ?? "").trim();
+      return normalized || String(currentValue ?? "").trim();
+    };
+
     const nextLayout = normalizeLayout({
       firstColumn: [
-        formData.firstColumn1,
-        formData.firstColumn2,
-        formData.firstColumn3,
+        resolveSlotValue(formData.firstColumn1, currentLayout.firstColumn?.[0]),
+        resolveSlotValue(formData.firstColumn2, currentLayout.firstColumn?.[1]),
+        LOCKED_FIRST_COLUMN_ACTION_ID,
       ],
       secondColumn: [
-        formData.secondColumn1,
-        formData.secondColumn2,
-        formData.secondColumn3,
+        resolveSlotValue(
+          formData.secondColumn1,
+          currentLayout.secondColumn?.[0],
+        ),
+        resolveSlotValue(
+          formData.secondColumn2,
+          currentLayout.secondColumn?.[1],
+        ),
+        resolveSlotValue(
+          formData.secondColumn3,
+          currentLayout.secondColumn?.[2],
+        ),
       ],
+      showSecondColumn:
+        secondColumnValue === true ||
+        secondColumnValue === "on" ||
+        secondColumnValue === 1 ||
+        secondColumnValue === "1",
     });
 
     await game.settings.set(

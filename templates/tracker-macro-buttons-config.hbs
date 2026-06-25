@@ -2,13 +2,18 @@
   {{#if ready}}
     <p class="hint">{{guidance}}</p>
 
+    <div class="form-group">
+      <label for="showSecondColumn">{{secondColumnToggleLabel}}</label>
+      <input type="checkbox" id="showSecondColumn" name="showSecondColumn" {{#if secondColumnEnabled}}checked{{/if}}>
+    </div>
+
     <fieldset class="sta-utils-tracker-macro-fieldset">
       <legend>{{firstColumnLabel}}</legend>
 
       {{#each firstColumnSlots}}
       <div class="form-group">
         <label for="firstColumn{{this.index}}">{{this.label}}</label>
-        <select id="firstColumn{{this.index}}" name="firstColumn{{this.index}}">
+        <select id="firstColumn{{this.index}}" name="firstColumn{{this.index}}" {{#if this.locked}}disabled{{/if}}>
           <option value="">{{this.noneLabel}}</option>
           {{#each this.groups}}
             <optgroup label="{{this.label}}">
@@ -18,11 +23,14 @@
             </optgroup>
           {{/each}}
         </select>
+        {{#if this.locked}}
+          <p class="hint">Locked to STA Utilities.</p>
+        {{/if}}
       </div>
       {{/each}}
     </fieldset>
 
-    <fieldset class="sta-utils-tracker-macro-fieldset">
+    <fieldset class="sta-utils-tracker-macro-fieldset {{#unless secondColumnEnabled}}hidden{{/unless}}">
       <legend>{{secondColumnLabel}}</legend>
 
       {{#each secondColumnSlots}}
@@ -46,6 +54,6 @@
       <button type="submit" class="button"><i class="fas fa-save"></i> {{localize "SETTINGS.Save"}}</button>
     </div>
   {{else}}
-    <p class="hint">Enable both STA Utilities and STA Officers Log to use this feature.</p>
+    <p class="hint">Enable STA Utilities to use this feature. Mission Manager requires STA Officers Log.</p>
   {{/if}}
 </form>

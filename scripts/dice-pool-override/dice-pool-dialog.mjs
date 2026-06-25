@@ -503,6 +503,26 @@ function _ensureMomentumThreatHelper(dialogEl) {
   helper.textContent = _getMomentumThreatText(slider.value);
 }
 
+/**
+ * Keep dedicated focus consistent with focus in the dice pool dialog.
+ *
+ * Checking dedicated focus should auto-check focus. Unchecking dedicated
+ * focus does not modify focus.
+ *
+ * @param {HTMLElement} dialogEl - The dialog element.
+ */
+function _wireDedicatedFocusAutoSelect(dialogEl) {
+  const dedicatedFocusCheckbox = dialogEl.querySelector("#usingDedicatedFocus");
+  const focusCheckbox = dialogEl.querySelector("#usingFocus");
+  if (!dedicatedFocusCheckbox || !focusCheckbox) return;
+
+  dedicatedFocusCheckbox.addEventListener("change", () => {
+    if (!dedicatedFocusCheckbox.checked || focusCheckbox.checked) return;
+    focusCheckbox.checked = true;
+    focusCheckbox.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+}
+
 /* ------------------------------------------------------------------ */
 /*  Public API                                                         */
 /* ------------------------------------------------------------------ */
@@ -528,6 +548,8 @@ function _ensureMomentumThreatHelper(dialogEl) {
  *   with a value dropdown, pre-select the value item with this ID.
  * @param {string|null} [opts.title=null] - Override the dialog window
  *   title. Defaults to the localized "sta.apps.dicepoolwindow" value.
+ * @param {Function|null} [opts.onRender=null] - Optional callback invoked
+ *   after the dialog's internal render wiring is complete.
  * @returns {Promise<{ formData: FormData, automationStates: Record<string, boolean> } | null>}
  *   Resolved with the collected form data and automation checkbox states,
  *   or `null` if the dialog was cancelled.
@@ -541,6 +563,8 @@ export async function showDicePoolDialog(opts) {
     preSelectDeterminationValue = null,
     defaultStarshipId = null,
     title = null,
+    onRender = null,
+    dialogWidth = 350,
   } = opts;
 
   const api = foundry.applications.api;
@@ -553,7 +577,7 @@ export async function showDicePoolDialog(opts) {
     },
     position: {
       height: "auto",
-      width: 350,
+      width: dialogWidth,
     },
     content: html,
     classes: ["dialogue"],
@@ -607,6 +631,9 @@ export async function showDicePoolDialog(opts) {
 
       // --- Momentum / Threat helper ---
       _ensureMomentumThreatHelper(el);
+
+      // --- Dedicated focus implies focus ---
+      _wireDedicatedFocusAutoSelect(el);
 
       // --- Determination value dropdown (sta-officers-log integration) ---
       _replaceDeterminationWithValueDropdown(el, applicabilityContext.actor);
@@ -751,6 +778,17 @@ export async function showDicePoolDialog(opts) {
           null;
         _updateReservePowerCheckbox(el, ship, selSys);
       });
+
+      if (typeof onRender === "function") {
+        try {
+          onRender(el, dialog);
+        } catch (err) {
+          console.error(
+            `${MODULE_ID} | showDicePoolDialog onRender hook failed`,
+            err,
+          );
+        }
+      }
     },
     buttons: [
       {

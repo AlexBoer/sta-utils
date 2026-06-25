@@ -127,6 +127,7 @@ import {
   installTrackerLauncherButton,
 } from "./launcher/index.mjs";
 import { installTrackerMacroButtonsHook } from "./tracker-macro-buttons/index.mjs";
+import { installIncidentalNpcTrackerHook } from "./tracker-incidental-roll/index.mjs";
 
 import {
   isDicePoolOverrideEnabled,
@@ -324,6 +325,7 @@ Hooks.once("init", () => {
     `modules/${MODULE_ID}/templates/roll-prompt.hbs`,
     `modules/${MODULE_ID}/templates/attack-calculator.hbs`,
     `modules/${MODULE_ID}/templates/supporting-builder.hbs`,
+    `modules/${MODULE_ID}/templates/incidental-npc-roll-dialog.hbs`,
   ]);
 
   // --- Mobile sheet registration ---
@@ -444,6 +446,7 @@ Hooks.once("init", () => {
   installRenderApplicationV2Hook();
   installTrackerLauncherButton();
   installTrackerMacroButtonsHook();
+  installIncidentalNpcTrackerHook();
   if (isFatigueEnabled()) {
     installStressMonitoringHook();
     console.log(`${MODULE_ID} | Fatigue Management feature enabled`);

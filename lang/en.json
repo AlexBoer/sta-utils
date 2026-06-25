@@ -158,12 +158,14 @@
       "menu": {
         "name": "Tracker Macro Buttons",
         "label": "Configure Buttons",
-        "hint": "Choose macro buttons for the STA tracker columns when STA Utilities and STA Officers Log are both active."
+        "hint": "Choose built-in tracker buttons for each STA tracker column. Mission Manager requires STA Officers Log."
       },
       "form": {
-        "guidance": "Choose macros for each tracker button slot. Leave a slot as None to keep its original button.",
+        "guidance": "Choose built-in actions for each tracker button slot. Leave a slot as None to keep its current button.",
+        "builtInActions": "Built-in Actions",
+        "enableSecondColumn": "Show second column (defaults on for GMs)",
         "firstColumn": "First Column (System Buttons)",
-        "secondColumn": "Second Column (Officers Log Buttons)",
+        "secondColumn": "Second Column (Built-in Actions)",
         "slotOne": "Slot 1",
         "slotTwo": "Slot 2",
         "slotThree": "Slot 3",
@@ -278,6 +280,13 @@
       "useReservePower": "Use Reserve Power",
       "useValue": "Use Value",
       "assistButton": "Assist"
+    },
+    "incidentalRoll": {
+      "buttonTitle": "Incidental NPC Roll",
+      "dialogTitle": "Incidental NPC Roll",
+      "sectionTitle": "Incidental NPC",
+      "qualityLabel": "NPC Quality",
+      "shipAssistLabel": "Ship Assist"
     },
     "reservePowerMenu": {
       "routeHere": "Route Reserve Power Here",

@@ -1,0 +1,122 @@
+<div id="dice-pool-form" class="dialogue sta-utils-incidental-roll-dialog">
+  <div class="title">{{localize 'sta-utils.incidentalRoll.sectionTitle'}}</div>
+  <div class="row">
+    <label class="tracktitle">{{localize 'sta-utils.incidentalRoll.qualityLabel'}}</label>
+    <div class="sta-utils-incidental-quality-row" role="radiogroup" aria-label="{{localize 'sta-utils.incidentalRoll.qualityLabel'}}">
+      {{#each qualities}}
+        <label class="sta-utils-incidental-quality-option" title="{{this.label}} ({{this.attribute}}/{{this.department}})">
+          <input
+            type="radio"
+            name="incidentalQuality"
+            value="{{this.key}}"
+            {{#if this.selected}}checked{{/if}}
+          >
+          <span>{{this.label}}</span>
+        </label>
+      {{/each}}
+    </div>
+  </div>
+
+  <div class="row">
+    <label class="tracktitle" for="incidental-attribute-value">{{localize 'sta.actor.character.attribute.title'}}</label>
+    <input
+      type="number"
+      class="numeric-entry"
+      name="incidentalAttributeValue"
+      id="incidental-attribute-value"
+      value="9"
+      readonly
+    >
+  </div>
+
+  <div class="row">
+    <label class="tracktitle" for="incidental-department-value">{{localize 'sta.actor.starship.department.title'}}</label>
+    <input
+      type="number"
+      class="numeric-entry"
+      name="incidentalDepartmentValue"
+      id="incidental-department-value"
+      value="2"
+      readonly
+    >
+  </div>
+
+  <div class="row">
+    <label class="tracktitle" for="usingFocus">{{localize 'sta.apps.focus'}}</label>
+    <input type="checkbox" name="usingFocus" id="usingFocus" {{#if focusChecked}}checked{{/if}}>
+  </div>
+
+  <div class="row">
+    <label class="tracktitle" for="usingDedicatedFocus">{{localize 'sta.apps.dedicatedfocus'}}</label>
+    <input type="checkbox" name="usingDedicatedFocus" id="usingDedicatedFocus" {{#if dedicatedFocusChecked}}checked{{/if}}>
+  </div>
+
+  <div class="row">
+    <label class="tracktitle" for="usingDetermination">{{localize 'sta.apps.determination'}}</label>
+    <input type="checkbox" name="usingDetermination" id="usingDetermination" {{#if determinationChecked}}checked{{/if}}>
+  </div>
+
+  <div class="row">
+    <label class="tracktitle" for="complicationRange">{{localize 'sta.apps.complicationrange'}}</label>
+    <input class="numeric-entry" type="number" name="complicationRange" value="{{calculatedComplicationRange}}" id="complicationRange">
+  </div>
+
+  <div class="row">
+    <div class="flex-1">
+      <label class="tracktitle" for="dicePoolSlider">{{localize 'sta.apps.pool'}}</label>
+    </div>
+    <div class="flex-column flex-1">
+      <div class="row">
+        <span class="label align-left flex-1">{{localize 'sta.counting.one'}}</span>
+        <span class="centered flex-1"></span>
+        <span class="label centered flex-1">{{localize 'sta.counting.two'}}</span>
+        <span class="centered flex-1"></span>
+        <span class="label centered flex-1">{{localize 'sta.counting.three'}}</span>
+        <span class="centered flex-1"></span>
+        <span class="label centered flex-1">{{localize 'sta.counting.four'}}</span>
+        <span class="centered flex-1"></span>
+        <span class="label centered flex-1">{{localize 'sta.counting.five'}}</span>
+      </div>
+      <input type="range" name="dicePoolSlider" min="1" max="5" value="{{defaultValue}}" class="slider" id="dicePoolSlider">
+    </div>
+  </div>
+
+  <div class="row">
+    <label class="tracktitle" for="starshipAssisting">{{localize 'sta-utils.incidentalRoll.shipAssistLabel'}}</label>
+    <input type="checkbox" name="starshipAssisting" id="starshipAssisting" {{#if shipAssistDefault}}checked{{/if}}>
+  </div>
+
+  <div class="starshipAssisting {{#unless shipAssistDefault}}hidden{{/unless}}">
+    <div class="row">
+      <label class="tracktitle" for="starship">{{localize 'TYPES.Actor.starship'}}</label>
+      <select id="starship" name="starship" class="form-select">
+        {{#each starships}}
+          <option value="{{this.id}}" {{#if (eq this.id ../selectedStarshipId)}}selected{{/if}}>{{this.name}}</option>
+        {{/each}}
+      </select>
+    </div>
+
+    <div class="row">
+      <label class="tracktitle" for="system">{{localize 'sta.actor.starship.system.title'}}</label>
+      <select id="system" name="system" class="form-select">
+        {{#each systems}}
+          <option value="{{this.key}}" {{#if this.selected}}selected{{/if}}>{{localize (concat 'sta.actor.starship.system.' this.key)}}</option>
+        {{/each}}
+      </select>
+    </div>
+
+    <div class="row">
+      <label class="tracktitle" for="department">{{localize 'sta.actor.starship.department.title'}}</label>
+      <select id="department" name="department" class="form-select">
+        {{#each departments}}
+          <option value="{{this.key}}" {{#if this.selected}}selected{{/if}}>{{localize (concat 'sta.actor.starship.department.' this.key)}}</option>
+        {{/each}}
+      </select>
+    </div>
+
+    <div class="row">
+      <label class="tracktitle" for="usingReservePower">{{localize 'sta-utils.dicePool.useReservePower'}}</label>
+      <input type="checkbox" name="usingReservePower" id="usingReservePower" {{#if reservePowerChecked}}checked{{/if}}>
+    </div>
+  </div>
+</div>
