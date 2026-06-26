@@ -170,6 +170,14 @@ function handleLcarsSheetRender(app, root) {
   }
 
   const actor = app.actor;
+  if (game.user?.isGM && actor) {
+    try {
+      installLcarsTokenLinkToggleButton(app, root, actor);
+    } catch (_) {
+      // ignore
+    }
+  }
+
   if (!actor || (actor.type !== "character" && actor.type !== "npc")) return;
 
   if (game.user?.isGM) {
@@ -317,6 +325,106 @@ function _getCurrentLcarsSheetKey(app, actor) {
   return "main";
 }
 
+function _getLcarsNameRow(root) {
+  return root?.querySelector?.(
+    ".top-right-column .name-row, .right-column .name-row",
+  );
+}
+
+function _getTokenLinkContext(app, actor) {
+  const tokenDoc =
+    app?.token?.document ?? (actor?.isToken ? actor?.token : null);
+  if (tokenDoc) {
+    return {
+      linked: !!tokenDoc.actorLink,
+      scope: "token",
+      update: async (linked) => tokenDoc.update({ actorLink: linked }),
+    };
+  }
+
+  return {
+    linked: !!actor?.prototypeToken?.actorLink,
+    scope: "prototype",
+    update: async (linked) =>
+      actor.update({ "prototypeToken.actorLink": linked }),
+  };
+}
+
+function _renderTokenLinkButtonState(button, linked, scope) {
+  const titleKey = linked
+    ? scope === "token"
+      ? "sta-utils.lcarsTokenLinkToggle.titleLinkedToken"
+      : "sta-utils.lcarsTokenLinkToggle.titleLinkedPrototype"
+    : scope === "token"
+      ? "sta-utils.lcarsTokenLinkToggle.titleUnlinkedToken"
+      : "sta-utils.lcarsTokenLinkToggle.titleUnlinkedPrototype";
+  button.title = t(titleKey);
+  button.innerHTML = linked
+    ? '<i class="fa-solid fa-link"></i>'
+    : '<i class="fa-solid fa-link-slash"></i>';
+}
+
+function installLcarsTokenLinkToggleButton(app, root, actor) {
+  const appId = String(app?.id ?? "");
+  const isLcarsSheet =
+    appId.startsWith("LcarsCharacterSheet2e") ||
+    appId.startsWith("LcarsSupportingSheet2e") ||
+    appId.startsWith("LcarsNPCSheet2e") ||
+    appId.startsWith("LcarsStarshipSheet2e") ||
+    appId.startsWith("LcarsSmallCraftSheet2e");
+  if (!isLcarsSheet) return;
+
+  const nameRow = _getLcarsNameRow(root);
+  if (!nameRow) return;
+
+  let button = nameRow.querySelector(".sta-lcars-token-link-btn");
+  if (!button) {
+    button = document.createElement("button");
+    button.type = "button";
+    button.className = "sta-lcars-theme-btn sta-lcars-token-link-btn";
+    button.setAttribute(
+      "aria-label",
+      t("sta-utils.lcarsTokenLinkToggle.ariaLabel"),
+    );
+
+    button.addEventListener("click", async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const context = _getTokenLinkContext(app, actor);
+      const nextLinked = !context.linked;
+
+      await context.update(nextLinked);
+      _renderTokenLinkButtonState(button, nextLinked, context.scope);
+
+      ui.notifications.info(
+        nextLinked
+          ? context.scope === "token"
+            ? t("sta-utils.lcarsTokenLinkToggle.linkedToken")
+            : t("sta-utils.lcarsTokenLinkToggle.linkedPrototype")
+          : context.scope === "token"
+            ? t("sta-utils.lcarsTokenLinkToggle.unlinkedToken")
+            : t("sta-utils.lcarsTokenLinkToggle.unlinkedPrototype"),
+      );
+    });
+  }
+
+  const context = _getTokenLinkContext(app, actor);
+  _renderTokenLinkButtonState(button, context.linked, context.scope);
+
+  const switcherButton = nameRow.querySelector(".sta-lcars-sheet-switch-btn");
+  if (switcherButton?.parentElement === nameRow) {
+    switcherButton.insertAdjacentElement("afterend", button);
+  } else {
+    const themeButton = nameRow.querySelector(".sta-lcars-theme-btn");
+    if (themeButton?.parentElement === nameRow) {
+      themeButton.insertAdjacentElement("afterend", button);
+    } else {
+      nameRow.appendChild(button);
+    }
+  }
+}
+
 function installLcarsSheetSwitcherButton(app, root, actor) {
   const appId = String(app?.id ?? "");
   const isCharacterLcarsSheet =
@@ -327,7 +435,7 @@ function installLcarsSheetSwitcherButton(app, root, actor) {
 
   if (String(actor?.type ?? "") !== "character") return;
 
-  const nameRow = root?.querySelector?.(".top-right-column .name-row");
+  const nameRow = _getLcarsNameRow(root);
   if (!nameRow) return;
   if (nameRow.querySelector(".sta-lcars-sheet-switch-btn")) return;
 
@@ -622,6 +730,13 @@ function installTurnIndicator(root, actor) {
  */
 function handleTurnIndicator(app, root) {
   const actor = app?.actor;
+  if (game.user?.isGM && actor) {
+    try {
+      installLcarsTokenLinkToggleButton(app, root, actor);
+    } catch (_) {
+      // ignore
+    }
+  }
   if (!actor) return;
   // Apply to character-type and NPC actors (not starships/smallcraft)
   if (actor.type !== "character" && actor.type !== "npc") return;

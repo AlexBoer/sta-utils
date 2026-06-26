@@ -428,6 +428,7 @@ export class ItemImagePickerApp extends Base {
         selectionHint.textContent = t("sta-utils.itemImagePicker.selectPrompt");
       }
     }
+
   }
 
   _getSelectedPathFromLiveDom() {

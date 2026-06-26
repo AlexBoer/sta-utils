@@ -295,6 +295,17 @@
       "npc": "NPC",
       "changed": "Switched sheet to {label}."
     },
+    "lcarsTokenLinkToggle": {
+      "ariaLabel": "Toggle linked token",
+      "titleLinkedToken": "Token is linked to actor. Click to unlink this token.",
+      "titleLinkedPrototype": "Prototype token is linked to actor. Click to unlink future tokens.",
+      "titleUnlinkedToken": "Token is unlinked from actor. Click to link this token.",
+      "titleUnlinkedPrototype": "Prototype token is unlinked from actor. Click to link future tokens.",
+      "linkedToken": "Token is now linked to its actor.",
+      "linkedPrototype": "Prototype token is now linked to its actor.",
+      "unlinkedToken": "Token is now unlinked from its actor.",
+      "unlinkedPrototype": "Prototype token is now unlinked from its actor."
+    },
     "focusesInfo": {
       "infoTooltip": "Focuses Info",
       "infoTitle": "Focuses",
