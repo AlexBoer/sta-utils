@@ -39,6 +39,13 @@ const SHOW_ADVANCED_CALCULATOR_SETTING = "showAdvancedCalculator";
 const OFFICERS_LOG_MODULE_ID = "sta-officers-log";
 const SHOW_CREATION_WIZARD_BUTTON_SETTING = "showCreationWizardButton";
 const ENABLE_TALENT_USES_SETTING = "enableTalentUses";
+const ENABLE_ITEM_IMAGE_PICKER_SETTING = "enableItemImagePicker";
+const ENABLE_QUICK_INSERT_ITEM_TYPE_PATCH_SETTING =
+  "enableQuickInsertItemTypePatch";
+const ITEM_IMAGE_PICKER_USE_STA_FOLDERS_SETTING =
+  "itemImagePickerUseStaFolders";
+const ITEM_IMAGE_PICKER_USE_GM_FOLDER_SETTING = "itemImagePickerUseGmFolder";
+const ITEM_IMAGE_PICKER_GM_FOLDER_PATH_SETTING = "itemImagePickerGmFolderPath";
 
 /** Localized group labels for the settings menu. */
 const GROUP_WORLD = "sta-utils.settings.groups.world";
@@ -78,12 +85,12 @@ const SUBGROUPS = [
     label: "sta-utils.settings.subgroups.stardateDisplay",
   },
   {
-    firstKey: ENABLE_ALERT_STATUS_SETTING,
-    label: "sta-utils.settings.subgroups.alertStatus",
-  },
-  {
     firstKey: ENABLE_TALENT_AUTOMATIONS_SETTING,
     label: "sta-utils.settings.subgroups.standalone",
+  },
+  {
+    firstKey: ENABLE_ITEM_IMAGE_PICKER_SETTING,
+    label: "sta-utils.settings.subgroups.itemImagePicker",
   },
   {
     firstKey: NPC_BUILDER_SPECIAL_RULES_PACK_SETTING,
@@ -374,6 +381,61 @@ export function registerSettings() {
     type: Boolean,
     default: false,
     requiresReload: true,
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(
+    MODULE_ID,
+    ENABLE_QUICK_INSERT_ITEM_TYPE_PATCH_SETTING,
+    {
+      name: t("sta-utils.settings.enableQuickInsertItemTypePatch.name"),
+      hint: t("sta-utils.settings.enableQuickInsertItemTypePatch.hint"),
+      scope: "world",
+      config: true,
+      type: Boolean,
+      default: true,
+      requiresReload: true,
+      group: GROUP_WORLD,
+    },
+  );
+
+  game.settings.register(MODULE_ID, ENABLE_ITEM_IMAGE_PICKER_SETTING, {
+    name: t("sta-utils.settings.enableItemImagePicker.name"),
+    hint: t("sta-utils.settings.enableItemImagePicker.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, ITEM_IMAGE_PICKER_USE_STA_FOLDERS_SETTING, {
+    name: t("sta-utils.settings.itemImagePickerUseStaFolders.name"),
+    hint: t("sta-utils.settings.itemImagePickerUseStaFolders.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, ITEM_IMAGE_PICKER_USE_GM_FOLDER_SETTING, {
+    name: t("sta-utils.settings.itemImagePickerUseGmFolder.name"),
+    hint: t("sta-utils.settings.itemImagePickerUseGmFolder.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, ITEM_IMAGE_PICKER_GM_FOLDER_PATH_SETTING, {
+    name: t("sta-utils.settings.itemImagePickerGmFolderPath.name"),
+    hint: t("sta-utils.settings.itemImagePickerGmFolderPath.hint"),
+    scope: "world",
+    config: true,
+    type: String,
+    default: "",
     group: GROUP_WORLD,
   });
 
@@ -894,6 +956,62 @@ export function isTalentUsesEnabled() {
   }
 }
 
+/** @returns {boolean} */
+export function isQuickInsertItemTypePatchEnabled() {
+  try {
+    return Boolean(
+      game.settings.get(MODULE_ID, ENABLE_QUICK_INSERT_ITEM_TYPE_PATCH_SETTING),
+    );
+  } catch (_) {
+    return true;
+  }
+}
+
+/** @returns {boolean} */
+export function isItemImagePickerEnabled() {
+  try {
+    return Boolean(
+      game.settings.get(MODULE_ID, ENABLE_ITEM_IMAGE_PICKER_SETTING),
+    );
+  } catch (_) {
+    return true;
+  }
+}
+
+/** @returns {boolean} */
+export function isItemImagePickerUseStaFoldersEnabled() {
+  try {
+    return Boolean(
+      game.settings.get(MODULE_ID, ITEM_IMAGE_PICKER_USE_STA_FOLDERS_SETTING),
+    );
+  } catch (_) {
+    return true;
+  }
+}
+
+/** @returns {boolean} */
+export function isItemImagePickerUseGmFolderEnabled() {
+  try {
+    return Boolean(
+      game.settings.get(MODULE_ID, ITEM_IMAGE_PICKER_USE_GM_FOLDER_SETTING),
+    );
+  } catch (_) {
+    return true;
+  }
+}
+
+/** @returns {string} */
+export function getItemImagePickerGmFolderPath() {
+  try {
+    return String(
+      game.settings.get(MODULE_ID, ITEM_IMAGE_PICKER_GM_FOLDER_PATH_SETTING) ??
+        "",
+    );
+  } catch (_) {
+    return "";
+  }
+}
+
 /**
  * Returns the actor ID of the configured Group Ship.
  * If sta-officers-log is active, delegates to its setting instead.
@@ -945,6 +1063,18 @@ const SETTING_DEPENDENCIES = [
   {
     parent: ENABLE_ACTION_CHOOSER_SETTING,
     children: [ACTION_CHOOSER_AS_TAB_SETTING],
+  },
+  {
+    parent: ENABLE_ITEM_IMAGE_PICKER_SETTING,
+    children: [
+      ITEM_IMAGE_PICKER_USE_STA_FOLDERS_SETTING,
+      ITEM_IMAGE_PICKER_USE_GM_FOLDER_SETTING,
+      ITEM_IMAGE_PICKER_GM_FOLDER_PATH_SETTING,
+    ],
+  },
+  {
+    parent: ITEM_IMAGE_PICKER_USE_GM_FOLDER_SETTING,
+    children: [ITEM_IMAGE_PICKER_GM_FOLDER_PATH_SETTING],
   },
 ];
 

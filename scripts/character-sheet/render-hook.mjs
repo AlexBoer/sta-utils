@@ -172,6 +172,14 @@ function handleLcarsSheetRender(app, root) {
   const actor = app.actor;
   if (!actor || (actor.type !== "character" && actor.type !== "npc")) return;
 
+  if (game.user?.isGM) {
+    try {
+      installLcarsSheetSwitcherButton(app, root, actor);
+    } catch (_) {
+      // ignore
+    }
+  }
+
   const isNpcOnNpcSheet = app?.id?.startsWith("LcarsNPCSheet2e");
 
   if (isNpcOnNpcSheet && isPersonalThreatEnabled()) {
@@ -268,6 +276,135 @@ function handleLcarsSheetRender(app, root) {
         // ignore
       }
     }
+  }
+}
+
+const LCARS_CHARACTER_SHEET_OPTIONS = {
+  main: {
+    className: "sta-utils.LcarsCharacterSheet2e",
+    appPrefix: "LcarsCharacterSheet2e",
+    labelKey: "sta-utils.lcarsSheetSwitcher.main",
+  },
+  supporting: {
+    className: "sta-utils.LcarsSupportingSheet2e",
+    appPrefix: "LcarsSupportingSheet2e",
+    labelKey: "sta-utils.lcarsSheetSwitcher.supporting",
+  },
+  npc: {
+    className: "sta-utils.LcarsNPCSheet2e",
+    appPrefix: "LcarsNPCSheet2e",
+    labelKey: "sta-utils.lcarsSheetSwitcher.npc",
+  },
+};
+
+function _getCurrentLcarsSheetKey(app, actor) {
+  const appId = String(app?.id ?? "");
+  if (appId.startsWith("LcarsCharacterSheet2e")) return "main";
+  if (appId.startsWith("LcarsSupportingSheet2e")) return "supporting";
+  if (appId.startsWith("LcarsNPCSheet2e")) return "npc";
+
+  const sheetClassFlag = String(actor?.getFlag?.("core", "sheetClass") ?? "");
+  if (sheetClassFlag === LCARS_CHARACTER_SHEET_OPTIONS.main.className) {
+    return "main";
+  }
+  if (sheetClassFlag === LCARS_CHARACTER_SHEET_OPTIONS.supporting.className) {
+    return "supporting";
+  }
+  if (sheetClassFlag === LCARS_CHARACTER_SHEET_OPTIONS.npc.className) {
+    return "npc";
+  }
+
+  return "main";
+}
+
+function installLcarsSheetSwitcherButton(app, root, actor) {
+  const appId = String(app?.id ?? "");
+  const isCharacterLcarsSheet =
+    appId.startsWith("LcarsCharacterSheet2e") ||
+    appId.startsWith("LcarsSupportingSheet2e") ||
+    appId.startsWith("LcarsNPCSheet2e");
+  if (!isCharacterLcarsSheet) return;
+
+  if (String(actor?.type ?? "") !== "character") return;
+
+  const nameRow = root?.querySelector?.(".top-right-column .name-row");
+  if (!nameRow) return;
+  if (nameRow.querySelector(".sta-lcars-sheet-switch-btn")) return;
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "sta-lcars-theme-btn sta-lcars-sheet-switch-btn";
+  button.title = t("sta-utils.lcarsSheetSwitcher.buttonTitle");
+  button.innerHTML = '<i class="fa-solid fa-users-gear"></i>';
+
+  button.addEventListener("click", async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const currentKey = _getCurrentLcarsSheetKey(app, actor);
+    const selection = await foundry.applications.api.DialogV2.wait({
+      window: {
+        title: t("sta-utils.lcarsSheetSwitcher.dialogTitle"),
+        icon: "fa-solid fa-users-gear",
+      },
+      position: {
+        width: 760,
+        height: "auto",
+      },
+      content: `<p>${t("sta-utils.lcarsSheetSwitcher.dialogPrompt")}</p>`,
+      classes: [
+        "sta-utils",
+        "sta-utils-ms-lcars",
+        "sta-lcars-sheet-switcher-dialog",
+      ],
+      buttons: [
+        {
+          action: "main",
+          label: t("sta-utils.lcarsSheetSwitcher.main"),
+          default: currentKey === "main",
+        },
+        {
+          action: "supporting",
+          label: t("sta-utils.lcarsSheetSwitcher.supporting"),
+          default: currentKey === "supporting",
+        },
+        {
+          action: "npc",
+          label: t("sta-utils.lcarsSheetSwitcher.npc"),
+          default: currentKey === "npc",
+        },
+        {
+          action: "cancel",
+          label: game.i18n.localize("Cancel"),
+        },
+      ],
+      default: "cancel",
+    });
+
+    const selectedKey = String(selection ?? "");
+    if (!selectedKey || selectedKey === "cancel") return;
+
+    const selectedOption = LCARS_CHARACTER_SHEET_OPTIONS[selectedKey];
+    if (!selectedOption) return;
+    if (selectedKey === currentKey) return;
+
+    await actor.setFlag("core", "sheetClass", selectedOption.className);
+    ui.notifications.info(
+      t("sta-utils.lcarsSheetSwitcher.changed").replace(
+        "{label}",
+        t(selectedOption.labelKey),
+      ),
+    );
+
+    await app.close();
+    actor.sheet?.render(true);
+  });
+
+  const themeButton = nameRow.querySelector(".sta-lcars-theme-btn");
+  if (themeButton?.parentElement === nameRow) {
+    themeButton.insertAdjacentElement("afterend", button);
+  } else {
+    nameRow.appendChild(button);
   }
 }
 

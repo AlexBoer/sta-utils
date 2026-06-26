@@ -1,0 +1,71 @@
+<form class="sta-utils-item-image-picker-form" autocomplete="off">
+  <div class="sta-utils-item-image-picker-header">
+    <div class="sta-utils-item-image-picker-header-main">
+      <div class="sta-utils-item-image-picker-current">
+        {{#if currentImage}}
+          <img src="{{currentImage}}" alt="" class="sta-utils-item-image-picker-current-img" />
+        {{/if}}
+        <div class="sta-utils-item-image-picker-current-meta">
+          <div class="sta-utils-item-image-picker-item-name">{{itemName}}</div>
+          <div class="sta-utils-item-image-picker-item-type">{{itemType}}</div>
+        </div>
+      </div>
+
+      <div class="form-group sta-utils-item-image-picker-search-group">
+      <div class="form-fields">
+          <input type="text" name="q" autocomplete="off" placeholder="{{labels.search}}" aria-label="{{labels.search}}" />
+        </div>
+      </div>
+    </div>
+
+    <div class="sta-utils-item-image-picker-source-filters">
+      {{#each sourceFilters}}
+        <button
+          type="button"
+          class="sta-utils-item-image-picker-source-filter {{#if isActive}}is-active{{/if}}"
+          data-action="filterSource"
+          data-source="{{value}}"
+          aria-pressed="{{#if isActive}}true{{else}}false{{/if}}"
+        >
+          {{label}}
+        </button>
+      {{/each}}
+    </div>
+  </div>
+
+  <ul class="sta-utils-item-image-picker-grid">
+    {{#each entries}}
+      <li>
+        <button
+          type="button"
+          class="sta-utils-item-image-picker-choice"
+          data-action="chooseImage"
+          data-path="{{path}}"
+          data-lc-name="{{lcName}}"
+          data-lc-source="{{lcSource}}"
+          title="{{name}}"
+        >
+          <span class="sta-utils-item-image-picker-preview">
+            <img src="{{path}}" alt="" loading="lazy" />
+          </span>
+          <span class="sta-utils-item-image-picker-name">{{name}}</span>
+        </button>
+      </li>
+    {{/each}}
+    <li data-hook="empty" class="sta-utils-item-image-picker-empty is-hidden">
+      <span>{{labels.empty}}</span>
+    </li>
+  </ul>
+
+  <p class="sta-utils-item-image-picker-selection" data-hook="selectionHint">{{labels.selectPrompt}}</p>
+
+  <footer class="form-footer">
+    {{#each footerActions}}
+      <button type="button" data-action="footerAction" data-footer-action-id="{{id}}">{{label}}</button>
+    {{/each}}
+    {{#if showDefaultApply}}
+      <button type="button" data-action="applyImage">{{labels.apply}}</button>
+    {{/if}}
+    <button type="button" data-action="close">{{labels.close}}</button>
+  </footer>
+</form>

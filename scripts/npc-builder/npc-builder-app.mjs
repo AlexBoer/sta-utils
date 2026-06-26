@@ -388,7 +388,7 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       speciesList: state.speciesCatalog.map((s) => ({
         name: s.name,
         selected: s.name === state.species,
-        hasTalent: s.talentUuid !== null,
+        hasTalent: s.talentUuid !== null || s.abilityName !== null,
       })),
       speciesFromCatalog: state.speciesCatalog.length > 0,
       // Incidental

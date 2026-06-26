@@ -372,6 +372,285 @@ li.row.entry.sta-utils-trait-hidden {
 }
 
 /* =============================================================================
+ * ITEM IMAGE PICKER — STA item sheet icon chooser
+ * ============================================================================= */
+
+.image-field {
+  position: relative;
+}
+
+.sta-utils-item-image-picker-btn {
+  position: absolute;
+  right: -0.35rem;
+  bottom: -0.35rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border-light-tertiary, #707070);
+  border-radius: 999px;
+  background: var(--color-bg-btn-minor, #d8d8d8);
+  color: var(--color-text-dark-primary, #1f1f1f);
+  cursor: pointer;
+  z-index: 2;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--color-bg-btn, #efefef);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.15);
+  }
+
+  i {
+    font-size: 0.7rem;
+  }
+}
+
+.sta-utils-npc-image-controls {
+  position: absolute;
+  right: -0.35rem;
+  bottom: -0.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.sta-utils-npc-image-controls .sta-utils-item-image-picker-btn {
+  position: static;
+}
+
+.sta-utils-item-image-picker {
+  .window-content {
+    overflow: hidden;
+  }
+}
+
+.sta-utils-item-image-picker-form {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  gap: 0.5rem;
+}
+
+.sta-utils-item-image-picker-header {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.45rem;
+}
+
+.sta-utils-item-image-picker-header-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 44%);
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.sta-utils-item-image-picker-search-group {
+  margin: 0;
+
+  .form-fields {
+    width: 100%;
+  }
+
+  input[name="q"] {
+    width: 100%;
+  }
+}
+
+.sta-utils-item-image-picker-source-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.sta-utils-item-image-picker-source-filter {
+  border: 1px solid var(--color-border-light-tertiary, #707070);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.08);
+  color: inherit;
+  font-size: 0.72rem;
+  line-height: 1;
+  padding: 0.28rem 0.5rem;
+  cursor: pointer;
+}
+
+.sta-utils-item-image-picker-source-filter:hover,
+.sta-utils-item-image-picker-source-filter:focus-visible {
+  border-color: var(--color-warm-1, #ee9b3a);
+}
+
+.sta-utils-item-image-picker-source-filter.is-active {
+  border-color: var(--color-warm-1, #ee9b3a);
+  box-shadow: 0 0 0 2px rgba(238, 155, 58, 0.2);
+}
+
+.sta-utils-item-image-picker-current {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.sta-utils-item-image-picker-current-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+}
+
+.sta-utils-item-image-picker-item-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.sta-utils-item-image-picker-item-type {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+@media (max-width: 640px) {
+  .sta-utils-item-image-picker-header-main {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sta-utils-item-image-picker-grid {
+  --picker-grid-gap: 0.35rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: var(--picker-grid-gap);
+  overflow: auto;
+  min-height: 0;
+}
+
+.sta-utils-item-image-picker-grid > li.is-hidden,
+.sta-utils-item-image-picker-empty.is-hidden {
+  display: none;
+}
+
+.sta-utils-item-image-picker-choice {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--color-border-light-tertiary, #7b7b7b);
+  border-radius: 6px;
+  padding: 0.24rem 0.24rem 0.28rem;
+  margin: 0;
+  background: transparent;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 0.24rem;
+  align-items: stretch;
+  text-align: left;
+  cursor: pointer;
+  min-height: 0;
+  height: 100%;
+  line-height: 1.1;
+  overflow: hidden;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--color-warm-1, #ee9b3a);
+    box-shadow: 0 0 0 2px rgba(238, 155, 58, 0.18);
+  }
+
+}
+
+.sta-utils-item-image-picker-choice.is-selected {
+  border-color: var(--color-warm-1, #ee9b3a);
+  box-shadow: 0 0 0 2px rgba(238, 155, 58, 0.25);
+}
+
+.sta-utils-item-image-picker-preview {
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.sta-utils-item-image-picker-preview img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+.sta-utils-item-image-picker-name {
+  font-size: 0.64rem;
+  line-height: 1.15;
+  min-height: 2.3em;
+  max-height: 2.3em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+  overflow: hidden;
+}
+
+.sta-utils-item-image-picker-source {
+  display: none;
+}
+
+.sta-utils-item-image-picker-empty {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 110px;
+  opacity: 0.75;
+  font-style: italic;
+}
+
+.sta-utils-item-image-picker-selection {
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.sta-utils-item-image-picker .form-footer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.35rem;
+  margin: 0;
+}
+
+.sta-utils-item-image-picker .form-footer button {
+  width: 100%;
+  margin: 0;
+}
+
+.sta-lcars-sheet-switcher-dialog {
+  .dialog-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.35rem;
+  }
+
+  .dialog-buttons .dialog-button,
+  .dialog-buttons button {
+    width: 100%;
+    min-height: 2.35rem;
+    white-space: normal;
+    text-wrap: balance;
+    line-height: 1.1;
+    text-transform: none;
+    letter-spacing: 0.2px;
+    padding: 0.35rem 0.45rem;
+  }
+}
+
+/* =============================================================================
  * TALENT AUTOMATIONS — Dice Pool Dialog Toggle Section
  * ============================================================================= */
 

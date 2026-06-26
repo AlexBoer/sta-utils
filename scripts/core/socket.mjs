@@ -82,5 +82,13 @@ export function initSocket() {
     await setAlertStatus(msg.status);
   });
 
+  // --- RPC: Player -> GM (list item image files from folders) ---
+  moduleSocket.register("listItemImageFiles", async (msg) => {
+    if (!game.user.isGM) return { files: [] };
+    const { listItemImagesAsGM } =
+      await import("../item-image-picker/source-loader.mjs");
+    return listItemImagesAsGM(msg);
+  });
+
   return moduleSocket;
 }

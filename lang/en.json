@@ -12,9 +12,10 @@
         "traitTokens": "Trait Tokens",
         "groupShip": "Group Ship",
         "chatUi": "Chat & UI",
-        "stardateDisplay": "Stardate Display",
+        "stardateDisplay": "Stardate Display & Ship Alert Status",
         "alertStatus": "Ship Alert Status",
         "standalone": "Other Features",
+        "itemImagePicker": "Item Image Picker",
         "npcBuilder": "NPC Builder",
         "trackerButtons": "Tracker Buttons",
         "personalThreat": "Personal Threat",
@@ -104,6 +105,26 @@
       "enableTalentUses": {
         "name": "Enable Talent Uses Tracker",
         "hint": "Track limited-use talents on character sheets with clickable pips. Open a talent to set its 'Max Uses per Mission'. A max of 0 means unlimited and hides the tracker."
+      },
+      "enableQuickInsertItemTypePatch": {
+        "name": "Quick Insert: Show Item Type Subtitle",
+        "hint": "When enabled, Quick Insert item results show the item type as the subtitle instead of folder or compendium name. Applies to both world and compendium items. Requires a world reload when changed."
+      },
+      "enableItemImagePicker": {
+        "name": "Enable Item Image Picker",
+        "hint": "Adds an icon picker button next to item portraits on STA item sheets. Players can choose from curated folders without opening the file browser."
+      },
+      "itemImagePickerUseStaFolders": {
+        "name": "Use STA Icon Folders",
+        "hint": "Include icons from the STA system icon folders, filtered by item type using folder mapping."
+      },
+      "itemImagePickerUseGmFolder": {
+        "name": "Use GM Image Folder",
+        "hint": "Include images from a GM-defined folder path in the picker."
+      },
+      "itemImagePickerGmFolderPath": {
+        "name": "GM Image Folder Path",
+        "hint": "Data path to a folder of image files (for example: worlds/my-world/images/items)."
       },
       "disableTooltips": {
         "name": "Disable Item Tooltips",
@@ -232,6 +253,47 @@
       "maxLabel": "Uses per Mission",
       "maxHint": "Maximum uses per mission. Set to 0 for unlimited (tracker hidden).",
       "awardType": "Award"
+    },
+    "itemImagePicker": {
+      "open": "Choose Image",
+      "search": "Search images",
+      "sourceAll": "All",
+      "empty": "No images were found for this item type.",
+      "apply": "Apply",
+      "selectPrompt": "Select an image, then click Apply.",
+      "selected": "Selected: {name}",
+      "close": "Close",
+      "warnNoPermission": "You do not have permission to edit this item image.",
+      "errorUpdateFailed": "Failed to update the item image."
+    },
+    "npcImagePicker": {
+      "title": "NPC Image Picker",
+      "titlePortrait": "NPC Portrait Picker",
+      "titleToken": "NPC Token Picker",
+      "openPortrait": "Pick portrait image",
+      "openToken": "Pick token image",
+      "copyPortraitToToken": "Apply to Portrait + Token",
+      "copyTokenToPortrait": "Apply to Token + Portrait",
+      "applyPortrait": "Apply Portrait",
+      "applyToken": "Apply Token",
+      "applyBoth": "Apply Both",
+      "warnSelectImage": "Select an image first.",
+      "appliedPortrait": "Applied image to portrait.",
+      "appliedToken": "Applied image to token.",
+      "appliedBoth": "Applied image to portrait and token.",
+      "warnNoPortrait": "This actor has no portrait image set.",
+      "warnNoToken": "This actor has no token image set.",
+      "copiedPortraitToToken": "Applied portrait image to token.",
+      "copiedTokenToPortrait": "Applied token image to portrait."
+    },
+    "lcarsSheetSwitcher": {
+      "buttonTitle": "Switch sheet type",
+      "dialogTitle": "Switch Sheet Type",
+      "dialogPrompt": "Choose the sheet type for this character:",
+      "main": "Main",
+      "supporting": "Supporting",
+      "npc": "NPC",
+      "changed": "Switched sheet to {label}."
     },
     "focusesInfo": {
       "infoTooltip": "Focuses Info",

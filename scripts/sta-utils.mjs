@@ -76,6 +76,7 @@ import { actionChooser } from "./action-chooser/index.mjs";
 import {
   installMacroActorImageHook,
   installAmbientAudioSelectionListenerPatch,
+  installQuickInsertItemTypeTaglinePatch,
 } from "./misc/index.mjs";
 
 import { crewManifest } from "./crew-manifest/index.mjs";
@@ -128,6 +129,8 @@ import {
 } from "./launcher/index.mjs";
 import { installTrackerMacroButtonsHook } from "./tracker-macro-buttons/index.mjs";
 import { installIncidentalNpcTrackerHook } from "./tracker-incidental-roll/index.mjs";
+import { installItemImagePickerHook } from "./item-image-picker/index.mjs";
+import { installNpcLcarsImagePickerHook } from "./npc-image-picker/index.mjs";
 
 import {
   isDicePoolOverrideEnabled,
@@ -141,6 +144,7 @@ import {
   isRollRequestEnabled,
   isStardateDisplayEnabled,
   isAlertStatusEnabled,
+  isQuickInsertItemTypePatchEnabled,
 } from "./core/settings.mjs";
 
 import { MobileCharacterSheet2e } from "./mobile-sheet/mobile-character-sheet2e.mjs";
@@ -326,6 +330,7 @@ Hooks.once("init", () => {
     `modules/${MODULE_ID}/templates/attack-calculator.hbs`,
     `modules/${MODULE_ID}/templates/supporting-builder.hbs`,
     `modules/${MODULE_ID}/templates/incidental-npc-roll-dialog.hbs`,
+    `modules/${MODULE_ID}/templates/item-image-picker.hbs`,
   ]);
 
   // --- Mobile sheet registration ---
@@ -443,6 +448,8 @@ Hooks.once("init", () => {
   installTalentUsesSheetHook();
   installTalentItemSheetHook();
   installTalentTypeExtensionHook();
+  installItemImagePickerHook();
+  installNpcLcarsImagePickerHook();
   installRenderApplicationV2Hook();
   installTrackerLauncherButton();
   installTrackerMacroButtonsHook();
@@ -508,6 +515,11 @@ Hooks.on("getSceneControlButtons", (controls) => {
 
 Hooks.once("ready", async () => {
   console.log(`${MODULE_ID} | Ready`);
+
+  // --- Quick Insert compatibility ---
+  if (isQuickInsertItemTypePatchEnabled()) {
+    installQuickInsertItemTypeTaglinePatch();
+  }
 
   // --- Socket (requires socketlib, available at ready) ---
   initSocket();

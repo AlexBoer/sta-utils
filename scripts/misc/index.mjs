@@ -5,3 +5,4 @@ export {
   setPlayerAmbientAudioSelectionOnlyEnabled,
 } from "./ambient-audio-patch.mjs";
 export { installMacroActorImageHook } from "./macro-actor-image.mjs";
+export { installQuickInsertItemTypeTaglinePatch } from "./quick-insert-item-type-tagline.mjs";

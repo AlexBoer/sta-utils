@@ -14,6 +14,7 @@ export {
   isChatHeaderMergeEnabled,
   isAutoDeductMomentumEnabled,
   isTooltipsDisabled,
+  isQuickInsertItemTypePatchEnabled,
   getGroupShipActorId,
   getGroupShipActor,
   getWorldTraitsActorUuid,
