@@ -39,9 +39,9 @@ const SHOW_ADVANCED_CALCULATOR_SETTING = "showAdvancedCalculator";
 const OFFICERS_LOG_MODULE_ID = "sta-officers-log";
 const SHOW_CREATION_WIZARD_BUTTON_SETTING = "showCreationWizardButton";
 const ENABLE_TALENT_USES_SETTING = "enableTalentUses";
-const ENABLE_ITEM_IMAGE_PICKER_SETTING = "enableItemImagePicker";
 const ENABLE_QUICK_INSERT_ITEM_TYPE_PATCH_SETTING =
   "enableQuickInsertItemTypePatch";
+const ENABLE_ITEM_IMAGE_PICKER_SETTING = "enableItemImagePicker";
 const ITEM_IMAGE_PICKER_USE_STA_FOLDERS_SETTING =
   "itemImagePickerUseStaFolders";
 const ITEM_IMAGE_PICKER_USE_GM_FOLDER_SETTING = "itemImagePickerUseGmFolder";

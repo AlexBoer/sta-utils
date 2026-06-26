@@ -1,50 +1,18 @@
 import { MODULE_ID } from "../core/constants.mjs";
 import { t } from "../core/i18n.mjs";
+import { getLauncherItemsForCurrentUser } from "../launcher/index.mjs";
 
 export const TRACKER_MACRO_LAYOUT_SETTING = "trackerMacroButtonLayout";
 export const TRACKER_MACRO_SECOND_COLUMN_SETTING =
   "trackerMacroButtonsShowSecondColumn";
 
-export const TRACKER_ACTIONS = [
-  {
-    id: "incidental-npc-roll",
-    label: "Incidental NPC Roller",
-    icon: "combadge",
-    canUse: () => true,
-  },
-  {
-    id: "perform-task",
-    label: "Perform Task",
-    icon: "fa-dice-d20",
-    canUse: () => true,
-  },
-  {
-    id: "sta-utils",
-    label: "STA Utilities",
-    icon: "fa-grip",
-    canUse: () => true,
-  },
-  {
-    id: "conflict-reference",
-    label: "Conflict Reference",
-    icon: "fa-sitemap",
-    canUse: () =>
-      Boolean(game.settings.get("sta-utils", "enableActionChooser")),
-  },
-  {
-    id: "mission-manager",
-    label: "Mission Manager",
-    icon: "fa-book",
-    canUse: () => game.user?.isGM && Boolean(game.staofficerslog),
-  },
-  {
-    id: "request-roll",
-    label: "Request Roll",
-    icon: "fa-arrow-up-from-bracket",
-    canUse: () =>
-      Boolean(game.user?.isGM) && Boolean(game.staUtils?.rollRequest),
-  },
-];
+export function getTrackerActions() {
+  return getLauncherItemsForCurrentUser().map((item) => ({
+    id: item.id,
+    label: item.label,
+    icon: item.icon,
+  }));
+}
 
 const DEFAULT_LAYOUT = {
   version: 1,
@@ -129,10 +97,11 @@ function normalizeLayout(raw) {
 }
 
 function buildChoicesForTemplate() {
+  const trackerActions = getTrackerActions();
   return [
     {
       label: t("sta-utils.trackerMacroButtons.form.builtInActions"),
-      options: TRACKER_ACTIONS.map((action) => ({
+      options: trackerActions.map((action) => ({
         uuid: action.id,
         name: action.label,
         img: action.icon,
@@ -164,22 +133,26 @@ function buildSlots(choices, selectedValues, labels, noneLabel) {
   }));
 }
 
-export class TrackerMacroButtonsConfig extends FormApplication {
-  static get defaultOptions() {
-    return foundry.utils.mergeObject(super.defaultOptions, {
-      id: `${MODULE_ID}-tracker-macro-buttons-config`,
-      title: t("sta-utils.trackerMacroButtons.menu.name"),
-      template: `modules/${MODULE_ID}/templates/tracker-macro-buttons-config.hbs`,
-      width: 620,
-      height: "auto",
-      closeOnSubmit: true,
-      submitOnClose: false,
-      resizable: true,
-    });
-  }
+const Base = foundry.applications.api.HandlebarsApplicationMixin(
+  foundry.applications.api.ApplicationV2,
+);
 
-  async getData(options = {}) {
-    const data = await super.getData(options);
+export class TrackerMacroButtonsConfig extends Base {
+  static DEFAULT_OPTIONS = {
+    id: `${MODULE_ID}-tracker-macro-buttons-config`,
+    window: { title: "sta-utils.trackerMacroButtons.menu.name" },
+    classes: ["sta-utils", "sta-utils-tracker-macro-config-app"],
+    position: { width: 620, height: "auto" },
+    resizable: true,
+  };
+
+  static PARTS = {
+    main: {
+      template: `modules/${MODULE_ID}/templates/tracker-macro-buttons-config.hbs`,
+    },
+  };
+
+  async _prepareContext(_options) {
     const layout = getTrackerMacroLayout();
     const choices = buildChoicesForTemplate();
     const slotLabels = [
@@ -189,7 +162,6 @@ export class TrackerMacroButtonsConfig extends FormApplication {
     ];
 
     return {
-      ...data,
       ready: game.modules.get("sta-utils")?.active,
       guidance: t("sta-utils.trackerMacroButtons.form.guidance"),
       secondColumnEnabled: Boolean(layout.showSecondColumn),
@@ -214,7 +186,58 @@ export class TrackerMacroButtonsConfig extends FormApplication {
     };
   }
 
-  async _updateObject(_event, formData) {
+  _attachPartListeners(partId, htmlElement, _options) {
+    super._attachPartListeners?.(partId, htmlElement, _options);
+    if (partId !== "main") return;
+
+    const root = htmlElement;
+    const host = root?.querySelector?.(".dialog-content") ?? root;
+    const form = host?.matches?.("form.sta-utils-tracker-macro-config")
+      ? host
+      : host?.querySelector?.("form.sta-utils-tracker-macro-config");
+    if (!form || form.dataset.staTrackerMacroConfigBound === "1") return;
+    form.dataset.staTrackerMacroConfigBound = "1";
+
+    const secondColumnToggle = form.querySelector("#showSecondColumn");
+
+    secondColumnToggle?.addEventListener("change", () => {
+      const fieldsets = Array.from(
+        form.querySelectorAll(".sta-utils-tracker-macro-fieldset"),
+      );
+      const secondFieldset = fieldsets[1];
+      if (secondFieldset) {
+        secondFieldset.classList.toggle(
+          "hidden",
+          !Boolean(secondColumnToggle.checked),
+        );
+      }
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const submitted = Object.fromEntries(new FormData(form).entries());
+      if (secondColumnToggle?.checked) {
+        submitted.showSecondColumn = "on";
+      }
+      await this._saveFormData(submitted);
+    });
+
+    // Fallback guard: some host/renderer edge-cases can bypass submit listeners.
+    // Intercept explicit submit button clicks so this never degrades to URL query submission.
+    for (const submitBtn of form.querySelectorAll('button[type="submit"]')) {
+      submitBtn.addEventListener("click", async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const submitted = Object.fromEntries(new FormData(form).entries());
+        if (secondColumnToggle?.checked) {
+          submitted.showSecondColumn = "on";
+        }
+        await this._saveFormData(submitted);
+      });
+    }
+  }
+
+  async _saveFormData(formData) {
     const currentLayout = getTrackerMacroLayout();
     const secondColumnValue =
       formData?.showSecondColumn ?? formData?.get?.("showSecondColumn");
@@ -270,5 +293,7 @@ export class TrackerMacroButtonsConfig extends FormApplication {
     } catch (_) {
       // best effort
     }
+
+    await this.close();
   }
 }

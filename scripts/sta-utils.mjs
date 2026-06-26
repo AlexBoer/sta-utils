@@ -163,6 +163,49 @@ const STRESS_REST_TYPES = {
   sleep: { recover: null },
 };
 
+function normalizeUiControlColumns() {
+  const uiLeft = document.getElementById("ui-left");
+  if (!uiLeft) return;
+
+  const raw = uiLeft.style.getPropertyValue("--control-columns").trim();
+  if (!raw) return;
+
+  const parsed = Number.parseFloat(raw);
+  if (Number.isFinite(parsed) && parsed > 0) return;
+
+  uiLeft.style.setProperty("--control-columns", "2");
+  try {
+    ui.controls?.render?.(true);
+  } catch (_) {
+    // best effort
+  }
+}
+
+function sanitizeTrackerLayoutQueryParams() {
+  try {
+    const url = new URL(window.location.href);
+    const suspectKeys = [
+      "showSecondColumn",
+      "firstColumn1",
+      "firstColumn2",
+      "secondColumn1",
+      "secondColumn2",
+      "secondColumn3",
+    ];
+
+    const hasSuspectParams = suspectKeys.some((key) =>
+      url.searchParams.has(key),
+    );
+    if (!hasSuspectParams) return;
+
+    for (const key of suspectKeys) url.searchParams.delete(key);
+    const next = `${url.pathname}${url.search}${url.hash}`;
+    window.history.replaceState(window.history.state, "", next);
+  } catch (_) {
+    // best effort
+  }
+}
+
 async function openSceneTraitsSheet() {
   const scene = canvas?.scene;
   if (!scene) {
@@ -515,6 +558,9 @@ Hooks.on("getSceneControlButtons", (controls) => {
 
 Hooks.once("ready", async () => {
   console.log(`${MODULE_ID} | Ready`);
+
+  sanitizeTrackerLayoutQueryParams();
+  normalizeUiControlColumns();
 
   // --- Quick Insert compatibility ---
   if (isQuickInsertItemTypePatchEnabled()) {

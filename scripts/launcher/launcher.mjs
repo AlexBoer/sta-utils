@@ -326,6 +326,54 @@ const LAUNCHER_SECTIONS = [
   },
 ];
 
+function _isSectionActive(sectionDef) {
+  if (!sectionDef?.moduleId) return true;
+  return Boolean(game.modules.get(sectionDef.moduleId)?.active);
+}
+
+function _allActiveItems() {
+  return LAUNCHER_SECTIONS.filter(_isSectionActive).flatMap((s) => s.items);
+}
+
+function _findLauncherItemById(id) {
+  const cleanId = String(id ?? "").trim();
+  if (!cleanId) return null;
+  return _allActiveItems().find((item) => item.id === cleanId) ?? null;
+}
+
+/**
+ * Return launcher items visible to the current user using the same visibility
+ * rules as the launcher dialog itself.
+ */
+export function getLauncherItemsForCurrentUser() {
+  const isGM = Boolean(game.user?.isGM);
+  return _allActiveItems()
+    .filter((item) =>
+      isGM ? item.available() : !item.gmOnly && item.available(),
+    )
+    .map((item) => ({
+      id: item.id,
+      label: t(item.labelKey),
+      icon: item.icon,
+    }));
+}
+
+/**
+ * Invoke a launcher item by ID if available to the current user.
+ * @returns {boolean} true when an item was found and executed.
+ */
+export function invokeLauncherItemById(id) {
+  const item = _findLauncherItemById(id);
+  if (!item) return false;
+
+  const isGM = Boolean(game.user?.isGM);
+  if (!item.available()) return false;
+  if (!isGM && item.gmOnly) return false;
+
+  item.call();
+  return true;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
@@ -437,9 +485,7 @@ class LauncherApp extends Base {
       btn.addEventListener("click", async (ev) => {
         ev.preventDefault();
         const id = btn.dataset.itemId;
-        const item = LAUNCHER_SECTIONS.flatMap((s) => s.items).find(
-          (i) => i.id === id,
-        );
+        const item = _findLauncherItemById(id);
         if (!item) return;
         await this.close();
         item.call();
@@ -447,9 +493,7 @@ class LauncherApp extends Base {
 
       btn.addEventListener("dragstart", (ev) => {
         const id = btn.dataset.itemId;
-        const item = LAUNCHER_SECTIONS.flatMap((s) => s.items).find(
-          (i) => i.id === id,
-        );
+        const item = _findLauncherItemById(id);
         if (!item) return;
         // Derive the script command from the call arrow function body
         const command = item.call

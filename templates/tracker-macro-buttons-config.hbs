@@ -18,14 +18,11 @@
           {{#each this.groups}}
             <optgroup label="{{this.label}}">
               {{#each this.options}}
-                <option value="{{this.uuid}}" {{#if this.selected}}selected{{/if}}>{{this.packTitle}} / {{this.name}}</option>
+                <option value="{{this.uuid}}" {{#if this.selected}}selected{{/if}}>{{this.name}}</option>
               {{/each}}
             </optgroup>
           {{/each}}
         </select>
-        {{#if this.locked}}
-          <p class="hint">Locked to STA Utilities.</p>
-        {{/if}}
       </div>
       {{/each}}
     </fieldset>
@@ -41,7 +38,7 @@
             {{#each this.groups}}
               <optgroup label="{{this.label}}">
                 {{#each this.options}}
-                  <option value="{{this.uuid}}" {{#if this.selected}}selected{{/if}}>{{this.packTitle}} / {{this.name}}</option>
+                  <option value="{{this.uuid}}" {{#if this.selected}}selected{{/if}}>{{this.name}}</option>
                 {{/each}}
               </optgroup>
             {{/each}}
@@ -53,6 +50,7 @@
     <div class="form-group">
       <button type="submit" class="button"><i class="fas fa-save"></i> {{localize "SETTINGS.Save"}}</button>
     </div>
+
   {{else}}
     <p class="hint">Enable STA Utilities to use this feature. Mission Manager requires STA Officers Log.</p>
   {{/if}}

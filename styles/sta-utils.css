@@ -5440,9 +5440,9 @@ input.selector.attribute.sta-fatigued-attribute {
   flex-shrink: 0;
 }
 
-#ui-top .ext-tracker-entry,
-#ui-top button,
-#ui-top .ext-tracker-entry a {
+#ui-top #extended-task-panel .ext-tracker-entry,
+#ui-top #extended-task-panel .ext-tracker-main-controls button,
+#ui-top #extended-task-panel .ext-tracker-entry a {
   pointer-events: all;
 }
 

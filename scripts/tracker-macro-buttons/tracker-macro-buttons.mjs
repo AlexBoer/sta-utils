@@ -1,7 +1,6 @@
 import { MODULE_ID } from "../core/constants.mjs";
-import { getTrackerMacroLayout, TRACKER_ACTIONS } from "./settings-menu.mjs";
-import { openLauncher } from "../launcher/launcher.mjs";
-import { openRollRequestDialog } from "../roll-request/index.mjs";
+import { getTrackerMacroLayout, getTrackerActions } from "./settings-menu.mjs";
+import { invokeLauncherItemById } from "../launcher/index.mjs";
 
 const BUTTON_CLASS = "sta-utils-tracker-macro-btn";
 
@@ -16,7 +15,7 @@ function isTrackerApp(app, root) {
 
 function getActionDefinition(actionId) {
   const cleanId = String(actionId ?? "").trim();
-  return TRACKER_ACTIONS.find((action) => action.id === cleanId) ?? null;
+  return getTrackerActions().find((action) => action.id === cleanId) ?? null;
 }
 
 function createActionButton(action, slotClass) {
@@ -38,31 +37,7 @@ function createActionButton(action, slotClass) {
     }
 
     try {
-      const root =
-        event.currentTarget?.closest?.(".tracker-container") ?? document;
-
-      switch (action?.id) {
-        case "incidental-npc-roll":
-          rootClick("#sta-roll-npc-button", root);
-          break;
-        case "perform-task":
-          rootClick("#sta-roll-task-button", root);
-          break;
-        case "sta-utils":
-          openLauncher();
-          break;
-        case "conflict-reference":
-          game.staUtils?.actionChooser?.open?.();
-          break;
-        case "mission-manager":
-          game.staofficerslog?.openMissionManager?.();
-          break;
-        case "request-roll":
-          openRollRequestDialog();
-          break;
-        default:
-          break;
-      }
+      invokeLauncherItemById(action?.id);
     } catch (err) {
       console.error(`${MODULE_ID} | tracker button action failed`, err);
       ui.notifications?.error?.("Tracker button failed. See console.");
@@ -82,19 +57,6 @@ function createActionGroup(actions, groupClass) {
   });
 
   return group;
-}
-
-function rootClick(selector, scope = document) {
-  const target =
-    scope?.querySelector?.(selector) ?? document.querySelector(selector);
-  if (!target) return;
-  target.dispatchEvent(
-    new MouseEvent("click", {
-      bubbles: true,
-      cancelable: true,
-      view: window,
-    }),
-  );
 }
 
 function ensureColumns(iconContainer) {
