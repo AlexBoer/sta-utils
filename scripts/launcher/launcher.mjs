@@ -1,5 +1,6 @@
 import { MODULE_ID } from "../core/constants.mjs";
 import { t } from "../core/i18n.mjs";
+import { openIncidentalNpcRollDialog } from "../tracker-incidental-roll/index.mjs";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ITEM DEFINITIONS
@@ -8,6 +9,36 @@ import { t } from "../core/i18n.mjs";
 const ASSET_BASE = `modules/${MODULE_ID}/assets/Macro%20Icons`;
 const OL_ASSET_BASE = `modules/sta-officers-log/assets/MacroIcons`;
 const TC_ASSET_BASE = `modules/sta-tactical-campaign/assets/macro%20icons`;
+
+function openPerformTaskDialog() {
+  const eventLike = {
+    preventDefault: () => {},
+    stopPropagation: () => {},
+    stopImmediatePropagation: () => {},
+    currentTarget: null,
+    target: null,
+  };
+
+  const tracker = game?.STATracker ?? null;
+  const ctor = tracker?.constructor ?? null;
+
+  const handler =
+    ctor?.DEFAULT_OPTIONS?.actions?.onTaskRoll ??
+    ctor?.defaultOptions?.actions?.onTaskRoll ??
+    tracker?.options?.actions?.onTaskRoll;
+
+  if (typeof handler === "function") {
+    return handler.call(tracker, eventLike);
+  }
+
+  const nativeButton = document.getElementById("sta-roll-task-button");
+  if (nativeButton) {
+    nativeButton.click();
+    return;
+  }
+
+  ui.notifications?.warn("Perform Task is not available yet.");
+}
 
 /**
  * Sections group launcher buttons by module.
@@ -38,6 +69,14 @@ const LAUNCHER_SECTIONS = [
         gmOnly: false,
         available: () => !!game.staUtils?.warpCalculator,
         call: () => game.staUtils.warpCalculator.open(),
+      },
+      {
+        id: "perform-task",
+        labelKey: "sta-utils.launcher.performTask",
+        icon: "fa-sharp fa-light fa-dice-d20",
+        gmOnly: false,
+        available: () => true,
+        call: () => openPerformTaskDialog(),
       },
       {
         id: "attackCalculator",
@@ -105,7 +144,7 @@ const LAUNCHER_SECTIONS = [
       {
         id: "dicePoolMonitor",
         labelKey: "sta-utils.launcher.dicePoolMonitor",
-        icon: "fa-dice-d20",
+        icon: "fa-sharp fa-solid fa-camera-cctv",
         img: `${ASSET_BASE}/PoolMonitor.webp`,
         gmOnly: true,
         available: () => !!game.staUtils?.openDicePoolMonitor,
@@ -129,6 +168,16 @@ const LAUNCHER_SECTIONS = [
         // rollRequest is null in game.staUtils when the feature is disabled in settings
         available: () => !!game.staUtils?.rollRequest,
         call: () => game.staUtils.rollRequest(),
+      },
+      {
+        id: "incidental-npc-roll",
+        labelKey: "sta-utils.launcher.incidentalNpcRoll",
+        icon: "fa-sharp fa-user-alien",
+        gmOnly: true,
+        // Use direct function import so this action is available during early
+        // tracker renders before game.staUtils is assigned on ready.
+        available: () => true,
+        call: () => openIncidentalNpcRollDialog(),
       },
       {
         id: "rollCasualties",
@@ -208,13 +257,13 @@ const LAUNCHER_SECTIONS = [
         call: () => game.staofficerslog.newScene(),
       },
       {
-        id: "ol-newMission",
-        labelKey: "sta-utils.launcher.ol.newMission",
+        id: "ol-missionManager",
+        labelKey: "sta-utils.launcher.ol.missionManager",
         icon: "fa-flag",
         img: `${OL_ASSET_BASE}/newMission.webp`,
         gmOnly: true,
-        available: () => !!game.staofficerslog?.promptNewMissionAndReset,
-        call: () => game.staofficerslog.promptNewMissionAndReset(),
+        available: () => !!game.staofficerslog?.openMissionManager,
+        call: () => game.staofficerslog.openMissionManager(),
       },
       {
         id: "ol-addParticipant",
@@ -341,21 +390,93 @@ function _findLauncherItemById(id) {
   return _allActiveItems().find((item) => item.id === cleanId) ?? null;
 }
 
+function _normalizeFaIconClass(icon) {
+  const clean = String(icon ?? "").trim();
+  if (!clean) return "fa-solid fa-bolt";
+
+  const hasStylePrefix =
+    /\b(?:fa-solid|fa-regular|fa-light|fa-thin|fa-duotone|fas|far|fal|fat|fad)\b/.test(
+      clean,
+    );
+  return hasStylePrefix ? clean : `fa-solid ${clean}`;
+}
+
 /**
  * Return launcher items visible to the current user using the same visibility
  * rules as the launcher dialog itself.
  */
 export function getLauncherItemsForCurrentUser() {
-  const isGM = Boolean(game.user?.isGM);
-  return _allActiveItems()
-    .filter((item) =>
-      isGM ? item.available() : !item.gmOnly && item.available(),
-    )
-    .map((item) => ({
+  return getLauncherSectionsForCurrentUser().flatMap((section) =>
+    section.items.map((item) => ({
       id: item.id,
-      label: t(item.labelKey),
+      label: item.label,
       icon: item.icon,
-    }));
+    })),
+  );
+}
+
+/**
+ * Return launcher items grouped by source module section and filtered for the
+ * current user.
+ */
+export function getLauncherSectionsForCurrentUser() {
+  const isGM = Boolean(game.user?.isGM);
+  const sections = [];
+
+  for (const sectionDef of LAUNCHER_SECTIONS) {
+    if (!_isSectionActive(sectionDef)) continue;
+
+    const items = sectionDef.items
+      .filter((item) =>
+        isGM ? item.available() : !item.gmOnly && item.available(),
+      )
+      .map((item) => ({
+        id: item.id,
+        label: t(item.labelKey),
+        icon: _normalizeFaIconClass(item.icon),
+      }));
+
+    if (!items.length) continue;
+
+    sections.push({
+      id: sectionDef.id,
+      label: t(sectionDef.labelKey),
+      items,
+    });
+  }
+
+  return sections;
+}
+
+/**
+ * Return launcher items grouped by source module for tracker/action mapping.
+ * This ignores gmOnly visibility so all clients can resolve configured button
+ * icons consistently, while invocation still enforces permissions.
+ */
+export function getLauncherSectionsForTracker() {
+  const sections = [];
+
+  for (const sectionDef of LAUNCHER_SECTIONS) {
+    if (!_isSectionActive(sectionDef)) continue;
+
+    const items = sectionDef.items
+      .filter((item) => item.available())
+      .map((item) => ({
+        id: item.id,
+        label: t(item.labelKey),
+        icon: _normalizeFaIconClass(item.icon),
+      }));
+
+    if (!items.length) continue;
+
+    sections.push({
+      id: sectionDef.id,
+      label: t(sectionDef.labelKey),
+      items,
+    });
+  }
+
+  return sections;
 }
 
 /**
@@ -435,7 +556,7 @@ class LauncherApp extends Base {
           .map((item) => ({
             id: item.id,
             label: t(item.labelKey),
-            icon: item.icon,
+            icon: _normalizeFaIconClass(item.icon),
           }));
       });
       return {
@@ -461,7 +582,7 @@ class LauncherApp extends Base {
         .map((item) => ({
           id: item.id,
           label: t(item.labelKey),
-          icon: item.icon,
+          icon: _normalizeFaIconClass(item.icon),
         }));
 
       if (items.length === 0) continue;

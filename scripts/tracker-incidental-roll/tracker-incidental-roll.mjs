@@ -93,7 +93,7 @@ function qualityByKey(key) {
   );
 }
 
-async function openIncidentalNpcRollDialog() {
+export async function openIncidentalNpcRollDialog() {
   const STARoll = window.STARoll;
   const staRoll = new STARoll();
   const calculatedComplicationRange = await staRoll._sceneComplications();

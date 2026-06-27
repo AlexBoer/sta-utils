@@ -1,31 +1,59 @@
 import { MODULE_ID } from "../core/constants.mjs";
 import { t } from "../core/i18n.mjs";
-import { getLauncherItemsForCurrentUser } from "../launcher/index.mjs";
+import {
+  getLauncherSectionsForTracker,
+  getLauncherSectionsForCurrentUser,
+} from "../launcher/index.mjs";
 
 export const TRACKER_MACRO_LAYOUT_SETTING = "trackerMacroButtonLayout";
 export const TRACKER_MACRO_SECOND_COLUMN_SETTING =
   "trackerMacroButtonsShowSecondColumn";
 
 export function getTrackerActions() {
-  return getLauncherItemsForCurrentUser().map((item) => ({
-    id: item.id,
-    label: item.label,
-    icon: item.icon,
-  }));
+  return getLauncherSectionsForTracker().flatMap((section) =>
+    section.items.map((item) => ({
+      id: item.id,
+      label: item.label,
+      icon: item.icon,
+    })),
+  );
 }
 
 const DEFAULT_LAYOUT = {
   version: 1,
   showSecondColumn: null,
-  firstColumn: ["conflict-reference", "perform-task", "sta-utils"],
+  firstColumn: ["actionChooser", "perform-task", "sta-utils"],
   secondColumn: [],
+};
+
+const LEGACY_DEFAULT_LAYOUT = {
+  version: 1,
+  firstColumn: ["conflict-reference", "perform-task", "sta-utils"],
+};
+
+const PREVIOUS_DEFAULT_LAYOUT = {
+  version: 1,
+  firstColumn: ["incidental-npc-roll", "perform-task", "sta-utils"],
 };
 
 const GM_DEFAULT_SECOND_COLUMN = [
   "incidental-npc-roll",
-  "mission-manager",
-  "request-roll",
+  "ol-missionManager",
+  "dicePoolMonitor",
 ];
+
+const PLAYER_DEFAULT_SECOND_COLUMN = [
+  "attackCalculator",
+  "supportingBuilder",
+  "treknobabble",
+];
+
+const LEGACY_ACTION_ID_MAP = {
+  "conflict-reference": "actionChooser",
+  "mission-manager": "ol-missionManager",
+  "ol-newMission": "ol-missionManager",
+  "request-roll": "rollRequest",
+};
 
 const LOCKED_FIRST_COLUMN_SLOT_INDEX = 2;
 const LOCKED_FIRST_COLUMN_ACTION_ID = "sta-utils";
@@ -41,7 +69,9 @@ export function getTrackerMacroLayout() {
 
 function buildDefaultLayout() {
   const firstColumn = [...DEFAULT_LAYOUT.firstColumn];
-  const secondColumn = game.user?.isGM ? [...GM_DEFAULT_SECOND_COLUMN] : [];
+  const secondColumn = game.user?.isGM
+    ? [...GM_DEFAULT_SECOND_COLUMN]
+    : [...PLAYER_DEFAULT_SECOND_COLUMN];
 
   return {
     version: 1,
@@ -65,13 +95,21 @@ function normalizeLayout(raw) {
 
   const looksLikeDefaultLayout =
     raw?.version === DEFAULT_LAYOUT.version &&
-    [0, 1].every(
-      (idx) =>
-        String(firstRaw[idx] ?? "").trim() === DEFAULT_LAYOUT.firstColumn[idx],
-    ) &&
+    [0, 1].every((idx) => {
+      const value = String(firstRaw[idx] ?? "").trim();
+      const currentDefault = DEFAULT_LAYOUT.firstColumn[idx];
+      const legacyDefault = LEGACY_DEFAULT_LAYOUT.firstColumn[idx];
+      const previousDefault = PREVIOUS_DEFAULT_LAYOUT.firstColumn[idx];
+      return (
+        value === currentDefault ||
+        value === legacyDefault ||
+        value === previousDefault
+      );
+    }) &&
     String(firstRaw[LOCKED_FIRST_COLUMN_SLOT_INDEX] ?? "").trim() ===
       LOCKED_FIRST_COLUMN_ACTION_ID &&
-    secondRaw.length === 0;
+    (secondRaw.length === 0 ||
+      secondRaw.every((value) => !String(value ?? "").trim()));
 
   if (looksLikeDefaultLayout) {
     const defaultLayout = buildDefaultLayout();
@@ -79,12 +117,32 @@ function normalizeLayout(raw) {
     return defaultLayout;
   }
 
-  const firstColumn = [0, 1, 2].map((idx) =>
-    String(firstRaw[idx] ?? "").trim(),
-  );
+  const normalizeActionId = (value) => {
+    const clean = String(value ?? "").trim();
+    if (!clean) return "";
+    return LEGACY_ACTION_ID_MAP[clean] ?? clean;
+  };
+
+  const firstColumn = [0, 1, 2].map((idx) => normalizeActionId(firstRaw[idx]));
   const secondColumn = [0, 1, 2].map((idx) =>
-    String(secondRaw[idx] ?? "").trim(),
+    normalizeActionId(secondRaw[idx]),
   );
+
+  // "Keep Default" should always resolve to the module's preconfigured defaults.
+  const defaultLayout = buildDefaultLayout();
+  firstColumn[0] =
+    firstColumn[0] || String(defaultLayout.firstColumn?.[0] ?? "");
+  firstColumn[1] =
+    firstColumn[1] || String(defaultLayout.firstColumn?.[1] ?? "");
+
+  if (showSecondColumn) {
+    secondColumn[0] =
+      secondColumn[0] || String(defaultLayout.secondColumn?.[0] ?? "");
+    secondColumn[1] =
+      secondColumn[1] || String(defaultLayout.secondColumn?.[1] ?? "");
+    secondColumn[2] =
+      secondColumn[2] || String(defaultLayout.secondColumn?.[2] ?? "");
+  }
 
   firstColumn[LOCKED_FIRST_COLUMN_SLOT_INDEX] = LOCKED_FIRST_COLUMN_ACTION_ID;
 
@@ -97,18 +155,35 @@ function normalizeLayout(raw) {
 }
 
 function buildChoicesForTemplate() {
-  const trackerActions = getTrackerActions();
-  return [
-    {
-      label: t("sta-utils.trackerMacroButtons.form.builtInActions"),
-      options: trackerActions.map((action) => ({
+  const collator = new Intl.Collator(undefined, {
+    sensitivity: "base",
+    numeric: true,
+  });
+
+  const sectionChoices = getLauncherSectionsForCurrentUser().map((section) => {
+    const sortedItems = [...section.items].sort((a, b) =>
+      collator.compare(String(a?.label ?? ""), String(b?.label ?? "")),
+    );
+
+    return {
+      label: section.label,
+      options: sortedItems.map((action) => ({
         uuid: action.id,
         name: action.label,
         img: action.icon,
-        packTitle: "Built-in",
+        packTitle: section.label,
       })),
-    },
-  ];
+    };
+  });
+
+  return sectionChoices.length
+    ? sectionChoices
+    : [
+        {
+          label: t("sta-utils.trackerMacroButtons.form.builtInActions"),
+          options: [],
+        },
+      ];
 }
 
 function buildSlots(choices, selectedValues, labels, noneLabel) {
@@ -238,33 +313,33 @@ export class TrackerMacroButtonsConfig extends Base {
   }
 
   async _saveFormData(formData) {
-    const currentLayout = getTrackerMacroLayout();
+    const defaultLayout = buildDefaultLayout();
     const secondColumnValue =
       formData?.showSecondColumn ?? formData?.get?.("showSecondColumn");
 
-    const resolveSlotValue = (submittedValue, currentValue) => {
+    const resolveSlotValue = (submittedValue, defaultValue) => {
       const normalized = String(submittedValue ?? "").trim();
-      return normalized || String(currentValue ?? "").trim();
+      return normalized || String(defaultValue ?? "").trim();
     };
 
     const nextLayout = normalizeLayout({
       firstColumn: [
-        resolveSlotValue(formData.firstColumn1, currentLayout.firstColumn?.[0]),
-        resolveSlotValue(formData.firstColumn2, currentLayout.firstColumn?.[1]),
+        resolveSlotValue(formData.firstColumn1, defaultLayout.firstColumn?.[0]),
+        resolveSlotValue(formData.firstColumn2, defaultLayout.firstColumn?.[1]),
         LOCKED_FIRST_COLUMN_ACTION_ID,
       ],
       secondColumn: [
         resolveSlotValue(
           formData.secondColumn1,
-          currentLayout.secondColumn?.[0],
+          defaultLayout.secondColumn?.[0],
         ),
         resolveSlotValue(
           formData.secondColumn2,
-          currentLayout.secondColumn?.[1],
+          defaultLayout.secondColumn?.[1],
         ),
         resolveSlotValue(
           formData.secondColumn3,
-          currentLayout.secondColumn?.[2],
+          defaultLayout.secondColumn?.[2],
         ),
       ],
       showSecondColumn:

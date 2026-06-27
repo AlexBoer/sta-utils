@@ -6036,6 +6036,100 @@ input.selector.attribute.sta-fatigued-attribute {
   }
 }
 
+/* Tracker momentum/threat reference dialogs: keep a single LCARS visual treatment. */
+.sta-tracker-reference-dialog {
+  --sta-tracker-ref-accent: var(--lcars-orange, #f1a43c);
+  --lcars-chrome: var(--sta-tracker-ref-accent);
+  --lcars-titlebar: var(--sta-tracker-ref-accent);
+  width: min(360px, 96vw);
+  background: var(--lcars-bg, #000) !important;
+  border: 3px solid var(--sta-tracker-ref-accent) !important;
+  border-radius: 20px !important;
+  overflow: hidden;
+
+  &::before {
+    content: none !important;
+    display: none !important;
+  }
+
+  .window-header {
+    background: var(--sta-tracker-ref-accent) !important;
+    color: var(--lcars-text-dark, #000) !important;
+    font-family: var(--lcars-font-heading, "Antonio", sans-serif);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .window-header .window-title {
+    color: var(--lcars-text-dark, #000) !important;
+    font-family: var(--lcars-font-heading, "Antonio", sans-serif);
+  }
+
+  .window-content {
+    background: var(--lcars-bg, #000) !important;
+    color: var(--lcars-peach, #f0b872);
+    padding: 0.3rem 0.65rem 0.5rem;
+    border: none !important;
+    border-left: 0 !important;
+    outline: none !important;
+    background-image: none !important;
+    border-image: none !important;
+    box-shadow: none !important;
+  }
+
+  .window-content::before,
+  .window-content::after,
+  .standard-form::before,
+  .standard-form::after {
+    content: none !important;
+    display: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    background: none !important;
+  }
+
+  .standard-form {
+    border-left: 0 !important;
+    background-image: none !important;
+    border-image: none !important;
+    box-shadow: none !important;
+  }
+
+  .dialogue .title {
+    background: var(--sta-tracker-ref-accent) !important;
+    box-shadow: -6px 0 0 var(--sta-tracker-ref-accent) !important;
+    color: var(--lcars-text-dark, #000) !important;
+    margin: 0.2rem 0 0.15rem;
+    padding: 0.14rem 0.55rem;
+    line-height: 1.2;
+  }
+
+  .dialogue .tab {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 0.15rem !important;
+  }
+
+  .dialogue .row {
+    min-height: 32px;
+    padding: 2px 8px;
+    align-items: center;
+  }
+
+  .dialogue .tracktitle {
+    flex: 0 0 44%;
+    line-height: 1.05;
+  }
+
+  .dialogue .column.value {
+    flex: 1 1 auto;
+    text-align: left;
+    line-height: 1.15;
+  }
+}
+
 /* --- Breakthrough menu dialog --- */
 
 .sta-breakthrough-dialog {

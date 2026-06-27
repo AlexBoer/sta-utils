@@ -274,7 +274,7 @@ export function registerSettings() {
     default: {
       version: 1,
       showSecondColumn: null,
-      firstColumn: ["conflict-reference", "perform-task", "sta-utils"],
+      firstColumn: ["actionChooser", "perform-task", "sta-utils"],
       secondColumn: [],
     },
   });

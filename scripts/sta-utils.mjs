@@ -128,7 +128,15 @@ import {
   installTrackerLauncherButton,
 } from "./launcher/index.mjs";
 import { installTrackerMacroButtonsHook } from "./tracker-macro-buttons/index.mjs";
-import { installIncidentalNpcTrackerHook } from "./tracker-incidental-roll/index.mjs";
+import {
+  installIncidentalNpcTrackerHook,
+  openIncidentalNpcRollDialog,
+} from "./tracker-incidental-roll/index.mjs";
+import {
+  openTrackerReferenceDialog,
+  openTrackerMomentumReferenceDialog,
+  openTrackerThreatReferenceDialog,
+} from "./tracker-reference-dialogs/index.mjs";
 import { installItemImagePickerHook } from "./item-image-picker/index.mjs";
 import { installNpcLcarsImagePickerHook } from "./npc-image-picker/index.mjs";
 
@@ -632,6 +640,10 @@ Hooks.once("ready", async () => {
     npcBuilder: openNpcBuilder,
     supportingBuilder: openSupportingBuilder,
     rollRequest: isRollRequestEnabled() ? openRollRequestDialog : null,
+    incidentalNpcRoll: openIncidentalNpcRollDialog,
+    trackerReference: openTrackerReferenceDialog,
+    trackerMomentumReference: openTrackerMomentumReferenceDialog,
+    trackerThreatReference: openTrackerThreatReferenceDialog,
     rollForCasualties,
     openSceneTraits: openSceneTraitsSheet,
     openWorldTraits: openWorldTraitsSheet,

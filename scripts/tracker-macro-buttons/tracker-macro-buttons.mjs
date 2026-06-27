@@ -25,7 +25,7 @@ function createActionButton(action, slotClass) {
   btn.dataset.actionId = String(action?.id ?? "");
 
   const icon = document.createElement("i");
-  icon.className = `fas ${action?.icon ?? "fa-bolt"}`;
+  icon.className = String(action?.icon ?? "").trim() || "fa-solid fa-bolt";
   btn.appendChild(icon);
 
   btn.addEventListener("click", async (event) => {
@@ -88,11 +88,13 @@ function ensureColumns(iconContainer) {
 async function applyColumnCustomization(root, group, slotUuids, slotPrefix) {
   if (!group || !Array.isArray(slotUuids)) return;
 
+  const actions = getTrackerActions();
+
   for (let idx = 0; idx < 3; idx += 1) {
     const actionId = String(slotUuids[idx] ?? "").trim();
     if (!actionId) continue;
 
-    const action = getActionDefinition(actionId);
+    const action = actions.find((a) => a.id === actionId) ?? null;
     if (!action) continue;
 
     if (
