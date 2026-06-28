@@ -3,6 +3,32 @@ import { getTrackerMacroLayout, getTrackerActions } from "./settings-menu.mjs";
 import { invokeLauncherItemById } from "../launcher/index.mjs";
 
 const BUTTON_CLASS = "sta-utils-tracker-macro-btn";
+const TRACKER_MACRO_DEBUG_LOGS_SETTING = "trackerMacroDebugLogs";
+
+function isDebugLoggingEnabled() {
+  try {
+    return Boolean(
+      game.settings.get(MODULE_ID, TRACKER_MACRO_DEBUG_LOGS_SETTING),
+    );
+  } catch (_) {
+    return false;
+  }
+}
+
+function logTrackerDebug(event, payload = {}) {
+  if (!isDebugLoggingEnabled()) return;
+  try {
+    console.info(`${MODULE_ID} | tracker-macro-debug:${event}`, {
+      ts: Date.now(),
+      userId: game.user?.id ?? null,
+      userName: game.user?.name ?? null,
+      isGM: Boolean(game.user?.isGM),
+      ...payload,
+    });
+  } catch (_) {
+    // debugging only
+  }
+}
 
 function isTrackerApp(app, root) {
   const ctorName = String(app?.constructor?.name ?? "");
@@ -136,19 +162,19 @@ function ensureSecondColumn(columns, layout) {
     : [];
 
   if (!secondGroup) {
-    secondGroup = createActionGroup(
-      actions,
-      "sta-tracker-button-group sta-utils-tracker-second-column-group",
-    );
+    secondGroup = document.createElement("div");
+    secondGroup.className =
+      "sta-tracker-button-group sta-utils-tracker-second-column-group";
     columns.appendChild(secondGroup);
   } else {
     secondGroup.innerHTML = "";
-    actions.forEach((action, idx) => {
-      secondGroup.appendChild(
-        createActionButton(action, `sta-utils-tracker-second-slot-${idx + 1}`),
-      );
-    });
   }
+
+  actions.forEach((action, idx) => {
+    secondGroup.appendChild(
+      createActionButton(action, `sta-utils-tracker-second-slot-${idx + 1}`),
+    );
+  });
 
   return secondGroup;
 }
@@ -187,7 +213,25 @@ async function customizeTrackerButtons(root) {
   const iconContainer = row.querySelector?.(":scope > .icon-container");
   if (!iconContainer) return;
 
+  const nativeButtonsBefore = Array.from(
+    iconContainer.querySelectorAll(":scope > .button"),
+  ).map((btn) => ({
+    className: btn.className,
+    title: btn.getAttribute("title") ?? null,
+    actionId: btn.dataset?.actionId ?? null,
+    iconClass: btn.querySelector("i")?.className ?? null,
+  }));
+
   const layout = getTrackerMacroLayout();
+  const trackerActions = getTrackerActions();
+  const trackerActionIds = new Set(trackerActions.map((a) => a.id));
+  const unresolvedFirst = (layout.firstColumn ?? [])
+    .map((id) => String(id ?? "").trim())
+    .filter((id) => id && !trackerActionIds.has(id));
+  const unresolvedSecond = (layout.secondColumn ?? [])
+    .map((id) => String(id ?? "").trim())
+    .filter((id) => id && !trackerActionIds.has(id));
+
   root.dataset.staUtilsSecondColumn = layout.showSecondColumn
     ? "true"
     : "false";
@@ -201,6 +245,32 @@ async function customizeTrackerButtons(root) {
   );
 
   ensureSecondColumn(columns, layout);
+
+  const groups = Array.from(
+    columns.querySelectorAll(":scope > .sta-tracker-button-group"),
+  ).map((group) => ({
+    className: group.className,
+    buttonCount: group.querySelectorAll(":scope > .button").length,
+    buttons: Array.from(group.querySelectorAll(":scope > .button")).map(
+      (btn) => ({
+        className: btn.className,
+        title: btn.getAttribute("title") ?? null,
+        actionId: btn.dataset?.actionId ?? null,
+        iconClass: btn.querySelector("i")?.className ?? null,
+      }),
+    ),
+  }));
+
+  logTrackerDebug("render", {
+    layout,
+    unresolvedFirst,
+    unresolvedSecond,
+    availableTrackerActionCount: trackerActions.length,
+    availableTrackerActionIds: trackerActions.map((a) => a.id),
+    nativeButtonsBefore,
+    groups,
+    dataSecondColumnFlag: root.dataset.staUtilsSecondColumn ?? null,
+  });
 }
 
 let _hookInstalled = false;

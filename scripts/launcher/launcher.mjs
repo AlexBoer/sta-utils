@@ -459,13 +459,11 @@ export function getLauncherSectionsForTracker() {
   for (const sectionDef of LAUNCHER_SECTIONS) {
     if (!_isSectionActive(sectionDef)) continue;
 
-    const items = sectionDef.items
-      .filter((item) => item.available())
-      .map((item) => ({
-        id: item.id,
-        label: t(item.labelKey),
-        icon: _normalizeFaIconClass(item.icon),
-      }));
+    const items = sectionDef.items.map((item) => ({
+      id: item.id,
+      label: t(item.labelKey),
+      icon: _normalizeFaIconClass(item.icon),
+    }));
 
     if (!items.length) continue;
 

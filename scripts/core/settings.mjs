@@ -28,6 +28,7 @@ const SETTING_TRAIT_TOKENS = "enableTraitTokens";
 const SETTING_TRAIT_TOKEN_AUTO_LAYER = "traitTokenAutoLayerSwitch";
 const SETTING_WORLD_TRAITS_ACTOR_UUID = "worldTraitsActorUuid";
 const SETTING_TRACKER_MACRO_MENU = "trackerMacroButtonsConfig";
+const TRACKER_MACRO_DEBUG_LOGS_SETTING = "trackerMacroDebugLogs";
 const GROUP_SHIP_ACTOR_SETTING = "groupShipActorId";
 const ENABLE_EXTENDED_TASK_TRACKER_SETTING = "enableExtendedTaskTracker";
 const NPC_BUILDER_SPECIAL_RULES_PACK_SETTING = "npcBuilderSpecialRulesPack";
@@ -277,6 +278,14 @@ export function registerSettings() {
       firstColumn: ["actionChooser", "perform-task", "sta-utils"],
       secondColumn: [],
     },
+  });
+
+  // Hidden world setting used only for staging diagnostics.
+  game.settings.register(MODULE_ID, TRACKER_MACRO_DEBUG_LOGS_SETTING, {
+    scope: "world",
+    config: false,
+    type: Boolean,
+    default: false,
   });
 
   game.settings.registerMenu(MODULE_ID, SETTING_TRACKER_MACRO_MENU, {

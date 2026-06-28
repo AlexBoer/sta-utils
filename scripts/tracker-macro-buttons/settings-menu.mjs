@@ -113,7 +113,7 @@ function normalizeLayout(raw) {
 
   if (looksLikeDefaultLayout) {
     const defaultLayout = buildDefaultLayout();
-    defaultLayout.showSecondColumn = showSecondColumn;
+    defaultLayout.showSecondColumn = game.user?.isGM ? showSecondColumn : false;
     return defaultLayout;
   }
 
