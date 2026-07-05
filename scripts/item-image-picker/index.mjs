@@ -1,1 +1,4 @@
-export { installItemImagePickerHook } from "./sheet-hook.mjs";
+export {
+  installDefaultItemImageHook,
+  installItemImagePickerHook,
+} from "./sheet-hook.mjs";

@@ -15,6 +15,7 @@ import {
   isActionChooserEnabled,
   isActionChooserAsTabEnabled,
   isPersonalThreatEnabled,
+  shouldShowItemEditButtons,
 } from "../core/settings.mjs";
 import { MODULE_ID } from "../core/constants.mjs";
 import {
@@ -121,6 +122,12 @@ function handleMobileSheetRender(app, root) {
   const actor = app.actor;
   if (!actor || actor.type !== "character") return;
 
+  try {
+    applyItemEditButtonMode(root);
+  } catch (_) {
+    // ignore
+  }
+
   if (isFatigueEnabled()) {
     try {
       installFatiguedAttributeDisplay(root, actor);
@@ -165,6 +172,12 @@ function handleLcarsSheetRender(app, root) {
     return;
   try {
     installLcarsSheetMode(app, root);
+  } catch (_) {
+    // ignore
+  }
+
+  try {
+    applyItemEditButtonMode(root);
   } catch (_) {
     // ignore
   }
@@ -534,6 +547,12 @@ function handleCharacterSheetRender(app, root) {
   const actor = app.actor;
   if (!actor || (actor.type !== "character" && actor.type !== "npc")) return;
 
+  try {
+    applyItemEditButtonMode(root);
+  } catch (_) {
+    // ignore
+  }
+
   const isNpcOnNpcSheet = app?.id?.startsWith("STANPCSheet2e");
 
   if (isNpcOnNpcSheet && isPersonalThreatEnabled()) {
@@ -634,6 +653,76 @@ function handleCharacterSheetRender(app, root) {
         // ignore
       }
     }
+  }
+}
+
+/**
+ * Toggle CSS mode that reveals native item edit controls on sheet rows.
+ *
+ * @param {HTMLElement} root
+ */
+function applyItemEditButtonMode(root) {
+  const show = shouldShowItemEditButtons();
+  const selector = ".character-sheet, .starship-sheet, .smallcraft-sheet";
+  const sheets = [];
+  if (root?.matches?.(selector)) sheets.push(root);
+  for (const el of root?.querySelectorAll?.(selector) ?? []) sheets.push(el);
+  if (!sheets.length) return;
+  for (const sheet of sheets) {
+    sheet.classList.toggle("sta-utils-show-item-edit-buttons", show);
+  }
+}
+
+/**
+ * Adds a right-side edit button to each item row when enabled in client settings.
+ * The button opens the item's sheet directly.
+ *
+ * @param {HTMLElement} root
+ * @param {Actor} actor
+ */
+function installInlineItemEditButtons(root, actor) {
+  // Remove previously injected buttons on re-render.
+  root
+    ?.querySelectorAll?.(".control.sta-utils-inline-item-edit")
+    ?.forEach?.((el) => el.remove());
+
+  if (!shouldShowItemEditButtons()) return;
+
+  const rows = root?.querySelectorAll?.(".row.entry[data-item-id]");
+  if (!rows?.length) return;
+
+  for (const row of rows) {
+    const itemId = String(row?.dataset?.itemId ?? "");
+    if (!itemId) continue;
+
+    const item = actor?.items?.get?.(itemId);
+    if (!item?.sheet) continue;
+
+    // If a native edit control is already visible, don't add a duplicate.
+    const nativeEdit = row.querySelector?.(
+      '.control .edit[data-action="onItemEdit"]',
+    );
+    if (nativeEdit && nativeEdit.offsetParent !== null) continue;
+
+    const control = document.createElement("div");
+    control.className = "control sta-utils-inline-item-edit";
+
+    const button = document.createElement("a");
+    button.className = "edit sta-utils-inline-item-edit-btn";
+    button.href = "#";
+    button.title = t("sta-utils.compactMenu.editItem");
+    button.setAttribute("aria-label", t("sta-utils.compactMenu.editItem"));
+    button.innerHTML = '<i class="fas fa-edit"></i>';
+
+    button.addEventListener("click", async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      await item.sheet.render(true);
+      item.sheet.bringToFront?.();
+    });
+
+    control.appendChild(button);
+    row.appendChild(control);
   }
 }
 

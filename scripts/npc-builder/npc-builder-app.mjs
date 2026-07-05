@@ -213,6 +213,17 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         if (!required || !selected) return false;
         return selected === required || selected.includes(required);
       }
+      case "npc": {
+        const required = this._normalizeRequirementString(
+          item.requirementDescription,
+        );
+        if (!required) return true;
+        const selected = this._normalizeRequirementString(
+          this._wizardState.species,
+        );
+        if (!selected) return false;
+        return selected === required || selected.includes(required);
+      }
       default:
         return true;
     }
@@ -1078,12 +1089,35 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
   }
 
   _setupSpecialRulesStep(html) {
+    const applySearchFilter = () => {
+      const query = String(this._wizardState.specialRulesSearch ?? "")
+        .trim()
+        .toLowerCase();
+      const rows = html.querySelectorAll(".npc-special-rule-row");
+      let visibleCount = 0;
+      for (const row of rows) {
+        const name =
+          row.querySelector(".npc-equip-name")?.textContent?.toLowerCase() ??
+          "";
+        const match = query.length === 0 || name.includes(query);
+        row.hidden = !match;
+        if (match) visibleCount += 1;
+      }
+
+      const noMatchesHint = html.querySelector(
+        ".npc-special-rules-no-search-matches",
+      );
+      if (noMatchesHint) noMatchesHint.hidden = visibleCount > 0;
+    };
+
     html
       .querySelector(".npc-special-rules-search")
       ?.addEventListener("input", (e) => {
         this._wizardState.specialRulesSearch = e.target.value;
-        this.render();
+        applySearchFilter();
       });
+
+    applySearchFilter();
 
     html
       .querySelector(".npc-special-rules-filter-npc")

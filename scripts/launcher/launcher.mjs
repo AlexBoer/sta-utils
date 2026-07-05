@@ -50,6 +50,7 @@ const LAUNCHER_SECTIONS = [
   {
     id: "sta-utils",
     labelKey: "sta-utils.launcher.section.staUtils",
+    label: "STA Utilities",
     moduleId: null,
     items: [
       {
@@ -131,6 +132,14 @@ const LAUNCHER_SECTIONS = [
         gmOnly: true,
         available: () => !!game.staUtils?.npcBuilder,
         call: () => game.staUtils.npcBuilder(),
+      },
+      {
+        id: "characterBrowser",
+        labelKey: "sta-utils.launcher.characterBrowser",
+        icon: "fa-address-book",
+        gmOnly: false,
+        available: () => !!game.staUtils?.characterBrowser,
+        call: () => game.staUtils.characterBrowser(),
       },
       {
         id: "crewManifest",
@@ -259,9 +268,10 @@ const LAUNCHER_SECTIONS = [
       {
         id: "ol-missionManager",
         labelKey: "sta-utils.launcher.ol.missionManager",
+        label: "Mission Manager",
         icon: "fa-flag",
         img: `${OL_ASSET_BASE}/newMission.webp`,
-        gmOnly: true,
+        gmOnly: false,
         available: () => !!game.staofficerslog?.openMissionManager,
         call: () => game.staofficerslog.openMissionManager(),
       },
@@ -324,6 +334,7 @@ const LAUNCHER_SECTIONS = [
 
   // ── Tactical Campaign ──────────────────────────────────────────────────────
   {
+    label: "Officers Log",
     id: "sta-tactical-campaign",
     labelKey: "sta-utils.launcher.section.tacticalCampaign",
     moduleId: "sta-tactical-campaign",
@@ -432,7 +443,7 @@ export function getLauncherSectionsForCurrentUser() {
       )
       .map((item) => ({
         id: item.id,
-        label: t(item.labelKey),
+        label: item.label ?? t(item.labelKey),
         icon: _normalizeFaIconClass(item.icon),
       }));
 
@@ -440,7 +451,7 @@ export function getLauncherSectionsForCurrentUser() {
 
     sections.push({
       id: sectionDef.id,
-      label: t(sectionDef.labelKey),
+      label: sectionDef.label ?? t(sectionDef.labelKey),
       items,
     });
   }
@@ -461,7 +472,7 @@ export function getLauncherSectionsForTracker() {
 
     const items = sectionDef.items.map((item) => ({
       id: item.id,
-      label: t(item.labelKey),
+      label: item.label ?? t(item.labelKey),
       icon: _normalizeFaIconClass(item.icon),
     }));
 
@@ -587,7 +598,7 @@ class LauncherApp extends Base {
 
       sections.push({
         id: sectionDef.id,
-        label: t(sectionDef.labelKey),
+        label: sectionDef.label ?? t(sectionDef.labelKey),
         items,
         columns: columnsForCount(items.length),
       });
@@ -624,7 +635,7 @@ class LauncherApp extends Base {
           JSON.stringify({
             type: "Macro",
             data: {
-              name: t(item.labelKey),
+              name: item.label ?? t(item.labelKey),
               type: "script",
               command,
               img: item.img ?? "icons/svg/dice-target.svg",

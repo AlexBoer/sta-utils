@@ -4,5 +4,6 @@ export {
   installAmbientAudioSelectionListenerPatch,
   setPlayerAmbientAudioSelectionOnlyEnabled,
 } from "./ambient-audio-patch.mjs";
+export { installPinCushionNoteIconCompatPatch } from "./pin-cushion-note-icon-compat.mjs";
 export { installMacroActorImageHook } from "./macro-actor-image.mjs";
 export { installQuickInsertItemTypeTaglinePatch } from "./quick-insert-item-type-tagline.mjs";

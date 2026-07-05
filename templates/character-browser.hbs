@@ -1,0 +1,203 @@
+<div class="sta-character-browser">
+  <form class="sta-character-browser-filters">
+    <div class="sta-character-browser-filter-grid">
+      <div class="sta-character-browser-filter-row sta-character-browser-filter-row--top">
+        <label>
+          <span>{{localize "sta-utils.characterBrowser.filter.layout"}}</span>
+          <select name="layout">
+            {{#each layoutOptions}}
+            <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+            {{/each}}
+          </select>
+        </label>
+
+        <label>
+          <span>{{localize "sta-utils.characterBrowser.filter.search"}}</span>
+          <input type="text" name="search" value="{{filters.search}}" placeholder="{{localize "sta-utils.characterBrowser.filter.searchPlaceholder"}}" />
+        </label>
+
+        <label>
+          <span>{{localize "sta-utils.characterBrowser.filter.source"}}</span>
+          <select name="source">
+            {{#each sourceOptions}}
+            <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+            {{/each}}
+          </select>
+        </label>
+
+        <label>
+          <span>{{localize "sta-utils.characterBrowser.filter.species"}}</span>
+          <input
+            type="text"
+            name="species"
+            value="{{filters.species}}"
+            list="sta-character-browser-species-options"
+            placeholder="{{localize "sta-utils.characterBrowser.filter.anySpecies"}}"
+          />
+        </label>
+
+        <label>
+          <span>{{localize "sta-utils.characterBrowser.filter.characterType"}}</span>
+          <select name="characterType">
+            {{#each characterTypeOptions}}
+            <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+            {{/each}}
+          </select>
+        </label>
+      </div>
+
+      <div class="sta-character-browser-filter-row sta-character-browser-filter-row--stats">
+        <label>
+          <span>{{localize "sta-utils.characterBrowser.filter.attribute"}}</span>
+          <select name="attributeKey">
+            {{#each attributeOptions}}
+            <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+            {{/each}}
+          </select>
+        </label>
+
+        <label class="sta-character-browser-filter-small">
+          <span>{{localize "sta-utils.characterBrowser.filter.min"}}</span>
+          <input type="number" name="attributeMin" value="{{filters.attributeMin}}" min="0" step="1" />
+        </label>
+
+        <label class="sta-character-browser-filter-small">
+          <span>{{localize "sta-utils.characterBrowser.filter.max"}}</span>
+          <input type="number" name="attributeMax" value="{{filters.attributeMax}}" min="0" step="1" />
+        </label>
+
+        <label>
+          <span>{{localize "sta-utils.characterBrowser.filter.discipline"}}</span>
+          <select name="disciplineKey">
+            {{#each disciplineOptions}}
+            <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+            {{/each}}
+          </select>
+        </label>
+
+        <label class="sta-character-browser-filter-small">
+          <span>{{localize "sta-utils.characterBrowser.filter.min"}}</span>
+          <input type="number" name="disciplineMin" value="{{filters.disciplineMin}}" min="0" step="1" />
+        </label>
+
+        <label class="sta-character-browser-filter-small">
+          <span>{{localize "sta-utils.characterBrowser.filter.max"}}</span>
+          <input type="number" name="disciplineMax" value="{{filters.disciplineMax}}" min="0" step="1" />
+        </label>
+      </div>
+
+      <div class="sta-character-browser-filter-row sta-character-browser-filter-row--threat">
+        <label class="sta-character-browser-filter-small">
+          <span>{{localize "sta-utils.characterBrowser.filter.personalThreatMin"}}</span>
+          <input type="number" name="threatMin" value="{{filters.threatMin}}" min="0" step="1" />
+        </label>
+
+        <label class="sta-character-browser-filter-small">
+          <span>{{localize "sta-utils.characterBrowser.filter.personalThreatMax"}}</span>
+          <input type="number" name="threatMax" value="{{filters.threatMax}}" min="0" step="1" />
+        </label>
+      </div>
+    </div>
+
+    <datalist id="sta-character-browser-species-options">
+      {{#each speciesOptions}}
+      {{#if value}}
+      <option value="{{value}}"></option>
+      {{/if}}
+      {{/each}}
+    </datalist>
+
+    <div class="sta-character-browser-filter-actions">
+      <button type="button" class="npc-builder-btn npc-builder-btn--ghost" data-action="reset-filters">
+        {{localize "sta-utils.characterBrowser.filter.reset"}}
+      </button>
+      <button type="button" class="npc-builder-btn npc-builder-btn--ghost" data-action="refresh-sources">
+        {{localize "sta-utils.characterBrowser.filter.refresh"}}
+      </button>
+      <span class="sta-character-browser-count">
+        <span data-role="count-visible">{{visibleCount}}</span> / <span data-role="count-total">{{totalCount}}</span> {{localize "sta-utils.characterBrowser.filter.results"}}
+      </span>
+    </div>
+  </form>
+
+  {{#if hasResults}}
+  {{#if isCompactLayout}}
+  <div class="sta-character-browser-list sta-character-browser-list--compact">
+    {{#each records}}
+    <article
+      class="sta-character-browser-card sta-character-browser-card--compact"
+      data-open-sheet="true"
+      data-source-type="{{sourceType}}"
+      data-source-id="{{sourceId}}"
+      data-actor-id="{{actorId}}"
+      data-search-text="{{name}} {{species}} {{sourceLabel}} {{characterTypeLabel}}"
+      role="button"
+      tabindex="0"
+      aria-label="{{localize "sta-utils.characterBrowser.openSheet"}}: {{name}}"
+    >
+      <img src="{{portrait}}" alt="{{name}}" class="sta-character-browser-portrait sta-character-browser-portrait--compact" loading="lazy" decoding="async" fetchpriority="low" />
+      <div class="sta-character-browser-compact-main">
+        <h3>{{name}}</h3>
+        <span><strong>{{localize "sta-utils.characterBrowser.label.species"}}:</strong> {{#if species}}{{species}}{{else}}-{{/if}}</span>
+        <span><strong>{{localize "sta-utils.characterBrowser.label.characterType"}}:</strong> {{characterTypeLabel}}</span>
+      </div>
+    </article>
+    {{/each}}
+  </div>
+  {{/if}}
+
+  {{#if isDetailedLayout}}
+  <div class="sta-character-browser-list">
+    {{#each records}}
+    <article class="sta-character-browser-card" data-search-text="{{name}} {{species}} {{sourceLabel}} {{characterTypeLabel}}">
+      <img src="{{portrait}}" alt="{{name}}" class="sta-character-browser-portrait" loading="lazy" decoding="async" fetchpriority="low" />
+      <div class="sta-character-browser-main">
+        <header class="sta-character-browser-header">
+          <h3>{{name}}</h3>
+          <button
+            type="button"
+            class="npc-builder-btn npc-builder-btn--primary sta-character-browser-open"
+            data-source-type="{{sourceType}}"
+            data-source-id="{{sourceId}}"
+            data-actor-id="{{actorId}}"
+          >
+            {{localize "sta-utils.characterBrowser.openSheet"}}
+          </button>
+        </header>
+
+        <div class="sta-character-browser-meta">
+          <span><strong>{{localize "sta-utils.characterBrowser.label.source"}}:</strong> {{sourceLabel}}</span>
+          <span><strong>{{localize "sta-utils.characterBrowser.label.species"}}:</strong> {{#if species}}{{species}}{{else}}-{{/if}}</span>
+          <span><strong>{{localize "sta-utils.characterBrowser.label.characterType"}}:</strong> {{characterTypeLabel}}</span>
+          <span><strong>{{localize "sta-utils.characterBrowser.label.personalThreat"}}:</strong> {{personalThreat}}</span>
+        </div>
+
+        <div class="sta-character-browser-stats">
+          <div>
+            <strong>{{localize "sta-utils.characterBrowser.label.attributes"}}:</strong>
+            <span>{{attributeSummary}}</span>
+          </div>
+          <div>
+            <strong>{{localize "sta-utils.characterBrowser.label.disciplines"}}:</strong>
+            <span>{{disciplineSummary}}</span>
+          </div>
+        </div>
+      </div>
+    </article>
+    {{/each}}
+  </div>
+  {{/if}}
+  {{else}}
+  {{#if loading}}
+  <div class="sta-character-browser-empty">
+    <i class="fa-solid fa-spinner fa-spin"></i>
+    <p>{{localize "SETTINGS.Loading"}}</p>
+  </div>
+  {{else}}
+  <div class="sta-character-browser-empty">
+    <i class="fa-solid fa-user-slash"></i>
+    <p>{{localize "sta-utils.characterBrowser.empty"}}</p>
+  </div>
+  {{/if}}
+  {{/if}}
+</div>

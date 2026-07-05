@@ -17,6 +17,7 @@
         "standalone": "Other Features",
         "itemImagePicker": "Item Image Picker",
         "npcBuilder": "NPC Builder",
+        "characterBrowser": "Character Browser",
         "trackerButtons": "Tracker Buttons",
         "personalThreat": "Personal Threat",
         "rollRequest": "Roll Request",
@@ -64,6 +65,10 @@
       "npcBuilderSpecialRulesPack": {
         "name": "NPC Builder — Special Rules Compendium",
         "hint": "Compendium pack IDs to use for special rules. Enter one per line (e.g. \"world.my-talents\" or \"module.my-module.talents\"). When empty, the NPC Builder shows manual name/description fields instead."
+      },
+      "characterBrowserSourcePacks": {
+        "name": "Character Browser - Source Compendiums",
+        "hint": "Actor compendium pack IDs available as Character Browser sources. Add one or more actor packs; world actors are always included."
       },
       "enablePersonalThreat": {
         "name": "Enable Personal Threat Dots",
@@ -129,6 +134,10 @@
       "disableTooltips": {
         "name": "Disable Item Tooltips",
         "hint": "Hide the item description tooltip popups that appear when hovering over item names on actor sheets."
+      },
+      "showItemEditButtons": {
+        "name": "Show Item Edit Buttons on Character Sheets",
+        "hint": "Add a right-side edit button to each listed item row on character sheets. The button opens that item's sheet."
       },
       "enableActionChooser": {
         "name": "Enable Conflict Actions Window",
@@ -1391,7 +1400,7 @@
       }
     },
     "compactMenu": {
-      "editItem": "Edit",
+      "editItem": "View and Edit",
       "deleteItem": "Delete",
       "chatItem": "Send to Chat"
     },
@@ -1524,6 +1533,57 @@
     "injured": "Injured",
     "killed": "Killed"
   },
+  "characterBrowser": {
+      "title": "Character Browser",
+      "unnamed": "Unnamed Character",
+      "openSheet": "Open Sheet",
+      "empty": "No characters matched your filters.",
+      "source": {
+        "world": "World Actors"
+      },
+      "type": {
+        "character": "Character",
+        "main": "Main Character",
+        "supporting": "Supporting Character",
+        "npc": "NPC ({subType})"
+      },
+      "npcType": {
+        "incidental": "Incidental",
+        "quick": "Quick"
+      },
+      "label": {
+        "source": "Source",
+        "species": "Species",
+        "characterType": "Character Type",
+        "personalThreat": "Personal Threat",
+        "attributes": "Attributes",
+        "disciplines": "Disciplines"
+      },
+      "filter": {
+        "layout": "Layout",
+        "layoutDetailed": "Detailed",
+        "layoutCompact": "Compact",
+        "search": "Search",
+        "searchPlaceholder": "Search by name, species, or source",
+        "source": "Source",
+        "allSources": "All Sources",
+        "species": "Species",
+        "anySpecies": "Any Species",
+        "characterType": "Character Type",
+        "anyCharacterType": "Any Character Type",
+        "attribute": "Attribute",
+        "anyAttribute": "Any Attribute",
+        "discipline": "Discipline",
+        "anyDiscipline": "Any Discipline",
+        "min": "Min",
+        "max": "Max",
+        "personalThreatMin": "Personal Threat Min",
+        "personalThreatMax": "Personal Threat Max",
+        "reset": "Reset Filters",
+        "refresh": "Refresh Sources",
+        "results": "results"
+      }
+    },
   "launcher": {
       "title": "STA Utilities",
       "stardateCalculator": "Stardate Calculator",
@@ -1535,6 +1595,7 @@
       "treknobabble": "Treknobabble",
       "medicalbabble": "Medicalbabble",
       "npcBuilder": "Create NPC",
+      "characterBrowser": "Character Browser",
       "crewManifest": "Crew Manifest",
       "dicePoolMonitor": "Dice Pool Monitor",
       "noteStyler": "Note Styler",

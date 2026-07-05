@@ -76,6 +76,7 @@ import { actionChooser } from "./action-chooser/index.mjs";
 import {
   installMacroActorImageHook,
   installAmbientAudioSelectionListenerPatch,
+  installPinCushionNoteIconCompatPatch,
   installQuickInsertItemTypeTaglinePatch,
 } from "./misc/index.mjs";
 
@@ -107,6 +108,7 @@ import { triggerManualShaken } from "./shaken/index.mjs";
 import { initExtendedTaskTracker } from "./extended-task-tracker/index.mjs";
 
 import { openNpcBuilder } from "./npc-builder/index.mjs";
+import { openCharacterBrowser } from "./character-browser/index.mjs";
 import { openSupportingBuilder } from "./supporting-builder/index.mjs";
 import { rollForCasualties } from "./casualties/casualties.mjs";
 
@@ -137,7 +139,10 @@ import {
   openTrackerMomentumReferenceDialog,
   openTrackerThreatReferenceDialog,
 } from "./tracker-reference-dialogs/index.mjs";
-import { installItemImagePickerHook } from "./item-image-picker/index.mjs";
+import {
+  installDefaultItemImageHook,
+  installItemImagePickerHook,
+} from "./item-image-picker/index.mjs";
 import { installNpcLcarsImagePickerHook } from "./npc-image-picker/index.mjs";
 
 import {
@@ -382,6 +387,7 @@ Hooks.once("init", () => {
     `modules/${MODULE_ID}/templates/supporting-builder.hbs`,
     `modules/${MODULE_ID}/templates/incidental-npc-roll-dialog.hbs`,
     `modules/${MODULE_ID}/templates/item-image-picker.hbs`,
+    `modules/${MODULE_ID}/templates/character-browser.hbs`,
   ]);
 
   // --- Mobile sheet registration ---
@@ -499,6 +505,7 @@ Hooks.once("init", () => {
   installTalentUsesSheetHook();
   installTalentItemSheetHook();
   installTalentTypeExtensionHook();
+  installDefaultItemImageHook();
   installItemImagePickerHook();
   installNpcLcarsImagePickerHook();
   installRenderApplicationV2Hook();
@@ -511,6 +518,7 @@ Hooks.once("init", () => {
   }
   installMacroActorImageHook();
   installAmbientAudioSelectionListenerPatch();
+  installPinCushionNoteIconCompatPatch();
   registerNoteStylerHooks();
 
   // --- Talent Automations ---
@@ -638,6 +646,7 @@ Hooks.once("ready", async () => {
     actionChooser,
     dicePool: dicePoolApi,
     npcBuilder: openNpcBuilder,
+    characterBrowser: openCharacterBrowser,
     supportingBuilder: openSupportingBuilder,
     rollRequest: isRollRequestEnabled() ? openRollRequestDialog : null,
     incidentalNpcRoll: openIncidentalNpcRollDialog,

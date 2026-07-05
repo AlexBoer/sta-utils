@@ -56,6 +56,16 @@ const DEFAULT_STYLE = {
 };
 
 /**
+ * Normalize icon alpha to a finite 0..1 number.
+ * Invalid values fall back to the provided default.
+ */
+function normalizeIconAlpha(value, fallback = 1) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(0, Math.min(1, n));
+}
+
+/**
  * Read our style flags from a note document, using dual-read:
  * check sta-utils first, fall back to sta-officers-log for backward compatibility.
  * @param {NoteDocument} doc
@@ -83,7 +93,7 @@ function getCurrentStyle(note) {
     fontSize: doc?.fontSize || DEFAULT_STYLE.fontSize,
     fill: doc?.textColor || DEFAULT_STYLE.fill,
     iconTint: doc?.texture?.tint || DEFAULT_STYLE.iconTint,
-    iconAlpha: saved.iconAlpha ?? DEFAULT_STYLE.iconAlpha,
+    iconAlpha: normalizeIconAlpha(saved.iconAlpha, DEFAULT_STYLE.iconAlpha),
   };
 
   // Get Pin Cushion vertical offset if available
@@ -171,7 +181,7 @@ function applyStyleVisually(note, style) {
 
   // Apply icon opacity
   if (style.iconAlpha !== undefined) {
-    const alpha = Number(style.iconAlpha) ?? 1;
+    const alpha = normalizeIconAlpha(style.iconAlpha, 1);
     note.tooltip.alpha = alpha;
     if (note.controlIcon) note.controlIcon.alpha = alpha;
   }
@@ -276,7 +286,7 @@ function setupNoteHoverListeners(note) {
 
   // Cache the alpha value from flags to avoid slow flag reads on hover (dual-read)
   const saved = readStyleFlags(note?.document);
-  const savedAlpha = saved.iconAlpha ?? 1;
+  const savedAlpha = normalizeIconAlpha(saved.iconAlpha, 1);
 
   // Store it on the note for quick access
   note._noteStylerAlpha = savedAlpha;
@@ -288,7 +298,7 @@ function setupNoteHoverListeners(note) {
   }
 
   const onHoverIn = () => {
-    const alpha = note._noteStylerAlpha ?? 1;
+    const alpha = normalizeIconAlpha(note._noteStylerAlpha, 1);
     const noteId = note.document?.id;
     if (noteId) hoveredNotes.add(noteId);
 
@@ -299,7 +309,7 @@ function setupNoteHoverListeners(note) {
   };
 
   const onHoverOut = () => {
-    const alpha = note._noteStylerAlpha ?? 1;
+    const alpha = normalizeIconAlpha(note._noteStylerAlpha, 1);
     const noteId = note.document?.id;
     if (noteId) hoveredNotes.delete(noteId);
 
@@ -329,7 +339,7 @@ function reapplySavedStyle(note) {
     applyStyleVisually(note, currentStyle);
 
     // If this note is currently hovered, restore full opacity
-    const savedAlpha = saved.iconAlpha ?? 1;
+    const savedAlpha = normalizeIconAlpha(saved.iconAlpha, 1);
     const noteId = note.document?.id;
     if (noteId && hoveredNotes.has(noteId) && savedAlpha < 1) {
       if (note.tooltip) note.tooltip.alpha = 1;
@@ -445,7 +455,7 @@ function extractStyleFromElement(element) {
     ),
     iconAlpha: getIfChecked(
       "iconAlpha",
-      Number(data.iconAlpha) ?? DEFAULT_STYLE.iconAlpha,
+      normalizeIconAlpha(data.iconAlpha, DEFAULT_STYLE.iconAlpha),
       DEFAULT_STYLE.iconAlpha,
     ),
   };

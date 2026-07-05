@@ -454,7 +454,10 @@ const REQUIREMENT_TYPE_LABELS = {
   attribute: "Attribute",
   discipline: "Discipline",
   species: "Species",
+  npc: "NPC Species",
 };
+
+const NPC_REQUIREMENT_FLAG_MODULE_KEYS = ["sta-officers-log", MODULE_ID];
 
 function _normalizeRequirementString(value) {
   return String(value ?? "")
@@ -472,9 +475,24 @@ function _resolveDisciplineLabel(value) {
   return DISCIPLINE_LABELS[key] ?? value ?? "";
 }
 
+function _getNpcSpeciesRequirementFromDoc(doc) {
+  for (const moduleKey of NPC_REQUIREMENT_FLAG_MODULE_KEYS) {
+    const species = String(
+      foundry.utils.getProperty(
+        doc,
+        `flags.${moduleKey}.npcRequirement.species`,
+      ) ?? "",
+    ).trim();
+    if (species) return species;
+  }
+  return "";
+}
+
 function _buildRequirementLabel(talentType) {
   const type = _normalizeRequirementString(talentType?.typeenum);
-  if (!["attribute", "discipline", "species"].includes(type)) return "";
+  if (!["attribute", "discipline", "species", "npc"].includes(type)) {
+    return "";
+  }
 
   const rawDescription = String(talentType?.description ?? "").trim();
   const minimum = Number.isFinite(Number(talentType?.minimum))
@@ -491,6 +509,12 @@ function _buildRequirementLabel(talentType) {
     const discLabel = _resolveDisciplineLabel(rawDescription);
     const suffix = minimum != null ? ` ${minimum}+` : "";
     return `Requires ${discLabel}${suffix}`;
+  }
+
+  if (type === "npc") {
+    return rawDescription
+      ? `Requires ${REQUIREMENT_TYPE_LABELS[type]}: ${rawDescription}`
+      : "Requires NPC";
   }
 
   return rawDescription
@@ -598,9 +622,14 @@ export async function loadSpecialRulesItems() {
         const requirementType = _normalizeRequirementString(
           foundry.utils.getProperty(doc, "system.talenttype.typeenum"),
         );
-        const requirementDescription = String(
+        const requirementDescriptionRaw = String(
           foundry.utils.getProperty(doc, "system.talenttype.description") ?? "",
         ).trim();
+        const npcSpeciesRequirement = _getNpcSpeciesRequirementFromDoc(doc);
+        const requirementDescription =
+          requirementType === "npc" && npcSpeciesRequirement
+            ? npcSpeciesRequirement
+            : requirementDescriptionRaw;
         const requirementMinimumRaw = foundry.utils.getProperty(
           doc,
           "system.talenttype.minimum",
@@ -610,9 +639,12 @@ export async function loadSpecialRulesItems() {
         )
           ? Number(requirementMinimumRaw)
           : null;
-        const hasRequirement = ["attribute", "discipline", "species"].includes(
-          requirementType,
-        );
+        if (requirementType === "starship" || requirementType === "systems") {
+          continue;
+        }
+        const hasRequirement =
+          ["attribute", "discipline", "species"].includes(requirementType) ||
+          (requirementType === "npc" && Boolean(requirementDescription));
 
         results.push({
           uuid: doc.uuid,
@@ -624,10 +656,13 @@ export async function loadSpecialRulesItems() {
           requirementType,
           requirementDescription,
           requirementMinimum,
+          npcSpeciesRequirement,
           requirementLabel: hasRequirement
-            ? _buildRequirementLabel(
-                foundry.utils.getProperty(doc, "system.talenttype"),
-              )
+            ? _buildRequirementLabel({
+                typeenum: requirementType,
+                description: requirementDescription,
+                minimum: requirementMinimum,
+              })
             : "",
         });
       }

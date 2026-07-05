@@ -13,6 +13,7 @@ const ENABLE_FATIGUE_SETTING = "enableFatigue";
 const ENABLE_STYLE_ENHANCE_SETTING = "enableStyleEnhance";
 const ENABLE_TALENT_AUTOMATIONS_SETTING = "enableTalentAutomations";
 const DISABLE_TOOLTIPS_SETTING = "disableTooltips";
+const SHOW_ITEM_EDIT_BUTTONS_SETTING = "showItemEditButtons";
 const ENABLE_ACTION_CHOOSER_SETTING = "enableActionChooser";
 const ACTION_CHOOSER_AS_TAB_SETTING = "actionChooserAsTab";
 const ENABLE_DICE_POOL_OVERRIDE_SETTING = "enableDicePoolOverride";
@@ -32,6 +33,8 @@ const TRACKER_MACRO_DEBUG_LOGS_SETTING = "trackerMacroDebugLogs";
 const GROUP_SHIP_ACTOR_SETTING = "groupShipActorId";
 const ENABLE_EXTENDED_TASK_TRACKER_SETTING = "enableExtendedTaskTracker";
 const NPC_BUILDER_SPECIAL_RULES_PACK_SETTING = "npcBuilderSpecialRulesPack";
+const CHARACTER_BROWSER_SOURCE_PACKS_SETTING = "characterBrowserSourcePacks";
+const CHARACTER_BROWSER_FILTER_STATE_SETTING = "characterBrowserFilterState";
 const ENABLE_PERSONAL_THREAT_SETTING = "enablePersonalThreat";
 const ENABLE_ROLL_REQUEST_SETTING = "enableRollRequest";
 const MOBILE_THEME_SETTING = "mobileSheetTheme";
@@ -96,6 +99,10 @@ const SUBGROUPS = [
   {
     firstKey: NPC_BUILDER_SPECIAL_RULES_PACK_SETTING,
     label: "sta-utils.settings.subgroups.npcBuilder",
+  },
+  {
+    firstKey: CHARACTER_BROWSER_SOURCE_PACKS_SETTING,
+    label: "sta-utils.settings.subgroups.characterBrowser",
   },
   {
     firstKey: ENABLE_PERSONAL_THREAT_SETTING,
@@ -480,6 +487,16 @@ export function registerSettings() {
     group: GROUP_WORLD,
   });
 
+  game.settings.register(MODULE_ID, CHARACTER_BROWSER_SOURCE_PACKS_SETTING, {
+    name: t("sta-utils.settings.characterBrowserSourcePacks.name"),
+    hint: t("sta-utils.settings.characterBrowserSourcePacks.hint"),
+    scope: "world",
+    config: true,
+    type: String,
+    default: "",
+    group: GROUP_WORLD,
+  });
+
   // ----- Roll Request -----
 
   game.settings.register(MODULE_ID, ENABLE_ROLL_REQUEST_SETTING, {
@@ -657,6 +674,28 @@ export function registerSettings() {
   //  CLIENT SETTINGS (per-user)
   // =====================================================
 
+  // Hidden client state for restoring Character Browser filters across opens.
+  game.settings.register(MODULE_ID, CHARACTER_BROWSER_FILTER_STATE_SETTING, {
+    scope: "client",
+    config: false,
+    type: Object,
+    default: {
+      layout: "detailed",
+      source: "all",
+      species: "",
+      characterType: "all",
+      attributeKey: "any",
+      attributeMin: "",
+      attributeMax: "",
+      disciplineKey: "any",
+      disciplineMin: "",
+      disciplineMax: "",
+      threatMin: "",
+      threatMax: "",
+      search: "",
+    },
+  });
+
   game.settings.register(MODULE_ID, SHOW_INFO_BUTTONS_SETTING, {
     name: t("sta-utils.settings.showInfoButtons.name"),
     hint: t("sta-utils.settings.showInfoButtons.hint"),
@@ -689,6 +728,40 @@ export function registerSettings() {
     type: Boolean,
     default: false,
     requiresReload: true,
+    group: GROUP_CLIENT,
+  });
+
+  game.settings.register(MODULE_ID, SHOW_ITEM_EDIT_BUTTONS_SETTING, {
+    name: t("sta-utils.settings.showItemEditButtons.name"),
+    hint: t("sta-utils.settings.showItemEditButtons.hint"),
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: false,
+    onChange: () => {
+      try {
+        for (const app of Object.values(ui?.windows ?? {})) {
+          try {
+            const appId = String(app?.id ?? "");
+            if (
+              appId.startsWith("STACharacterSheet2e") ||
+              appId.startsWith("STASupportingSheet2e") ||
+              appId.startsWith("STANPCSheet2e") ||
+              appId.startsWith("MobileCharacterSheet2e") ||
+              appId.startsWith("LcarsCharacterSheet2e") ||
+              appId.startsWith("LcarsSupportingSheet2e") ||
+              appId.startsWith("LcarsNPCSheet2e")
+            ) {
+              app.render?.(true);
+            }
+          } catch (_) {
+            // sheet may have closed
+          }
+        }
+      } catch (_) {
+        // safe to fail silently
+      }
+    },
     group: GROUP_CLIENT,
   });
 
@@ -775,6 +848,17 @@ export function isActionChooserAsTabEnabled() {
 export function isTooltipsDisabled() {
   try {
     return Boolean(game.settings.get(MODULE_ID, DISABLE_TOOLTIPS_SETTING));
+  } catch (_) {
+    return false;
+  }
+}
+
+/** @returns {boolean} */
+export function shouldShowItemEditButtons() {
+  try {
+    return Boolean(
+      game.settings.get(MODULE_ID, SHOW_ITEM_EDIT_BUTTONS_SETTING),
+    );
   } catch (_) {
     return false;
   }
@@ -956,6 +1040,40 @@ export function isPersonalThreatEnabled() {
   }
 }
 
+/** @returns {string[]} */
+export function getCharacterBrowserSourcePacks() {
+  try {
+    const raw = game.settings.get(
+      MODULE_ID,
+      CHARACTER_BROWSER_SOURCE_PACKS_SETTING,
+    );
+    return _parseCompendiumPackIds(raw);
+  } catch (_) {
+    return [];
+  }
+}
+
+/** @returns {Record<string, string>} */
+export function getCharacterBrowserFilterState() {
+  try {
+    const raw =
+      game.settings.get(MODULE_ID, CHARACTER_BROWSER_FILTER_STATE_SETTING) ??
+      {};
+    return typeof raw === "object" && raw ? raw : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+/** @param {Record<string, string>} value @returns {Promise<void>} */
+export function setCharacterBrowserFilterState(value) {
+  return game.settings.set(
+    MODULE_ID,
+    CHARACTER_BROWSER_FILTER_STATE_SETTING,
+    value ?? {},
+  );
+}
+
 /** @returns {boolean} */
 export function isTalentUsesEnabled() {
   try {
@@ -1099,6 +1217,7 @@ export function installSettingsHeaderHook() {
     if (!tab) return;
 
     _upgradeNpcBuilderCompendiumField(tab);
+    _upgradeCharacterBrowserCompendiumField(tab);
 
     // Avoid double-injection if the hook fires again
     if (tab.querySelector(".sta-utils-settings-group-header")) return;
@@ -1142,6 +1261,200 @@ export function installSettingsHeaderHook() {
     // --- Dependency enforcement ---
     _enforceDependencies(tab);
   });
+}
+
+function _upgradeCharacterBrowserCompendiumField(tab) {
+  const field = _findSettingFormGroup(
+    tab,
+    CHARACTER_BROWSER_SOURCE_PACKS_SETTING,
+  );
+  if (!field) return;
+
+  const name = `${MODULE_ID}.${CHARACTER_BROWSER_SOURCE_PACKS_SETTING}`;
+  if (field.querySelector(`input[type="hidden"][name="${name}"]`)) return;
+
+  const input = field.querySelector(`input[name="${name}"]`);
+  if (!input) return;
+
+  const selectedPackIds = _parseCompendiumPackIds(
+    input.getAttribute("value") ?? input.value,
+  );
+  const optionLabels = new Map();
+
+  const hiddenInput = document.createElement("input");
+  hiddenInput.type = "hidden";
+  hiddenInput.name = input.name;
+  hiddenInput.value = selectedPackIds.join(",");
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "sta-utils-pack-selector";
+
+  const controls = document.createElement("div");
+  controls.style.display = "flex";
+  controls.style.gap = "0.4rem";
+  controls.style.alignItems = "center";
+
+  const select = document.createElement("select");
+  select.className = input.className;
+  select.style.flex = "1 1 auto";
+
+  const emptyOption = document.createElement("option");
+  emptyOption.value = "";
+  emptyOption.textContent = "Loading actor compendiums...";
+  select.appendChild(emptyOption);
+
+  const addButton = document.createElement("button");
+  addButton.type = "button";
+  addButton.className = "button";
+  addButton.textContent = "Add";
+
+  const badgeContainer = document.createElement("div");
+  badgeContainer.style.display = "flex";
+  badgeContainer.style.flexWrap = "wrap";
+  badgeContainer.style.gap = "0.35rem";
+  badgeContainer.style.marginTop = "0.45rem";
+
+  const syncInputValue = () => {
+    hiddenInput.value = selectedPackIds.join(",");
+  };
+
+  const renderBadges = () => {
+    badgeContainer.innerHTML = "";
+
+    if (!selectedPackIds.length) {
+      const none = document.createElement("span");
+      none.className = "hint";
+      none.textContent = "No actor compendium packs selected.";
+      badgeContainer.appendChild(none);
+      return;
+    }
+
+    for (const packId of selectedPackIds) {
+      const badge = document.createElement("span");
+      badge.style.display = "inline-flex";
+      badge.style.alignItems = "center";
+      badge.style.gap = "0.3rem";
+      badge.style.padding = "0.2rem 0.45rem";
+      badge.style.border = "1px solid var(--color-border-light-2)";
+      badge.style.borderRadius = "999px";
+      badge.style.background = "var(--color-bg-option)";
+
+      const label = document.createElement("span");
+      const title = optionLabels.get(packId);
+      label.textContent = title
+        ? `${title} (${packId})`
+        : `${packId} (missing)`;
+      badge.appendChild(label);
+
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "button";
+      remove.style.padding = "0 0.35rem";
+      remove.style.minHeight = "1.25rem";
+      remove.textContent = "x";
+      remove.setAttribute("aria-label", `Remove ${packId}`);
+      remove.addEventListener("click", () => {
+        const idx = selectedPackIds.indexOf(packId);
+        if (idx === -1) return;
+        selectedPackIds.splice(idx, 1);
+        syncInputValue();
+        renderBadges();
+      });
+      badge.appendChild(remove);
+
+      badgeContainer.appendChild(badge);
+    }
+  };
+
+  addButton.addEventListener("click", () => {
+    const packId = String(select.value ?? "").trim();
+    if (!packId) return;
+    if (selectedPackIds.includes(packId)) return;
+    selectedPackIds.push(packId);
+    syncInputValue();
+    renderBadges();
+  });
+
+  controls.appendChild(select);
+  controls.appendChild(addButton);
+  wrapper.appendChild(controls);
+  wrapper.appendChild(badgeContainer);
+
+  input.replaceWith(hiddenInput);
+  hiddenInput.after(wrapper);
+  renderBadges();
+
+  const form = tab.closest("form");
+  if (form) {
+    const formdataHandler = (event) => {
+      const fd = event.formData;
+      if (fd && typeof fd.set === "function") {
+        fd.set(name, selectedPackIds.join(","));
+      }
+    };
+
+    const handlerKey = `_staUtilsCharacterBrowserPackHandler`;
+    if (form[handlerKey]) {
+      form.removeEventListener("formdata", form[handlerKey]);
+    }
+    form.addEventListener("formdata", formdataHandler);
+    form[handlerKey] = formdataHandler;
+  }
+
+  void _populateActorCompendiumPackSelect(select, optionLabels, renderBadges);
+}
+
+async function _populateActorCompendiumPackSelect(
+  select,
+  optionLabels,
+  renderBadges,
+) {
+  const options = _getActorCompendiumPackOptions();
+  optionLabels.clear();
+
+  for (const option of options) {
+    optionLabels.set(option.id, option.label);
+  }
+
+  select.innerHTML = "";
+  const emptyOption = document.createElement("option");
+  emptyOption.value = "";
+  emptyOption.textContent = "Select an actor compendium pack...";
+  select.appendChild(emptyOption);
+
+  for (const option of options) {
+    const el = document.createElement("option");
+    el.value = option.id;
+    el.textContent = `${option.label} (${option.id})`;
+    select.appendChild(el);
+  }
+
+  if (!options.length) {
+    emptyOption.textContent = "No actor compendiums available";
+  }
+
+  renderBadges();
+}
+
+function _getActorCompendiumPackOptions() {
+  const packs = Array.from(game.packs?.values?.() ?? game.packs ?? []);
+  const actorPacks = [];
+
+  for (const pack of packs) {
+    const id = String(pack?.collection ?? "").trim();
+    if (!id) continue;
+
+    const documentName = String(
+      pack?.documentName ?? pack?.metadata?.type ?? "",
+    ).toLowerCase();
+    if (documentName !== "actor") continue;
+
+    const label = String(pack?.title ?? pack?.metadata?.label ?? id).trim();
+    actorPacks.push({ id, label });
+  }
+
+  actorPacks.sort((a, b) => a.label.localeCompare(b.label));
+  return actorPacks;
 }
 
 function _upgradeNpcBuilderCompendiumField(tab) {
