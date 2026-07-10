@@ -449,11 +449,13 @@ export const TALENT_TEMPLATES = [
 
 // ── Special Rules ─────────────────────────────────────────────────────────────
 const NPC_BUILDER_SPECIAL_RULES_PACK_SETTING = "npcBuilderSpecialRulesPack";
+const REQUIREMENTS_FLAG_KEY = "requirements";
 
 const REQUIREMENT_TYPE_LABELS = {
   attribute: "Attribute",
-  discipline: "Discipline",
+  discipline: "Department",
   species: "Species",
+  type: "Type",
   npc: "NPC Species",
 };
 
@@ -489,37 +491,178 @@ function _getNpcSpeciesRequirementFromDoc(doc) {
 }
 
 function _buildRequirementLabel(talentType) {
-  const type = _normalizeRequirementString(talentType?.typeenum);
-  if (!["attribute", "discipline", "species", "npc"].includes(type)) {
-    return "";
+  const requirements = Array.isArray(talentType?.requirements)
+    ? talentType.requirements
+    : [];
+  if (!requirements.length) return "";
+
+  const categoryParts = [];
+  for (const requirement of requirements) {
+    const category = _normalizeRequirementString(requirement?.category);
+    const clauses = Array.isArray(requirement?.clauses)
+      ? requirement.clauses.filter((clause) =>
+          String(clause?.value ?? "").trim(),
+        )
+      : [];
+    if (!category || !clauses.length) continue;
+
+    const op =
+      String(requirement?.operator ?? "OR").toUpperCase() === "AND"
+        ? "AND"
+        : "OR";
+
+    const clauseLabels = clauses.map((clause) => {
+      const raw = String(clause?.value ?? "").trim();
+      if (!raw) return "";
+      if (category === "attribute") {
+        const min = Number.isFinite(Number(clause?.minimum))
+          ? Number(clause.minimum)
+          : null;
+        const label = _resolveAttributeLabel(raw);
+        return min == null ? label : `${label} ${min}+`;
+      }
+      if (category === "discipline") {
+        const min = Number.isFinite(Number(clause?.minimum))
+          ? Number(clause.minimum)
+          : null;
+        const label = _resolveDisciplineLabel(raw);
+        return min == null ? label : `${label} ${min}+`;
+      }
+      if (category === "type") {
+        const norm = _normalizeRequirementString(raw);
+        if (norm === "npc") return "NPC";
+        if (norm === "character") return "Character";
+        if (norm === "starship") return "Starship";
+      }
+      return raw;
+    });
+
+    const values = clauseLabels.filter(Boolean);
+    if (!values.length) continue;
+    const catLabel = REQUIREMENT_TYPE_LABELS[category] ?? category;
+    categoryParts.push(`${catLabel}: ${values.join(` ${op} `)}`);
   }
 
-  const rawDescription = String(talentType?.description ?? "").trim();
-  const minimum = Number.isFinite(Number(talentType?.minimum))
-    ? Number(talentType.minimum)
-    : null;
+  if (!categoryParts.length) return "";
+  return `Requires ${categoryParts.join(" ; ")}`;
+}
 
-  if (type === "attribute") {
-    const attrLabel = _resolveAttributeLabel(rawDescription);
-    const suffix = minimum != null ? ` ${minimum}+` : "";
-    return `Requires ${attrLabel}${suffix}`;
+function _sanitizeRequirementEntry(entry) {
+  const category = _normalizeRequirementString(entry?.category);
+  if (!category) return null;
+
+  const clauses = (Array.isArray(entry?.clauses) ? entry.clauses : [])
+    .slice(0, 2)
+    .map((clause) => {
+      const value = String(clause?.value ?? "").trim();
+      if (!value) return null;
+      const out = { value };
+      if (category === "attribute" || category === "discipline") {
+        const minimum = Number(clause?.minimum);
+        out.minimum = Number.isFinite(minimum) ? minimum : 0;
+      }
+      return out;
+    })
+    .filter(Boolean);
+
+  if (!clauses.length) return null;
+  return {
+    category,
+    operator:
+      String(entry?.operator ?? "OR").toUpperCase() === "AND" ? "AND" : "OR",
+    clauses,
+  };
+}
+
+function _getGroupedRequirementsFromDoc(doc) {
+  const stored =
+    foundry.utils.getProperty(
+      doc,
+      `flags.sta-officers-log.${REQUIREMENTS_FLAG_KEY}`,
+    ) ??
+    foundry.utils.getProperty(
+      doc,
+      `flags.${MODULE_ID}.${REQUIREMENTS_FLAG_KEY}`,
+    );
+  if (Array.isArray(stored) && stored.length) {
+    return stored.map(_sanitizeRequirementEntry).filter(Boolean);
   }
 
-  if (type === "discipline") {
-    const discLabel = _resolveDisciplineLabel(rawDescription);
-    const suffix = minimum != null ? ` ${minimum}+` : "";
-    return `Requires ${discLabel}${suffix}`;
+  const requirementType = _normalizeRequirementString(
+    foundry.utils.getProperty(doc, "system.talenttype.typeenum"),
+  );
+  const requirementDescriptionRaw = String(
+    foundry.utils.getProperty(doc, "system.talenttype.description") ?? "",
+  ).trim();
+  const requirementMinimumRaw = foundry.utils.getProperty(
+    doc,
+    "system.talenttype.minimum",
+  );
+  const requirementMinimum = Number.isFinite(Number(requirementMinimumRaw))
+    ? Number(requirementMinimumRaw)
+    : 0;
+
+  if (requirementType === "attribute" || requirementType === "discipline") {
+    const secondReq =
+      foundry.utils.getProperty(doc, "flags.sta-officers-log.secondReq") ??
+      foundry.utils.getProperty(doc, `flags.${MODULE_ID}.secondReq`) ??
+      null;
+    const clauses = [];
+    if (requirementDescriptionRaw) {
+      clauses.push({
+        value: requirementDescriptionRaw,
+        minimum: requirementMinimum,
+      });
+    }
+    const secondDesc = String(secondReq?.description ?? "").trim();
+    if (secondDesc) {
+      const secondMin = Number.isFinite(Number(secondReq?.minimum))
+        ? Number(secondReq.minimum)
+        : 0;
+      clauses.push({ value: secondDesc, minimum: secondMin });
+    }
+    if (!clauses.length) return [];
+    return [
+      {
+        category: requirementType,
+        operator: "OR",
+        clauses: clauses.slice(0, 2),
+      },
+    ];
   }
 
-  if (type === "npc") {
-    return rawDescription
-      ? `Requires ${REQUIREMENT_TYPE_LABELS[type]}: ${rawDescription}`
-      : "Requires NPC";
+  if (requirementType === "species") {
+    if (!requirementDescriptionRaw) return [];
+    return [
+      {
+        category: "species",
+        operator: "OR",
+        clauses: [{ value: requirementDescriptionRaw }],
+      },
+    ];
   }
 
-  return rawDescription
-    ? `Requires ${REQUIREMENT_TYPE_LABELS[type]}: ${rawDescription}`
-    : `Requires ${REQUIREMENT_TYPE_LABELS[type]}`;
+  if (requirementType === "npc") {
+    const species =
+      _getNpcSpeciesRequirementFromDoc(doc) || requirementDescriptionRaw;
+    const rows = [
+      {
+        category: "type",
+        operator: "OR",
+        clauses: [{ value: "npc" }],
+      },
+    ];
+    if (species) {
+      rows.push({
+        category: "species",
+        operator: "OR",
+        clauses: [{ value: species }],
+      });
+    }
+    return rows;
+  }
+
+  return [];
 }
 
 function _parseSpecialRulesPackIds(value) {
@@ -622,47 +765,42 @@ export async function loadSpecialRulesItems() {
         const requirementType = _normalizeRequirementString(
           foundry.utils.getProperty(doc, "system.talenttype.typeenum"),
         );
-        const requirementDescriptionRaw = String(
-          foundry.utils.getProperty(doc, "system.talenttype.description") ?? "",
-        ).trim();
-        const npcSpeciesRequirement = _getNpcSpeciesRequirementFromDoc(doc);
-        const requirementDescription =
-          requirementType === "npc" && npcSpeciesRequirement
-            ? npcSpeciesRequirement
-            : requirementDescriptionRaw;
-        const requirementMinimumRaw = foundry.utils.getProperty(
-          doc,
-          "system.talenttype.minimum",
-        );
-        const requirementMinimum = Number.isFinite(
-          Number(requirementMinimumRaw),
-        )
-          ? Number(requirementMinimumRaw)
-          : null;
         if (requirementType === "starship" || requirementType === "systems") {
           continue;
         }
-        const hasRequirement =
-          ["attribute", "discipline", "species"].includes(requirementType) ||
-          (requirementType === "npc" && Boolean(requirementDescription));
+
+        const requirements = _getGroupedRequirementsFromDoc(doc);
+        const hasRequirement = requirements.length > 0;
+        const firstRequirement = requirements[0] ?? null;
+        const firstClause = firstRequirement?.clauses?.[0] ?? null;
+        const npcSpeciesRequirement =
+          firstRequirement?.category === "species"
+            ? String(firstClause?.value ?? "")
+            : _getNpcSpeciesRequirementFromDoc(doc);
 
         results.push({
           uuid: doc.uuid,
           name: doc.name,
           img: doc.img || "icons/svg/item-bag.svg",
           talentType: requirementType,
-          isNpcType: requirementType === "npc",
+          isNpcType: requirements.some(
+            (entry) =>
+              entry.category === "type" &&
+              entry.clauses.some(
+                (clause) =>
+                  _normalizeRequirementString(clause?.value) === "npc",
+              ),
+          ),
           hasRequirement,
-          requirementType,
-          requirementDescription,
-          requirementMinimum,
+          requirements,
+          requirementType: firstRequirement?.category ?? "",
+          requirementDescription: String(firstClause?.value ?? ""),
+          requirementMinimum: Number.isFinite(Number(firstClause?.minimum))
+            ? Number(firstClause.minimum)
+            : null,
           npcSpeciesRequirement,
           requirementLabel: hasRequirement
-            ? _buildRequirementLabel({
-                typeenum: requirementType,
-                description: requirementDescription,
-                minimum: requirementMinimum,
-              })
+            ? _buildRequirementLabel({ requirements })
             : "",
         });
       }

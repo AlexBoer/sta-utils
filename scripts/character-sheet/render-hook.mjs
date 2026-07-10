@@ -128,6 +128,12 @@ function handleMobileSheetRender(app, root) {
     // ignore
   }
 
+  try {
+    installInlineItemEditButtons(root, actor);
+  } catch (_) {
+    // ignore
+  }
+
   if (isFatigueEnabled()) {
     try {
       installFatiguedAttributeDisplay(root, actor);
@@ -183,6 +189,13 @@ function handleLcarsSheetRender(app, root) {
   }
 
   const actor = app.actor;
+
+  try {
+    installInlineItemEditButtons(root, actor);
+  } catch (_) {
+    // ignore
+  }
+
   if (game.user?.isGM && actor) {
     try {
       installLcarsTokenLinkToggleButton(app, root, actor);
@@ -549,6 +562,12 @@ function handleCharacterSheetRender(app, root) {
 
   try {
     applyItemEditButtonMode(root);
+  } catch (_) {
+    // ignore
+  }
+
+  try {
+    installInlineItemEditButtons(root, actor);
   } catch (_) {
     // ignore
   }

@@ -7,8 +7,8 @@
 .theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-sfSciences,
 .theme-dark .sta-lcars-dialogue-app.lcars-scheme-sfSciences,
 body.theme-dark.sta-officers-lcars-active.lcars-scheme-sfSciences {
-  --lcars-bg:              rgb(2 4 10 / 93%);
-  --lcars-bg-panel:        rgba(2, 4, 14, 0.28);            /* panel tint: deep blue-space darkening */
+  --lcars-bg:              rgb(2 4 10 / 95%);
+  --lcars-bg-panel:        rgba(2, 4, 14, 0.35);            /* panel tint: deep blue-space darkening */
   --lcars-primary-color:   #1e5c98; /* sciences division blue */
   --lcars-secondary-color: #144070; /* deep sciences blue */
   --lcars-tertiary-color:  #4ab0e8; /* bright sky blue */

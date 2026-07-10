@@ -9,7 +9,7 @@
 .theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-sfCommand,
 .theme-dark .sta-lcars-dialogue-app.lcars-scheme-sfCommand,
 body.theme-dark.sta-officers-lcars-active.lcars-scheme-sfCommand {
-  --lcars-bg:              rgba(8, 2, 4, 0.93);
+  --lcars-bg:              rgba(8, 2, 4, 0.95);
   --lcars-bg-panel:        rgba(10, 2, 6, 0.28);            /* panel tint: purple-red deep darkening */
   --lcars-primary-color:   #8c1c2a; /* uniform maroon-scarlet */
   --lcars-secondary-color: #661420; /* deep maroon */

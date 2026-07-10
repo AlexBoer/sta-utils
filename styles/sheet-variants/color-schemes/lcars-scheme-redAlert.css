@@ -6,7 +6,7 @@
 .theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-redAlert,
 .theme-dark .sta-lcars-dialogue-app.lcars-scheme-redAlert,
 body.theme-dark.sta-officers-lcars-active.lcars-scheme-redAlert {
-  --lcars-bg:              #100808da; /* near-black with red warmth */
+  --lcars-bg:              rgba(16, 8, 8, 95%); /* near-black with red warmth */
   --lcars-bg-panel:        rgba(12, 0, 0, 0.25);           /* panel tint: red-black deepening */
   --lcars-primary-color:   #8a1c1c; /* deep alarm red */
   --lcars-secondary-color: #b82020; /* brighter red → biography/belongings */
@@ -66,13 +66,13 @@ body.theme-light.sta-officers-lcars-active.lcars-scheme-redAlert {
 
 /* ── Window-root background overrides (:has() targets the ancestor .application element) ── */
 .theme-dark .sta-lcars-window.application:has(.lcars-scheme-redAlert) {
-  --lcars-bg: #100808da;
+  --lcars-bg: rgba(16, 8, 8, 0.855);
 }
 .theme-light .sta-lcars-window.application:has(.lcars-scheme-redAlert) {
   --lcars-bg: #f5e8e8;
 }
 .sta-lcars-window.application.theme-dark:has(.lcars-scheme-redAlert) {
-  --lcars-bg: #100808da;
+  --lcars-bg: rgba(16, 8, 8, 0.855);
 }
 .sta-lcars-window.application.theme-light:has(.lcars-scheme-redAlert) {
   --lcars-bg: #f5e8e8;

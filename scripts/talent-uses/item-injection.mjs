@@ -54,7 +54,7 @@ function _injectUsesFields(root, item) {
       </label>
     </div>
     <div class="talent-uses-inputs"${isLimited ? "" : ' style="display:none"'}>
-      <div class="row">
+      <div class="row talent-uses-inputs-row">
         <div class="column">
           <div class="title">${t("sta-utils.talentUses.usedLabel")}</div>
           <input type="number" name="system.uses.used" value="${used}" min="0" step="1" class="text-entry" />
@@ -70,7 +70,24 @@ function _injectUsesFields(root, item) {
 
   const toggle = wrapper.querySelector(".talent-uses-toggle");
   const inputs = wrapper.querySelector(".talent-uses-inputs");
+  const inputsRow = wrapper.querySelector(".talent-uses-inputs-row");
+  const inputColumns = Array.from(
+    wrapper.querySelectorAll(".talent-uses-inputs-row > .column"),
+  );
   const maxInput = wrapper.querySelector('input[name="system.uses.max"]');
+
+  // Force a compact two-column row across different sheet style systems.
+  if (inputsRow instanceof HTMLElement) {
+    inputsRow.style.display = "flex";
+    inputsRow.style.flexWrap = "nowrap";
+    inputsRow.style.alignItems = "flex-start";
+    inputsRow.style.gap = "0.5rem";
+  }
+  for (const col of inputColumns) {
+    if (!(col instanceof HTMLElement)) continue;
+    col.style.flex = "1 1 0";
+    col.style.minWidth = "0";
+  }
 
   toggle.addEventListener("change", () => {
     if (toggle.checked) {

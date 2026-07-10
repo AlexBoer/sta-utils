@@ -333,7 +333,7 @@
                   {{localize 'sta.actor.belonging.title'}}
                 </div>
                 <div class="sta-lcars-items">
-                  <div class="header row item">
+                  <div class="header row item belongings-row belongings-weapon">
                     <div class="image"></div>
                     <div class="two-column-with-roll-primary">{{localize 'sta.actor.belonging.weapon.title'}}</div>
                     <div class="two-column-with-roll-secondary">{{localize 'sta.actor.belonging.weapon.dmg'}}</div>
@@ -342,57 +342,46 @@
 
                   {{#each items as |item type id|}}
                     {{#if (eq item.type "characterweapon2e")}}
-                      <li class="row entry" id="character-weapon-{{@index}}" data-item-id="{{item.id}}" data-item-type="{{item.type}}" data-item-value="{{item.name}}" data-item-damage="{{item.system.damage}}">
+                      <li class="row entry belongings-row belongings-weapon" id="character-weapon-{{@index}}" data-item-id="{{item.id}}" data-item-type="{{item.type}}" data-item-value="{{item.name}}" data-item-damage="{{item.system.damage}}">
                         <div class="image"><img class="chat" src="{{item.img}}" title="{{item.name}}" data-item-name="{{item.name}}" data-action="onItemtoChat"/></div>
                         <input type="text" class="item-name" value="{{item.name}}" data-item-id="{{item._id}}">
                         <div class="two-column-with-roll-secondary list-entry damage">
                           {{item.system.damage}}{{#if (gt item.system.escalation 0)}} (E{{item.system.escalation}}){{/if}}
                         </div>
-                        <div class="control">
-                          <a class="edit" data-action="onItemEdit" title="Edit Item"><i class="fas fa-edit"></i></a>
-                          <a class="delete" data-action="onItemDelete" title="Delete Item"><i class="fas fa-trash"></i></a>
-                        </div>
                       </li>
                     {{/if}}
                   {{/each}}
 
-                  <div class="header row item">
+                  <div class="header row item belongings-row belongings-armor">
                     <div class="image"></div>
-                    <div class="two-column-with-roll-primary">{{localize 'sta.actor.belonging.armor.title'}}</div>
+                    <div class="two-column-with-roll-primary">{{localize 'sta-utils.lcars.belongings.armor'}}</div>
                     <div class="two-column-with-roll-secondary">{{localize 'sta.actor.belonging.armor.protect'}}</div>
                     <a class="control create" title="Create item" data-action="onItemCreate" data-type="armor"><i class="fas fa-plus"></i></a>
                   </div>
 
                   {{#each items as |item type id|}}
                     {{#if (eq item.type "armor")}}
-                      <li id="armor-{{item.id}}" class="row entry" data-item-id="{{item.id}}" data-item-type="{{item.type}}" data-item-value="{{item.name}}">
+                      <li id="armor-{{item.id}}" class="row entry belongings-row belongings-armor" data-item-id="{{item.id}}" data-item-type="{{item.type}}" data-item-value="{{item.name}}">
                         <div class="image"><img class="chat" src="{{item.img}}" title="{{item.name}}" data-action="onItemtoChat" /></div>
                         <input type="text" class="item-name" value="{{item.name}}" data-item-id="{{item._id}}">
-                        <div id="protectval-armor-{{item.id}}" class="two-column-with-roll-secondary list-entry">{{item.system.protection}}</div>
-                        <div class="control">
-                          <a class="edit" data-action="onItemEdit" title="Edit Item"><i class="fas fa-edit"></i></a>
-                          <a class="delete" data-action="onItemDelete" title="Delete Item"><i class="fas fa-trash"></i></a>
-                        </div>
+                        <div id="protectval-armor-{{item.id}}" class="two-column-with-roll-secondary list-entry resist">{{item.system.protection}}</div>
                       </li>
                     {{/if}}
                   {{/each}}
 
-                  <div class="header row item">
+                  <div class="header row item belongings-row belongings-item">
                     <div class="image"></div>
                     <div class="two-column-with-roll-primary">{{localize 'sta.actor.belonging.other.title'}}</div>
-                    <div class="two-column-with-roll-secondary">{{localize 'sta.actor.belonging.other.qty'}}</div>
                     <a class="control create" title="Create item" data-action="onItemCreate" data-type="item"><i class="fas fa-plus"></i></a>
                   </div>
 
                   {{#each items as |item type id|}}
                     {{#if (eq item.type "item")}}
-                      <li class="row entry" data-item-id="{{item.id}}" data-item-type="{{item.type}}" data-item-value="{{item.name}}">
+                      <li id="item-{{item.id}}" class="row entry belongings-row belongings-item" data-item-id="{{item.id}}" data-item-type="{{item.type}}" data-item-value="{{item.name}}">
                         <div class="image"><img class="chat" src="{{item.img}}" title="{{item.name}}" data-action="onItemtoChat" /></div>
                         <input type="text" class="item-name" value="{{item.name}}" data-item-id="{{item._id}}">
-                        <input type="number" class="item-quantity" value="{{item.system.quantity}}" data-item-id="{{item._id}}">
-                        <div class="control">
-                          <a class="edit" data-action="onItemEdit" title="Edit Item"><i class="fas fa-edit"></i></a>
-                          <a class="delete" data-action="onItemDelete" title="Delete Item"><i class="fas fa-trash"></i></a>
+                        <div class="two-column-with-roll-secondary list-entry">
+                          <input type="number" class="item-quantity quantity" value="{{item.system.quantity}}" data-item-id="{{item._id}}">
                         </div>
                       </li>
                     {{/if}}

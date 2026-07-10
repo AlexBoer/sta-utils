@@ -7,8 +7,8 @@
 .theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-sfOperations,
 .theme-dark .sta-lcars-dialogue-app.lcars-scheme-sfOperations,
 body.theme-dark.sta-officers-lcars-active.lcars-scheme-sfOperations {
-  --lcars-bg:              rgb(8 5 2 / 93%);
-  --lcars-bg-panel:        rgb(4 3 2 / 86%);            
+  --lcars-bg:              rgb(8 5 2 / 95%);
+  --lcars-bg-panel:        rgb(4 3 2 / 90%);            
   --lcars-primary-color:   #a07c10; /* operations gold */
   --lcars-secondary-color: #785a08; /* deep amber */
   --lcars-tertiary-color:  #d8b020; /* bright gold */

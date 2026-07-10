@@ -116,6 +116,7 @@ export function initTalentAutomations() {
   // --- Actor update hook (fire for every talent the actor owns) ---
   Hooks.on("updateActor", async (actor, changes, _options, userId) => {
     if (game.user.id !== userId) return;
+
     for (const talent of findTalents(actor)) {
       const handler = getTalentHandler(talent.name);
       if (handler?.onUpdate) {

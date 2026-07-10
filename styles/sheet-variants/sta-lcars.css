@@ -24,6 +24,147 @@
 @import url("color-schemes/lcars-scheme-redAlert.css");
 @import url("color-schemes/lcars-scheme-sta.css");
 
+/* ===========================================================================
+ * Base utility and legacy STA-compatible UI rules
+ * Added from requested style baseline. Keep these above LCARS sheet blocks.
+ * =========================================================================== */
+
+@font-face {
+  font-display: swap;
+  font-family: "Roboto Condensed";
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/s/robotocondensed/v27/ieVo2ZhZI2eCN5jzbjEETS9weq8-_d6T_POl0fRJeyWyovBJ.ttf) format("truetype");
+}
+
+body {
+  font-family: "Roboto Condensed";
+}
+
+.observer {
+  pointer-events: none !important;
+}
+
+.observer [data-tooltip] {
+  pointer-events: auto !important;
+}
+
+.track {
+  display: flex;
+  flex-direction: row;
+}
+
+.track .bar:not(.extendedtask) {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  padding-left: 2px;
+}
+
+.track .bar .box {
+  border: 1px solid;
+  border-collapse: collapse;
+  border-radius: 14px;
+  display: flex;
+  font-size: 8pt;
+  font-weight: bold;
+  padding: 0;
+  justify-content: center;
+  align-items: center;
+}
+
+.track .bar .box:hover {
+  box-shadow: 0 0 8px #009dff;
+  cursor: pointer;
+}
+
+.track .bar .box.stress,
+.track .bar .box.determination,
+.track .bar .box.rep {
+  background-color: transparent;
+  height: 17px;
+}
+
+.track .bar .box.shields,
+.track .bar .box.power,
+.track .bar .box.crew {
+  background-color: transparent;
+  height: 14px;
+}
+
+.track .bar .box.extendedtask {
+  background-color: transparent;
+  font-size: 16pt;
+  height: 28px;
+}
+
+.track .bar .box.stress.selected,
+.track .bar .box.determination.selected,
+.track .bar .box.rep.selected,
+.track .bar .box.shields.selected,
+.track .bar .box.power.selected,
+.track .bar .box.crew.selected,
+.track .bar .box.extendedtask.selected {
+  background-color: #f2cc0d;
+  color: #191813;
+}
+
+.buttons {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.check-button {
+  font-weight: unset;
+  background-color: transparent;
+  font-size: 14px;
+  max-width: 110px;
+  text-align: center;
+}
+
+.btn,
+.btn2,
+.btn3 {
+  border-radius: 20px;
+  border-width: 0 20px;
+  font-weight: bold;
+  margin: 8px 16px 4px;
+  max-width: 108px;
+  width: unset;
+}
+
+.btn {
+  border: solid #009dff;
+}
+
+.btn:hover {
+  background-color: #009dff;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.btn2 {
+  border: solid red;
+}
+
+.btn2:hover {
+  background-color: red;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.btn3 {
+  border: solid #f2cc0d;
+}
+
+.btn3:hover {
+  background-color: #f2cc0d;
+  box-shadow: none;
+  cursor: pointer;
+}
+
 .character-sheet.sta-lcars-sheet {
   .top-left-column {
     background: transparent;
@@ -257,7 +398,7 @@
  * not on an ancestor. These have higher specificity (3 classes) and win over the
  * body-descendant rules above (2 classes) when a per-sheet theme is set. */
 .sta-lcars-window.application.theme-dark {
-  --lcars-bg: rgb(14 14 22 / 94%);
+  --lcars-bg: rgba(14, 14, 22, 96%);
   background: var(--lcars-bg);
 }
 .sta-lcars-window.application.theme-light {
@@ -289,7 +430,7 @@
   --lcars-red: #b85858;
   --lcars-tan: #c8b070;
   --lcars-bg: rgb(14 14 22 / 94%);
-  --lcars-bg-panel: rgba(0, 0, 0, 0.18); /* default dark tint; overridden per-scheme */
+  --lcars-bg-panel: rgba(0, 0, 0, 25%); /* default dark tint; overridden per-scheme */
   --lcars-text-light: #d8b878;
   --lcars-text-dark: #000;
   --lcars-font-heading: "Antonio", "Helvetica Neue", sans-serif;
@@ -781,6 +922,43 @@
     margin-right: 0;
   }
 
+  /* On LCARS non-belongings rows (traits/injuries/etc), keep qty before
+     the injected inline edit button and pin the edit button to the far right. */
+  .sta-lcars-sheet .section:not(.belongings) .row.entry .item-quantity {
+    margin-left: auto;
+  }
+
+  .sta-lcars-sheet .section:not(.belongings) .row.entry > .control.sta-utils-inline-item-edit,
+  .sta-lcars-sheet .section:not(.belongings) .row.entry .control.sta-utils-inline-item-edit {
+    order: 5 !important;
+    margin-left: 6px !important;
+    flex: 0 0 auto;
+  }
+
+  .sta-lcars-sheet.sta-utils-show-item-edit-buttons .section.traits .row.entry > div.control {
+    order: 5 !important;
+    margin-left: 6px !important;
+    flex: 0 0 auto;
+  }
+
+  .character-sheet.sta-lcars-sheet.sta-utils-show-item-edit-buttons .section.traits .row.entry .item-quantity,
+  .character-sheet.sta-lcars-sheet.sta-utils-show-item-edit-buttons .section.injuries .row.entry .item-quantity {
+    margin-left: auto !important;
+    order: 4 !important;
+  }
+
+  .character-sheet.sta-lcars-sheet.sta-utils-show-item-edit-buttons .section.traits .row.entry > div.control,
+  .character-sheet.sta-lcars-sheet.sta-utils-show-item-edit-buttons .section.injuries .row.entry > div.control {
+    order: 6 !important;
+    margin-left: 6px !important;
+    flex: 0 0 auto !important;
+  }
+
+  .sta-utils-show-item-edit-buttons .section.belongings .row.entry .two-column-with-roll-secondary,
+  .sta-utils-show-item-edit-buttons .section.belongings .row.entry .item-quantity {
+    margin-right: 5px;
+  }
+
   .row.entry .sta-inline-sheet-btn {
     font-size: 0.8rem;
     padding: 1px 6px;
@@ -790,6 +968,22 @@
     white-space: nowrap;
     flex-shrink: 0;
     margin-right: 4px;
+  }
+
+  /* Values rows: right-justify Use Value / Use Trauma into the available space. */
+  .sta-lcars-sheet .section.values .row.entry .sta-inline-sheet-btn {
+    margin-left: auto;
+    margin-right: 6px;
+  }
+
+  .sta-lcars-sheet .section.values .row.entry {
+    display: flex;
+    align-items: center;
+  }
+
+  .sta-lcars-sheet .section.values .row.entry .item-name {
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   /* ===========================================================================
@@ -817,6 +1011,12 @@
   .control.create i:focus-visible {
     color: var(--lcars-text-title, var(--lcars-text-dark)) !important;
     opacity: 0.7;
+  }
+
+  /* STA system base sheet style sets .section .row .control width to 40px.
+     For LCARS entry rows, collapse that reserved width so rows align correctly. */
+  .character-sheet.sta-lcars-sheet .section .row.entry .control {
+    width: 0 !important;
   }
 
   /* ===========================================================================
@@ -902,7 +1102,33 @@
   .sta-lcars-create-btn {
     margin-left: auto;
     font-size: 0.75rem;
-    padding: 0 4px;
+    padding: 0;
+    width: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Values title has extra injected controls (directive + info). Keep the
+     create (+) control pinned as the final far-right action. */
+  .section.values > .title .sta-values-info-btn {
+    order: 2;
+  }
+
+  .section.values > .title .sta-use-directive-btn {
+    order: 3;
+    margin-left: auto;
+  }
+
+  .section.values > .title .sta-directive-info-btn {
+    order: 4;
+    margin-left: 4px;
+    margin-right: 0;
+  }
+
+  .section.values > .title .sta-lcars-create-btn {
+    order: 5;
+    margin-left: 0;
   }
 
   /* Info buttons on other sheet modes use flex-grow:1 to push the "+" to the
@@ -1171,7 +1397,87 @@
    * BELONGINGS HEADER ROW (visible exception)
    * =========================================================================== */
 
-  .section.belongings .header.row {
+  .section.belongings .header.row.belongings-row,
+  .section.belongings .row.entry.belongings-row {
+    display: grid !important;
+    --sta-lcars-belongings-value-width: 56px;
+    grid-template-columns: 28px minmax(0, 1fr) var(--sta-lcars-belongings-value-width) 22px;
+    align-items: center;
+    column-gap: 0px;
+  }
+
+  /* Other Items entries have no per-row control button, so place QTY in the
+     rightmost column by collapsing the unused value column. */
+  .section.belongings .row.entry.belongings-item {
+    grid-template-columns: 28px minmax(0, 1fr) 0 32px;
+  }
+
+  .section.belongings .header.row.belongings-row .image,
+  .section.belongings .row.entry.belongings-row .image {
+    grid-column: 1;
+  }
+
+  .section.belongings .header.row.belongings-row .two-column-with-roll-primary,
+  .section.belongings .row.entry.belongings-row .item-name {
+    grid-column: 2;
+    min-width: 0;
+  }
+
+  /* Cancel STA base width calc for LCARS belongings primary column. */
+  .section.belongings .row .two-column-with-roll-primary {
+    width: auto !important;
+    max-width: none;
+  }
+
+  .section.belongings .header.row.belongings-row .two-column-with-roll-primary {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .section.belongings .header.row.belongings-armor .two-column-with-roll-primary {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    line-height: 1.05;
+  }
+
+  /* Character-sheet belongings headers should be larger (match NPC/support
+     preference) while keeping item row text unchanged. */
+  .character-sheet.sta-lcars-sheet .section.belongings .header.row.belongings-row .two-column-with-roll-primary,
+  .character-sheet.sta-lcars-sheet .section.belongings .header.row.belongings-row .two-column-with-roll-secondary {
+    font-size: 0.78rem;
+  }
+
+  .section.belongings .header.row.belongings-row .two-column-with-roll-secondary,
+  .section.belongings .row.entry.belongings-row .two-column-with-roll-secondary,
+  .section.belongings .row.entry.belongings-row .item-quantity,
+  .section.belongings .row.entry.belongings-row .damage {
+    grid-column: 3;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .section.belongings .header.row.belongings-row .control.create,
+  .section.belongings .row.entry.belongings-row .control.sta-utils-inline-item-edit {
+    grid-column: 4;
+    margin-left: 0;
+  }
+
+  .section.belongings .row.entry.belongings-row .image,
+  .section.belongings .header.row.belongings-row .image {
+    width: 28px;
+    justify-self: center;
+    overflow: visible;
+  }
+
+  .section.belongings .row.entry.belongings-row .image img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+  }
+
+  .section.belongings .header.row.belongings-row {
     font-family: var(--lcars-font-heading);
     color: var(--lcars-text-header, var(--lcars-text-dark));
     background: var(--lcars-titlebar-belongings-colheader, var(--lcars-peach));
@@ -1181,53 +1487,110 @@
     letter-spacing: 0.5px;
   }
 
+  /* Apply themed belongings column-header color even when templates do not
+     include .belongings-row (NPC/supporting variants). */
+  .section.belongings .header.row {
+    background: var(--lcars-titlebar-belongings-colheader, var(--lcars-peach)) !important;
+    color: var(--lcars-text-header, var(--lcars-text-dark));
+  }
+
+  /* NPC/supporting templates do not use .belongings-row hooks; apply the same
+     heading/body typography via broader selectors for those sheet variants. */
+  .section.belongings .header.row .two-column-with-roll-primary,
+  .section.belongings .header.row .two-column-with-roll-secondary {
+    font-family: var(--lcars-font-heading);
+  }
+
+  .section.belongings .row.entry .item-name,
+  .section.belongings .row.entry .two-column-with-roll-secondary,
+  .section.belongings .row.entry .item-quantity {
+    font-family: var(--lcars-font-body);
+  }
+
   /* ===========================================================================
    * DAMAGE COLUMN in belongings
    * =========================================================================== */
 
-  .damage {
-      font-family: var(--lcars-font-heading);
-      color: var(--lcars-red);
-      order: 4;
-      flex: 0 0 auto;
-      width: calc((100% - 58px) * 0.15);
-      margin: 0;
+  .section.belongings .damage {
+        font-family: var(--lcars-font-heading);
+        color: var(--lcars-red);
+        margin-left: auto;
+        width: 25px;
+        margin-right: 30px;
+        text-align: center;
+        padding-right: 0;
+        white-space: nowrap;
+        justify-self: stretch;
+        justify-content: right;
   }
 
-  /* Number values — pinned flush right, after the control buttons */
-  .section .row.entry .two-column-with-roll-secondary {
-      order: 4;
-      flex: 0 0 auto;
-      width: calc((100% - 58px) * 0.15);
+    /* Number values — pinned near the right edge, before edit controls */
+  .section.belongings .row.entry.belongings-row .two-column-with-roll-secondary {
+      width: 100%;
       margin: 0;
+      text-align: center;
+      padding-right: 0;
+      white-space: nowrap;
+      justify-self: stretch;
   }
 
-  /* Make item entry rows flex so order works */
-  .section .row.entry {
+    /* Quantity pips/inputs inside belongings rows should sit in the value column */
+    .section.belongings .row.entry.belongings-row .item-quantity {
+      margin-right: 0;
+      width: 100%;
+      max-width: none;
+      text-align: center;
+      justify-self: center;
+      box-sizing: border-box;
+    }
+
+    .section.belongings .row.entry.belongings-row .two-column-with-roll-secondary,
+    .section.belongings .row.entry.belongings-row .item-quantity {
+      margin-right: 0;
+    }
+
+    /* Other Items quantity should hug the far-right edge (unlike DMG/RESIST). */
+    .section.belongings .row.entry.belongings-item .two-column-with-roll-secondary {
+      grid-column: 4;
       display: flex;
+      justify-content: flex-end;
       align-items: center;
-  }
+      text-align: right;
+    }
 
-  /* Control buttons stay before the number in entry rows */
-  .section .row.entry .control {
-      order: 3;
-  }
+    /* Main-character Other Items quantity has its own sizing/alignment. */
+    .section.belongings .row.entry.belongings-item .item-quantity.quantity {
+      display: block;
+      width: 32px;
+      max-width: 32px;
+      margin-left: auto;
+      margin-right: 0;
+      justify-self: end;
+    }
 
-  /* Header row: move the secondary label after the + button */
-  .section .header.row {
-      display: flex;
+    /* Match DMG spacing for armor RESIST values. */
+    .section.belongings .resist {
+        font-family: var(--lcars-font-heading);
+        color: var(--lcars-red);
+        margin-left: auto;
+        width: 25px;
+        margin-right: 30px;
+        text-align: center;
+        padding-right: 0;
+        white-space: nowrap;
+        justify-self: stretch;
+        justify-content: right;
+    }
+
+    /* Control buttons move to the far side (right of DMG/RESIST/QTY) */
+    .section.belongings .row.entry.belongings-row .control,
+    .section.belongings .header.row .control.create {
+      width: 22px !important;
+      justify-content: center;
+      margin-left: auto !important;
+      display: inline-flex;
       align-items: center;
-  }
-
-  .section .header.row .two-column-with-roll-secondary {
-      order: 4;
-      flex: 0 0 auto;
-      width: calc((100% - 58px) * 0.15);
-      margin: 0;
-  }
-
-  .section .header.row .control.create {
-      order: 3;
+      justify-self: end;
   }
 
   /* ===========================================================================
@@ -1273,7 +1636,7 @@
   --lcars-sky: #8898a8;
   --lcars-red: #b85858;
   --lcars-tan: #c8b070;
-  --lcars-bg: rgba(11, 10, 19, 0.9);
+  --lcars-bg: rgba(11, 10, 19, 0.95);
   --lcars-bg-panel: rgba(0, 0, 0, 0.18); /* default dark tint; overridden per-scheme */
   --lcars-text-light: #f0b872;
   --lcars-text-dark: #000;
@@ -1754,7 +2117,7 @@
     display: flex !important;
     font-family: var(--lcars-font-heading);
     color: var(--lcars-text-dark);
-    background: var(--lcars-peach);
+    background: var(--lcars-titlebar-belongings-colheader, var(--lcars-peach)) !important;
     border-radius: 4px;
     font-size: 0.7rem;
     text-transform: uppercase;
@@ -2858,7 +3221,7 @@ body.sta-officers-lcars-active {
   --lcars-sky: #88aaff;
   --lcars-red: #d05050;
   --lcars-tan: #e8c57a;
-  --lcars-bg: rgba(11, 10, 19, 0.9);
+  --lcars-bg: rgba(11, 10, 19, 0.95);
   --lcars-text: #ff9900;
   --lcars-text-dark: #000;
   --lcars-font: "Antonio", "Roboto Condensed", sans-serif;

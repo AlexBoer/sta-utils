@@ -62,6 +62,202 @@ const STEPS = ["info", "attributes", "departments", "focuses", "finishing"];
 
 const fapi = foundry.applications.api;
 
+function _normalizeRequirementString(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
+}
+
+function _resolveAttributeKey(value) {
+  const normalized = _normalizeRequirementString(value);
+  if (!normalized) return null;
+  if (ATTRIBUTE_KEYS.includes(normalized)) return normalized;
+  return (
+    ATTRIBUTE_KEYS.find(
+      (key) =>
+        _normalizeRequirementString(ATTRIBUTE_LABELS[key]) === normalized,
+    ) ?? null
+  );
+}
+
+function _resolveDisciplineKey(value) {
+  const normalized = _normalizeRequirementString(value);
+  if (!normalized) return null;
+  if (DISCIPLINE_KEYS.includes(normalized)) return normalized;
+  return (
+    DISCIPLINE_KEYS.find(
+      (key) =>
+        _normalizeRequirementString(DISCIPLINE_LABELS[key]) === normalized,
+    ) ?? null
+  );
+}
+
+function _sanitizeRequirementEntry(entry) {
+  const category = _normalizeRequirementString(entry?.category);
+  if (!category) return null;
+
+  const clauses = (Array.isArray(entry?.clauses) ? entry.clauses : [])
+    .slice(0, 2)
+    .map((clause) => {
+      const value = String(clause?.value ?? "").trim();
+      if (!value) return null;
+      const out = { value };
+      if (category === "attribute" || category === "discipline") {
+        const minimum = Number(clause?.minimum);
+        out.minimum = Number.isFinite(minimum) ? minimum : 0;
+      }
+      return out;
+    })
+    .filter(Boolean);
+
+  if (!clauses.length) return null;
+  return {
+    category,
+    operator:
+      String(entry?.operator ?? "OR").toUpperCase() === "AND" ? "AND" : "OR",
+    clauses,
+  };
+}
+
+function _getTalentRequirementsFromDoc(doc) {
+  const stored =
+    foundry.utils.getProperty(doc, "flags.sta-officers-log.requirements") ??
+    foundry.utils.getProperty(doc, `flags.${MODULE_ID}.requirements`);
+  if (Array.isArray(stored) && stored.length) {
+    return stored.map(_sanitizeRequirementEntry).filter(Boolean);
+  }
+
+  const type = _normalizeRequirementString(
+    foundry.utils.getProperty(doc, "system.talenttype.typeenum"),
+  );
+  const description = String(
+    foundry.utils.getProperty(doc, "system.talenttype.description") ?? "",
+  ).trim();
+  const minimumRaw = foundry.utils.getProperty(
+    doc,
+    "system.talenttype.minimum",
+  );
+  const minimum = Number.isFinite(Number(minimumRaw)) ? Number(minimumRaw) : 0;
+
+  if (type === "attribute" || type === "discipline") {
+    const secondReq =
+      foundry.utils.getProperty(doc, "flags.sta-officers-log.secondReq") ??
+      null;
+    const clauses = [];
+    if (description) clauses.push({ value: description, minimum });
+    const secondDesc = String(secondReq?.description ?? "").trim();
+    if (secondDesc) {
+      clauses.push({
+        value: secondDesc,
+        minimum: Number.isFinite(Number(secondReq?.minimum))
+          ? Number(secondReq.minimum)
+          : 0,
+      });
+    }
+    if (!clauses.length) return [];
+    return [
+      {
+        category: type,
+        operator: "OR",
+        clauses: clauses.slice(0, 2),
+      },
+    ];
+  }
+
+  if (type === "species" && description) {
+    return [
+      {
+        category: "species",
+        operator: "OR",
+        clauses: [{ value: description }],
+      },
+    ];
+  }
+
+  if (type === "npc") {
+    const npcSpecies = String(
+      foundry.utils.getProperty(
+        doc,
+        "flags.sta-officers-log.npcRequirement.species",
+      ) ?? description,
+    ).trim();
+    const requirements = [
+      { category: "type", operator: "OR", clauses: [{ value: "npc" }] },
+    ];
+    if (npcSpecies) {
+      requirements.push({
+        category: "species",
+        operator: "OR",
+        clauses: [{ value: npcSpecies }],
+      });
+    }
+    return requirements;
+  }
+
+  return [];
+}
+
+function _meetsTalentRequirementsForSupporting(talentDoc, context) {
+  const requirements = _getTalentRequirementsFromDoc(talentDoc);
+  if (!requirements.length) return true;
+
+  const speciesNorm = _normalizeRequirementString(context.species);
+
+  const evalCategory = (entry) => {
+    const category = _normalizeRequirementString(entry?.category);
+    const clauses = Array.isArray(entry?.clauses)
+      ? entry.clauses.filter((clause) => String(clause?.value ?? "").trim())
+      : [];
+    if (!category || !clauses.length) return true;
+
+    const opIsAnd = String(entry?.operator ?? "OR").toUpperCase() === "AND";
+
+    const checks = clauses.map((clause) => {
+      const required = _normalizeRequirementString(clause?.value);
+      if (!required) return true;
+
+      if (category === "attribute") {
+        const key = _resolveAttributeKey(required);
+        if (!key) return false;
+        const value = Number(context.attributes?.[key]?.value);
+        if (!Number.isFinite(value)) return false;
+        const min = Number.isFinite(Number(clause?.minimum))
+          ? Number(clause.minimum)
+          : null;
+        return min == null ? true : value >= min;
+      }
+
+      if (category === "discipline") {
+        const key = _resolveDisciplineKey(required);
+        if (!key) return false;
+        const value = Number(context.disciplines?.[key]?.value);
+        if (!Number.isFinite(value)) return false;
+        const min = Number.isFinite(Number(clause?.minimum))
+          ? Number(clause.minimum)
+          : null;
+        return min == null ? true : value >= min;
+      }
+
+      if (category === "species") {
+        if (!speciesNorm) return false;
+        return speciesNorm === required || speciesNorm.includes(required);
+      }
+
+      if (category === "type") {
+        if (required === "character") return true;
+        if (required === "npc") return false;
+        if (required === "starship") return false;
+      }
+
+      return true;
+    });
+
+    return opIsAnd ? checks.every(Boolean) : checks.some(Boolean);
+  };
+
+  return requirements.every((entry) => evalCategory(entry));
+}
+
 export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
   fapi.Application,
 ) {
@@ -956,7 +1152,18 @@ async function createSupportingActor({
   if (speciesEntry?.talentUuid) {
     try {
       const talent = await fromUuid(speciesEntry.talentUuid);
-      if (talent) embeddedItems.push(talent.toObject());
+      if (
+        talent &&
+        _meetsTalentRequirementsForSupporting(talent, {
+          species,
+          attributes: finalAttributes,
+          disciplines: Object.fromEntries(
+            DISCIPLINE_KEYS.map((k) => [k, { value: disciplines[k] ?? 0 }]),
+          ),
+        })
+      ) {
+        embeddedItems.push(talent.toObject());
+      }
     } catch (e) {
       console.warn(
         `${MODULE_ID} | Supporting Builder: could not load species talent ${speciesEntry.talentUuid}`,

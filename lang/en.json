@@ -1,6 +1,11 @@
 {
   "sta-utils": {
     "title": "STA Utilities",
+    "lcars": {
+      "belongings": {
+        "armor": "Armor"
+      }
+    },
     "settings": {
       "groups": {
         "world": "World Settings (GM Only)",

@@ -25,10 +25,12 @@
 .row.entry > .control.sta-utils-inline-item-edit,
 .row.entry .control.sta-utils-inline-item-edit {
   display: flex !important;
+  order: 5;
   align-items: center;
   justify-content: flex-end;
   margin-left: auto;
   flex: 0 0 auto;
+  width: auto !important;
 }
 
 /* Sheet variants hide generic div.control columns; explicitly re-enable only
@@ -50,6 +52,15 @@
 
 .sta-utils-inline-item-edit-btn i {
   pointer-events: none;
+}
+
+/* When the value-used toggle icon is hidden, collapse the wrapper so it
+   doesn't reserve layout space in the row. */
+.row.entry a.value-used.control.toggle:has(> i[style*="display: none"]) {
+  display: none !important;
+  width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* When enabled, reveal native row controls on sheet variants that normally hide

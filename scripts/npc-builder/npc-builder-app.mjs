@@ -183,50 +183,70 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
   _meetsSpecialRuleRequirement(item) {
     if (!item?.hasRequirement) return true;
 
-    const type = this._normalizeRequirementString(item.requirementType);
-    const minimum = Number.isFinite(Number(item.requirementMinimum))
-      ? Number(item.requirementMinimum)
-      : null;
+    const requirements = Array.isArray(item?.requirements)
+      ? item.requirements
+      : [];
+    if (!requirements.length) return true;
 
-    switch (type) {
-      case "attribute": {
-        const key = this._resolveAttributeKey(item.requirementDescription);
-        if (!key) return false;
-        const value = this._wizardState.attributes[key];
-        if (value == null) return false;
-        return minimum == null ? true : value >= minimum;
-      }
-      case "discipline": {
-        const key = this._resolveDisciplineKey(item.requirementDescription);
-        if (!key) return false;
-        const value = this._wizardState.disciplines[key];
-        if (value == null) return false;
-        return minimum == null ? true : value >= minimum;
-      }
-      case "species": {
-        const required = this._normalizeRequirementString(
-          item.requirementDescription,
-        );
-        const selected = this._normalizeRequirementString(
-          this._wizardState.species,
-        );
-        if (!required || !selected) return false;
-        return selected === required || selected.includes(required);
-      }
-      case "npc": {
-        const required = this._normalizeRequirementString(
-          item.requirementDescription,
-        );
+    const evaluateCategory = (entry) => {
+      const category = this._normalizeRequirementString(entry?.category);
+      const clauses = Array.isArray(entry?.clauses)
+        ? entry.clauses.filter((clause) => String(clause?.value ?? "").trim())
+        : [];
+      if (!category || !clauses.length) return true;
+
+      const opIsAnd = String(entry?.operator ?? "OR").toUpperCase() === "AND";
+
+      const checks = clauses.map((clause) => {
+        const required = this._normalizeRequirementString(clause?.value);
         if (!required) return true;
-        const selected = this._normalizeRequirementString(
-          this._wizardState.species,
-        );
-        if (!selected) return false;
-        return selected === required || selected.includes(required);
-      }
-      default:
-        return true;
-    }
+
+        switch (category) {
+          case "attribute": {
+            const key = this._resolveAttributeKey(required);
+            if (!key) return false;
+            const value = this._wizardState.attributes[key];
+            if (value == null) return false;
+            const minimum = Number.isFinite(Number(clause?.minimum))
+              ? Number(clause.minimum)
+              : null;
+            return minimum == null ? true : value >= minimum;
+          }
+          case "discipline": {
+            const key = this._resolveDisciplineKey(required);
+            if (!key) return false;
+            const value = this._wizardState.disciplines[key];
+            if (value == null) return false;
+            const minimum = Number.isFinite(Number(clause?.minimum))
+              ? Number(clause.minimum)
+              : null;
+            return minimum == null ? true : value >= minimum;
+          }
+          case "species": {
+            const selected = this._normalizeRequirementString(
+              this._wizardState.species,
+            );
+            if (!selected) return false;
+            return selected === required || selected.includes(required);
+          }
+          case "type": {
+            const npcType = this._normalizeRequirementString(
+              this._wizardState.npcType,
+            );
+            if (required === "npc") return npcType !== "";
+            if (required === "character") return false;
+            if (required === "starship") return false;
+            return false;
+          }
+          default:
+            return true;
+        }
+      });
+
+      return opIsAnd ? checks.every(Boolean) : checks.some(Boolean);
+    };
+
+    return requirements.every((entry) => evaluateCategory(entry));
   }
 
   _canProceed() {

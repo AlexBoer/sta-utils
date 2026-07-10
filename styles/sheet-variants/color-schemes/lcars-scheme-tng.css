@@ -7,7 +7,7 @@
 .theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-tng,
 .theme-dark .sta-lcars-dialogue-app.lcars-scheme-tng,
 body.theme-dark.sta-officers-lcars-active.lcars-scheme-tng {
-  --lcars-bg: rgb(1 1 5 / 93%);
+  --lcars-bg: rgb(1 1 5 / 96%);
   --lcars-bg-panel: rgba(0, 0, 12, 0.25);         /* panel tint: subtle deep-space darkening */
   --lcars-primary-color:                 #f1a43c;
   --lcars-secondary-color:               #c5a3d9;

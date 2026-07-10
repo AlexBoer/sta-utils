@@ -6,7 +6,7 @@
 .theme-dark :is(.character-sheet, .starship-sheet, .extended-tasks, .item-sheet, .scenetraits-sheet, .dialogue).sta-lcars.lcars-scheme-cardassian,
 .theme-dark .sta-lcars-dialogue-app.lcars-scheme-cardassian,
 body.theme-dark.sta-officers-lcars-active.lcars-scheme-cardassian {
-  --lcars-bg:              rgb(14 11 7 / 93%);
+  --lcars-bg:              rgb(14 11 7 / 95%);
   --lcars-bg-panel:        rgba(28, 20, 8, 0.28);            /* panel tint: warm dark brown tint */
   --lcars-primary-color:   #a07840; /* tan-ochre */
   --lcars-secondary-color: #7a4820; /* burnt sienna */
