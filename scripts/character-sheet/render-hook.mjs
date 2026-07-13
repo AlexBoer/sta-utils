@@ -62,6 +62,37 @@ function _compatEntry({ label, icon, condition, callback }) {
   };
 }
 
+/**
+ * Force-close stale item description tooltips when the pointer is no longer
+ * directly over an item name element.
+ *
+ * @param {HTMLElement} root - Render root for the sheet window.
+ */
+function installStrictItemTooltipHover(root) {
+  if (!root || root.dataset.staStrictTooltipInit === "1") return;
+  root.dataset.staStrictTooltipInit = "1";
+
+  const isItemNameTarget = (node) => {
+    const element = node instanceof Element ? node : null;
+    return !!element?.closest?.(".item-name[data-tooltip]");
+  };
+
+  const isItemNameTooltipActive = () => {
+    const activeElement = game.tooltip?.element;
+    return !!activeElement?.matches?.(".item-name[data-tooltip]");
+  };
+
+  root.addEventListener("pointermove", (event) => {
+    if (isItemNameTooltipActive() && !isItemNameTarget(event.target)) {
+      game.tooltip?.deactivate();
+    }
+  });
+
+  root.addEventListener("pointerleave", () => {
+    if (isItemNameTooltipActive()) game.tooltip?.deactivate();
+  });
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Handler: Dialogs
 // ─────────────────────────────────────────────────────────────────────────────
@@ -115,6 +146,12 @@ function handleMobileSheetRender(app, root) {
   if (!app?.id?.startsWith("MobileCharacterSheet2e")) return;
   try {
     installMobileMode(app, root);
+  } catch (_) {
+    // ignore
+  }
+
+  try {
+    installStrictItemTooltipHover(root);
   } catch (_) {
     // ignore
   }
@@ -559,6 +596,12 @@ function handleCharacterSheetRender(app, root) {
 
   const actor = app.actor;
   if (!actor || (actor.type !== "character" && actor.type !== "npc")) return;
+
+  try {
+    installStrictItemTooltipHover(root);
+  } catch (_) {
+    // ignore
+  }
 
   try {
     applyItemEditButtonMode(root);
@@ -1057,6 +1100,16 @@ function handleStarshipSheetRender(app, root) {
   const actor = app?.actor;
   if (!actor) return;
   if (actor.type !== "starship" && actor.type !== "smallcraft") return;
+
+  // LCARS starship/smallcraft sheets have their own strict tooltip handling.
+  const appId = String(app?.id ?? "");
+  if (!appId.startsWith("Lcars")) {
+    try {
+      installStrictItemTooltipHover(root);
+    } catch (_) {
+      // ignore
+    }
+  }
 
   const systemsBlock = root?.querySelector?.(".systems-block");
   if (!systemsBlock) return;

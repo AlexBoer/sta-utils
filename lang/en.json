@@ -1639,7 +1639,8 @@
         "generatePoi": "Generate POI",
         "generateAsset": "Generate Asset",
         "convertActor": "Convert Actor",
-        "convertFolder": "Convert Folder"
+        "convertFolder": "Convert Folder",
+        "rollTableManager": "Roll Table Manager"
       }
     },
     "aria": {

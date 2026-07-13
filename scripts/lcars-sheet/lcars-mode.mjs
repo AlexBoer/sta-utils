@@ -303,6 +303,45 @@ function _installThemePicker(sheetApp, sheet) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Strict item tooltip hover behavior (LCARS sheets)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Force Foundry's tooltip to close whenever the pointer is no longer directly
+ * over an item-name element on LCARS sheets.
+ *
+ * This avoids stale description tooltips that can remain visible after moving
+ * away from an item until another item is hovered.
+ *
+ * @param {HTMLElement} root - Render root for the sheet window.
+ */
+function _installStrictItemTooltipHover(root) {
+  if (!root || root.dataset.staLcarsStrictTooltipInit === "1") return;
+  root.dataset.staLcarsStrictTooltipInit = "1";
+
+  const isItemNameTarget = (node) => {
+    const element = node instanceof Element ? node : null;
+    return !!element?.closest?.(".row.entry .item-name[data-tooltip]");
+  };
+
+  const isItemNameTooltipActive = () => {
+    const activeElement = game.tooltip?.element;
+    return !!activeElement?.matches?.(".row.entry .item-name[data-tooltip]");
+  };
+
+  // If pointer leaves an item-name (or the whole sheet), hide any active tooltip.
+  root.addEventListener("pointermove", (event) => {
+    if (isItemNameTooltipActive() && !isItemNameTarget(event.target)) {
+      game.tooltip?.deactivate();
+    }
+  });
+
+  root.addEventListener("pointerleave", () => {
+    if (isItemNameTooltipActive()) game.tooltip?.deactivate();
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Public installer
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -337,4 +376,7 @@ export async function installLcarsSheetMode(sheetApp, root) {
 
   // ── Sync Officers Log LCARS body class ────────────────────────────────
   syncOfficersLogLcars(true);
+
+  // ── Keep item description tooltips strictly tied to direct hover ───────
+  _installStrictItemTooltipHover(root);
 }

@@ -109,14 +109,14 @@ body {
   color: #191813;
 }
 
-.buttons {
+.sta-lcars-sheet .buttons {
   align-items: center;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-.check-button {
+.sta-lcars-sheet .check-button {
   font-weight: unset;
   background-color: transparent;
   font-size: 14px;
@@ -124,9 +124,9 @@ body {
   text-align: center;
 }
 
-.btn,
-.btn2,
-.btn3 {
+.sta-lcars-sheet .btn,
+.sta-lcars-sheet .btn2,
+.sta-lcars-sheet .btn3 {
   border-radius: 20px;
   border-width: 0 20px;
   font-weight: bold;
@@ -135,31 +135,31 @@ body {
   width: unset;
 }
 
-.btn {
+.sta-lcars-sheet .btn {
   border: solid #009dff;
 }
 
-.btn:hover {
+.sta-lcars-sheet .btn:hover {
   background-color: #009dff;
   box-shadow: none;
   cursor: pointer;
 }
 
-.btn2 {
+.sta-lcars-sheet .btn2 {
   border: solid red;
 }
 
-.btn2:hover {
+.sta-lcars-sheet .btn2:hover {
   background-color: red;
   box-shadow: none;
   cursor: pointer;
 }
 
-.btn3 {
+.sta-lcars-sheet .btn3 {
   border: solid #f2cc0d;
 }
 
-.btn3:hover {
+.sta-lcars-sheet .btn3:hover {
   background-color: #f2cc0d;
   box-shadow: none;
   cursor: pointer;

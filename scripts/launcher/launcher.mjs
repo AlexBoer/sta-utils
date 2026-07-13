@@ -382,6 +382,18 @@ const LAUNCHER_SECTIONS = [
         call: () =>
           game.modules.get("sta-tactical-campaign").api.convertFolder(),
       },
+      {
+        id: "tc-rollTableManager",
+        labelKey: "sta-utils.launcher.tc.rollTableManager",
+        icon: "fa-table-list",
+        img: `${TC_ASSET_BASE}/campaignStatus.svg`,
+        gmOnly: true,
+        available: () =>
+          !!game.modules.get("sta-tactical-campaign")?.api
+            ?.openRollTableManager,
+        call: () =>
+          game.modules.get("sta-tactical-campaign").api.openRollTableManager(),
+      },
     ],
   },
 ];
