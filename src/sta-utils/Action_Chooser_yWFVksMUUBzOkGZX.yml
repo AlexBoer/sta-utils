@@ -1,0 +1,24 @@
+name: Action Chooser
+type: script
+command: game.staUtils.actionChooser.open();
+img: modules/sta-utils/assets/Macro%20Icons/actionchooser.svg
+author: 9tilE9UXScsjcVen
+scope: global
+folder: null
+ownership:
+  default: 2
+  9tilE9UXScsjcVen: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.351'
+  systemId: sta
+  systemVersion: 2.5.1
+  createdTime: 1772180865719
+  modifiedTime: 1774265343681
+  lastModifiedBy: 9tilE9UXScsjcVen
+_id: yWFVksMUUBzOkGZX
+sort: 600000
+_key: '!macros!yWFVksMUUBzOkGZX'

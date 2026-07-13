@@ -1,0 +1,24 @@
+name: Stardate
+type: script
+author: 9tilE9UXScsjcVen
+img: modules/sta-utils/assets/Macro%20Icons/stardateCalc.webp
+scope: global
+command: game.staUtils.stardateCalculator.open()
+folder: null
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.351'
+  systemId: sta
+  systemVersion: 2.5.0
+  createdTime: 1771497774315
+  modifiedTime: 1774265343681
+  lastModifiedBy: 9tilE9UXScsjcVen
+ownership:
+  default: 0
+  9tilE9UXScsjcVen: 3
+_id: RJTZ4MzbCpEpjNgm
+sort: 700000
+_key: '!macros!RJTZ4MzbCpEpjNgm'

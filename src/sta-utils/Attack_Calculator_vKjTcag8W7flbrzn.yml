@@ -1,0 +1,24 @@
+name: Attack Calculator
+type: script
+command: game.staUtils.attackCalculator()
+img: modules/sta-utils/assets/Macro%20Icons/damagecalc.svg
+author: 9tilE9UXScsjcVen
+scope: global
+folder: null
+ownership:
+  default: 0
+  9tilE9UXScsjcVen: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.351'
+  systemId: sta
+  systemVersion: 2.5.1
+  createdTime: 1774265343644
+  modifiedTime: 1774265343681
+  lastModifiedBy: 9tilE9UXScsjcVen
+_id: vKjTcag8W7flbrzn
+sort: 200000
+_key: '!macros!vKjTcag8W7flbrzn'

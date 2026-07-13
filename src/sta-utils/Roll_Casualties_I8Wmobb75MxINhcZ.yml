@@ -1,0 +1,144 @@
+name: Roll Casualties
+type: script
+author: 9tilE9UXScsjcVen
+img: modules/sta-utils/assets/Macro%20Icons/RollCasualites.webp
+scope: global
+command: >-
+  // Automatically rolls on the tables for casualties in Starship combat on page
+  18 of the 23rd Century Campaign Guide.
+
+  // Uses defaults from settings: breaches from group ship, players from mission
+  participants.
+
+
+  function rollCasualties(breaches) {
+    var injuries = 0;
+    var deaths = 0;
+    
+    for (let i = 0; i < breaches; i++) {
+      
+      const d20 = Math.floor(Math.random() * 20) + 1;
+      
+      if (d20 >= 1 && d20 <= 6) {
+        injuries += 1;
+        deaths += 1;
+      } else if (d20 >= 7 && d20 <= 9){
+        injuries += 2;
+      } else if (d20 >= 10 && d20 <= 12) {
+        injuries += 1;
+      } else if (d20 >= 13 && d20 <= 20) {
+        injuries += 0;
+        deaths += 0;
+      } else {
+        console.log("random number was out of range: " + d20);
+      }
+      
+      console.log("Iteration number: " + i);
+    }
+    return [injuries, deaths];
+  }
+
+
+  // Get default breaches from the group ship
+
+  let defaultBreaches = 0;
+
+  try {
+    const groupShipId = game.settings.get("sta-officers-log", "groupShipActorId");
+    if (groupShipId) {
+      const groupShip = game.actors.get(groupShipId);
+      if (groupShip?.system?.systems) {
+        defaultBreaches = Object.values(groupShip.system.systems).reduce((sum, system) => sum + Number(system.breaches ?? 0), 0);
+      }
+    }
+  } catch (_) {
+    // Use 0 if unable to fetch
+  }
+
+
+  // Get default player count from mission participants
+
+  let defaultPlayers = 1;
+
+  try {
+    const participants = game.settings.get("sta-officers-log", "missionParticipants") ?? [];
+    defaultPlayers = participants.length || 1;
+  } catch (_) {
+    // Use 1 if unable to fetch
+  }
+
+
+  let breaches = await foundry.applications.api.DialogV2.prompt({
+      window: { title: "How many breaches on your ship?" },
+      content: `<input type="number" name="myInput" value="${defaultBreaches}">`,
+      ok: {
+          label: "Submit",
+          callback: (event, button, dialog) => button.form.elements.myInput.value
+      }
+  });
+
+
+  // Bail out if dialog was closed
+
+  if (breaches === null) return;
+
+
+  let players = await foundry.applications.api.DialogV2.prompt({
+      window: { title: "How many players in the game?" },
+      content: `<input type="number" name="myInput" value="${defaultPlayers}">`,
+      ok: {
+          label: "Submit",
+          callback: (event, button, dialog) => button.form.elements.myInput.value
+      }
+  });
+
+
+  // Bail out if dialog was closed
+
+  if (players === null) return;
+
+
+  const casualities = rollCasualties(breaches * players);
+
+
+  console.log("There were " + casualities[0] + " injured and " + casualities[1]
+  + " killed.")
+
+
+  // Stitch together the full sentence
+
+  const msg = `<p style="font-size: 10px";>COUNTING CASUALTIES...</p>
+
+  <p><b>Injured:</b> ${casualities[0]}</p>
+
+  <p><b>Killed:</b> ${casualities[1]}</p>`
+
+
+  const chatData = {
+    user: game.user._id,
+    speaker: ChatMessage.getSpeaker({
+                    actor: game.actors.getName("Medical Computer")
+                }),
+    content: msg,
+  };
+
+
+  ChatMessage.create(chatData);
+folder: null
+ownership:
+  default: 0
+  9tilE9UXScsjcVen: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.351'
+  systemId: sta
+  systemVersion: 2.4.7
+  createdTime: 1771243315269
+  modifiedTime: 1774265343681
+  lastModifiedBy: 9tilE9UXScsjcVen
+_id: I8Wmobb75MxINhcZ
+sort: 1100000
+_key: '!macros!I8Wmobb75MxINhcZ'
