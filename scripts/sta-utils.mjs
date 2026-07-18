@@ -624,11 +624,13 @@ Hooks.once("ready", async () => {
   // --- Treknobabble / Medical Babble Generators ---
   installTreknobabbleHook();
   installMedicalbabbleHook();
-  installMedicalbabbleHook();
 
   // --- Flag migration (GM only) ---
   if (game.user.isGM) {
-    await runMigrations();
+    // Do not block world readiness on potentially long migrations.
+    runMigrations().catch((err) => {
+      console.error(`${MODULE_ID} | Migration failed`, err);
+    });
   }
 
   // --- Dice Pool Override (independent feature) ---
