@@ -1,0 +1,100 @@
+<div class="sta-traits-dialog-inner{{#if isSimpleTraitsMode}} is-simple-traits-mode{{/if}}"{{#if isSimpleTraitsMode}} data-simple-traits-mode="true"{{/if}}>
+
+  {{#if isSimpleTraitsMode}}
+  <div class="sta-traits-panel" role="tabpanel">
+    <div class="sta-traits-panel-header">
+      <span>{{simpleTitle}}</span>
+    </div>
+    {{#if hasSimpleItems}}
+    <ul class="sta-traits-list">
+      {{#each simpleItems}}
+      <li class="sta-traits-dialog-row">
+        <img class="sta-traits-img" src="{{this.img}}" alt="" aria-hidden="true">
+        <span class="sta-traits-name">{{this.name}}</span>
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <p class="sta-traits-empty">{{noSimpleLabel}}</p>
+    {{/if}}
+  </div>
+  {{else}}
+
+  {{!-- Tab bar --}}
+  <div class="sta-traits-tabs" role="tablist">
+    <button type="button"
+      class="sta-traits-tab{{#if isSceneTab}} is-active{{/if}}"
+      data-action="switch-tab"
+      data-tab="sceneTraits"
+      role="tab"
+      aria-selected="{{#if isSceneTab}}true{{else}}false{{/if}}">
+      <i class="fa-solid fa-note-sticky"></i>
+      {{localize "sta-utils.launcher.traitsDialog.sceneTraits"}}
+    </button>
+    <button type="button"
+      class="sta-traits-tab{{#if isWorldTab}} is-active{{/if}}"
+      data-action="switch-tab"
+      data-tab="worldTraits"
+      role="tab"
+      aria-selected="{{#if isWorldTab}}true{{else}}false{{/if}}">
+      <i class="fa-solid fa-globe"></i>
+      {{localize "sta-utils.launcher.traitsDialog.worldTraits"}}
+    </button>
+  </div>
+
+  {{!-- Scene Traits panel --}}
+  {{#if isSceneTab}}
+  <div class="sta-traits-panel" role="tabpanel">
+    <div class="sta-traits-panel-header">
+      <span>{{localize "sta-utils.launcher.traitsDialog.sceneTraits"}}</span>
+      <button type="button" class="sta-traits-add-btn" data-action="create-scene-trait" title="{{localize "sta-utils.launcher.traitsDialog.createSceneTrait"}}" aria-label="{{localize "sta-utils.launcher.traitsDialog.createSceneTrait"}}" {{#unless canCreateSceneTrait}}disabled{{/unless}}>
+        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+      </button>
+    </div>
+    {{#if hasSceneItems}}
+    <ul class="sta-traits-list">
+      {{#each sceneItems}}
+      <li class="sta-traits-dialog-row" draggable="true" data-uuid="{{this.uuid}}">
+        <img class="sta-traits-img" src="{{this.img}}" alt="" aria-hidden="true">
+        <span class="sta-traits-name">{{this.name}}</span>
+        <button type="button" class="sta-traits-edit-btn" data-action="edit-trait" title="{{localize "sta-utils.launcher.traitsDialog.edit"}}">
+          <i class="fas fa-pen" aria-hidden="true"></i>
+        </button>
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <p class="sta-traits-empty">{{noSceneLabel}}</p>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- World Traits panel --}}
+  {{#if isWorldTab}}
+  <div class="sta-traits-panel" role="tabpanel">
+    <div class="sta-traits-panel-header">
+      <span>{{localize "sta-utils.launcher.traitsDialog.worldTraits"}}</span>
+      <button type="button" class="sta-traits-add-btn" data-action="create-world-trait" title="{{localize "sta-utils.launcher.traitsDialog.createWorldTrait"}}" aria-label="{{localize "sta-utils.launcher.traitsDialog.createWorldTrait"}}" {{#unless canCreateWorldTrait}}disabled{{/unless}}>
+        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+      </button>
+    </div>
+    {{#if hasWorldItems}}
+    <ul class="sta-traits-list">
+      {{#each worldItems}}
+      <li class="sta-traits-dialog-row" draggable="true" data-uuid="{{this.uuid}}">
+        <img class="sta-traits-img" src="{{this.img}}" alt="" aria-hidden="true">
+        <span class="sta-traits-name">{{this.name}}</span>
+        <button type="button" class="sta-traits-edit-btn" data-action="edit-trait" title="{{localize "sta-utils.launcher.traitsDialog.edit"}}">
+          <i class="fas fa-pen" aria-hidden="true"></i>
+        </button>
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <p class="sta-traits-empty">{{noWorldLabel}}</p>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{/if}}
+</div>

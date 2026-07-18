@@ -52,8 +52,8 @@
         "hint": "When on the token layer, automatically switch to the drawings layer when clicking or dragging a trait drawing. Turn this off if you experience issues where tokens become unselectable or unmovable."
       },
       "worldTraitsActorUuid": {
-        "name": "World Traits Actor",
-        "hint": "UUID of the Scene Traits actor to open from the World Traits tool button. Supports compendium actors. Leave blank to auto-create a world-level actor."
+        "name": "Campaign Traits Actor",
+        "hint": "UUID of the Scene Traits actor to open from the Campaign Traits tool button. Supports compendium actors. Leave blank to auto-create a campaign-level actor."
       },
       "showInfoButtons": {
         "name": "Show Info Buttons",
@@ -1608,7 +1608,25 @@
       "incidentalNpcRoll": "Incidental NPC Roll",
       "rollCasualties": "Roll Casualties",
       "openSceneTraits": "Scene Traits",
-      "openWorldTraits": "World Traits",
+      "openWorldTraits": "Campaign Traits",
+      "traitsDialog": {
+        "label": "Traits",
+        "title": "Traits",
+        "sceneTraits": "Scene Traits",
+        "worldTraits": "Campaign Traits",
+        "createSceneTrait": "Create scene trait",
+        "createWorldTrait": "Create campaign trait",
+        "newTraitDefaultName": "New Trait",
+        "createTraitFailed": "Could not create trait item.",
+        "edit": "Open Sheet",
+        "deleteTrait": "Delete Trait",
+        "deleteTraitTitle": "Delete Trait",
+        "deleteTraitConfirm": "Delete trait \"{name}\"?",
+        "deleteTraitNoPermission": "You do not have permission to delete this trait.",
+        "deleteTraitFailed": "Could not delete trait.",
+        "noSceneTraits": "No scene traits yet.",
+        "noWorldTraits": "No campaign traits yet."
+      },
       "manualShaken": "Trigger Shaken",
       "stressReset": "Stress Reset",
       "stressResetPrompt": "Choose a rest type to apply stress recovery to active player characters.",

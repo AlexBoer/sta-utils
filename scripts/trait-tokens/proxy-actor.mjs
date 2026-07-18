@@ -45,7 +45,7 @@ export async function getOrCreateWorldTraitActor() {
   const folder = await getOrCreateFolder();
 
   actor = await Actor.create({
-    name: "World Traits",
+    name: "Campaign Traits",
     type: "scenetraits",
     img: "icons/svg/d20-grey.svg",
     folder: folder.id,

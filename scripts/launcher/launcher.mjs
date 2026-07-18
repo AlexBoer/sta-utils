@@ -1,6 +1,7 @@
 import { MODULE_ID } from "../core/constants.mjs";
 import { t } from "../core/i18n.mjs";
 import { openIncidentalNpcRollDialog } from "../tracker-incidental-roll/index.mjs";
+import { openTraitsDialog } from "./traits-dialog.mjs";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ITEM DEFINITIONS
@@ -198,20 +199,12 @@ const LAUNCHER_SECTIONS = [
         call: () => game.staUtils.rollForCasualties(),
       },
       {
-        id: "openSceneTraits",
-        labelKey: "sta-utils.launcher.openSceneTraits",
-        icon: "fa-note-sticky",
-        gmOnly: true,
-        available: () => !!game.staUtils?.openSceneTraits,
-        call: () => game.staUtils.openSceneTraits(),
-      },
-      {
-        id: "openWorldTraits",
-        labelKey: "sta-utils.launcher.openWorldTraits",
-        icon: "fa-globe",
-        gmOnly: true,
-        available: () => !!game.staUtils?.openWorldTraits,
-        call: () => game.staUtils.openWorldTraits(),
+        id: "traitsDialog",
+        labelKey: "sta-utils.launcher.traitsDialog.label",
+        icon: "fa-tags",
+        gmOnly: false,
+        available: () => true,
+        call: () => openTraitsDialog(),
       },
       {
         id: "manualShaken",

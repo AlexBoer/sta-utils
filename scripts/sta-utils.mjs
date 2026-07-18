@@ -34,6 +34,13 @@ import {
 } from "./trait-tokens/index.mjs";
 
 import {
+  openTraitsDialog,
+  refreshTraitsDialog,
+  getSceneTraitItems,
+  getWorldTraitItems,
+} from "./launcher/index.mjs";
+
+import {
   installStressMonitoringHook,
   installCreateChatMessageHook,
 } from "./fatigue/index.mjs";
@@ -169,6 +176,7 @@ import { LcarsSmallCraftSheet2e } from "./lcars-sheet/lcars-smallcraft-sheet2e.m
 import { t } from "./core/i18n.mjs";
 
 const MODULE_ID = "sta-utils";
+let _sceneTraitsSceneSyncInstalled = false;
 
 const STRESS_REST_TYPES = {
   breather: { recover: 4 },
@@ -229,6 +237,33 @@ async function openSceneTraitsSheet() {
   const actor = await getOrCreateProxyActor(scene.id);
   actor.sheet?.render(true);
   return true;
+}
+
+async function ensureActiveSceneTraitsActor() {
+  const scene = canvas?.scene;
+  if (!scene) return null;
+  return getOrCreateProxyActor(scene.id);
+}
+
+function installSceneTraitsSceneSyncHook() {
+  if (_sceneTraitsSceneSyncInstalled) return;
+  _sceneTraitsSceneSyncInstalled = true;
+
+  Hooks.on("canvasReady", async () => {
+    try {
+      if (game.user?.isGM) {
+        await ensureActiveSceneTraitsActor();
+      }
+    } catch (err) {
+      console.warn(`${MODULE_ID} | Failed to ensure scene traits actor`, err);
+    }
+
+    try {
+      refreshTraitsDialog();
+    } catch (_) {
+      // Dialog refresh is best-effort.
+    }
+  });
 }
 
 async function openWorldTraitsSheet() {
@@ -541,39 +576,13 @@ Hooks.once("init", () => {
 });
 
 /* -------------------------------------------- */
-/*  Scene Controls                              */
-/* -------------------------------------------- */
-
-Hooks.on("getSceneControlButtons", (controls) => {
-  if (!game.settings.get(MODULE_ID, "enableTraitTokens")) return;
-
-  controls.tokens.tools.sceneTraits = {
-    name: "sceneTraits",
-    title: "Scene Traits",
-    icon: "fa-solid fa-note-sticky",
-    order: Object.keys(controls.tokens.tools).length,
-    button: true,
-    visible: game.user.isGM,
-    onChange: async () => openSceneTraitsSheet(),
-  };
-
-  controls.tokens.tools.worldTraits = {
-    name: "worldTraits",
-    title: "World Traits",
-    icon: "fa-solid fa-globe",
-    order: Object.keys(controls.tokens.tools).length,
-    button: true,
-    visible: game.user.isGM,
-    onChange: async () => openWorldTraitsSheet(),
-  };
-});
-
-/* -------------------------------------------- */
 /*  Ready                                       */
 /* -------------------------------------------- */
 
 Hooks.once("ready", async () => {
   console.log(`${MODULE_ID} | Ready`);
+
+  installSceneTraitsSceneSyncHook();
 
   sanitizeTrackerLayoutQueryParams();
   normalizeUiControlColumns();
@@ -655,7 +664,11 @@ Hooks.once("ready", async () => {
     trackerThreatReference: openTrackerThreatReferenceDialog,
     rollForCasualties,
     openSceneTraits: openSceneTraitsSheet,
+    ensureActiveSceneTraitsActor,
     openWorldTraits: openWorldTraitsSheet,
+    openTraitsDialog,
+    getSceneTraitItems,
+    getWorldTraitItems,
     triggerShaken: triggerManualShaken,
     openStressReset: openStressResetDialog,
     treknobabble,

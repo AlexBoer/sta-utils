@@ -103,8 +103,13 @@ body.system-sta {
     }
 }
 
+.tracker-container .tracker .track {
+    align-items: stretch;
+}
+
 .tracker-container .tracker .button-group {
-    height: 34px;
+    height: auto;
+    align-self: stretch;
 }
 
 .chat-message.message.flexcol {

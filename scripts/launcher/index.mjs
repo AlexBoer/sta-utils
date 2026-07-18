@@ -2,6 +2,12 @@
 export { openLauncher } from "./launcher.mjs";
 export { installTrackerLauncherButton } from "./tracker-button.mjs";
 export {
+  openTraitsDialog,
+  refreshTraitsDialog,
+  getSceneTraitItems,
+  getWorldTraitItems,
+} from "./traits-dialog.mjs";
+export {
   getLauncherSectionsForTracker,
   getLauncherSectionsForCurrentUser,
   getLauncherItemsForCurrentUser,

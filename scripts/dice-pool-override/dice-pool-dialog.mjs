@@ -346,8 +346,11 @@ function _replaceDeterminationWithValueDropdown(dialogEl, actor) {
     .filter((i) => i.type === "value")
     .filter((i) => !i.system?.used && !i.system?.challenged);
 
+  // NPCs don't need determination to use values — always keep the dropdown enabled.
+  const sheetName = actor.sheet?.constructor?.name ?? "";
+  const isNPC = sheetName.includes("NPC");
   const determination = Number(actor.system?.determination?.value ?? 0);
-  const disabled = determination <= 0;
+  const disabled = !isNPC && determination <= 0;
 
   const options = values
     .map((v) => `<option value="${v.id}">${v.name}</option>`)
