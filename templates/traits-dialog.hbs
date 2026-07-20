@@ -54,9 +54,18 @@
     {{#if hasSceneItems}}
     <ul class="sta-traits-list">
       {{#each sceneItems}}
-      <li class="sta-traits-dialog-row" draggable="true" data-uuid="{{this.uuid}}">
+      <li class="sta-traits-dialog-row{{#unless this.isVisible}} is-hidden-for-players{{/unless}}" draggable="true" data-uuid="{{this.uuid}}" data-visible="{{#if this.isVisible}}true{{else}}false{{/if}}">
         <img class="sta-traits-img" src="{{this.img}}" alt="" aria-hidden="true">
         <span class="sta-traits-name">{{this.name}}</span>
+        {{#if ../canRevealTraits}}
+        <button type="button" class="sta-traits-visibility-btn" data-action="toggle-visibility" title="{{this.visibilityActionLabel}}" aria-label="{{this.visibilityActionLabel}}">
+          {{#if this.isVisible}}
+          <i class="fas fa-eye" aria-hidden="true"></i>
+          {{else}}
+          <i class="fas fa-eye-slash" aria-hidden="true"></i>
+          {{/if}}
+        </button>
+        {{/if}}
         <button type="button" class="sta-traits-edit-btn" data-action="edit-trait" title="{{localize "sta-utils.launcher.traitsDialog.edit"}}">
           <i class="fas fa-pen" aria-hidden="true"></i>
         </button>
@@ -81,9 +90,18 @@
     {{#if hasWorldItems}}
     <ul class="sta-traits-list">
       {{#each worldItems}}
-      <li class="sta-traits-dialog-row" draggable="true" data-uuid="{{this.uuid}}">
+      <li class="sta-traits-dialog-row{{#unless this.isVisible}} is-hidden-for-players{{/unless}}" draggable="true" data-uuid="{{this.uuid}}" data-visible="{{#if this.isVisible}}true{{else}}false{{/if}}">
         <img class="sta-traits-img" src="{{this.img}}" alt="" aria-hidden="true">
         <span class="sta-traits-name">{{this.name}}</span>
+        {{#if ../canRevealTraits}}
+        <button type="button" class="sta-traits-visibility-btn" data-action="toggle-visibility" title="{{this.visibilityActionLabel}}" aria-label="{{this.visibilityActionLabel}}">
+          {{#if this.isVisible}}
+          <i class="fas fa-eye" aria-hidden="true"></i>
+          {{else}}
+          <i class="fas fa-eye-slash" aria-hidden="true"></i>
+          {{/if}}
+        </button>
+        {{/if}}
         <button type="button" class="sta-traits-edit-btn" data-action="edit-trait" title="{{localize "sta-utils.launcher.traitsDialog.edit"}}">
           <i class="fas fa-pen" aria-hidden="true"></i>
         </button>

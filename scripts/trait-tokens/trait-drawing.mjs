@@ -3,6 +3,7 @@ import { getOrCreateProxyActor, addTraitToProxy } from "./proxy-actor.mjs";
 import { isTraitVisible } from "./trait-visibility.mjs";
 
 const MODULE_ID = "sta-utils";
+const OBSERVER_LEVEL = Number(CONST?.DOCUMENT_OWNERSHIP_LEVELS?.OBSERVER ?? 2);
 
 /**
  * Build the display label for a trait drawing, appending the quantity
@@ -50,7 +51,6 @@ function balancedLineBreak(text) {
       }
     }
   }
-
   if (bestIdx === -1) return flat; // single word — no break possible
   return flat.slice(0, bestIdx) + "\n" + flat.slice(bestIdx + 1);
 }
@@ -327,8 +327,30 @@ async function _createTraitDrawing({
   if (!uuid) {
     // No source item — create a brand-new trait on the proxy actor
     try {
+      const currentOwnership = Number(proxyActor?.ownership?.default ?? 0);
+      if (
+        !(
+          Number.isFinite(currentOwnership) &&
+          currentOwnership >= OBSERVER_LEVEL
+        )
+      ) {
+        await proxyActor.update({
+          ownership: {
+            ...(proxyActor.ownership ?? {}),
+            default: OBSERVER_LEVEL,
+          },
+        });
+      }
+
       const [created] = await proxyActor.createEmbeddedDocuments("Item", [
-        { name, type: "trait", system: { quantity, description: "" } },
+        {
+          name,
+          type: "trait",
+          ownership: {
+            default: OBSERVER_LEVEL,
+          },
+          system: { quantity, description: "" },
+        },
       ]);
       embeddedItem = created;
       ownerActor = proxyActor;

@@ -388,6 +388,16 @@ async function openStressResetDialog() {
 Hooks.once("init", () => {
   console.log(`${MODULE_ID} | Initializing STA Utilities`);
 
+  try {
+    foundry.utils.setProperty(
+      game.i18n.translations,
+      "sta.actor.character.rollrepnotdis",
+      "Roll Reputation as Department",
+    );
+  } catch (err) {
+    console.warn(`${MODULE_ID} | Failed to force rollrepnotdis override`, err);
+  }
+
   // --- Register TypeDataModel extensions (must run before anything reads system.*) ---
   try {
     registerUtilsCharacterDataModel();

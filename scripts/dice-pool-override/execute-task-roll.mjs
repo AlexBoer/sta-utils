@@ -139,6 +139,17 @@ export async function executeTaskRoll(
   const STARoll = window.STARoll;
   const staRoll = new STARoll();
 
+  const reputationTarget = Number(taskData.reputationValue ?? 0) || 0;
+
+  // The STA system's task result math reads `disDepTarget` before falling
+  // back to the selected discipline/department value. When the sheet's
+  // reputation checkbox is enabled, rewrite that target here so both the
+  // target number and the focus crit threshold use Reputation instead.
+  if (taskData.useReputationInstead) {
+    taskData.disDepTarget = reputationTarget;
+    taskData.selectedDisciplineValue = reputationTarget;
+  }
+
   /* ---- Fold Reserve Power ---- */
   // Non-ship-assist → acts exactly like Determination on the character.
   if (!isShipAssist && taskData.usingReservePower) {

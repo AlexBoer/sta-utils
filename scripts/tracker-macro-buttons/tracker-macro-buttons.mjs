@@ -63,7 +63,12 @@ function createActionButton(action, slotClass) {
     }
 
     try {
-      invokeLauncherItemById(action?.id);
+      const invoked = invokeLauncherItemById(action?.id);
+      if (!invoked) {
+        ui.notifications?.warn?.(
+          "This tracker action is currently unavailable.",
+        );
+      }
     } catch (err) {
       console.error(`${MODULE_ID} | tracker button action failed`, err);
       ui.notifications?.error?.("Tracker button failed. See console.");

@@ -93,7 +93,7 @@
         "choices": {
           "raw": "RAW — Piercing ignores resistance on all hits",
           "firstHit": "First Hit — Piercing ignores resistance on the first hit only; spend 2 momentum (repeatable) to ignore resistance on additional hits",
-          "sciencePiercing": "Science Piercing — Piercing reduces resistance by \u2308Science/2\u2309 on all hits"
+          "sciencePiercing": "Science Piercing — Piercing reduces resistance by ⌈Science/2⌉ on all hits"
         }
       },
       "showAdvancedCalculator": {
@@ -323,7 +323,7 @@
     "focusesInfo": {
       "infoTooltip": "Focuses Info",
       "infoTitle": "Focuses",
-      "desc": "If a focus applies, dice will crit when they are equal to or less than your discipline used in the task.",
+      "desc": "If a focus applies, dice will crit when they are equal to or less than your department used in the task.",
       "ok": "OK"
     },
     "traitsInfo": {
@@ -401,7 +401,7 @@
       "system": "System",
       "department": "Department",
       "attribute": "Attribute",
-      "discipline": "Discipline"
+      "discipline": "Department"
     },
     "warpCalculator": {
       "title": "Warp Speed Calculator",
@@ -686,14 +686,14 @@
       "useAction": "Use",
       "sendToChat": "Send to Chat",
       "rollInfo": "{attribute} + {discipline}, {difficulty}",
-      "rollInfoVaries": "Attribute + Discipline varies",
+      "rollInfoVaries": "Attribute + Department varies",
       "momentumCost": "Costs {cost} Momentum",
       "threatCost": "Costs {cost} Threat",
       "difficultyNum": "Difficulty {difficulty}",
       "difficultyVaries": "Difficulty Varies",
       "difficultyOpposed": "Opposed Difficulty",
       "chooseAttribute": "Choose Attribute",
-      "chooseDiscipline": "Choose Discipline",
+      "chooseDiscipline": "Choose Department",
       "dicePool": "Dice Pool",
       "complicationRange": "Complication Range",
       "usingFocus": "Focus",
@@ -1082,11 +1082,11 @@
           "damageControl": {
             "name": "Damage Control",
             "description": "Repair a damaged or disabled system. Roll Presence + Engineering assisted by the ship's Structure + Engineering vs <strong>Difficulty 2</strong>. A damaged system is repaired. A disabled system becomes damaged instead.",
-            "chatSummary": "Presence + Engineering, <strong>Difficulty 2</strong>. Repair a damaged/disabled system."
+            "chatSummary": "Presence + Engineering, <strong>Difficulty 2</strong>. Repair a damaged/disabled system.\\"
           },
           "regainPower": {
             "name": "Regain Power",
-            "description": "Roll <strong>Control + Engineering</strong> vs <strong>Difficulty 1</strong>. On success, restore Reserve Power. May succeed at a cost, where complications reprsent subsystems shutting down.",
+            "description": "Roll <strong>Control + Engineering</strong> vs <strong>Difficulty 1</strong> + 1 each time you use this. On success, restore Reserve Power. May succeed at a cost, where complications represent subsystems shutting down.",
             "chatSummary": "Control + Engineering, <strong>Difficulty 1</strong>. Restore Reserve Power."
           },
           "regenerateShields": {
@@ -1261,87 +1261,87 @@
       },
       "personalConflict": {
         "actions": {
-        "aim": {
-          "name": "Aim",
-          "description": "When you make an Attack this turn, you may re-roll a single d20 on the task roll.",
-          "chatSummary": "Re-roll 1d20 on your next Attack this turn."
-        },
-        "drawItem": {
-          "name": "Draw Item",
-          "description": "Pick up an item within Reach or draw an item you are carrying. If using the item doesn’t require a task to use, you can use it immediately as part of this minor action.",
-          "chatSummary": "Pick up or draw an item. Use immediately if no task required."
-        },
-        "interact": {
-          "name": "Interact",
-          "description": "Interact with an object in the environment. Complex actions require a major action.",
-          "chatSummary": "Interact with an object in the environment."
-        },
-        "movement": {
-          "name": "Move",
-          "description": "Move up to one zone, to any point within Medium range. You cannot take this minor action in the same turn as the Sprint major action. If there are any enemies within Reach of you, you cannot perform this action.",
-          "chatSummary": "Move up to 1 zone (Medium range). Not with Sprint or enemies in Reach."
-        },
-        "prepare": {
-          "name": "Prepare",
-          "description": "Some items require this minor action before they can be used, and some major actions require this minor action before they can be attempted. Sometimes items will grant special benefits if this action is used before performing a task.",
-          "chatSummary": "Prepare for a task or ready an item for use."
-        },
-        "standDropProne": {
-          "name": "Stand/Drop",
-          "description": "Drop to the ground or stand up. While prone, Ranged attacks against you have <strong>+1 Difficulty</strong>, and if you are in Cover, you gain an additional <strong>+1 Protection</strong>. However, Melee Attacks and Ranged Attacks at Close range gain <strong>2 bonus Momentum</strong> against you, and you cannot attempt any movement-related major actions. Bonus Momentum cannot be saved. You cannot Stand and Drop Prone in the same turn.",
-          "chatSummary": "Drop prone or stand up."
-        },
-        "assist": {
-          "name": "Assist",
-          "description": "Help another character. You may take this action on their turn if you have not acted already.",
-          "chatSummary": "Assist another character."
-        },
-        "attack": {
-          "name": "Attack",
-          "description": "Attack an enemy or other viable target and attempt to injure them. Ranged attacks use <strong>Control + Security</strong> at <strong>Difficulty 2</strong>. Melee attacks use <strong>Daring + Security</strong> at <strong>Difficulty 1</strong>.<br><br>Attack tasks are opposed if the Enemy is able to defend themselves in melee or has cover at range. On a success, the target must take stress equal to the weapon's severity or suffer an Injury and become Defeated.",
-          "chatSummary": "Attack an enemy to injure them or deal stress equal to the weapon's severity."
-        },
-        "createTrait": {
-          "name": "Create a Trait",
-          "description": "Roll vs <strong>Difficulty 2</strong> (usually) to:<ul><li>Create a trait</li><li>Change a trait</li><li>Remove a trait</li></ul><em>Examples include: cover, difficult terrain, distractions, or other environmental effects.</em>",
-          "chatSummary": "<strong>Difficulty 2</strong>. Create, change, or remove a trait."
-        },
-        "direct": {
-          "name": "Direct",
-          "description": "May only be attempted by one character on each side in a position of authority. Spend <strong>1 Momentum</strong> and select one ally who can hear you. They may immediately attempt a single major action with no <strong>+1 Difficulty</strong>. Assist them with your <strong>Control + Command</strong>.",
-          "chatSummary": "Spend <strong>1 Momentum</strong>. An ally takes a major action. You assist with <strong>Control + Command</strong>."
-        },
-        "firstAid": {
-          "name": "First Aid",
-          "description": "Attempt to revive a Defeated character within reach. Perform a <strong>Daring + Medicine</strong> task, <strong>Difficulty 2</strong>. If successful, the character is no longer Defeated.<br><br>Alternatively, treat the Injury with a Difficulty equal to its severity. If successful, the injury has been treated and imposes no penalty for the rest of the scene, but is not removed until long term care is given.",
-          "chatSummary": "<strong>Daring + Medicine</strong>, <strong>Difficulty 2</strong>. Revive a Defeated character or treat their Injury."
-        },
-        "guard": {
-          "name": "Guard",
-          "description": "Defend yourself, preparing for an attack. This is an <strong>Insight + Security</strong> task, <strong>Difficulty 0</strong>.<br><br>Success increases the Difficulty of any attacks against you by 1 until the start of your next turn.<br><br>You may guard an ally within reach instead of yourself at +1 Difficulty.",
-          "chatSummary": "<strong>Insight + Security</strong>, <strong>Difficulty 0</strong>. <strong>+1 Difficulty</strong> to attacks against you."
-        },
-        "otherTasks": {
-          "name": "Other Tasks",
-          "description": "Do something not described here. GM will tell you how to do it.",
-          "chatSummary": "Perform a task not otherwise listed."
-        },
-        "pass": {
-          "name": "Pass",
-          "description": "Do nothing.",
-          "chatSummary": "Do nothing."
-        },
-        "ready": {
-          "name": "Ready",
-          "description": "Choose another major action and perform it when a specific trigger event of your choice occurs.",
-          "chatSummary": "Defer a major action until a chosen trigger occurs."
-        },
-        "sprint": {
-          "name": "Sprint",
-          "description": "Move two zones, to any point within Long range. If there is difficult or hazardous terrain, you may attempt a <strong>Fitness + Conn</strong> task with <strong>Difficulty 0</strong> as part of this action, to generate Momentum to cross the terrain.",
-          "chatSummary": "Move 2 zones (Long range). <strong>Fitness + Conn</strong> <strong>Difficulty 0</strong> for terrain."
+          "aim": {
+            "name": "Aim",
+            "description": "When you make an Attack this turn, you may re-roll a single d20 on the task roll.",
+            "chatSummary": "Re-roll 1d20 on your next Attack this turn."
+          },
+          "drawItem": {
+            "name": "Draw Item",
+            "description": "Pick up an item within Reach or draw an item you are carrying. If using the item doesn’t require a task to use, you can use it immediately as part of this minor action.",
+            "chatSummary": "Pick up or draw an item. Use immediately if no task required."
+          },
+          "interact": {
+            "name": "Interact",
+            "description": "Interact with an object in the environment. Complex actions require a major action.",
+            "chatSummary": "Interact with an object in the environment."
+          },
+          "movement": {
+            "name": "Move",
+            "description": "Move up to one zone, to any point within Medium range. You cannot take this minor action in the same turn as the Sprint major action. If there are any enemies within Reach of you, you cannot perform this action.",
+            "chatSummary": "Move up to 1 zone (Medium range). Not with Sprint or enemies in Reach."
+          },
+          "prepare": {
+            "name": "Prepare",
+            "description": "Some items require this minor action before they can be used, and some major actions require this minor action before they can be attempted. Sometimes items will grant special benefits if this action is used before performing a task.",
+            "chatSummary": "Prepare for a task or ready an item for use."
+          },
+          "standDropProne": {
+            "name": "Stand/Drop",
+            "description": "Drop to the ground or stand up. While prone, Ranged attacks against you have <strong>+1 Difficulty</strong>, and if you are in Cover, you gain an additional <strong>+1 Protection</strong>. However, Melee Attacks and Ranged Attacks at Close range gain <strong>2 bonus Momentum</strong> against you, and you cannot attempt any movement-related major actions. Bonus Momentum cannot be saved. You cannot Stand and Drop Prone in the same turn.",
+            "chatSummary": "Drop prone or stand up."
+          },
+          "assist": {
+            "name": "Assist",
+            "description": "Help another character. You may take this action on their turn if you have not acted already.",
+            "chatSummary": "Assist another character."
+          },
+          "attack": {
+            "name": "Attack",
+            "description": "Attack an enemy or other viable target and attempt to injure them. Ranged attacks use <strong>Control + Security</strong> at <strong>Difficulty 2</strong>. Melee attacks use <strong>Daring + Security</strong> at <strong>Difficulty 1</strong>.<br><br>Attack tasks are opposed if the Enemy is able to defend themselves in melee or has cover at range. On a success, the target must take stress equal to the weapon's severity or suffer an Injury and become Defeated.",
+            "chatSummary": "Attack an enemy to injure them or deal stress equal to the weapon's severity."
+          },
+          "createTrait": {
+            "name": "Create a Trait",
+            "description": "Roll vs <strong>Difficulty 2</strong> (usually) to:<ul><li>Create a trait</li><li>Change a trait</li><li>Remove a trait</li></ul><em>Examples include: cover, difficult terrain, distractions, or other environmental effects.</em>",
+            "chatSummary": "<strong>Difficulty 2</strong>. Create, change, or remove a trait."
+          },
+          "direct": {
+            "name": "Direct",
+            "description": "May only be attempted by one character on each side in a position of authority. Spend <strong>1 Momentum</strong> and select one ally who can hear you. They may immediately attempt a single major action with no <strong>+1 Difficulty</strong>. Assist them with your <strong>Control + Command</strong>.",
+            "chatSummary": "Spend <strong>1 Momentum</strong>. An ally takes a major action. You assist with <strong>Control + Command</strong>."
+          },
+          "firstAid": {
+            "name": "First Aid",
+            "description": "Attempt to revive a Defeated character within reach. Perform a <strong>Daring + Medicine</strong> task, <strong>Difficulty 2</strong>. If successful, the character is no longer Defeated.<br><br>Alternatively, treat the Injury with a Difficulty equal to its severity. If successful, the injury has been treated and imposes no penalty for the rest of the scene, but is not removed until long term care is given.",
+            "chatSummary": "<strong>Daring + Medicine</strong>, <strong>Difficulty 2</strong>. Revive a Defeated character or treat their Injury."
+          },
+          "guard": {
+            "name": "Guard",
+            "description": "Defend yourself, preparing for an attack. This is an <strong>Insight + Security</strong> task, <strong>Difficulty 0</strong>.<br><br>Success increases the Difficulty of any attacks against you by 1 until the start of your next turn.<br><br>You may guard an ally within reach instead of yourself at +1 Difficulty.",
+            "chatSummary": "<strong>Insight + Security</strong>, <strong>Difficulty 0</strong>. <strong>+1 Difficulty</strong> to attacks against you."
+          },
+          "otherTasks": {
+            "name": "Other Tasks",
+            "description": "Do something not described here. GM will tell you how to do it.",
+            "chatSummary": "Perform a task not otherwise listed."
+          },
+          "pass": {
+            "name": "Pass",
+            "description": "Do nothing.",
+            "chatSummary": "Do nothing."
+          },
+          "ready": {
+            "name": "Ready",
+            "description": "Choose another major action and perform it when a specific trigger event of your choice occurs.",
+            "chatSummary": "Defer a major action until a chosen trigger occurs."
+          },
+          "sprint": {
+            "name": "Sprint",
+            "description": "Move two zones, to any point within Long range. If there is difficult or hazardous terrain, you may attempt a <strong>Fitness + Conn</strong> task with <strong>Difficulty 0</strong> as part of this action, to generate Momentum to cross the terrain.",
+            "chatSummary": "Move 2 zones (Long range). <strong>Fitness + Conn</strong> <strong>Difficulty 0</strong> for terrain."
+          }
         }
-      }
       }
     },
     "weaponQualities": {
@@ -1413,7 +1413,7 @@
       "add": "+ Tracker",
       "breakthrough": "Breakthrough",
       "linkedActor": "Linked Actor",
-      "noLinkedActor": "\u2014 None \u2014",
+      "noLinkedActor": "— None —",
       "saveToActor": "Save to Actor",
       "breakthroughDialog": {
         "title": "Breakthrough Effect",
@@ -1531,14 +1531,14 @@
       "warnGmOnly": "Only the GM can send roll requests."
     },
     "casualties": {
-    "title": "Casualty Report",
-    "breachesTitle": "How many breaches on your ship?",
-    "playersTitle": "How many players in the game?",
-    "submit": "Submit",
-    "injured": "Injured",
-    "killed": "Killed"
-  },
-  "characterBrowser": {
+      "title": "Casualty Report",
+      "breachesTitle": "How many breaches on your ship?",
+      "playersTitle": "How many players in the game?",
+      "submit": "Submit",
+      "injured": "Injured",
+      "killed": "Killed"
+    },
+    "characterBrowser": {
       "title": "Character Browser",
       "unnamed": "Unnamed Character",
       "openSheet": "Open Sheet",
@@ -1562,7 +1562,7 @@
         "characterType": "Character Type",
         "personalThreat": "Personal Threat",
         "attributes": "Attributes",
-        "disciplines": "Disciplines"
+        "disciplines": "Departments"
       },
       "filter": {
         "layout": "Layout",
@@ -1578,8 +1578,8 @@
         "anyCharacterType": "Any Character Type",
         "attribute": "Attribute",
         "anyAttribute": "Any Attribute",
-        "discipline": "Discipline",
-        "anyDiscipline": "Any Discipline",
+        "discipline": "Department",
+        "anyDiscipline": "Any Department",
         "min": "Min",
         "max": "Max",
         "personalThreatMin": "Personal Threat Min",
@@ -1589,7 +1589,7 @@
         "results": "results"
       }
     },
-  "launcher": {
+    "launcher": {
       "title": "STA Utilities",
       "stardateCalculator": "Stardate Calculator",
       "warpCalculator": "Warp Calculator",
@@ -1618,6 +1618,8 @@
         "createWorldTrait": "Create campaign trait",
         "newTraitDefaultName": "New Trait",
         "createTraitFailed": "Could not create trait item.",
+        "hideFromPlayers": "Hide from players",
+        "revealToPlayers": "Reveal to players",
         "edit": "Open Sheet",
         "deleteTrait": "Delete Trait",
         "deleteTraitTitle": "Delete Trait",
@@ -1674,6 +1676,20 @@
     "noteStyler": {
       "warnNoNoteSelected": "Select one or more map notes first.",
       "notifAppliedToCount": "Applied style to {count} note(s)."
+    },
+    "sta": {
+      "actor": {
+        "character": {
+          "discipline": {
+            "title": "Departments"
+          }
+        }
+      }
+    },
+    "sta-utils": {
+      "character": {
+        "rollrepnotdis": "Roll Reputation as Department"
+      }
     }
   }
 }

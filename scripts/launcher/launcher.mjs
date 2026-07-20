@@ -265,8 +265,18 @@ const LAUNCHER_SECTIONS = [
         icon: "fa-flag",
         img: `${OL_ASSET_BASE}/newMission.webp`,
         gmOnly: false,
-        available: () => !!game.staofficerslog?.openMissionManager,
-        call: () => game.staofficerslog.openMissionManager(),
+        available: () => Boolean(game.modules.get("sta-officers-log")?.active),
+        call: () => {
+          const openMissionManager = game.staofficerslog?.openMissionManager;
+          if (typeof openMissionManager === "function") {
+            return openMissionManager();
+          }
+
+          ui.notifications?.warn?.(
+            "Mission Manager is unavailable. Reload world and ensure STA Officers Log is active.",
+          );
+          return null;
+        },
       },
       {
         id: "ol-addParticipant",

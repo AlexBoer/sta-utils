@@ -1,5 +1,6 @@
 const MODULE_ID = "sta-utils";
 const FOLDER_NAME = "Scene Traits";
+const OBSERVER_LEVEL = Number(CONST?.DOCUMENT_OWNERSHIP_LEVELS?.OBSERVER ?? 2);
 
 /**
  * Get (or lazily create) the "Scene Traits" actor folder.
@@ -49,6 +50,9 @@ export async function getOrCreateWorldTraitActor() {
     type: "scenetraits",
     img: "icons/svg/d20-grey.svg",
     folder: folder.id,
+    ownership: {
+      default: OBSERVER_LEVEL,
+    },
     flags: {
       [MODULE_ID]: {
         isProxyActor: true,
@@ -106,6 +110,9 @@ export async function getOrCreateProxyActor(sceneId) {
     type: "scenetraits",
     img: "icons/svg/d20-grey.svg",
     folder: folder.id,
+    ownership: {
+      default: OBSERVER_LEVEL,
+    },
     flags: {
       [MODULE_ID]: {
         isProxyActor: true,
@@ -133,6 +140,9 @@ export async function addTraitToProxy(proxyActor, sourceItem) {
     name: sourceItem.name,
     type: "trait",
     img: sourceItem.img,
+    ownership: {
+      default: OBSERVER_LEVEL,
+    },
     system: {
       description: sourceItem.system?.description ?? "",
       quantity: sourceItem.system?.quantity ?? 1,

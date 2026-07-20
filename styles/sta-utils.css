@@ -7954,6 +7954,15 @@ input.selector.attribute.sta-fatigued-attribute {
   &:active { cursor: grabbing; }
 }
 
+.sta-traits-dialog-row.is-hidden-for-players {
+  opacity: 0.58;
+
+  .sta-traits-name {
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+  }
+}
+
 .sta-traits-img {
   width: 24px;
   height: 24px;
@@ -7970,6 +7979,31 @@ input.selector.attribute.sta-fatigued-attribute {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.sta-traits-visibility-btn {
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  opacity: 0.8;
+  transition: color 0.12s, background 0.12s, opacity 0.12s;
+
+  i { font-size: 0.75rem; pointer-events: none; }
+
+  &:hover {
+    color: #89cff0;
+    background: rgba(137, 207, 240, 0.12);
+    opacity: 1;
+  }
 }
 
 .sta-traits-edit-btn {

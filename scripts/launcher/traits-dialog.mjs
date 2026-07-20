@@ -6,6 +6,7 @@ const OFFICERS_LOG_MODULE_ID = "sta-officers-log";
 const OFFICERS_LOG_TRAITS_MODE_SETTING = "traitsMode";
 const OFFICERS_LOG_SIMPLE_TRAITS_SETTING = "simpleTraits";
 const OFFICERS_LOG_TRAITS_MODE_SIMPLE = "simple";
+const FLAG_VISIBLE = "visible";
 /** @type {foundry.applications.ux.ContextMenu|null} */
 let _traitsDialogContextMenu = null;
 let _traitsDialogHooksInstalled = false;
@@ -109,6 +110,14 @@ function getSceneTraitActor() {
   );
 }
 
+function isTraitVisible(item) {
+  return (item?.getFlag?.(MODULE_ID, FLAG_VISIBLE) ?? true) !== false;
+}
+
+function canRevealTraits() {
+  return Boolean(game.user?.isGM);
+}
+
 async function getWorldTraitActor() {
   let actor = null;
   try {
@@ -199,6 +208,20 @@ function installTraitsDialogSyncHooks() {
   });
 }
 
+async function ensureObserverOwnership(actor) {
+  if (!actor) return;
+  const observer = Number(CONST?.DOCUMENT_OWNERSHIP_LEVELS?.OBSERVER ?? 2);
+  const current = Number(actor?.ownership?.default ?? 0);
+  if (Number.isFinite(current) && current >= observer) return;
+
+  await actor.update({
+    ownership: {
+      ...(actor.ownership ?? {}),
+      default: observer,
+    },
+  });
+}
+
 async function createTraitOnActor(actor) {
   if (!actor) {
     ui.notifications?.warn?.(
@@ -207,10 +230,16 @@ async function createTraitOnActor(actor) {
     return null;
   }
 
+  await ensureObserverOwnership(actor);
+  const observer = Number(CONST?.DOCUMENT_OWNERSHIP_LEVELS?.OBSERVER ?? 2);
+
   const [created] = await actor.createEmbeddedDocuments("Item", [
     {
       name: t("sta-utils.launcher.traitsDialog.newTraitDefaultName"),
       type: "trait",
+      ownership: {
+        default: observer,
+      },
     },
   ]);
   return created ?? null;
@@ -323,11 +352,19 @@ class TraitsDialogApp extends fapi.HandlebarsApplicationMixin(
       uuid: i.uuid,
       name: formatTraitDisplayName(i),
       img: i.img ?? "icons/svg/d20-grey.svg",
+      isVisible: isTraitVisible(i),
+      visibilityActionLabel: isTraitVisible(i)
+        ? t("sta-utils.launcher.traitsDialog.hideFromPlayers")
+        : t("sta-utils.launcher.traitsDialog.revealToPlayers"),
     }));
     const worldItems = (await getWorldTraitItems()).map((i) => ({
       uuid: i.uuid,
       name: formatTraitDisplayName(i),
       img: i.img ?? "icons/svg/d20-grey.svg",
+      isVisible: isTraitVisible(i),
+      visibilityActionLabel: isTraitVisible(i)
+        ? t("sta-utils.launcher.traitsDialog.hideFromPlayers")
+        : t("sta-utils.launcher.traitsDialog.revealToPlayers"),
     }));
 
     return {
@@ -338,6 +375,7 @@ class TraitsDialogApp extends fapi.HandlebarsApplicationMixin(
       worldItems,
       hasSceneItems: sceneItems.length > 0,
       hasWorldItems: worldItems.length > 0,
+      canRevealTraits: canRevealTraits(),
       canCreateSceneTrait: Boolean(sceneTraitActor),
       canCreateWorldTrait: Boolean(worldTraitActor),
       noSceneLabel: t("sta-utils.launcher.traitsDialog.noSceneTraits"),
@@ -387,6 +425,28 @@ class TraitsDialogApp extends fapi.HandlebarsApplicationMixin(
         item?.sheet?.render(true);
       });
     });
+
+    // GM only: toggle trait visibility for players.
+    root
+      .querySelectorAll("[data-action='toggle-visibility']")
+      .forEach((btn) => {
+        btn.addEventListener("click", async (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+
+          if (!game.user?.isGM) return;
+
+          const row = btn.closest("[data-uuid]");
+          const uuid = row?.dataset?.uuid ?? "";
+          if (!uuid) return;
+
+          const item = await fromUuid(uuid);
+          if (!item?.isOwner) return;
+
+          const current = isTraitVisible(item);
+          await item.setFlag(MODULE_ID, FLAG_VISIBLE, !current);
+        });
+      });
 
     root
       .querySelectorAll("[data-action='create-scene-trait']")
