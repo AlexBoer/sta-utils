@@ -537,7 +537,8 @@
         "hint": "Choose an existing Scene Traits actor for this scene, or leave as auto-create to generate one when first needed.",
         "autoCreate": "— Auto-create when needed —"
       },
-      "warnNoActiveScene": "No active scene."
+      "warnNoActiveScene": "No active scene.",
+      "warnActorUnavailable": "The scene traits actor is not available."
     },
     "traitDrawingSettings": {
       "title": "Trait Drawing Style",
@@ -1477,16 +1478,35 @@
         "editTitle": "Edit Extended Task Tracker",
         "actorLabel": "Link to Actor",
         "name": "Name",
-        "value": "Current Value",
-        "size": "Work Track Size (max 30)",
+        "value": "Current Progress",
+        "size": "Work Track (3-30)",
         "type": "Type",
         "difficulty": "Difficulty (1–10)",
         "resistance": "Resistance (0–5)",
         "impact": "Impact (1–10)",
+        "firstBreakthrough": "First Breakthrough",
+        "secondBreakthrough": "Second Breakthrough",
+        "firstSetback": "First Setback",
+        "secondSetback": "Second Setback",
+        "breakthroughLabel": "Breakthrough {number}",
+        "setbackLabel": "Setback {number}",
+        "addBreakthrough": "Add Point",
+        "removeBreakthrough": "Remove this point",
+        "breakthroughUnit": "Breakthrough position unit",
+        "pips": "Pips",
+        "percent": "%",
+        "hideBreakthroughs": "Hide",
+        "hideBreakthroughsFromPlayers": "Hide Breakthrough Positions from Players",
+        "resetBreakthroughs": "Reset Positions",
+        "preview": "Live Preview",
+        "previewName": "Extended Task",
+        "difficultyShort": "Difficulty",
+        "resistanceShort": "Resist",
+        "impactShort": "Impact",
         "isConsequence": "Extended Consequence",
         "isTimedChallenge": "Timed Challenge",
         "color": "Color",
-        "private": "Private (GM only)"
+        "private": "GM Only"
       },
       "types": {
         "task": "Extended Task",
@@ -1514,7 +1534,17 @@
         "noActiveGM": "No active GM is available to process this update."
       },
       "errors": {
-        "sizeTooBig": "Maximum tracker size is {maxSize}."
+        "sizeTooBig": "Maximum tracker size is {maxSize}.",
+        "sizeTooSmall": "Extended tasks and consequences require at least {minSize} pips."
+      },
+      "marker": {
+        "positionLabel": "{pips} pips ({percent}%)",
+        "breakthroughFirstAriaLabel": "First breakthrough at {position}",
+        "breakthroughSecondAriaLabel": "Second breakthrough at {position}",
+        "setbackFirstAriaLabel": "First setback at {position}",
+        "setbackSecondAriaLabel": "Second setback at {position}",
+        "breakthroughAriaLabel": "Breakthrough {number} at {position}",
+        "setbackAriaLabel": "Setback {number} at {position}"
       }
     },
     "rollRequest": {

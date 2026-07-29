@@ -1,6 +1,8 @@
 // Trait Tokens feature - drag-drop traits onto canvas as drawings
 export {
   getOrCreateProxyActor,
+  getSceneTraitsActor,
+  ensureSceneTraitsActorAsGm,
   addTraitToProxy,
   getOrCreateWorldTraitActor,
 } from "./proxy-actor.mjs";

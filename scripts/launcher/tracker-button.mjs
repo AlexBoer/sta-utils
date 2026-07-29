@@ -5,6 +5,13 @@ import { openLauncher } from "./launcher.mjs";
 // ─────────────────────────────────────────────────────────────────────────────
 
 const BTN_CLASS = "sta-utils-tracker-launcher-btn";
+const POSITION_TARGETS = {
+  TopLeft: "#scene-navigation-active",
+  TopRight: "#sidebar button.fa-comments",
+  BottomLeft: "#players",
+  BottomRight: "#sidebar button.collapse",
+};
+let _positionGuardInstalled = false;
 
 function isTrackerApp(app, root) {
   const ctorName = String(app?.constructor?.name ?? "");
@@ -45,6 +52,29 @@ function injectLauncherButton(root) {
   (systemGroup ?? iconContainer).appendChild(btn);
 }
 
+function installTrackerPositionGuard(app) {
+  if (_positionGuardInstalled) return;
+
+  const Tracker = app?.constructor;
+  const original = Tracker?.positionDiceRoller;
+  if (typeof original !== "function") return;
+
+  Tracker.positionDiceRoller = function (trackerForm) {
+    const position = game.settings.get("sta", "momentumTrackerPosition");
+    const targetSelector =
+      POSITION_TARGETS[position] ?? POSITION_TARGETS.BottomRight;
+    const target = document.querySelector(targetSelector);
+    const clickable = document.querySelector(
+      ".tracker-container .tracker-clickable",
+    );
+    if (!trackerForm || !target || !clickable) return;
+
+    return original.call(this, trackerForm);
+  };
+
+  _positionGuardInstalled = true;
+}
+
 let _hookInstalled = false;
 
 /**
@@ -59,6 +89,8 @@ export function installTrackerLauncherButton() {
 
   Hooks.on("renderApplicationV2", (app, root) => {
     if (!isTrackerApp(app, root)) return;
+
+    installTrackerPositionGuard(app);
 
     // Defer so that all other synchronous renderApplicationV2 hooks
     // (including officers-log's button injection) finish first.

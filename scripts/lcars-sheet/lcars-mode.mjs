@@ -319,25 +319,27 @@ function _installStrictItemTooltipHover(root) {
   if (!root || root.dataset.staLcarsStrictTooltipInit === "1") return;
   root.dataset.staLcarsStrictTooltipInit = "1";
 
-  const isItemNameTarget = (node) => {
+  const selector = ".row.entry .item-name[data-tooltip]";
+  const closestMatch = (node) => {
     const element = node instanceof Element ? node : null;
-    return !!element?.closest?.(".row.entry .item-name[data-tooltip]");
+    return element?.closest?.(selector) ?? null;
   };
 
-  const isItemNameTooltipActive = () => {
-    const activeElement = game.tooltip?.element;
-    return !!activeElement?.matches?.(".row.entry .item-name[data-tooltip]");
-  };
+  // Deactivate only when the pointer actually exits the currently hovered
+  // item-name (not on every pointer move across the sheet).
+  root.addEventListener("pointerout", (event) => {
+    const from = closestMatch(event.target);
+    if (!from) return;
 
-  // If pointer leaves an item-name (or the whole sheet), hide any active tooltip.
-  root.addEventListener("pointermove", (event) => {
-    if (isItemNameTooltipActive() && !isItemNameTarget(event.target)) {
-      game.tooltip?.deactivate();
-    }
+    const to = closestMatch(event.relatedTarget);
+    if (from === to) return;
+
+    if (game.tooltip?.element === from) game.tooltip.deactivate();
   });
 
   root.addEventListener("pointerleave", () => {
-    if (isItemNameTooltipActive()) game.tooltip?.deactivate();
+    const activeElement = game.tooltip?.element;
+    if (activeElement?.matches?.(selector)) game.tooltip.deactivate();
   });
 }
 

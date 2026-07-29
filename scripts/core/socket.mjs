@@ -46,6 +46,14 @@ export function initSocket() {
     await handleCreateTraitDrawingRPC(msg);
   });
 
+  moduleSocket.register("ensureSceneTraitsActor", async ({ sceneId }) => {
+    if (!game.user.isGM) return null;
+    const { ensureSceneTraitsActorAsGm } =
+      await import("../trait-tokens/proxy-actor.mjs");
+    const actor = await ensureSceneTraitsActorAsGm(sceneId);
+    return actor?.id ?? null;
+  });
+
   // --- RPC: Author -> All (momentum spend selection updates) ---
   moduleSocket.register("momentumSpendUpdate", async (msg) => {
     const { handleMomentumSpendUpdate } =

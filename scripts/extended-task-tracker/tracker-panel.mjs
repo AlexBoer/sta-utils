@@ -2,6 +2,7 @@ import { MODULE_ID } from "../core/constants.mjs";
 import { TrackerDatabase } from "./tracker-database.mjs";
 import { TrackerDialog, COLOR_PRESETS } from "./tracker-dialog.mjs";
 import { BreakthroughDialog } from "./breakthrough-dialog.mjs";
+import { pipsToPercentage } from "./breakthrough-positions.mjs";
 
 const fapi = foundry.applications.api;
 
@@ -9,8 +10,7 @@ const fapi = foundry.applications.api;
  * The Extended Task Tracker panel — rendered in the UI column.
  *
  * Each tracker is a bar with slashes (like the "tracker" type in
- * Global Progress Clocks) plus breakthrough lines at points corresponding to
- * 50% and 75% of the bar's max value.
+ * Global Progress Clocks) plus configurable breakthrough lines.
  */
 export class TrackerPanel extends fapi.HandlebarsApplicationMixin(
   fapi.Application,
@@ -73,25 +73,50 @@ export class TrackerPanel extends fapi.HandlebarsApplicationMixin(
     return trackers.map((data) => {
       const value = Math.clamp(data.value, 0, data.max);
 
-      // Breakthrough points at 50% and 75%
-      const bp50 = Math.ceil(data.max * 0.5);
-      const bp75 = Math.ceil(data.max * 0.75);
+      const showBreakthroughs =
+        !data.isTimedChallenge &&
+        (game.user.isGM || !data.hideBreakthroughsFromPlayers);
 
       // Build slash array with breakthrough/setback markers
       const slashes = Array.from({ length: data.max }, (_, i) => {
-        const isBreak =
-          !data.isTimedChallenge && (i + 1 === bp50 || i + 1 === bp75);
+        const pip = i + 1;
+        const markerIndex = showBreakthroughs
+          ? data.breakthroughs.indexOf(pip)
+          : -1;
+        const hasBreakthrough = markerIndex >= 0;
+        const markerLabel = hasBreakthrough
+          ? game.i18n.format(
+              "sta-utils.extendedTaskTracker.marker.positionLabel",
+              {
+                pips: pip,
+                percent: pipsToPercentage(pip, data.max),
+              },
+            )
+          : null;
         return {
+          pip,
           filled: i < value,
-          // A breakthrough/setback line appears *after* this slot
-          breakthrough: isBreak,
-          breakthroughLabel:
-            i + 1 === bp50 ? "50%" : i + 1 === bp75 ? "75%" : null,
-          breakClass: isBreak
+          hasBreakthrough,
+          markerIndex,
+          breakthroughLabel: markerLabel,
+          breakthroughAriaLabel: hasBreakthrough
+            ? game.i18n.format(
+                `sta-utils.extendedTaskTracker.marker.${data.isConsequence ? "setback" : "breakthrough"}AriaLabel`,
+                { number: markerIndex + 1, position: markerLabel },
+              )
+            : null,
+          breakClass: hasBreakthrough
             ? data.isConsequence
               ? "setback-line"
               : "breakthrough-line"
             : null,
+          markerEditable: game.user.isGM,
+          markerMin:
+            markerIndex > 0 ? data.breakthroughs[markerIndex - 1] + 1 : 1,
+          markerMax:
+            markerIndex < data.breakthroughs.length - 1
+              ? data.breakthroughs[markerIndex + 1] - 1
+              : data.max - 1,
         };
       });
 
@@ -201,11 +226,13 @@ export class TrackerPanel extends fapi.HandlebarsApplicationMixin(
     }
     this.lastRendered = rendered;
 
+    this.#activateBreakthroughMarkers(html);
+
     // Click / right-click / keyboard to increment / decrement
     for (const tracker of html.querySelectorAll(
       ".ext-tracker-entry.editable .ext-tracker-bar",
     )) {
-      tracker.setAttribute("role", "slider");
+      tracker.setAttribute("role", "group");
       tracker.setAttribute("tabindex", "0");
 
       const getEntry = (el) => {
@@ -214,6 +241,7 @@ export class TrackerPanel extends fapi.HandlebarsApplicationMixin(
       };
 
       tracker.addEventListener("click", (event) => {
+        if (event.target.closest(".ext-breakthrough-marker")) return;
         const entry = getEntry(event.target);
         if (!entry) return;
         entry.value = entry.value >= entry.max ? 0 : entry.value + 1;
@@ -221,6 +249,7 @@ export class TrackerPanel extends fapi.HandlebarsApplicationMixin(
       });
 
       tracker.addEventListener("contextmenu", (event) => {
+        if (event.target.closest(".ext-breakthrough-marker")) return;
         event.preventDefault();
         const entry = getEntry(event.target);
         if (!entry) return;
@@ -229,6 +258,7 @@ export class TrackerPanel extends fapi.HandlebarsApplicationMixin(
       });
 
       tracker.addEventListener("keydown", (event) => {
+        if (event.target.closest(".ext-breakthrough-marker")) return;
         const entry = getEntry(tracker);
         if (!entry) return;
         if (event.key === "ArrowRight" || event.key === "ArrowUp") {
@@ -269,6 +299,147 @@ export class TrackerPanel extends fapi.HandlebarsApplicationMixin(
       } else {
         entryEl.style.removeProperty("--name-enter");
       }
+    }
+  }
+
+  #activateBreakthroughMarkers(html) {
+    const getBounds = (entry, markerIndex) => [
+      markerIndex > 0 ? entry.breakthroughs[markerIndex - 1] + 1 : 1,
+      markerIndex < entry.breakthroughs.length - 1
+        ? entry.breakthroughs[markerIndex + 1] - 1
+        : entry.max - 1,
+    ];
+    const getLabel = (position, max) =>
+      game.i18n.format("sta-utils.extendedTaskTracker.marker.positionLabel", {
+        pips: position,
+        percent: pipsToPercentage(position, max),
+      });
+
+    for (const marker of html.querySelectorAll(
+      ".ext-breakthrough-marker[data-marker-index]",
+    )) {
+      const entryEl = marker.closest("[data-id]");
+      const entry = this.db.get(entryEl?.dataset.id);
+      if (!entry || !game.user.isGM) continue;
+      const markerIndex = Number(marker.dataset.markerIndex);
+      const originalPosition = entry.breakthroughs[markerIndex];
+      let previewPosition = originalPosition;
+      let dragActive = false;
+
+      const updateMarkerMetadata = (position) => {
+        const label = getLabel(position, entry.max);
+        marker.setAttribute("aria-valuenow", String(position));
+        marker.setAttribute("aria-valuetext", label);
+        marker.setAttribute(
+          "aria-label",
+          game.i18n.format(
+            `sta-utils.extendedTaskTracker.marker.${entry.isConsequence ? "setback" : "breakthrough"}AriaLabel`,
+            { number: markerIndex + 1, position: label },
+          ),
+        );
+      };
+
+      const movePreview = (position) => {
+        const [min, max] = getBounds(entry, markerIndex);
+        previewPosition = Math.clamp(position, min, max);
+        const target = entryEl.querySelector(
+          `.slash-slot[data-pip="${previewPosition}"]`,
+        );
+        if (!target || target.contains(marker)) return;
+        marker.closest(".slash-slot")?.classList.remove("has-marker");
+        target.appendChild(marker);
+        target.classList.add("has-marker");
+        updateMarkerMetadata(previewPosition);
+      };
+
+      const cancelDrag = (pointerId) => {
+        if (!dragActive) return;
+        dragActive = false;
+        marker.classList.remove("dragging");
+        const originalSlot = entryEl.querySelector(
+          `.slash-slot[data-pip="${originalPosition}"]`,
+        );
+        marker.closest(".slash-slot")?.classList.remove("has-marker");
+        originalSlot?.appendChild(marker);
+        originalSlot?.classList.add("has-marker");
+        previewPosition = originalPosition;
+        updateMarkerMetadata(originalPosition);
+        if (marker.hasPointerCapture(pointerId)) {
+          marker.releasePointerCapture(pointerId);
+        }
+      };
+
+      const nearestPosition = (event) => {
+        const pips = [...entryEl.querySelectorAll(".slash-slot[data-pip]")];
+        let nearest = originalPosition;
+        let nearestDistance = Number.POSITIVE_INFINITY;
+        for (const pip of pips) {
+          const rect = pip.getBoundingClientRect();
+          const distance = Math.hypot(
+            event.clientX - rect.right,
+            event.clientY - (rect.top + rect.height / 2),
+          );
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearest = Number(pip.dataset.pip);
+          }
+        }
+        return nearest;
+      };
+
+      marker.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0) return;
+        event.preventDefault();
+        event.stopPropagation();
+        dragActive = true;
+        marker.classList.add("dragging");
+        marker.setPointerCapture(event.pointerId);
+      });
+      marker.addEventListener("pointermove", (event) => {
+        if (!marker.hasPointerCapture(event.pointerId)) return;
+        event.preventDefault();
+        movePreview(nearestPosition(event));
+        marker.setPointerCapture(event.pointerId);
+      });
+      marker.addEventListener("pointerup", async (event) => {
+        if (!marker.hasPointerCapture(event.pointerId)) return;
+        event.preventDefault();
+        event.stopPropagation();
+        dragActive = false;
+        marker.releasePointerCapture(event.pointerId);
+        marker.classList.remove("dragging");
+        if (previewPosition !== originalPosition) {
+          const breakthroughs = [...entry.breakthroughs];
+          breakthroughs[markerIndex] = previewPosition;
+          await this.db.update({
+            id: entry.id,
+            breakthroughs,
+          });
+        }
+      });
+      marker.addEventListener("pointercancel", (event) => {
+        cancelDrag(event.pointerId);
+      });
+      marker.addEventListener("lostpointercapture", (event) =>
+        cancelDrag(event.pointerId),
+      );
+      marker.addEventListener("keydown", async (event) => {
+        if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+        event.preventDefault();
+        event.stopPropagation();
+        const delta = event.key === "ArrowLeft" ? -1 : 1;
+        const [min, max] = getBounds(entry, markerIndex);
+        const nextPosition = Math.clamp(
+          entry.breakthroughs[markerIndex] + delta,
+          min,
+          max,
+        );
+        if (nextPosition !== entry.breakthroughs[markerIndex]) {
+          const breakthroughs = [...entry.breakthroughs];
+          breakthroughs[markerIndex] = nextPosition;
+          await this.db.update({ id: entry.id, breakthroughs });
+        }
+      });
     }
   }
 

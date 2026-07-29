@@ -1,4 +1,9 @@
 import { MODULE_ID } from "../core/constants.mjs";
+import {
+  MAX_TRACK_SIZE,
+  MIN_BREAKTHROUGH_TRACK_SIZE,
+  normalizeTrackerBreakthroughs,
+} from "./breakthrough-positions.mjs";
 
 const SETTING_KEY = "extendedTaskTrackers";
 
@@ -13,13 +18,17 @@ const DEFAULT_TRACKER = {
   isConsequence: false,
   impact: 3,
   isTimedChallenge: false,
+  breakthroughs: null,
+  breakthrough1: null,
+  breakthrough2: null,
+  hideBreakthroughsFromPlayers: false,
 };
 
 /**
  * Manages Extended Task Tracker data stored in a world setting.
  * Similar in structure to the Global Progress Clocks database,
  * but specialized for STA extended-task bar trackers with
- * breakthrough markers at 50 % and 75 %.
+ * configurable breakthrough markers.
  */
 export class TrackerDatabase extends Collection {
   #isSyncingToActor = false;
@@ -29,10 +38,12 @@ export class TrackerDatabase extends Collection {
   }
 
   addTracker(data = {}) {
-    if (!this.#verifyData(data)) return;
-
     const trackers = this.#getData();
-    const newData = { ...DEFAULT_TRACKER, ...data };
+    const newData = normalizeTrackerBreakthroughs({
+      ...DEFAULT_TRACKER,
+      ...data,
+    });
+    if (!this.#verifyData(newData)) return;
     newData.id ??= foundry.utils.randomID();
 
     // When linking to an existing actor on creation, pull the actor's current
@@ -56,16 +67,24 @@ export class TrackerDatabase extends Collection {
   }
 
   async update(data) {
-    if (!this.#verifyData(data)) return;
-
     const trackers = this.#getData();
     const existing = trackers[data.id];
     if (!existing) return;
 
-    const newData = foundry.utils.mergeObject(
+    const merged = foundry.utils.mergeObject(
       foundry.utils.duplicate(existing),
       data,
     );
+    if (Object.hasOwn(data, "breakthroughs")) {
+      merged.breakthroughs = [...data.breakthroughs];
+    } else if (
+      Object.hasOwn(data, "breakthrough1") ||
+      Object.hasOwn(data, "breakthrough2")
+    ) {
+      merged.breakthroughs = null;
+    }
+    const newData = normalizeTrackerBreakthroughs(merged);
+    if (!this.#verifyData(newData)) return;
     newData.value = Math.clamp(newData.value, 0, newData.max);
 
     if (game.user.hasPermission("SETTINGS_MODIFY")) {
@@ -175,10 +194,19 @@ export class TrackerDatabase extends Collection {
     const trackers = this.#getData();
     const existing = trackers[data.id];
     if (!existing) return;
-    const newData = foundry.utils.mergeObject(
+    const merged = foundry.utils.mergeObject(
       foundry.utils.duplicate(existing),
       data,
     );
+    if (Object.hasOwn(data, "breakthroughs")) {
+      merged.breakthroughs = [...data.breakthroughs];
+    } else if (
+      Object.hasOwn(data, "breakthrough1") ||
+      Object.hasOwn(data, "breakthrough2")
+    ) {
+      merged.breakthroughs = null;
+    }
+    const newData = normalizeTrackerBreakthroughs(merged);
     newData.value = Math.clamp(newData.value, 0, newData.max);
     Object.assign(existing, newData);
     await game.settings.set(MODULE_ID, SETTING_KEY, trackers);
@@ -187,17 +215,27 @@ export class TrackerDatabase extends Collection {
   #getData() {
     const entries = game.settings.get(MODULE_ID, SETTING_KEY);
     for (const key of Object.keys(entries)) {
-      entries[key] = { ...DEFAULT_TRACKER, ...entries[key] };
+      entries[key] = normalizeTrackerBreakthroughs({
+        ...DEFAULT_TRACKER,
+        ...entries[key],
+      });
     }
     return entries;
   }
 
   #verifyData(data) {
-    const maxSize = 30;
-    if (data.max > maxSize) {
+    if (data.max > MAX_TRACK_SIZE) {
       ui.notifications.error(
         game.i18n.format("sta-utils.extendedTaskTracker.errors.sizeTooBig", {
-          maxSize,
+          maxSize: MAX_TRACK_SIZE,
+        }),
+      );
+      return false;
+    }
+    if (!data.isTimedChallenge && data.max < MIN_BREAKTHROUGH_TRACK_SIZE) {
+      ui.notifications.error(
+        game.i18n.format("sta-utils.extendedTaskTracker.errors.sizeTooSmall", {
+          minSize: MIN_BREAKTHROUGH_TRACK_SIZE,
         }),
       );
       return false;

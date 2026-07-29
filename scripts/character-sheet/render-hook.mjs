@@ -72,24 +72,26 @@ function installStrictItemTooltipHover(root) {
   if (!root || root.dataset.staStrictTooltipInit === "1") return;
   root.dataset.staStrictTooltipInit = "1";
 
-  const isItemNameTarget = (node) => {
+  const selector = ".item-name[data-tooltip]";
+  const closestMatch = (node) => {
     const element = node instanceof Element ? node : null;
-    return !!element?.closest?.(".item-name[data-tooltip]");
+    return element?.closest?.(selector) ?? null;
   };
 
-  const isItemNameTooltipActive = () => {
-    const activeElement = game.tooltip?.element;
-    return !!activeElement?.matches?.(".item-name[data-tooltip]");
-  };
+  // Deactivate only when the pointer exits the currently hovered item-name.
+  root.addEventListener("pointerout", (event) => {
+    const from = closestMatch(event.target);
+    if (!from) return;
 
-  root.addEventListener("pointermove", (event) => {
-    if (isItemNameTooltipActive() && !isItemNameTarget(event.target)) {
-      game.tooltip?.deactivate();
-    }
+    const to = closestMatch(event.relatedTarget);
+    if (from === to) return;
+
+    if (game.tooltip?.element === from) game.tooltip.deactivate();
   });
 
   root.addEventListener("pointerleave", () => {
-    if (isItemNameTooltipActive()) game.tooltip?.deactivate();
+    const activeElement = game.tooltip?.element;
+    if (activeElement?.matches?.(selector)) game.tooltip.deactivate();
   });
 }
 

@@ -1,8 +1,23 @@
 <form>
     <div class="dialog-content">
+        <section class="tracker-dialog-preview ext-task-tracker-display" aria-label="{{localize 'sta-utils.extendedTaskTracker.dialog.preview'}}">
+            <div class="tracker-preview-heading">{{localize "sta-utils.extendedTaskTracker.dialog.preview"}}</div>
+            <div class="ext-tracker-entry">
+                <div class="ext-tracker-name">
+                    <div class="ext-name-row"><span class="value"></span></div>
+                    <div class="ext-meta-row">
+                        <span class="ext-tracker-stats"></span>
+                    </div>
+                </div>
+                <div class="ext-tracker-bar graphic">
+                    <div class="ext-tracker-value"></div>
+                    <div class="ext-tracker-slashes"></div>
+                </div>
+            </div>
+        </section>
         {{#unless entry}}
         {{#if presets.length}}
-        <div class="form-group presets-row">
+        <div class="form-group presets-row tracker-settings-presets">
             <label>{{localize "sta-utils.extendedTaskTracker.presets.label"}}</label>
             <div class="form-fields">
                 {{#each presets as |preset|}}
@@ -12,86 +27,132 @@
         </div>
         {{/if}}
         {{/unless}}
-        <div class="form-group actor-row">
-            <label>{{localize "sta-utils.extendedTaskTracker.dialog.actorLabel"}}</label>
-            <div class="form-fields">
-                <select name="actorId">
-                    <option value="" {{#unless selectedActorId}}selected{{/unless}}>{{localize "sta-utils.extendedTaskTracker.noLinkedActor"}}</option>
-                    {{#each extendedTaskActors as |actor|}}
-                        <option value="{{actor.id}}" {{#if actor.selected}}selected{{/if}}>{{actor.name}}</option>
-                    {{/each}}
-                </select>
+        <div class="tracker-settings-group tracker-settings-grid work-settings-group">
+            <div class="form-group compact-field compact-number-field">
+                <label>{{localize "sta-utils.extendedTaskTracker.dialog.size"}}</label>
+                <div class="form-fields">
+                    <div class="dropdown-wrapper">
+                        {{ numberInput defaultSize name="max" step=1 min=1 max=maxSize }}
+                        <ul class="dropdown">
+                            {{#each presetSizes as |size|}}
+                                <li data-value={{size}}>{{size}}</li>
+                            {{/each}}
+                        </ul>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="form-group">
-            <label>{{localize "sta-utils.extendedTaskTracker.dialog.name"}}</label>
-            <div class="form-fields">
-                <input type="text" name="name" value="{{entry.name}}" {{#unless entry}}autofocus{{/unless}} />
+            <div class="form-group compact-field compact-number-field difficulty-row">
+                <label>{{localize "sta-utils.extendedTaskTracker.dialog.difficulty"}}</label>
+                <div class="form-fields">
+                    {{ numberInput defaultDifficulty name="difficulty" step=1 min=1 max=10 }}
+                </div>
             </div>
-        </div>
-        <div class="form-group">
-            <label>{{localize "sta-utils.extendedTaskTracker.dialog.type"}}</label>
-            <div class="form-fields">
-                <select name="trackerType">
-                    <option value="task" {{#if (eq trackerType "task")}}selected{{/if}}>{{localize "sta-utils.extendedTaskTracker.types.task"}}</option>
-                    <option value="consequence" {{#if (eq trackerType "consequence")}}selected{{/if}}>{{localize "sta-utils.extendedTaskTracker.types.consequence"}}</option>
-                    <option value="timed" {{#if (eq trackerType "timed")}}selected{{/if}}>{{localize "sta-utils.extendedTaskTracker.types.timed"}}</option>
-                </select>
+            <div class="form-group compact-field compact-number-field impact-row">
+                <label>{{localize "sta-utils.extendedTaskTracker.dialog.impact"}}</label>
+                <div class="form-fields">
+                    {{ numberInput defaultImpact name="impact" step=1 min=1 max=10 }}
+                </div>
             </div>
-        </div>
-        {{#if entry}}
-            <div class="form-group">
+            <div class="form-group compact-field compact-number-field resistance-row">
+                <label>{{localize "sta-utils.extendedTaskTracker.dialog.resistance"}}</label>
+                <div class="form-fields">
+                    {{ numberInput defaultResistance name="resistance" step=1 min=0 max=5 }}
+                </div>
+            </div>
+            {{#if entry}}
+            <div class="form-group compact-field compact-number-field">
                 <label>{{localize "sta-utils.extendedTaskTracker.dialog.value"}}</label>
                 <div class="form-fields">
                     <input type="number" name="value" value="{{entry.value}}" autofocus />
                 </div>
             </div>
-        {{/if}}
-        <div class="form-group">
-            <label>{{localize "sta-utils.extendedTaskTracker.dialog.size"}}</label>
-            <div class="form-fields">
-                <div class="dropdown-wrapper">
-                    {{ numberInput defaultSize name="max" step=1 min=1 max=maxSize }}
-                    <ul class="dropdown">
-                        {{#each presetSizes as |size|}}
-                            <li data-value={{size}}>{{size}}</li>
-                        {{/each}}
-                    </ul>
+            {{/if}}
+        </div>
+
+        <div class="tracker-settings-group tracker-settings-grid breakthrough-settings">
+            <div class="breakthrough-position-list">
+                {{#each breakthroughPositions as |position|}}
+                <div class="form-group compact-field compact-position-field breakthrough-position-row" data-breakthrough-index="{{position.index}}">
+                    <label for="tracker{{@root.entry.id}}-breakthrough-{{position.index}}">{{position.label}}</label>
+                    <div class="form-fields breakthrough-position-fields">
+                        <input id="tracker{{@root.entry.id}}-breakthrough-{{position.index}}" type="number" name="breakthrough{{position.index}}" value="{{position.value}}" min="1" max="{{@root.defaultSize}}" step="1" />
+                        <select name="breakthrough{{position.index}}Unit" aria-label="{{localize 'sta-utils.extendedTaskTracker.dialog.breakthroughUnit'}}">
+                            <option value="pips">{{localize "sta-utils.extendedTaskTracker.dialog.pips"}}</option>
+                            <option value="percent">{{localize "sta-utils.extendedTaskTracker.dialog.percent"}}</option>
+                        </select>
+                        <button type="button" class="remove-breakthrough-btn" title="{{localize 'sta-utils.extendedTaskTracker.dialog.removeBreakthrough'}}" aria-label="{{localize 'sta-utils.extendedTaskTracker.dialog.removeBreakthrough'}}">
+                            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+                {{/each}}
+            </div>
+            <input type="hidden" name="breakthroughCount" value="{{breakthroughPositions.length}}" />
+            <div class="form-group breakthrough-add-row">
+                <button type="button" class="breakthrough-add-btn">
+                    <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                    {{localize "sta-utils.extendedTaskTracker.dialog.addBreakthrough"}}
+                </button>
+            </div>
+            <div class="form-group checkbox-field breakthrough-hide-field">
+                <label for="tracker{{entry.id}}-hide-breakthroughs" title="{{localize 'sta-utils.extendedTaskTracker.dialog.hideBreakthroughsFromPlayers'}}">{{localize "sta-utils.extendedTaskTracker.dialog.hideBreakthroughs"}}</label>
+                <div class="form-fields">
+                    <input id="tracker{{entry.id}}-hide-breakthroughs" type="checkbox" name="hideBreakthroughsFromPlayers" aria-label="{{localize 'sta-utils.extendedTaskTracker.dialog.hideBreakthroughsFromPlayers'}}" {{checked hideBreakthroughsFromPlayers}} />
                 </div>
             </div>
-        </div>
-        <div class="form-group difficulty-row">
-            <label>{{localize "sta-utils.extendedTaskTracker.dialog.difficulty"}}</label>
-            <div class="form-fields">
-                {{ numberInput defaultDifficulty name="difficulty" step=1 min=1 max=10 }}
+            <div class="form-group breakthrough-reset-row">
+                <button type="button" class="breakthrough-reset-btn">
+                    <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+                    {{localize "sta-utils.extendedTaskTracker.dialog.resetBreakthroughs"}}
+                </button>
             </div>
         </div>
-        <div class="form-group impact-row">
-            <label>{{localize "sta-utils.extendedTaskTracker.dialog.impact"}}</label>
-            <div class="form-fields">
-                {{ numberInput defaultImpact name="impact" step=1 min=1 max=10 }}
+
+        <div class="tracker-settings-group tracker-settings-grid identity-settings-group">
+            <div class="form-group">
+                <label>{{localize "sta-utils.extendedTaskTracker.dialog.name"}}</label>
+                <div class="form-fields">
+                    <input type="text" name="name" value="{{entry.name}}" {{#unless entry}}autofocus{{/unless}} />
+                </div>
             </div>
-        </div>
-        <div class="form-group resistance-row">
-            <label>{{localize "sta-utils.extendedTaskTracker.dialog.resistance"}}</label>
-            <div class="form-fields">
-                {{ numberInput defaultResistance name="resistance" step=1 min=0 max=5 }}
+            <div class="form-group actor-row">
+                <label>{{localize "sta-utils.extendedTaskTracker.dialog.actorLabel"}}</label>
+                <div class="form-fields">
+                    <select name="actorId">
+                        <option value="" {{#unless selectedActorId}}selected{{/unless}}>{{localize "sta-utils.extendedTaskTracker.noLinkedActor"}}</option>
+                        {{#each extendedTaskActors as |actor|}}
+                            <option value="{{actor.id}}" {{#if actor.selected}}selected{{/if}}>{{actor.name}}</option>
+                        {{/each}}
+                    </select>
+                </div>
             </div>
-        </div>
-        <div class="form-group">
-            <label>{{localize "sta-utils.extendedTaskTracker.dialog.color"}}</label>
-            <div class="form-fields">
-                <select name="colorId">
-                    {{#each colorPresets as |preset|}}
-                        <option value="{{preset.id}}" {{#if preset.selected}}selected{{/if}}>{{preset.name}}</option>
-                    {{/each}}
-                </select>
-            </div>
-        </div>
-        <div class="form-group">
-            <label for="tracker{{entry.id}}-add-private">{{localize "sta-utils.extendedTaskTracker.dialog.private"}}</label>
-            <div class="form-fields">
-                <input id="tracker{{entry.id}}-add-private" type="checkbox" name="private" {{checked entry.private}} />
+            <div class="identity-options-row">
+                <div class="form-group">
+                    <label>{{localize "sta-utils.extendedTaskTracker.dialog.type"}}</label>
+                    <div class="form-fields">
+                        <select name="trackerType">
+                            <option value="task" {{#if (eq trackerType "task")}}selected{{/if}}>{{localize "sta-utils.extendedTaskTracker.types.task"}}</option>
+                            <option value="consequence" {{#if (eq trackerType "consequence")}}selected{{/if}}>{{localize "sta-utils.extendedTaskTracker.types.consequence"}}</option>
+                            <option value="timed" {{#if (eq trackerType "timed")}}selected{{/if}}>{{localize "sta-utils.extendedTaskTracker.types.timed"}}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group checkbox-field identity-private-field">
+                    <label for="tracker{{entry.id}}-add-private">{{localize "sta-utils.extendedTaskTracker.dialog.private"}}</label>
+                    <div class="form-fields">
+                        <input id="tracker{{entry.id}}-add-private" type="checkbox" name="private" {{checked entry.private}} />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>{{localize "sta-utils.extendedTaskTracker.dialog.color"}}</label>
+                    <div class="form-fields">
+                        <select name="colorId">
+                            {{#each colorPresets as |preset|}}
+                                <option value="{{preset.id}}" {{#if preset.selected}}selected{{/if}}>{{preset.name}}</option>
+                            {{/each}}
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

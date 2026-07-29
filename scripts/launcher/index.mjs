@@ -4,6 +4,8 @@ export { installTrackerLauncherButton } from "./tracker-button.mjs";
 export {
   openTraitsDialog,
   refreshTraitsDialog,
+  getActiveSceneTraitsActor,
+  getWorldTraitActor,
   getSceneTraitItems,
   getWorldTraitItems,
 } from "./traits-dialog.mjs";

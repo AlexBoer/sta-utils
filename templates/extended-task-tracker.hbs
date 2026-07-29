@@ -14,7 +14,7 @@
                         <div class="ext-meta-row">
                             <span class="ext-tracker-stats">
                                 {{#if tracker.isTimedChallenge}}
-                                    <span class="ext-stat timed" title="Clock Rate"><i class="fa-solid fa-clock"></i>: 2</span>
+                                    <span class="ext-stat timed" title="Impact"><i class="fa-solid fa-clock"></i>: {{tracker.impact}}</span>
                                 {{else if tracker.isConsequence}}
                                     <span class="ext-stat impact" title="Impact">Impact: {{tracker.impact}}</span>
                                 {{else}}
@@ -43,10 +43,17 @@
                             {{#each tracker.rows as |row|}}
                                 <div class="ext-tracker-row">
                                     {{#each row}}
-                                        <div class="slash {{#if this.filled}}filled{{/if}}"></div>
-                                        {{#if this.breakthrough}}
-                                            <div class="{{this.breakClass}}" title="{{this.breakthroughLabel}}"></div>
-                                        {{/if}}
+                                        <div class="slash-slot {{#if this.hasBreakthrough}}has-marker{{/if}}" data-pip="{{this.pip}}">
+                                            <div class="slash {{#if this.filled}}filled{{/if}}"></div>
+                                            {{#if this.hasBreakthrough}}
+                                                <div
+                                                    class="ext-breakthrough-marker {{this.breakClass}}"
+                                                    data-marker-index="{{this.markerIndex}}"
+                                                    aria-label="{{this.breakthroughAriaLabel}}"
+                                                    {{#if this.markerEditable}}role="slider" tabindex="0" aria-valuemin="{{this.markerMin}}" aria-valuemax="{{this.markerMax}}" aria-valuenow="{{this.pip}}" aria-valuetext="{{this.breakthroughLabel}}"{{/if}}
+                                                ></div>
+                                            {{/if}}
+                                        </div>
                                     {{/each}}
                                 </div>
                             {{/each}}

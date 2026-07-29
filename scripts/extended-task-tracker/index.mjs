@@ -1,4 +1,4 @@
-// Extended Task Tracker — bar trackers with breakthrough markers at 50% and 75%
+// Extended Task Tracker — bar trackers with configurable breakthrough markers
 export { TrackerDatabase } from "./tracker-database.mjs";
 export { TrackerPanel } from "./tracker-panel.mjs";
 export { TrackerDialog, COLOR_PRESETS } from "./tracker-dialog.mjs";

@@ -1,6 +1,32 @@
 const MODULE_ID = "sta-utils";
 const FOLDER_NAME = "Scene Traits";
 const OBSERVER_LEVEL = Number(CONST?.DOCUMENT_OWNERSHIP_LEVELS?.OBSERVER ?? 2);
+const sceneActorCreationPromises = new Map();
+
+function getDesignatedActiveGmId() {
+  return (
+    Array.from(game.users ?? [])
+      .filter((user) => user.active && user.isGM)
+      .map((user) => user.id)
+      .sort()[0] ?? null
+  );
+}
+
+export function getSceneTraitsActor(scene) {
+  if (!scene) return null;
+
+  const configuredActorId = scene.getFlag(MODULE_ID, "sceneTraitsActorId");
+  if (configuredActorId) {
+    const configuredActor = game.actors.get(configuredActorId);
+    if (configuredActor) return configuredActor;
+  }
+
+  return (
+    game.actors.find(
+      (actor) => actor.getFlag(MODULE_ID, "proxyForSceneId") === scene.id,
+    ) ?? null
+  );
+}
 
 /**
  * Get (or lazily create) the "Scene Traits" actor folder.
@@ -75,37 +101,27 @@ export async function getOrCreateWorldTraitActor() {
  *
  * The actor is identified by a module flag (`proxyForSceneId`) rather
  * than by name, so renaming it in the sidebar won't break anything.
+ * Only GMs create missing actors; everyone else can only resolve an
+ * existing actor.
  *
  * @param {string} sceneId  The ID of the scene that needs a proxy actor.
- * @returns {Promise<Actor>}
+ * @returns {Promise<Actor|null>}
  */
-export async function getOrCreateProxyActor(sceneId) {
-  // 1. Check for a manually-assigned actor via scene flag
-  const scene = game.scenes.get(sceneId);
-  const manualActorId = scene?.getFlag(MODULE_ID, "sceneTraitsActorId");
-  if (manualActorId) {
-    const manual = game.actors.get(manualActorId);
-    if (manual) return manual;
-    console.warn(
-      `${MODULE_ID} | Manually-assigned scene traits actor ${manualActorId} not found, falling back`,
-    );
+async function createSceneTraitsActor(scene) {
+  const sceneId = scene.id;
+  const existingActor = getSceneTraitsActor(scene);
+  if (existingActor) {
+    if (scene.getFlag(MODULE_ID, "sceneTraitsActorId") !== existingActor.id) {
+      await scene.setFlag(MODULE_ID, "sceneTraitsActorId", existingActor.id);
+    }
+    return existingActor;
   }
 
-  // 2. Look for an existing proxy actor for this scene
-  let actor = game.actors.find(
-    (a) => a.getFlag(MODULE_ID, "proxyForSceneId") === sceneId,
-  );
-  if (actor) return actor;
-
-  // Build a human-readable name from the scene
-  const sceneName = scene?.name ?? sceneId;
+  const sceneName = scene.name ?? sceneId;
   const actorName = `Scene Traits – ${sceneName}`;
-
-  // Ensure the folder exists
   const folder = await getOrCreateFolder();
 
-  // Create one
-  actor = await Actor.create({
+  const actor = await Actor.create({
     name: actorName,
     type: "scenetraits",
     img: "icons/svg/d20-grey.svg",
@@ -121,10 +137,62 @@ export async function getOrCreateProxyActor(sceneId) {
     },
   });
 
+  await scene.setFlag(MODULE_ID, "sceneTraitsActorId", actor.id);
+
   console.log(
     `${MODULE_ID} | Created proxy actor "${actorName}" for scene ${sceneId} (${actor.id})`,
   );
   return actor;
+}
+
+export async function ensureSceneTraitsActorAsGm(sceneId) {
+  if (!game.user?.isGM) return null;
+
+  const scene = game.scenes.get(sceneId);
+  if (!scene) return null;
+
+  const existingPromise = sceneActorCreationPromises.get(sceneId);
+  if (existingPromise) return existingPromise;
+
+  const creationPromise = createSceneTraitsActor(scene).finally(() => {
+    sceneActorCreationPromises.delete(sceneId);
+  });
+  sceneActorCreationPromises.set(sceneId, creationPromise);
+  return creationPromise;
+}
+
+export async function getOrCreateProxyActor(sceneId) {
+  const scene = game.scenes.get(sceneId);
+  const actor = getSceneTraitsActor(scene);
+  const configuredActorId = scene?.getFlag(MODULE_ID, "sceneTraitsActorId");
+  if (actor && configuredActorId === actor.id) return actor;
+  if (!game.user?.isGM) return actor;
+
+  const designatedGmId = getDesignatedActiveGmId();
+  if (!designatedGmId) return actor;
+  if (designatedGmId === game.user.id) {
+    return ensureSceneTraitsActorAsGm(sceneId);
+  }
+
+  const { getModuleSocket } = await import("../core/socket.mjs");
+  const socket = getModuleSocket();
+  if (!socket?.executeAsUser) return actor;
+
+  const actorId = await socket.executeAsUser(
+    "ensureSceneTraitsActor",
+    designatedGmId,
+    { sceneId },
+  );
+  if (!actorId) return actor;
+
+  const resolvedActor = game.actors.get(actorId);
+  if (resolvedActor) return resolvedActor;
+
+  try {
+    return (await fromUuid(`Actor.${actorId}`)) ?? actor;
+  } catch (_) {
+    return actor;
+  }
 }
 
 /**

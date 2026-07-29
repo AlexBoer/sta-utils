@@ -1,5 +1,6 @@
 import { MODULE_ID } from "../core/constants.mjs";
 import { t } from "../core/i18n.mjs";
+import { getSceneTraitsActor } from "../trait-tokens/proxy-actor.mjs";
 
 const fapi = foundry.applications.api;
 const OFFICERS_LOG_MODULE_ID = "sta-officers-log";
@@ -97,17 +98,8 @@ function getSimpleTraitsList() {
   }
 }
 
-function getSceneTraitActor() {
-  const scene = canvas?.scene;
-  if (!scene) return null;
-  return (
-    Array.from(game.actors ?? []).find(
-      (a) =>
-        a?.type === "scenetraits" &&
-        (a.getFlag(MODULE_ID, "proxyForSceneId") === scene.id ||
-          a.id === scene.getFlag(MODULE_ID, "sceneTraitsActorId")),
-    ) ?? null
-  );
+export function getActiveSceneTraitsActor() {
+  return getSceneTraitsActor(canvas?.scene);
 }
 
 function isTraitVisible(item) {
@@ -118,7 +110,7 @@ function canRevealTraits() {
   return Boolean(game.user?.isGM);
 }
 
-async function getWorldTraitActor() {
+export async function getWorldTraitActor() {
   let actor = null;
   try {
     const uuid = game.settings.get(MODULE_ID, "worldTraitsActorUuid");
@@ -134,10 +126,11 @@ async function getWorldTraitActor() {
 }
 
 export function getSceneTraitItems() {
-  const actor = getSceneTraitActor();
+  const actor = getActiveSceneTraitsActor();
   if (!actor) return [];
   return Array.from(actor.items ?? [])
     .filter((item) => item?.type === "trait")
+    .filter((item) => game.user?.isGM || isTraitVisible(item))
     .sort((a, b) => String(a.name ?? "").localeCompare(String(b.name ?? "")));
 }
 
@@ -146,6 +139,7 @@ export async function getWorldTraitItems() {
   if (!actor) return [];
   return Array.from(actor.items ?? [])
     .filter((item) => item?.type === "trait")
+    .filter((item) => game.user?.isGM || isTraitVisible(item))
     .sort((a, b) => String(a.name ?? "").localeCompare(String(b.name ?? "")));
 }
 
@@ -156,13 +150,9 @@ function isTrackedTraitItem(item) {
   if (!actor) return false;
 
   const scene = canvas?.scene;
+  const sceneTraitsActor = getSceneTraitsActor(scene);
   const isSceneTraitActor =
-    actor.type === "scenetraits" &&
-    Boolean(
-      scene &&
-      (actor.getFlag(MODULE_ID, "proxyForSceneId") === scene.id ||
-        actor.id === scene.getFlag(MODULE_ID, "sceneTraitsActorId")),
-    );
+    actor.type === "scenetraits" && actor.id === sceneTraitsActor?.id;
 
   const worldUuid = game.settings.get(MODULE_ID, "worldTraitsActorUuid");
   const isWorldTraitActor =
@@ -204,6 +194,28 @@ function installTraitsDialogSyncHooks() {
 
   Hooks.on("deleteItem", (item) => {
     if (!isTrackedTraitItem(item)) return;
+    scheduleTraitsDialogRefresh();
+  });
+
+  Hooks.on("createActor", (actor) => {
+    if (actor?.type !== "scenetraits") return;
+    scheduleTraitsDialogRefresh();
+  });
+
+  Hooks.on("deleteActor", (actor) => {
+    if (actor?.type !== "scenetraits") return;
+    scheduleTraitsDialogRefresh();
+  });
+
+  Hooks.on("updateScene", (scene, changes) => {
+    if (scene?.id !== canvas?.scene?.id) return;
+    if (
+      !foundry.utils.hasProperty(
+        changes,
+        `flags.${MODULE_ID}.sceneTraitsActorId`,
+      )
+    )
+      return;
     scheduleTraitsDialogRefresh();
   });
 }
@@ -346,7 +358,7 @@ class TraitsDialogApp extends fapi.HandlebarsApplicationMixin(
       };
     }
 
-    const sceneTraitActor = getSceneTraitActor();
+    const sceneTraitActor = getActiveSceneTraitsActor();
     const worldTraitActor = await getWorldTraitActor();
     const sceneItems = getSceneTraitItems().map((i) => ({
       uuid: i.uuid,
@@ -376,8 +388,8 @@ class TraitsDialogApp extends fapi.HandlebarsApplicationMixin(
       hasSceneItems: sceneItems.length > 0,
       hasWorldItems: worldItems.length > 0,
       canRevealTraits: canRevealTraits(),
-      canCreateSceneTrait: Boolean(sceneTraitActor),
-      canCreateWorldTrait: Boolean(worldTraitActor),
+      canCreateSceneTrait: Boolean(game.user?.isGM && sceneTraitActor),
+      canCreateWorldTrait: Boolean(game.user?.isGM && worldTraitActor),
       noSceneLabel: t("sta-utils.launcher.traitsDialog.noSceneTraits"),
       noWorldLabel: t("sta-utils.launcher.traitsDialog.noWorldTraits"),
     };

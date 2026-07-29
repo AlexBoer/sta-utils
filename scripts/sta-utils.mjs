@@ -36,6 +36,8 @@ import {
 import {
   openTraitsDialog,
   refreshTraitsDialog,
+  getActiveSceneTraitsActor,
+  getWorldTraitActor,
   getSceneTraitItems,
   getWorldTraitItems,
 } from "./launcher/index.mjs";
@@ -235,6 +237,10 @@ async function openSceneTraitsSheet() {
   }
 
   const actor = await getOrCreateProxyActor(scene.id);
+  if (!actor) {
+    ui.notifications.warn(t("sta-utils.sceneConfig.warnActorUnavailable"));
+    return false;
+  }
   actor.sheet?.render(true);
   return true;
 }
@@ -592,6 +598,9 @@ Hooks.once("init", () => {
 Hooks.once("ready", async () => {
   console.log(`${MODULE_ID} | Ready`);
 
+  // --- Socket (requires socketlib, available at ready) ---
+  initSocket();
+
   installSceneTraitsSceneSyncHook();
 
   sanitizeTrackerLayoutQueryParams();
@@ -601,9 +610,6 @@ Hooks.once("ready", async () => {
   if (isQuickInsertItemTypePatchEnabled()) {
     installQuickInsertItemTypeTaglinePatch();
   }
-
-  // --- Socket (requires socketlib, available at ready) ---
-  initSocket();
 
   // --- Chat message hook ---
   if (isFatigueEnabled()) {
@@ -679,6 +685,8 @@ Hooks.once("ready", async () => {
     ensureActiveSceneTraitsActor,
     openWorldTraits: openWorldTraitsSheet,
     openTraitsDialog,
+    getSceneTraitsActor: getActiveSceneTraitsActor,
+    getWorldTraitsActor: getWorldTraitActor,
     getSceneTraitItems,
     getWorldTraitItems,
     triggerShaken: triggerManualShaken,

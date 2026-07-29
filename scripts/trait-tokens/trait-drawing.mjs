@@ -319,6 +319,12 @@ async function _createTraitDrawing({
     console.error(`${MODULE_ID} | Failed to get/create proxy actor`, err);
     return;
   }
+  if (!proxyActor) {
+    console.warn(
+      `${MODULE_ID} | No scene traits actor available for ${sceneId}`,
+    );
+    return;
+  }
 
   let embeddedItem;
   let ownerActor;
