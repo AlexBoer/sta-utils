@@ -1,0 +1,151 @@
+<div class="sta-compendium-browser{{#if compact}} sta-compendium-browser--compact{{/if}}">
+  {{#unless compact}}
+  <aside class="sta-compendium-browser__sidebar">
+    {{#each navigation as |group|}}
+    <section class="sta-compendium-browser__group">
+      <h2>{{group.label}}</h2>
+      <nav aria-label="{{group.label}}">
+        {{#each group.types as |type|}}
+        <button
+          type="button"
+          class="sta-compendium-browser__type{{#if type.selected}} active{{/if}}"
+          data-document-name="{{group.id}}"
+          data-browser-type="{{type.id}}"
+        >{{type.label}}</button>
+        {{#if type.selected}}
+        {{#if type.subcategories.length}}
+        <div class="sta-compendium-browser__subcategories">
+          {{#each type.subcategories as |category|}}
+          <button
+            type="button"
+            class="sta-compendium-browser__subcategory{{#if category.selected}} active{{/if}}"
+            data-character-category="{{category.id}}"
+          >{{category.label}}</button>
+          {{/each}}
+        </div>
+        {{/if}}
+        {{/if}}
+        {{/each}}
+      </nav>
+    </section>
+    {{/each}}
+  </aside>
+  {{/unless}}
+
+  <section class="sta-compendium-browser__content">
+    <header class="sta-compendium-browser__header">
+      <div>
+        <h1>{{selectedLabel}}</h1>
+        <span>{{visibleCount}} / {{totalCount}} {{localize "sta-utils.compendiumBrowser.results"}}</span>
+      </div>
+      <label class="sta-compendium-browser__preset">
+        <span>{{localize "sta-utils.compendiumBrowser.preset"}}</span>
+        <select data-role="preset">
+          <option value="">{{localize "sta-utils.compendiumBrowser.presets.custom"}}</option>
+          {{#each presets as |preset|}}
+          <option value="{{preset.id}}" {{#if preset.selected}}selected{{/if}}>{{preset.label}}</option>
+          {{/each}}
+        </select>
+      </label>
+      <button type="button" class="icon" data-action="refresh" data-tooltip aria-label="{{localize 'sta-utils.compendiumBrowser.refresh'}}">
+        <i class="fa-solid fa-rotate"></i>
+      </button>
+      <button type="button" class="icon" data-action="settings" data-tooltip aria-label="{{localize 'sta-utils.compendiumBrowser.settings.title'}}">
+        <i class="fa-solid fa-gear"></i>
+      </button>
+    </header>
+
+    <div class="sta-compendium-browser__filters-shell">
+      <div class="sta-compendium-browser__filters">
+        <label>
+          <span>{{localize "sta-utils.compendiumBrowser.search"}}</span>
+          <input type="search" data-role="search" value="{{search}}" placeholder="{{localize 'sta-utils.compendiumBrowser.searchPlaceholder'}}" />
+        </label>
+        <label>
+          <span>{{localize "sta-utils.compendiumBrowser.source"}}</span>
+          <select data-role="source">
+            {{#each sources as |source|}}
+            <option value="{{source.id}}" {{#if source.selected}}selected{{/if}}>{{source.label}}</option>
+            {{/each}}
+          </select>
+        </label>
+        {{#if hasFieldFilters}}
+        <button type="button" class="sta-compendium-browser__filter-toggle{{#if filtersExpanded}} active{{/if}}" data-action="toggle-filters">
+          <i class="fa-solid fa-filter"></i> {{localize "sta-utils.compendiumBrowser.filters.title"}}
+        </button>
+        {{/if}}
+      </div>
+      {{#if filtersExpanded}}
+      <div class="sta-compendium-browser__field-filters">
+        {{#each fieldFilters as |filter|}}
+        {{#if filter.isSelect}}
+        <label>
+          <span>{{filter.label}}</span>
+          <select data-field-filter="{{filter.key}}" data-filter-slot="value">
+            <option value="">{{localize "sta-utils.compendiumBrowser.filters.any"}}</option>
+            {{#each filter.options as |option|}}
+            <option value="{{option.value}}" {{#if option.selected}}selected{{/if}}>{{option.label}}</option>
+            {{/each}}
+          </select>
+        </label>
+        {{/if}}
+        {{#if filter.isCombobox}}
+        <label>
+          <span>{{filter.label}}</span>
+          <input type="text" list="{{filter.listId}}" data-field-filter="{{filter.key}}" data-filter-slot="value" value="{{filter.value}}" />
+          <datalist id="{{filter.listId}}">
+            {{#each filter.options as |option|}}
+            <option value="{{option.value}}">{{option.label}}</option>
+            {{/each}}
+          </datalist>
+        </label>
+        {{/if}}
+        {{#if filter.isRange}}
+        <fieldset>
+          <legend>{{filter.label}}</legend>
+          <input type="number" data-field-filter="{{filter.key}}" data-filter-slot="min" value="{{filter.min}}" placeholder="{{localize 'sta-utils.compendiumBrowser.filters.min'}}" />
+          <input type="number" data-field-filter="{{filter.key}}" data-filter-slot="max" value="{{filter.max}}" placeholder="{{localize 'sta-utils.compendiumBrowser.filters.max'}}" />
+        </fieldset>
+        {{/if}}
+        {{/each}}
+        <button type="button" class="icon" data-action="reset-field-filters" data-tooltip aria-label="{{localize 'sta-utils.compendiumBrowser.filters.reset'}}">
+          <i class="fa-solid fa-filter-circle-xmark"></i>
+        </button>
+      </div>
+      {{/if}}
+    </div>
+
+    <div class="sta-compendium-browser__table" style="--sta-browser-columns: {{gridTemplateColumns}};">
+      <div class="sta-compendium-browser__row sta-compendium-browser__row--heading">
+        <button type="button" class="sta-compendium-browser__cell--left" data-sort-key="name">{{localize "Name"}}</button>
+        {{#each columns as |column|}}
+        <button type="button" class="sta-compendium-browser__cell--{{column.align}}" data-sort-key="{{column.key}}">{{column.label}}</button>
+        {{/each}}
+        {{#if showRollActions}}<span aria-hidden="true"></span>{{/if}}
+      </div>
+      <div class="sta-compendium-browser__rows">
+        {{#each records as |record|}}
+        <article class="sta-compendium-browser__row" data-document-uuid="{{record.uuid}}" draggable="true" tabindex="0">
+          <div class="sta-compendium-browser__name"><img src="{{record.img}}" alt="" loading="lazy" /><span>{{record.name}}</span></div>
+          {{#each record.values as |cell|}}<span class="sta-compendium-browser__cell--{{cell.align}}">{{cell.value}}</span>{{/each}}
+          {{#if record.canRoll}}
+          <button type="button" class="sta-compendium-browser__roll" data-action="roll-table" data-roll-table-uuid="{{record.uuid}}" draggable="false" data-tooltip aria-label="{{localize 'sta-utils.compendiumBrowser.rollTable'}}">
+            <i class="fa-solid fa-dice-d20" aria-hidden="true"></i>
+            <span>{{localize "sta-utils.compendiumBrowser.rollTable"}}</span>
+          </button>
+          {{/if}}
+        </article>
+        {{/each}}
+      </div>
+    </div>
+
+    {{#if loading}}
+    <div class="sta-compendium-browser__state"><i class="fa-solid fa-spinner fa-spin"></i> {{localize "sta-utils.compendiumBrowser.loading"}}</div>
+    {{else unless hasRecords}}
+    <div class="sta-compendium-browser__state">{{localize "sta-utils.compendiumBrowser.empty"}}</div>
+    {{/if}}
+    {{#if errors.length}}
+    <div class="sta-compendium-browser__errors">{{localize "sta-utils.compendiumBrowser.packErrors"}}: {{errors}}</div>
+    {{/if}}
+  </section>
+</div>

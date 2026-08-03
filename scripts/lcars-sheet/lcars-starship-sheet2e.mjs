@@ -17,6 +17,7 @@ import { STAStarshipSheet2e } from "/systems/sta/module/actors/starship-sheet2e.
 
 import { LCARS_THEMES } from "./lcars-mode.mjs";
 import { performShipAssistRoll } from "./lcars-assist.mjs";
+import { updateGuardedTrack } from "./guarded-track-update.mjs";
 
 const MODULE_ID = "sta-utils";
 
@@ -47,6 +48,28 @@ export class LcarsStarshipSheet2e extends STAStarshipSheet2e {
 
   get title() {
     return `${this.actor.name} - Starship (2e) LCARS`;
+  }
+
+  _onShieldTrackUpdate(event) {
+    return updateGuardedTrack(this, event, {
+      key: "shields",
+      boxClass: "shields",
+      rendererId: "bar-shields-renderer",
+      totalInputId: "total-shields",
+      maxInputId: "max-shields",
+      getMax: this._shieldsTrackMax,
+    });
+  }
+
+  _onCrewTrackUpdate(event) {
+    return updateGuardedTrack(this, event, {
+      key: "crew",
+      boxClass: "crew",
+      rendererId: "bar-crew-renderer",
+      totalInputId: "total-crew",
+      maxInputId: "max-crew",
+      getMax: this._crewTrackMax,
+    });
   }
 
   /**

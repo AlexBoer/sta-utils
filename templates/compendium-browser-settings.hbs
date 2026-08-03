@@ -1,0 +1,28 @@
+<div class="sta-compendium-browser-settings__content">
+  {{#each sections as |section|}}
+  <section class="sta-compendium-browser-settings__section">
+    <h2><span>{{section.label}}</span></h2>
+    <div class="sta-compendium-browser-settings__sources">
+      {{#each section.sources as |source|}}
+      <article class="sta-compendium-browser-settings__source{{#unless source.enabled}} is-excluded{{/unless}}" data-source-id="{{source.id}}">
+        <label class="sta-compendium-browser-settings__source-toggle">
+          <input class="sta-compendium-browser-settings__source-switch" type="checkbox" data-document-name="{{section.documentName}}" data-exclusion-kind="packages" value="{{source.id}}" {{checked source.enabled}} />
+          <span>{{source.label}}</span>
+        </label>
+        <div class="sta-compendium-browser-settings__packs">
+          {{#each source.packs as |pack|}}
+          <label>
+            <input type="checkbox" data-document-name="{{section.documentName}}" data-exclusion-kind="packs" data-package-id="{{pack.packageId}}" value="{{pack.id}}" {{checked pack.enabled}} {{#unless source.enabled}}disabled{{/unless}} />
+            <span>{{pack.label}}</span>
+          </label>
+          {{/each}}
+        </div>
+      </article>
+      {{/each}}
+    </div>
+  </section>
+  {{/each}}
+  <footer>
+    <button type="button" data-action="save"><i class="fa-solid fa-floppy-disk"></i> {{localize "Save"}}</button>
+  </footer>
+</div>

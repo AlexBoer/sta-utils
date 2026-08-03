@@ -137,10 +137,10 @@ const LAUNCHER_SECTIONS = [
       {
         id: "characterBrowser",
         labelKey: "sta-utils.launcher.characterBrowser",
-        icon: "fa-address-book",
-        gmOnly: false,
-        available: () => !!game.staUtils?.characterBrowser,
-        call: () => game.staUtils.characterBrowser(),
+        icon: "fa-book-atlas",
+        gmOnly: true,
+        available: () => !!game.staUtils?.compendiumBrowser,
+        call: () => game.staUtils.compendiumBrowser(),
       },
       {
         id: "crewManifest",

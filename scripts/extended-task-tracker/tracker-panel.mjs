@@ -553,9 +553,11 @@ export class TrackerPanel extends fapi.HandlebarsApplicationMixin(
     const id = event.target.closest("[data-id]").dataset.id;
     const entry = this.db.get(id);
     if (!entry || entry.actorId) return;
+    const actorName = String(entry.name ?? "").trim() || "New Extended Task";
     const actor = await Actor.create({
-      name: entry.name,
+      name: actorName,
       type: "extendedtask",
+      prototypeToken: { name: actorName },
       system: {
         workprogress: { value: entry.value, max: entry.max },
         difficulty: entry.isConsequence

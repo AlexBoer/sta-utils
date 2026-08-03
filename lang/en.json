@@ -14,6 +14,7 @@
       "subgroups": {
         "dicePoolMomentum": "Dice Pool & Momentum",
         "actionChooser": "Action Chooser",
+        "staToolsSidebar": "STA Tools Sidebar",
         "traitTokens": "Trait Tokens",
         "groupShip": "Group Ship",
         "chatUi": "Chat & UI",
@@ -22,12 +23,13 @@
         "standalone": "Other Features",
         "itemImagePicker": "Item Image Picker",
         "npcBuilder": "NPC Builder",
-        "characterBrowser": "Character Browser",
         "trackerButtons": "Tracker Buttons",
         "personalThreat": "Personal Threat",
         "rollRequest": "Roll Request",
         "attackCalculator": "Attack Calculator",
-        "officersLog": "Officers Log Integration"
+        "warpCalculator": "Warp Calculator",
+        "officersLog": "Officers Log Integration",
+        "diagnostics": "Diagnostics"
       },
       "enableAlertStatus": {
         "name": "Enable Ship Alert Status",
@@ -55,6 +57,15 @@
         "name": "Campaign Traits Actor",
         "hint": "UUID of the Scene Traits actor to open from the Campaign Traits tool button. Supports compendium actors. Leave blank to auto-create a campaign-level actor."
       },
+      "tokenInteractionDiagnostics": {
+        "name": "Enable GM Token Interaction Diagnostics",
+        "hint": "Record a bounded history of token and canvas interaction state for troubleshooting. Data is kept only in the GM's browser memory and is reported only when the GM explicitly requests it. Requires a world reload when changed.",
+        "copyLabel": "Token Diagnostic Report",
+        "copyButton": "Copy Report",
+        "copyHint": "Copies the current token interaction report to the clipboard and prints it in the browser console.",
+        "reloadRequired": "Enable diagnostics and reload the world before copying a report.",
+        "copyFailed": "The report was printed in the browser console, but could not be copied to the clipboard."
+      },
       "showInfoButtons": {
         "name": "Show Info Buttons",
         "hint": "Show info buttons next to Stress Track, Determination, and Values headers that display quick reference popups."
@@ -71,9 +82,9 @@
         "name": "NPC Builder — Special Rules Compendium",
         "hint": "Compendium pack IDs to use for special rules. Enter one per line (e.g. \"world.my-talents\" or \"module.my-module.talents\"). When empty, the NPC Builder shows manual name/description fields instead."
       },
-      "characterBrowserSourcePacks": {
-        "name": "Character Browser - Source Compendiums",
-        "hint": "Actor compendium pack IDs available as Character Browser sources. Add one or more actor packs; world actors are always included."
+      "compendiumBrowserExclusions": {
+        "name": "Compendium Browser Sources",
+        "hint": "Choose which Actor, Item, and Roll Table compendiums are available in the Compendium Browser."
       },
       "enablePersonalThreat": {
         "name": "Enable Personal Threat Dots",
@@ -144,6 +155,10 @@
         "name": "Show Item Edit Buttons on Character Sheets",
         "hint": "Add a right-side edit button to each listed item row on character sheets. The button opens that item's sheet."
       },
+      "showRowContextMenuButtons": {
+        "name": "Show Row Menu Buttons on Character Sheets",
+        "hint": "Add a small three-dot button to each item row that opens the right-click actions menu. When off, the menu is still available by right-clicking the row."
+      },
       "enableActionChooser": {
         "name": "Enable Conflict Actions Window",
         "hint": "Show a window listing available actions, roll info, and Momentum costs during conflict scenes. Requires a world reload when changed."
@@ -151,6 +166,18 @@
       "actionChooserAsTab": {
         "name": "Action Chooser as Sheet Tab",
         "hint": "Embed the action chooser as a tab on the character sheet instead of opening it as a separate window."
+      },
+      "defaultWarpFormula": {
+        "name": "Default Warp Formula",
+        "hint": "Choose the warp scale used by the Warp Calculator widget for everyone in this world.",
+        "choices": {
+          "tng": "TNG Formula",
+          "tos": "TOS Formula"
+        }
+      },
+      "staToolsGmOnly": {
+        "name": "GM-Only STA Tools Sidebar",
+        "hint": "Restrict the STA Tools sidebar tab to GMs. Disable this to make the tab and its player-accessible widgets available to all users. Requires a world reload when changed."
       },
       "enableDicePoolOverride": {
         "name": "Enable Dice Pool Override",
@@ -227,7 +254,7 @@
       "momentumDesc": "Recover 1 stress per 2 Momentum spent after a successful task, max 3.",
       "ok": "OK",
       "warnGmOnly": "Only a GM can run stress reset.",
-      "warnNoActivePlayers": "No active player characters found."
+      "warnNoActivePlayers": "No player or supporting characters found."
     },
     "personalThreat": {
       "configureTokenBar": "Configure token: set Bar 1 to Stress and display always to everyone",
@@ -1408,7 +1435,8 @@
     "compactMenu": {
       "editItem": "View and Edit",
       "deleteItem": "Delete",
-      "chatItem": "Send to Chat"
+      "chatItem": "Send to Chat",
+      "moreActions": "More actions"
     },
     "extendedTaskTracker": {
       "add": "+ Tracker",
@@ -1568,55 +1596,157 @@
       "injured": "Injured",
       "killed": "Killed"
     },
-    "characterBrowser": {
-      "title": "Character Browser",
-      "unnamed": "Unnamed Character",
-      "openSheet": "Open Sheet",
-      "empty": "No characters matched your filters.",
-      "source": {
-        "world": "World Actors"
+    "sidebar": {
+      "title": "STA Tools",
+      "empty": "No tools are configured for this tab yet.",
+      "widgets": {
+        "treknobabble": {
+          "title": "Treknobabble",
+          "regenerate": "Regenerate"
+        },
+        "medicalbabble": {
+          "title": "Medical Babble",
+          "illness": "Illness",
+          "cause": "Cause",
+          "primary": "Recommended Treatment",
+          "secondary": "Secondary Treatment",
+          "regenerate": "Regenerate"
+        },
+        "stardate": {
+          "title": "Stardate Converter",
+          "now": "Now",
+          "set": "Set",
+          "dateLabel": "Calendar Date",
+          "stardateOut": "Stardate",
+          "stardateLabel": "Stardate",
+          "dateOut": "Calendar Date"
+        },
+        "warp": {
+          "title": "Warp Speed Calculator",
+          "enterTwo": "Enter any two values to calculate the third.",
+          "calculated": "Calculated value highlighted.",
+          "timePlaceholder": "e.g. 3 days 1:30",
+          "invalidTime": "Use days, h:mm, or a duration like 3 days 1 hour.",
+          "clear": "Clear values"
+        },
+        "newScene": {
+          "title": "New Scene",
+          "hint": "Advance to a new scene: Momentum \u22121 and NPC Personal Threat refreshed.",
+          "button": "Start New Scene",
+          "missing": "New Scene is unavailable. Ensure STA Officers Log is active."
+        },
+        "conflictActions": {
+          "title": "Conflict Actions",
+          "button": "Open Conflict Actions",
+          "missing": "Conflict Actions is unavailable."
+        },
+        "attack": {
+          "title": "Attack Calculator",
+          "base": "Base Damage",
+          "resistance": "Resistance",
+          "increase": "Increase Damage",
+          "devastating": "Devastating Hits",
+          "calibrate": "Calibrate",
+          "intense": "Intense",
+          "spread": "Spread",
+          "enterBase": "Enter a base damage above 0.",
+          "total": "Total Damage",
+          "mainHit": "Main hit",
+          "devHit": "Devastating",
+          "momentum": "Momentum"
+        },
+        "stressReset": {
+          "title": "Group Stress Reset",
+          "breather": "Breather",
+          "breatherEffect": "-4 Stress",
+          "break": "Break",
+          "breakEffect": "-8 Stress",
+          "sleep": "Sleep",
+          "sleepEffect": "Stress = 0",
+          "missing": "Group Stress Reset is unavailable."
+        },
+        "systemHit": {
+          "title": "Random Ship System",
+          "button": "Roll System Hit",
+          "chatTitle": "Random System Hit",
+          "d20": "D20",
+          "system": "System",
+          "failed": "Could not generate a random system hit.",
+          "systems": {
+            "communications": "Communications",
+            "computers": "Computers",
+            "engines": "Engines",
+            "sensors": "Sensors",
+            "structure": "Structure",
+            "weapons": "Weapons"
+          }
+        }
+      }
+    },
+    "compendiumBrowser": {
+      "title": "Compendium Browser",
+      "gmOnly": "Only a GM can open the Compendium Browser.",
+      "sidebarButton": "Open Compendium Browser",
+      "unnamed": "Unnamed Document",
+      "search": "Search",
+      "searchPlaceholder": "Search names, properties, and sources",
+      "source": "Source",
+      "preset": "Preset",
+      "presets": {
+        "custom": "Custom",
+        "characters": "Characters",
+        "npcs": "NPCs",
+        "starships": "Starships",
+        "smallCraft": "Small Craft",
+        "talents": "Talents",
+        "characterWeapons": "Character Weapons",
+        "rollTables": "Roll Tables"
       },
-      "type": {
-        "character": "Character",
-        "main": "Main Character",
-        "supporting": "Supporting Character",
-        "npc": "NPC ({subType})"
-      },
-      "npcType": {
-        "incidental": "Incidental",
-        "quick": "Quick"
-      },
-      "label": {
-        "source": "Source",
-        "species": "Species",
-        "characterType": "Character Type",
-        "personalThreat": "Personal Threat",
-        "attributes": "Attributes",
-        "disciplines": "Departments"
-      },
-      "filter": {
-        "layout": "Layout",
-        "layoutDetailed": "Detailed",
-        "layoutCompact": "Compact",
-        "search": "Search",
-        "searchPlaceholder": "Search by name, species, or source",
-        "source": "Source",
-        "allSources": "All Sources",
-        "species": "Species",
-        "anySpecies": "Any Species",
-        "characterType": "Character Type",
-        "anyCharacterType": "Any Character Type",
-        "attribute": "Attribute",
-        "anyAttribute": "Any Attribute",
-        "discipline": "Department",
-        "anyDiscipline": "Any Department",
+      "rollTables": "Roll Tables",
+      "rollTable": "Roll",
+      "rollFailed": "Could not roll on {name}.",
+      "allSources": "All Sources",
+      "results": "results",
+      "refresh": "Refresh Compendiums",
+      "loading": "Loading compendium indexes...",
+      "empty": "No documents matched this category and filter.",
+      "packErrors": "Some compendiums could not be indexed",
+      "filters": {
+        "title": "Filters",
+        "any": "Any",
         "min": "Min",
         "max": "Max",
-        "personalThreatMin": "Personal Threat Min",
-        "personalThreatMax": "Personal Threat Max",
         "reset": "Reset Filters",
-        "refresh": "Refresh Sources",
-        "results": "results"
+        "highestAttribute": "Highest Attribute",
+        "highestDepartment": "Highest Department"
+      },
+      "characterCategory": {
+        "all": "All Characters",
+        "main": "Main Characters",
+        "npc": "All NPCs",
+        "supporting": "Supporting Characters",
+        "majorNpc": "Major NPCs",
+        "notableNpc": "Notable NPCs",
+        "minorNpc": "Minor NPCs"
+      },
+      "columns": {
+        "species": "Species",
+        "role": "Role",
+        "spaceframe": "Spaceframe",
+        "scale": "Scale",
+        "difficulty": "Difficulty",
+        "magnitude": "Magnitude",
+        "requirement": "Requirement",
+        "damage": "Damage",
+        "range": "Range",
+        "formula": "Formula",
+        "resultCount": "Results"
+      },
+      "settings": {
+        "title": "Compendium Browser Sources",
+        "hint": "Enabled sources appear in the browser. Disabling a package hides every matching compendium; individual packs can also be disabled.",
+        "packages": "Packages",
+        "packs": "Compendium Packs"
       }
     },
     "launcher": {
@@ -1630,7 +1760,7 @@
       "treknobabble": "Treknobabble",
       "medicalbabble": "Medicalbabble",
       "npcBuilder": "Create NPC",
-      "characterBrowser": "Character Browser",
+      "characterBrowser": "Compendium Browser",
       "crewManifest": "Crew Manifest",
       "dicePoolMonitor": "Dice Pool Monitor",
       "noteStyler": "Note Styler",
@@ -1661,7 +1791,7 @@
       },
       "manualShaken": "Trigger Shaken",
       "stressReset": "Stress Reset",
-      "stressResetPrompt": "Choose a rest type to apply stress recovery to active player characters.",
+      "stressResetPrompt": "Choose a rest type to apply stress recovery to all player and supporting characters.",
       "stressResetTargets": "Affected characters",
       "restTypeBreather": "Breather (Recover 4 Stress)",
       "restTypeBreak": "Break (Recover 8 Stress)",

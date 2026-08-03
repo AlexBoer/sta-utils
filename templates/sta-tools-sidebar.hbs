@@ -1,0 +1,24 @@
+<div class="sta-tools-sidebar__content flexcol">
+  <header class="sta-tools-sidebar__title">
+    <i class="sta-tools-delta"></i>
+    <h1>{{localize "sta-utils.sidebar.title"}}</h1>
+  </header>
+  {{#if hasWidgets}}
+    {{#each widgets as |widget|}}
+    <section class="sta-tools-sidebar__widget{{#if widget.collapsed}} is-collapsed{{/if}}" data-sta-widget="{{widget.id}}">
+      <button type="button" class="sta-tools-sidebar__widget-header" data-action="toggleWidget" aria-expanded="{{#unless widget.collapsed}}true{{else}}false{{/unless}}">
+        <span class="sta-tools-sidebar__widget-icon"><i class="{{widget.icon}}"></i></span>
+        <h2>{{widget.label}}</h2>
+        <span class="sta-tools-sidebar__header-line" aria-hidden="true"></span>
+        <i class="fa-solid {{#if widget.collapsed}}fa-chevron-down{{else}}fa-chevron-up{{/if}} sta-tools-sidebar__collapse-icon" data-collapse-icon aria-hidden="true"></i>
+      </button>
+      <div class="sta-tools-sidebar__body"></div>
+    </section>
+    {{/each}}
+  {{else}}
+    <div class="sta-tools-sidebar__empty">
+      <i class="sta-tools-delta"></i>
+      <p>{{localize "sta-utils.sidebar.empty"}}</p>
+    </div>
+  {{/if}}
+</div>

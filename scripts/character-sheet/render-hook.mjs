@@ -52,13 +52,19 @@ import { installConfigureStressBarButton } from "../personal-threat/index.mjs";
  * @returns {object}
  */
 function _compatEntry({ label, icon, condition, callback }) {
+  if (game.release.generation >= 14) {
+    return {
+      label,
+      icon,
+      ...(condition != null ? { visible: condition } : {}),
+      onClick: (_event, target) => callback(target),
+    };
+  }
   return {
     name: label,
-    label,
     icon,
-    ...(condition != null ? { condition, visible: condition } : {}),
+    ...(condition != null ? { condition } : {}),
     callback,
-    onClick: (_event, target) => callback(target),
   };
 }
 

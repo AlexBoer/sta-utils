@@ -19,6 +19,7 @@ import { STASmallCraftSheet2e } from "/systems/sta/module/actors/smallcraft-shee
 
 import { LCARS_THEMES } from "./lcars-mode.mjs";
 import { performShipAssistRoll } from "./lcars-assist.mjs";
+import { updateGuardedTrack } from "./guarded-track-update.mjs";
 
 const MODULE_ID = "sta-utils";
 
@@ -49,6 +50,17 @@ export class LcarsSmallCraftSheet2e extends STASmallCraftSheet2e {
 
   get title() {
     return `${this.actor.name} - Small Craft (2e) LCARS`;
+  }
+
+  _onShieldTrackUpdate(event) {
+    return updateGuardedTrack(this, event, {
+      key: "shields",
+      boxClass: "shields",
+      rendererId: "bar-shields-renderer",
+      totalInputId: "total-shields",
+      maxInputId: "max-shields",
+      getMax: this._shieldsTrackMax,
+    });
   }
 
   /**

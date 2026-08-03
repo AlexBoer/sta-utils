@@ -6,6 +6,12 @@ import {
   runMigrations,
   initSocket,
 } from "./core/index.mjs";
+import {
+  registerSidebarWidget,
+  registerStaToolsSidebar,
+  registerDefaultSidebarWidgets,
+  unregisterSidebarWidget,
+} from "./sidebar-widgets/index.mjs";
 
 // Data models
 import { registerUtilsCharacterDataModel } from "./data/characterDataModel.mjs";
@@ -86,7 +92,9 @@ import {
   installMacroActorImageHook,
   installAmbientAudioSelectionListenerPatch,
   installPinCushionNoteIconCompatPatch,
+  installSta257DisciplineCompatPatch,
   installQuickInsertItemTypeTaglinePatch,
+  installTokenInteractionDiagnostics,
 } from "./misc/index.mjs";
 
 import { crewManifest } from "./crew-manifest/index.mjs";
@@ -117,7 +125,12 @@ import { triggerManualShaken } from "./shaken/index.mjs";
 import { initExtendedTaskTracker } from "./extended-task-tracker/index.mjs";
 
 import { openNpcBuilder } from "./npc-builder/index.mjs";
-import { openCharacterBrowser } from "./character-browser/index.mjs";
+import {
+  getCompendiumBrowser,
+  getBrowserPresets,
+  openCompendiumBrowser,
+  installCompendiumBrowserSidebarHooks,
+} from "./compendium-browser/index.mjs";
 import { openSupportingBuilder } from "./supporting-builder/index.mjs";
 import { rollForCasualties } from "./casualties/casualties.mjs";
 
@@ -167,6 +180,8 @@ import {
   isStardateDisplayEnabled,
   isAlertStatusEnabled,
   isQuickInsertItemTypePatchEnabled,
+  isTokenInteractionDiagnosticsEnabled,
+  isStaToolsSidebarGmOnly,
 } from "./core/settings.mjs";
 
 import { MobileCharacterSheet2e } from "./mobile-sheet/mobile-character-sheet2e.mjs";
@@ -179,12 +194,17 @@ import { t } from "./core/i18n.mjs";
 
 const MODULE_ID = "sta-utils";
 let _sceneTraitsSceneSyncInstalled = false;
+let tokenDiagnostics = null;
 
 const STRESS_REST_TYPES = {
   breather: { recover: 4 },
   break: { recover: 8 },
   sleep: { recover: null },
 };
+const NPC_CHARACTER_SHEET_CLASSES = new Set([
+  "sta.STANPCSheet2e",
+  "sta-utils.LcarsNPCSheet2e",
+]);
 
 function normalizeUiControlColumns() {
   const uiLeft = document.getElementById("ui-left");
@@ -290,20 +310,64 @@ async function openWorldTraitsSheet() {
   return true;
 }
 
-function getActivePlayerCharacters() {
-  const seen = new Set();
-  const actors = [];
+function getStressResetCharacters() {
+  return Array.from(game.actors?.values?.() ?? game.actors ?? []).filter(
+    (actor) => {
+      if (actor?.type !== "character") return false;
+      const sheetClass = String(
+        actor.getFlag?.("core", "sheetClass") ??
+          actor.flags?.core?.sheetClass ??
+          "",
+      );
+      return !NPC_CHARACTER_SHEET_CLASSES.has(sheetClass);
+    },
+  );
+}
 
-  for (const user of game.users ?? []) {
-    if (!user.active || user.isGM) continue;
-    const actor = user.character;
-    if (!actor || actor.type !== "character") continue;
-    if (seen.has(actor.id)) continue;
-    seen.add(actor.id);
-    actors.push(actor);
+async function applyGroupStressReset(restType, { actors = null } = {}) {
+  if (!game.user?.isGM) {
+    ui.notifications.warn(t("sta-utils.stress.warnGmOnly"));
+    return false;
   }
 
-  return actors;
+  const rest = STRESS_REST_TYPES[restType];
+  if (!rest) return false;
+
+  const targets = actors ?? getStressResetCharacters();
+  if (!targets.length) {
+    ui.notifications.warn(t("sta-utils.stress.warnNoActivePlayers"));
+    return false;
+  }
+
+  const updates = [];
+  for (const actor of targets) {
+    const current = Number(actor.system?.stress?.value ?? 0);
+    const max = Number(actor.system?.stress?.max ?? 0);
+    if (max <= 0) continue;
+
+    const next =
+      rest.recover === null ? 0 : Math.max(0, current - Number(rest.recover));
+    if (next === current) continue;
+
+    updates.push({
+      _id: actor.id,
+      "system.stress.value": next,
+    });
+  }
+
+  if (!updates.length) {
+    ui.notifications.info(t("sta-utils.launcher.stressResetNoChanges"));
+    return true;
+  }
+
+  await Actor.updateDocuments(updates);
+  ui.notifications.info(
+    t("sta-utils.launcher.stressResetApplied").replace(
+      "{count}",
+      String(updates.length),
+    ),
+  );
+  return true;
 }
 
 async function openStressResetDialog() {
@@ -312,7 +376,7 @@ async function openStressResetDialog() {
     return false;
   }
 
-  const actors = getActivePlayerCharacters();
+  const actors = getStressResetCharacters();
   if (!actors.length) {
     ui.notifications.warn(t("sta-utils.stress.warnNoActivePlayers"));
     return false;
@@ -352,39 +416,7 @@ async function openStressResetDialog() {
   });
 
   if (!restType || restType === "cancel") return false;
-
-  const rest = STRESS_REST_TYPES[restType];
-  if (!rest) return false;
-
-  const updates = [];
-  for (const actor of actors) {
-    const current = Number(actor.system?.stress?.value ?? 0);
-    const max = Number(actor.system?.stress?.max ?? 0);
-    if (max <= 0) continue;
-
-    const next =
-      rest.recover === null ? 0 : Math.max(0, current - Number(rest.recover));
-    if (next === current) continue;
-
-    updates.push({
-      _id: actor.id,
-      "system.stress.value": next,
-    });
-  }
-
-  if (!updates.length) {
-    ui.notifications.info(t("sta-utils.launcher.stressResetNoChanges"));
-    return true;
-  }
-
-  await Actor.updateDocuments(updates);
-  ui.notifications.info(
-    t("sta-utils.launcher.stressResetApplied").replace(
-      "{count}",
-      String(updates.length),
-    ),
-  );
-  return true;
+  return applyGroupStressReset(restType, { actors });
 }
 
 /* -------------------------------------------- */
@@ -438,7 +470,9 @@ Hooks.once("init", () => {
     `modules/${MODULE_ID}/templates/supporting-builder.hbs`,
     `modules/${MODULE_ID}/templates/incidental-npc-roll-dialog.hbs`,
     `modules/${MODULE_ID}/templates/item-image-picker.hbs`,
-    `modules/${MODULE_ID}/templates/character-browser.hbs`,
+    `modules/${MODULE_ID}/templates/compendium-browser.hbs`,
+    `modules/${MODULE_ID}/templates/compendium-browser-settings.hbs`,
+    `modules/${MODULE_ID}/templates/sta-tools-sidebar.hbs`,
   ]);
 
   // --- Mobile sheet registration ---
@@ -487,8 +521,14 @@ Hooks.once("init", () => {
 
   // --- Register settings ---
   registerSettings();
+  registerStaToolsSidebar({ gmOnly: isStaToolsSidebarGmOnly() });
   installSettingsHeaderHook();
   registerMigrationSetting();
+  installCompendiumBrowserSidebarHooks();
+
+  tokenDiagnostics = isTokenInteractionDiagnosticsEnabled()
+    ? installTokenInteractionDiagnostics()
+    : null;
 
   // --- Attack Calculator chat button ---
   // Registered at init time so it catches weapon cards rendered from the
@@ -598,6 +638,8 @@ Hooks.once("init", () => {
 Hooks.once("ready", async () => {
   console.log(`${MODULE_ID} | Ready`);
 
+  installSta257DisciplineCompatPatch();
+
   // --- Socket (requires socketlib, available at ready) ---
   initSocket();
 
@@ -662,6 +704,8 @@ Hooks.once("ready", async () => {
   }
 
   // --- Public API ---
+  const compendiumBrowser = getCompendiumBrowser();
+  ui.staCompendiumBrowser = compendiumBrowser;
   game.staUtils = {
     warpCalculator,
     stardateCalculator,
@@ -673,7 +717,13 @@ Hooks.once("ready", async () => {
     actionChooser,
     dicePool: dicePoolApi,
     npcBuilder: openNpcBuilder,
-    characterBrowser: openCharacterBrowser,
+    compendiumBrowser: openCompendiumBrowser,
+    compendiumBrowserPresets: getBrowserPresets,
+    sidebarWidgets: {
+      register: registerSidebarWidget,
+      unregister: unregisterSidebarWidget,
+    },
+    characterBrowser: openCompendiumBrowser,
     supportingBuilder: openSupportingBuilder,
     rollRequest: isRollRequestEnabled() ? openRollRequestDialog : null,
     incidentalNpcRoll: openIncidentalNpcRollDialog,
@@ -691,11 +741,15 @@ Hooks.once("ready", async () => {
     getWorldTraitItems,
     triggerShaken: triggerManualShaken,
     openStressReset: openStressResetDialog,
+    applyStressReset: applyGroupStressReset,
     treknobabble,
     medicalbabble,
     launcher: openLauncher,
     calendarDateToStardate: calendarDateToStardateTng,
     resetTalentUses: resetActorTalentUses,
+    ...(tokenDiagnostics ? { tokenDiagnostics } : {}),
   };
   console.log(`${MODULE_ID} | Public API exposed at game.staUtils`);
+
+  registerDefaultSidebarWidgets();
 });

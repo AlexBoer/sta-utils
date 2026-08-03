@@ -221,39 +221,47 @@ function _installStressModContextMenu(sheetApp, sheet) {
   if (!label || label.dataset.staStressMenuInit) return;
   label.dataset.staStressMenuInit = "1";
 
+  const setStressModifier = async () => {
+    const current = sheetApp.document.system.strmod ?? 0;
+    const result = await foundry.applications.api.DialogV2.prompt({
+      window: { title: "Stress Modifier" },
+      content: `
+        <div style="display:flex;align-items:center;gap:8px;padding:4px 0">
+          <label style="flex-shrink:0">Stress modifier:</label>
+          <input type="number" id="sta-strmod-input" value="${current}"
+            style="width:64px;text-align:center" autofocus />
+        </div>
+        <p style="margin:6px 0 0;font-size:0.85em;opacity:0.6">
+          Added on top of Fitness when calculating max Stress.
+        </p>`,
+      ok: {
+        label: "Apply",
+        callback: (event, button, dialog) => {
+          const val = dialog.querySelector("#sta-strmod-input")?.value;
+          return val !== undefined ? Number(val) : current;
+        },
+      },
+    });
+    if (result === null || result === undefined) return;
+    await sheetApp.document.update({ "system.strmod": result });
+  };
+  const menuEntry =
+    game.release.generation >= 14
+      ? {
+          label: "Set Stress Modifier",
+          icon: '<i class="fas fa-shield-alt"></i>',
+          onClick: setStressModifier,
+        }
+      : {
+          name: "Set Stress Modifier",
+          icon: '<i class="fas fa-shield-alt"></i>',
+          callback: setStressModifier,
+        };
+
   new foundry.applications.ux.ContextMenu(
     sheet,
     ".mobile-stress-label",
-    [
-      {
-        name: "Set Stress Modifier",
-        icon: '<i class="fas fa-shield-alt"></i>',
-        callback: async () => {
-          const current = sheetApp.document.system.strmod ?? 0;
-          const result = await foundry.applications.api.DialogV2.prompt({
-            window: { title: "Stress Modifier" },
-            content: `
-              <div style="display:flex;align-items:center;gap:8px;padding:4px 0">
-                <label style="flex-shrink:0">Stress modifier:</label>
-                <input type="number" id="sta-strmod-input" value="${current}"
-                  style="width:64px;text-align:center" autofocus />
-              </div>
-              <p style="margin:6px 0 0;font-size:0.85em;opacity:0.6">
-                Added on top of Fitness when calculating max Stress.
-              </p>`,
-            ok: {
-              label: "Apply",
-              callback: (event, button, dialog) => {
-                const val = dialog.querySelector("#sta-strmod-input")?.value;
-                return val !== undefined ? Number(val) : current;
-              },
-            },
-          });
-          if (result === null || result === undefined) return;
-          await sheetApp.document.update({ "system.strmod": result });
-        },
-      },
-    ],
+    [menuEntry],
     { jQuery: false },
   );
 }

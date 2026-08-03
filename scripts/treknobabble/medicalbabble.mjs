@@ -148,6 +148,14 @@ function _buildContent({ illness, cause, primary, secondary }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
+ * Generate one set of medical-babble results without posting to chat.
+ * @returns {{illness: string, cause: string, primary: string, secondary: string}}
+ */
+export function generateMedicalbabble() {
+  return _roll();
+}
+
+/**
  * Roll on the medical tables and post a whispered chat message with a
  * Regenerate button for the calling user.
  *
@@ -155,7 +163,7 @@ function _buildContent({ illness, cause, primary, secondary }) {
  * @returns {Promise<ChatMessage>}
  */
 export async function medicalbabble(actorName) {
-  const results = _roll();
+  const results = generateMedicalbabble();
   return ChatMessage.create({
     content: _buildContent(results),
     speaker: actorName

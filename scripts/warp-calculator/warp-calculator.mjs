@@ -25,6 +25,16 @@ const LIGHT_YEARS_PER_DAY_AT_C =
   (SPEED_OF_LIGHT_KM_S * SECONDS_PER_DAY) / KM_PER_LIGHT_YEAR;
 // ≈ 0.002738 ly/day (about 1 ly per 365.25 days)
 
+function getConfiguredFormula() {
+  try {
+    return game.settings.get(MODULE_ID, "defaultWarpFormula") === "tos"
+      ? "tos"
+      : "tng";
+  } catch (_) {
+    return "tng";
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // TOS (ORIGINAL SERIES) WARP FORMULA
 // ─────────────────────────────────────────────────────────────────────────────
@@ -266,6 +276,74 @@ function calculateWarpFactorTos(distanceLY, timeDays) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
+ * Parse a travel duration into days. Plain numbers are days. Duration parts
+ * accept abbreviated or written units in any order, plus hours:minutes.
+ * @param {string|number} value
+ * @returns {number|null}
+ */
+export function parseTravelTime(value) {
+  const input = String(value ?? "")
+    .trim()
+    .toLowerCase();
+  if (!input) return null;
+
+  if (/^\d+(?:\.\d+)?$/.test(input)) {
+    const days = Number(input);
+    return Number.isFinite(days) && days > 0 ? days : null;
+  }
+
+  const duration = input.replace(/,/g, " ").replace(/\band\b/g, " ");
+  const tokenPattern =
+    /(?:(\d+(?:\.\d+)?)\s*(weeks?|w|days?|d|hours?|hrs?|hr|h|minutes?|mins?|min|m)|(\d+):([0-5]\d))/gy;
+  let cursor = 0;
+  let totalHours = 0;
+  while (cursor < duration.length) {
+    while (/\s/.test(duration[cursor] ?? "")) cursor += 1;
+    if (cursor >= duration.length) break;
+
+    tokenPattern.lastIndex = cursor;
+    const match = tokenPattern.exec(duration);
+    if (!match || match.index !== cursor) return null;
+    cursor = tokenPattern.lastIndex;
+
+    if (match[3] !== undefined) {
+      totalHours += Number(match[3]) + Number(match[4]) / 60;
+      continue;
+    }
+
+    const amount = Number(match[1]);
+    const unit = match[2];
+    if (unit.startsWith("w")) totalHours += amount * 7 * 24;
+    else if (unit.startsWith("d")) totalHours += amount * 24;
+    else if (unit.startsWith("h")) totalHours += amount;
+    else totalHours += amount / 60;
+  }
+  if (totalHours <= 0) return null;
+  return totalHours / 24;
+}
+
+/**
+ * Format days as rounded whole weeks, days, and hours.
+ * @param {number} days
+ * @returns {string}
+ */
+export function formatTravelTime(days) {
+  if (!Number.isFinite(days) || days <= 0) return "";
+  let remainingHours = Math.max(1, Math.round(days * 24));
+  const weeks = Math.floor(remainingHours / (7 * 24));
+  remainingHours -= weeks * 7 * 24;
+  const wholeDays = Math.floor(remainingHours / 24);
+  const hours = remainingHours - wholeDays * 24;
+  return [
+    weeks ? `${weeks}w` : "",
+    wholeDays ? `${wholeDays}d` : "",
+    hours ? `${hours}h` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+/**
  * Format a number with locale-aware formatting.
  * @param {number} value
  * @param {number} decimals
@@ -316,7 +394,7 @@ class WarpCalculatorApp extends Base {
     this._resolve = typeof resolve === "function" ? resolve : null;
     this._resolved = false;
     this._values = { warp: "", distance: "", time: "" };
-    this._formulaType = "tng"; // 'tng' or 'tos'
+    this._formulaType = getConfiguredFormula();
   }
 
   static DEFAULT_OPTIONS = {
@@ -340,6 +418,7 @@ class WarpCalculatorApp extends Base {
         warpFactor: t("sta-utils.warpCalculator.warpFactor"),
         distance: t("sta-utils.warpCalculator.distance"),
         time: t("sta-utils.warpCalculator.time"),
+        timePlaceholder: t("sta-utils.sidebar.widgets.warp.timePlaceholder"),
         lightYears: t("sta-utils.warpCalculator.lightYears"),
         days: t("sta-utils.warpCalculator.days"),
         enterTwoValues: t("sta-utils.warpCalculator.enterTwoValues"),
@@ -390,7 +469,7 @@ class WarpCalculatorApp extends Base {
     const updateCalculation = () => {
       const warp = parseFloat(warpInput?.value) || null;
       const distance = parseFloat(distanceInput?.value) || null;
-      const time = parseFloat(timeInput?.value) || null;
+      const time = parseTravelTime(timeInput?.value);
 
       // Store values for potential re-render
       this._values = {
@@ -473,6 +552,97 @@ export async function openWarpCalculator() {
 }
 
 /**
+ * Calculate the missing trip value from any two supplied values.
+ * @param {{warp?: number|null, distance?: number|null, time?: number|null, formulaType?: "tng"|"tos"}} values
+ * @returns {{valid: boolean, status: "valid"|"insufficient"|"invalid", warp: number|null, distance: number|null, time: number|null, solveMode: "warp"|"distance"|"time"|"verify"|"", speedC: number|null, lyPerDay: number|null}}
+ */
+export function calculateWarpTrip({
+  warp = null,
+  distance = null,
+  time = null,
+  formulaType = "tng",
+} = {}) {
+  const normalizedFormula = formulaType === "tos" ? "tos" : "tng";
+  const maxWarp = normalizedFormula === "tos" ? 100 : 9.99;
+  const hasWarp = warp !== null && warp >= 1 && warp <= maxWarp;
+  const hasDistance = distance !== null && distance > 0;
+  const hasTime = time !== null && time > 0;
+  const filledCount = [hasWarp, hasDistance, hasTime].filter(Boolean).length;
+
+  if (filledCount < 2) {
+    return {
+      valid: false,
+      status: "insufficient",
+      warp,
+      distance,
+      time,
+      solveMode: "",
+      speedC: null,
+      lyPerDay: null,
+    };
+  }
+
+  const warpToSpeed =
+    normalizedFormula === "tos"
+      ? tosWarpToSpeedMultiplier
+      : warpToSpeedMultiplier;
+  const calcDistance =
+    normalizedFormula === "tos" ? calculateDistanceTos : calculateDistance;
+  const calcTime =
+    normalizedFormula === "tos" ? calculateTimeTos : calculateTime;
+  const calcWarp =
+    normalizedFormula === "tos" ? calculateWarpFactorTos : calculateWarpFactor;
+
+  let calculatedWarp = warp;
+  let calculatedDistance = distance;
+  let calculatedTime = time;
+  let solveMode = "verify";
+
+  if (hasWarp && hasTime && !hasDistance) {
+    calculatedDistance = calcDistance(warp, time);
+    solveMode = "distance";
+  } else if (hasWarp && hasDistance && !hasTime) {
+    calculatedTime = calcTime(warp, distance);
+    solveMode = "time";
+  } else if (hasDistance && hasTime && !hasWarp) {
+    calculatedWarp = calcWarp(distance, time);
+    solveMode = "warp";
+  }
+
+  const valid =
+    calculatedWarp !== null &&
+    Number.isFinite(calculatedWarp) &&
+    calculatedDistance !== null &&
+    Number.isFinite(calculatedDistance) &&
+    calculatedTime !== null &&
+    Number.isFinite(calculatedTime);
+  if (!valid) {
+    return {
+      valid: false,
+      status: "invalid",
+      warp: calculatedWarp,
+      distance: calculatedDistance,
+      time: calculatedTime,
+      solveMode,
+      speedC: null,
+      lyPerDay: null,
+    };
+  }
+
+  const speedC = warpToSpeed(calculatedWarp);
+  return {
+    valid: true,
+    status: "valid",
+    warp: calculatedWarp,
+    distance: calculatedDistance,
+    time: calculatedTime,
+    solveMode,
+    speedC,
+    lyPerDay: speedC * LIGHT_YEARS_PER_DAY_AT_C,
+  };
+}
+
+/**
  * Compute results based on which two values are provided.
  * @param {number|null} warp
  * @param {number|null} distance
@@ -481,72 +651,27 @@ export async function openWarpCalculator() {
  * @returns {{html: string, valid: boolean}}
  */
 function computeResults(warp, distance, time, formulaType = "tng") {
-  // Warp factor limits differ by formula
-  const maxWarp = formulaType === "tos" ? 100 : 9.99;
-  const hasWarp = warp !== null && warp >= 1 && warp <= maxWarp;
-  const hasDistance = distance !== null && distance > 0;
-  const hasTime = time !== null && time > 0;
-
-  const filledCount = [hasWarp, hasDistance, hasTime].filter(Boolean).length;
-
-  if (filledCount < 2) {
+  const result = calculateWarpTrip({ warp, distance, time, formulaType });
+  if (result.status === "insufficient") {
     return {
       html: `<div class="sta-warp-result-placeholder">${t("sta-utils.warpCalculator.enterTwoValues")}</div>`,
       valid: false,
     };
   }
-
-  let calculatedWarp = warp;
-  let calculatedDistance = distance;
-  let calculatedTime = time;
-  let solveMode = "";
-
-  // Select functions based on formula type
-  const warpToSpeed =
-    formulaType === "tos" ? tosWarpToSpeedMultiplier : warpToSpeedMultiplier;
-  const speedToWarp =
-    formulaType === "tos" ? tosSpeedMultiplierToWarp : speedMultiplierToWarp;
-  const calcDist =
-    formulaType === "tos" ? calculateDistanceTos : calculateDistance;
-  const calcTime = formulaType === "tos" ? calculateTimeTos : calculateTime;
-  const calcWarp =
-    formulaType === "tos" ? calculateWarpFactorTos : calculateWarpFactor;
-
-  if (hasWarp && hasTime && !hasDistance) {
-    // Calculate distance
-    calculatedDistance = calcDist(warp, time);
-    solveMode = "distance";
-  } else if (hasWarp && hasDistance && !hasTime) {
-    // Calculate time
-    calculatedTime = calcTime(warp, distance);
-    solveMode = "time";
-  } else if (hasDistance && hasTime && !hasWarp) {
-    // Calculate warp factor
-    calculatedWarp = calcWarp(distance, time);
-    solveMode = "warp";
-  } else {
-    // All three provided - show what they entered, highlight any inconsistency
-    solveMode = "verify";
-  }
-
-  if (calculatedWarp === null || !isFinite(calculatedWarp)) {
+  if (!result.valid) {
     return {
       html: `<div class="sta-warp-result-error">${t("sta-utils.warpCalculator.cannotCalculate")}</div>`,
       valid: false,
     };
   }
 
-  const speedC = warpToSpeed(calculatedWarp);
-  const lyPerDay = speedC * LIGHT_YEARS_PER_DAY_AT_C;
-
-  const warpDisplay = formatNumber(calculatedWarp, 2);
-  const distanceDisplay = formatNumber(calculatedDistance, 2);
-  const timeDisplay = formatTime(calculatedTime);
-  const speedDisplay = formatNumber(speedC, 2);
-  const lyPerDayDisplay = formatNumber(lyPerDay, 4);
+  const warpDisplay = formatNumber(result.warp, 2);
+  const distanceDisplay = formatNumber(result.distance, 2);
+  const timeDisplay = formatTime(result.time);
+  const lyPerDayDisplay = formatNumber(result.lyPerDay, 4);
 
   const highlightClass = (field) =>
-    field === solveMode ? "sta-warp-calculated" : "";
+    field === result.solveMode ? "sta-warp-calculated" : "";
 
   const html = `
     <div class="sta-warp-results-grid">
@@ -614,4 +739,7 @@ export const warpCalculator = {
   calculateDistance,
   calculateTime,
   calculateWarpFactor,
+  calculateTrip: calculateWarpTrip,
+  parseTravelTime,
+  formatTravelTime,
 };

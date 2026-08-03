@@ -149,6 +149,15 @@ function _buildContent(results) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
+ * Generate a single treknobabble sentence without posting anything.
+ * @returns {string}
+ */
+export function generateTreknobabble() {
+  const results = _roll();
+  return results[0] + " the " + results.slice(1).join(" ");
+}
+
+/**
  * Roll on the supplied RollTable UUIDs and post a whispered chat message
  * with a Regenerate button for the calling user.
  *

@@ -13,6 +13,7 @@
  */
 
 import { t } from "../core/i18n.mjs";
+import { shouldShowRowContextMenuButtons } from "../core/settings.mjs";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Collapse-state persistence
@@ -161,13 +162,19 @@ function _actorFromTarget(el) {
  * @returns {object}
  */
 function _compatEntry({ label, icon, condition, callback }) {
+  if (game.release.generation >= 14) {
+    return {
+      label,
+      icon,
+      ...(condition != null ? { visible: condition } : {}),
+      onClick: (_event, target) => callback(target),
+    };
+  }
   return {
     name: label,
-    label,
     icon,
-    ...(condition != null ? { condition, visible: condition } : {}),
+    ...(condition != null ? { condition } : {}),
     callback,
-    onClick: (_event, target) => callback(target),
   };
 }
 
@@ -375,6 +382,40 @@ export function _installItemContextMenu(sheetApp, root) {
     menuItems,
     { fixed: true, jQuery: false },
   );
+
+  const showRowMenu = shouldShowRowContextMenuButtons();
+  const sheetSelector = ".character-sheet, .starship-sheet, .smallcraft-sheet";
+  const sheetEls = [];
+  if (root?.matches?.(sheetSelector)) sheetEls.push(root);
+  for (const el of root?.querySelectorAll?.(sheetSelector) ?? [])
+    sheetEls.push(el);
+  for (const el of sheetEls) {
+    el.classList.toggle("sta-utils-show-row-menu", showRowMenu);
+  }
+
+  matchingRows.forEach((row) => {
+    row.querySelector(".sta-utils-row-menu")?.remove();
+    if (!showRowMenu) return;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "sta-utils-row-menu";
+    button.title = t("sta-utils.compactMenu.moreActions");
+    button.setAttribute("aria-label", t("sta-utils.compactMenu.moreActions"));
+    button.innerHTML = '<i class="fa-solid fa-ellipsis-vertical"></i>';
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const bounds = button.getBoundingClientRect();
+      row.dispatchEvent(
+        new MouseEvent("contextmenu", {
+          bubbles: true,
+          clientX: event.clientX || bounds.right,
+          clientY: event.clientY || bounds.bottom,
+        }),
+      );
+    });
+    row.appendChild(button);
+  });
 
   _compactContextMenus.set(sheetApp, menu);
 

@@ -1514,14 +1514,16 @@ body {
   .section.belongings .damage {
         font-family: var(--lcars-font-heading);
         color: var(--lcars-red);
-        margin-left: auto;
-        width: 25px;
-        margin-right: 30px;
+  }
+
+  .section.belongings .row.entry.belongings-row .damage {
+      margin: 0;
+      width: 100%;
         text-align: center;
         padding-right: 0;
         white-space: nowrap;
         justify-self: stretch;
-        justify-content: right;
+      justify-content: center;
   }
 
     /* Number values — pinned near the right edge, before edit controls */
@@ -1572,14 +1574,16 @@ body {
     .section.belongings .resist {
         font-family: var(--lcars-font-heading);
         color: var(--lcars-red);
-        margin-left: auto;
-        width: 25px;
-        margin-right: 30px;
+    }
+
+    .section.belongings .row.entry.belongings-row .resist {
+      margin: 0;
+      width: 100%;
         text-align: center;
         padding-right: 0;
         white-space: nowrap;
         justify-self: stretch;
-        justify-content: right;
+      justify-content: center;
     }
 
     /* Control buttons move to the far side (right of DMG/RESIST/QTY) */
@@ -3888,4 +3892,42 @@ body.sta-officers-lcars-active {
 .sta-lcars-sheet div.section.values li.row.entry[data-item-type="value"] a.value-used.control.toggle i[data-action="onStrikeThrough"]:hover,
 .sta-lcars-sheet div.section.values li.row.entry[data-item-type="value"] a.value-used.control.toggle i[data-action="onStrikeThrough"]:focus-visible {
   color: var(--lcars-chrome, var(--lcars-orange)) !important;
+}
+
+/* ===========================================================================
+ * ROW CONTEXT-MENU BUTTON (three-dots)
+ * Geometry is shared by all sheet variants in sta-utils.css.
+ * =========================================================================== */
+
+.sta-lcars-sheet.sta-utils-show-row-menu
+  .section
+  .row.entry
+  > .sta-utils-row-menu {
+  color: var(--lcars-text-item, var(--lcars-text-light));
+}
+
+.sta-lcars-sheet.sta-utils-show-row-menu
+  .section.belongings
+  .row.entry.belongings-row
+  > .sta-utils-row-menu {
+  grid-column: 4;
+  justify-self: end;
+  margin-left: 0;
+}
+
+.sta-lcars-sheet.sta-utils-show-row-menu
+  .section.belongings
+  .row.entry.belongings-item {
+  grid-template-columns: 28px minmax(0, 1fr) 32px 22px;
+}
+
+.sta-lcars-sheet.sta-utils-show-row-menu
+  .section.belongings
+  .row.entry.belongings-item
+  .two-column-with-roll-secondary,
+.sta-lcars-sheet.sta-utils-show-row-menu
+  .section.belongings
+  .row.entry.belongings-item
+  .item-quantity.quantity {
+  grid-column: 3;
 }

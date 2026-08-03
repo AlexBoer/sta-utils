@@ -22,12 +22,17 @@ function _resolveContextTarget(target) {
 }
 
 function _compatContextEntry({ label, icon, callback }) {
+  if (game.release.generation >= 14) {
+    return {
+      label,
+      icon,
+      onClick: (_event, target) => callback(target),
+    };
+  }
   return {
     name: label,
-    label,
     icon,
     callback,
-    onClick: (_event, target) => callback(target),
   };
 }
 

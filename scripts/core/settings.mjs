@@ -14,6 +14,7 @@ const ENABLE_STYLE_ENHANCE_SETTING = "enableStyleEnhance";
 const ENABLE_TALENT_AUTOMATIONS_SETTING = "enableTalentAutomations";
 const DISABLE_TOOLTIPS_SETTING = "disableTooltips";
 const SHOW_ITEM_EDIT_BUTTONS_SETTING = "showItemEditButtons";
+const SHOW_ROW_CONTEXT_MENU_SETTING = "showRowContextMenuButtons";
 const ENABLE_ACTION_CHOOSER_SETTING = "enableActionChooser";
 const ACTION_CHOOSER_AS_TAB_SETTING = "actionChooserAsTab";
 const ENABLE_DICE_POOL_OVERRIDE_SETTING = "enableDicePoolOverride";
@@ -33,13 +34,15 @@ const TRACKER_MACRO_DEBUG_LOGS_SETTING = "trackerMacroDebugLogs";
 const GROUP_SHIP_ACTOR_SETTING = "groupShipActorId";
 const ENABLE_EXTENDED_TASK_TRACKER_SETTING = "enableExtendedTaskTracker";
 const NPC_BUILDER_SPECIAL_RULES_PACK_SETTING = "npcBuilderSpecialRulesPack";
-const CHARACTER_BROWSER_SOURCE_PACKS_SETTING = "characterBrowserSourcePacks";
-const CHARACTER_BROWSER_FILTER_STATE_SETTING = "characterBrowserFilterState";
+const COMPENDIUM_BROWSER_EXCLUSIONS_SETTING = "compendiumBrowserExclusions";
 const ENABLE_PERSONAL_THREAT_SETTING = "enablePersonalThreat";
 const ENABLE_ROLL_REQUEST_SETTING = "enableRollRequest";
 const MOBILE_THEME_SETTING = "mobileSheetTheme";
 const PIERCING_MODE_SETTING = "piercingMode";
 const SHOW_ADVANCED_CALCULATOR_SETTING = "showAdvancedCalculator";
+const DEFAULT_WARP_FORMULA_SETTING = "defaultWarpFormula";
+const STA_TOOLS_GM_ONLY_SETTING = "staToolsGmOnly";
+const STA_TOOLS_COLLAPSED_WIDGETS_SETTING = "staToolsCollapsedWidgets";
 const OFFICERS_LOG_MODULE_ID = "sta-officers-log";
 const SHOW_CREATION_WIZARD_BUTTON_SETTING = "showCreationWizardButton";
 const ENABLE_TALENT_USES_SETTING = "enableTalentUses";
@@ -50,6 +53,7 @@ const ITEM_IMAGE_PICKER_USE_STA_FOLDERS_SETTING =
   "itemImagePickerUseStaFolders";
 const ITEM_IMAGE_PICKER_USE_GM_FOLDER_SETTING = "itemImagePickerUseGmFolder";
 const ITEM_IMAGE_PICKER_GM_FOLDER_PATH_SETTING = "itemImagePickerGmFolderPath";
+const TOKEN_INTERACTION_DIAGNOSTICS_SETTING = "tokenInteractionDiagnostics";
 
 /** Localized group labels for the settings menu. */
 const GROUP_WORLD = "sta-utils.settings.groups.world";
@@ -67,6 +71,14 @@ const SUBGROUPS = [
   {
     firstKey: ENABLE_ACTION_CHOOSER_SETTING,
     label: "sta-utils.settings.subgroups.actionChooser",
+  },
+  {
+    firstKey: DEFAULT_WARP_FORMULA_SETTING,
+    label: "sta-utils.settings.subgroups.warpCalculator",
+  },
+  {
+    firstKey: STA_TOOLS_GM_ONLY_SETTING,
+    label: "sta-utils.settings.subgroups.staToolsSidebar",
   },
   {
     firstKey: SETTING_TRAIT_TOKENS,
@@ -101,10 +113,6 @@ const SUBGROUPS = [
     label: "sta-utils.settings.subgroups.npcBuilder",
   },
   {
-    firstKey: CHARACTER_BROWSER_SOURCE_PACKS_SETTING,
-    label: "sta-utils.settings.subgroups.characterBrowser",
-  },
-  {
     firstKey: ENABLE_PERSONAL_THREAT_SETTING,
     label: "sta-utils.settings.subgroups.personalThreat",
   },
@@ -119,6 +127,10 @@ const SUBGROUPS = [
   {
     firstKey: SHOW_CREATION_WIZARD_BUTTON_SETTING,
     label: "sta-utils.settings.subgroups.officersLog",
+  },
+  {
+    firstKey: TOKEN_INTERACTION_DIAGNOSTICS_SETTING,
+    label: "sta-utils.settings.subgroups.diagnostics",
   },
 ];
 
@@ -203,6 +215,36 @@ export function registerSettings() {
     group: GROUP_WORLD,
   });
 
+  // ----- Warp Calculator -----
+
+  game.settings.register(MODULE_ID, DEFAULT_WARP_FORMULA_SETTING, {
+    name: t("sta-utils.settings.defaultWarpFormula.name"),
+    hint: t("sta-utils.settings.defaultWarpFormula.hint"),
+    scope: "world",
+    config: true,
+    type: String,
+    default: "tng",
+    choices: {
+      tng: t("sta-utils.settings.defaultWarpFormula.choices.tng"),
+      tos: t("sta-utils.settings.defaultWarpFormula.choices.tos"),
+    },
+    onChange: () => ui.staTools?.render?.({ force: true }),
+    group: GROUP_WORLD,
+  });
+
+  // ----- STA Tools Sidebar -----
+
+  game.settings.register(MODULE_ID, STA_TOOLS_GM_ONLY_SETTING, {
+    name: t("sta-utils.settings.staToolsGmOnly.name"),
+    hint: t("sta-utils.settings.staToolsGmOnly.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    requiresReload: true,
+    group: GROUP_WORLD,
+  });
+
   // ----- Trait Tokens -----
 
   game.settings.register(MODULE_ID, SETTING_TRAIT_TOKENS, {
@@ -233,6 +275,19 @@ export function registerSettings() {
     config: true,
     type: String,
     default: "",
+    group: GROUP_WORLD,
+  });
+
+  // ----- Diagnostics -----
+
+  game.settings.register(MODULE_ID, TOKEN_INTERACTION_DIAGNOSTICS_SETTING, {
+    name: t("sta-utils.settings.tokenInteractionDiagnostics.name"),
+    hint: t("sta-utils.settings.tokenInteractionDiagnostics.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
     group: GROUP_WORLD,
   });
 
@@ -487,14 +542,13 @@ export function registerSettings() {
     group: GROUP_WORLD,
   });
 
-  game.settings.register(MODULE_ID, CHARACTER_BROWSER_SOURCE_PACKS_SETTING, {
-    name: t("sta-utils.settings.characterBrowserSourcePacks.name"),
-    hint: t("sta-utils.settings.characterBrowserSourcePacks.hint"),
+  game.settings.register(MODULE_ID, COMPENDIUM_BROWSER_EXCLUSIONS_SETTING, {
+    name: t("sta-utils.settings.compendiumBrowserExclusions.name"),
+    hint: t("sta-utils.settings.compendiumBrowserExclusions.hint"),
     scope: "world",
-    config: true,
-    type: String,
-    default: "",
-    group: GROUP_WORLD,
+    config: false,
+    type: Object,
+    default: {},
   });
 
   // ----- Roll Request -----
@@ -674,26 +728,11 @@ export function registerSettings() {
   //  CLIENT SETTINGS (per-user)
   // =====================================================
 
-  // Hidden client state for restoring Character Browser filters across opens.
-  game.settings.register(MODULE_ID, CHARACTER_BROWSER_FILTER_STATE_SETTING, {
+  game.settings.register(MODULE_ID, STA_TOOLS_COLLAPSED_WIDGETS_SETTING, {
     scope: "client",
     config: false,
     type: Object,
-    default: {
-      layout: "detailed",
-      source: "all",
-      species: "",
-      characterType: "all",
-      attributeKey: "any",
-      attributeMin: "",
-      attributeMax: "",
-      disciplineKey: "any",
-      disciplineMin: "",
-      disciplineMax: "",
-      threatMin: "",
-      threatMax: "",
-      search: "",
-    },
+    default: {},
   });
 
   game.settings.register(MODULE_ID, SHOW_INFO_BUTTONS_SETTING, {
@@ -765,6 +804,40 @@ export function registerSettings() {
     group: GROUP_CLIENT,
   });
 
+  game.settings.register(MODULE_ID, SHOW_ROW_CONTEXT_MENU_SETTING, {
+    name: t("sta-utils.settings.showRowContextMenuButtons.name"),
+    hint: t("sta-utils.settings.showRowContextMenuButtons.hint"),
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: true,
+    onChange: () => {
+      try {
+        for (const app of Object.values(ui?.windows ?? {})) {
+          try {
+            const appId = String(app?.id ?? "");
+            if (
+              appId.startsWith("STACharacterSheet2e") ||
+              appId.startsWith("STASupportingSheet2e") ||
+              appId.startsWith("STANPCSheet2e") ||
+              appId.startsWith("MobileCharacterSheet2e") ||
+              appId.startsWith("LcarsCharacterSheet2e") ||
+              appId.startsWith("LcarsSupportingSheet2e") ||
+              appId.startsWith("LcarsNPCSheet2e")
+            ) {
+              app.render?.(true);
+            }
+          } catch (_) {
+            // sheet may have closed
+          }
+        }
+      } catch (_) {
+        // safe to fail silently
+      }
+    },
+    group: GROUP_CLIENT,
+  });
+
   game.settings.register(MODULE_ID, MOBILE_THEME_SETTING, {
     name: t("sta-utils.settings.mobileSheetTheme.name"),
     hint: t("sta-utils.settings.mobileSheetTheme.hint"),
@@ -794,6 +867,17 @@ export function shouldShowInfoButtons() {
     return Boolean(game.settings.get(MODULE_ID, SHOW_INFO_BUTTONS_SETTING));
   } catch (_) {
     return true;
+  }
+}
+
+/** @returns {boolean} */
+export function isTokenInteractionDiagnosticsEnabled() {
+  try {
+    return Boolean(
+      game.settings.get(MODULE_ID, TOKEN_INTERACTION_DIAGNOSTICS_SETTING),
+    );
+  } catch (_) {
+    return false;
   }
 }
 
@@ -844,6 +928,48 @@ export function isActionChooserAsTabEnabled() {
   }
 }
 
+/** @returns {"tng"|"tos"} */
+export function getDefaultWarpFormula() {
+  try {
+    return game.settings.get(MODULE_ID, DEFAULT_WARP_FORMULA_SETTING) === "tos"
+      ? "tos"
+      : "tng";
+  } catch (_) {
+    return "tng";
+  }
+}
+
+/** @returns {boolean} */
+export function isStaToolsSidebarGmOnly() {
+  try {
+    return Boolean(game.settings.get(MODULE_ID, STA_TOOLS_GM_ONLY_SETTING));
+  } catch (_) {
+    return true;
+  }
+}
+
+/** @returns {Record<string, boolean>} */
+export function getStaToolsCollapsedWidgets() {
+  try {
+    const value = game.settings.get(
+      MODULE_ID,
+      STA_TOOLS_COLLAPSED_WIDGETS_SETTING,
+    );
+    return value && typeof value === "object" ? { ...value } : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+/** @param {Record<string, boolean>} value */
+export function setStaToolsCollapsedWidgets(value) {
+  return game.settings.set(
+    MODULE_ID,
+    STA_TOOLS_COLLAPSED_WIDGETS_SETTING,
+    value,
+  );
+}
+
 /** @returns {boolean} */
 export function isTooltipsDisabled() {
   try {
@@ -861,6 +987,15 @@ export function shouldShowItemEditButtons() {
     );
   } catch (_) {
     return false;
+  }
+}
+
+/** @returns {boolean} */
+export function shouldShowRowContextMenuButtons() {
+  try {
+    return Boolean(game.settings.get(MODULE_ID, SHOW_ROW_CONTEXT_MENU_SETTING));
+  } catch (_) {
+    return true;
   }
 }
 
@@ -920,6 +1055,46 @@ export function getAlertStatus() {
   } catch (_) {
     return "normal";
   }
+}
+
+function _normalizeCompendiumBrowserExclusions(value) {
+  const input = value && typeof value === "object" ? value : {};
+  const normalizeList = (list) => [
+    ...new Set((Array.isArray(list) ? list : []).map(String).filter(Boolean)),
+  ];
+
+  return {
+    Actor: {
+      packages: normalizeList(input.Actor?.packages),
+      packs: normalizeList(input.Actor?.packs),
+    },
+    Item: {
+      packages: normalizeList(input.Item?.packages),
+      packs: normalizeList(input.Item?.packs),
+    },
+    RollTable: {
+      packages: normalizeList(input.RollTable?.packages),
+      packs: normalizeList(input.RollTable?.packs),
+    },
+  };
+}
+
+export function getCompendiumBrowserExclusions() {
+  try {
+    return _normalizeCompendiumBrowserExclusions(
+      game.settings.get(MODULE_ID, COMPENDIUM_BROWSER_EXCLUSIONS_SETTING),
+    );
+  } catch (_) {
+    return _normalizeCompendiumBrowserExclusions();
+  }
+}
+
+export function setCompendiumBrowserExclusions(value) {
+  return game.settings.set(
+    MODULE_ID,
+    COMPENDIUM_BROWSER_EXCLUSIONS_SETTING,
+    _normalizeCompendiumBrowserExclusions(value),
+  );
 }
 
 /** @param {string} status @returns {Promise<void>} */
@@ -1038,40 +1213,6 @@ export function isPersonalThreatEnabled() {
   } catch (_) {
     return false;
   }
-}
-
-/** @returns {string[]} */
-export function getCharacterBrowserSourcePacks() {
-  try {
-    const raw = game.settings.get(
-      MODULE_ID,
-      CHARACTER_BROWSER_SOURCE_PACKS_SETTING,
-    );
-    return _parseCompendiumPackIds(raw);
-  } catch (_) {
-    return [];
-  }
-}
-
-/** @returns {Record<string, string>} */
-export function getCharacterBrowserFilterState() {
-  try {
-    const raw =
-      game.settings.get(MODULE_ID, CHARACTER_BROWSER_FILTER_STATE_SETTING) ??
-      {};
-    return typeof raw === "object" && raw ? raw : {};
-  } catch (_) {
-    return {};
-  }
-}
-
-/** @param {Record<string, string>} value @returns {Promise<void>} */
-export function setCharacterBrowserFilterState(value) {
-  return game.settings.set(
-    MODULE_ID,
-    CHARACTER_BROWSER_FILTER_STATE_SETTING,
-    value ?? {},
-  );
 }
 
 /** @returns {boolean} */
@@ -1206,8 +1347,8 @@ const SETTING_DEPENDENCIES = [
 ];
 
 /**
- * Install a hook that injects group and subgroup headers into the
- * module's settings panel.
+ * Install a hook that reorganizes the module's settings panel into
+ * collapsible, labeled sections.
  */
 export function installSettingsHeaderHook() {
   Hooks.on("renderSettingsConfig", (_app, html) => {
@@ -1217,45 +1358,11 @@ export function installSettingsHeaderHook() {
     if (!tab) return;
 
     _upgradeNpcBuilderCompendiumField(tab);
-    _upgradeCharacterBrowserCompendiumField(tab);
+    _addTokenDiagnosticsButton(tab);
 
     // Avoid double-injection if the hook fires again
-    if (tab.querySelector(".sta-utils-settings-group-header")) return;
-
-    // --- Main group headers ---
-    const formGroups = tab.querySelectorAll(".form-group");
-    if (!formGroups.length) return;
-
-    // "World Settings" header before the very first setting
-    formGroups[0].before(
-      _createGroupHeader(t("sta-utils.settings.groups.world")),
-    );
-
-    // "Client Settings" header before the first client setting
-    const clientInput = tab.querySelector(
-      `input[name="${MODULE_ID}.${SHOW_INFO_BUTTONS_SETTING}"]`,
-    );
-    const clientGroup = clientInput?.closest(".form-group");
-    if (clientGroup) {
-      clientGroup.before(
-        _createGroupHeader(t("sta-utils.settings.groups.client")),
-      );
-    }
-
-    // --- Subgroup headers ---
-    for (const { firstKey, label } of SUBGROUPS) {
-      // Regular settings have an input with name="MODULE_ID.key"
-      let anchor = tab.querySelector(`input[name="${MODULE_ID}.${firstKey}"]`);
-      // Menu buttons use data-key="MODULE_ID.key"
-      if (!anchor) {
-        anchor = tab.querySelector(
-          `button[data-key="${MODULE_ID}.${firstKey}"]`,
-        );
-      }
-      const fg = anchor?.closest(".form-group");
-      if (fg) {
-        fg.before(_createSubgroupHeader(t(label)));
-      }
+    if (!tab.querySelector(".sta-utils-settings-section")) {
+      _installCollapsibleSections(tab);
     }
 
     // --- Dependency enforcement ---
@@ -1263,198 +1370,126 @@ export function installSettingsHeaderHook() {
   });
 }
 
-function _upgradeCharacterBrowserCompendiumField(tab) {
-  const field = _findSettingFormGroup(
+/**
+ * Group the module's existing settings into collapsible `<details>` sections,
+ * one per feature subgroup, plus World/Client dividers. This reorganizes the
+ * native settings list in place — it does not duplicate any setting.
+ * @param {HTMLElement} tab
+ */
+function _installCollapsibleSections(tab) {
+  const sectionDefs = [
+    ...SUBGROUPS,
+    {
+      firstKey: SHOW_INFO_BUTTONS_SETTING,
+      label: "sta-utils.settings.groups.client",
+    },
+  ];
+
+  const anchors = [];
+  for (const { firstKey, label } of sectionDefs) {
+    const fg = _findSettingFormGroup(tab, firstKey);
+    if (fg) anchors.push({ key: firstKey, label, fg });
+  }
+  if (!anchors.length) return;
+
+  // Order by actual position so grouping follows the rendered layout,
+  // regardless of the SUBGROUPS array order.
+  anchors.sort((a, b) =>
+    a.fg.compareDocumentPosition(b.fg) & Node.DOCUMENT_POSITION_FOLLOWING
+      ? -1
+      : 1,
+  );
+
+  for (let i = 0; i < anchors.length; i += 1) {
+    const anchor = anchors[i];
+    const stop = anchors[i + 1]?.fg ?? null;
+
+    const details = document.createElement("details");
+    details.className = "sta-utils-settings-section";
+    details.open = true;
+    const summary = document.createElement("summary");
+    summary.textContent = t(anchor.label);
+    details.appendChild(summary);
+    anchor.fg.before(details);
+
+    let node = anchor.fg;
+    while (node && node !== stop) {
+      const next = node.nextElementSibling;
+      details.appendChild(node);
+      node = next;
+    }
+    anchor.details = details;
+  }
+
+  anchors[0].details.before(
+    _createGroupHeader(t("sta-utils.settings.groups.world")),
+  );
+  const clientAnchor = anchors.find(
+    (anchor) => anchor.key === SHOW_INFO_BUTTONS_SETTING,
+  );
+  clientAnchor?.details?.before(
+    _createGroupHeader(t("sta-utils.settings.groups.client")),
+  );
+}
+
+function _addTokenDiagnosticsButton(tab) {
+  if (!game.user?.isGM) return;
+  if (tab.querySelector(".sta-utils-token-diagnostics-action")) return;
+
+  const settingGroup = _findSettingFormGroup(
     tab,
-    CHARACTER_BROWSER_SOURCE_PACKS_SETTING,
+    TOKEN_INTERACTION_DIAGNOSTICS_SETTING,
   );
-  if (!field) return;
+  if (!settingGroup) return;
 
-  const name = `${MODULE_ID}.${CHARACTER_BROWSER_SOURCE_PACKS_SETTING}`;
-  if (field.querySelector(`input[type="hidden"][name="${name}"]`)) return;
+  const actionGroup = document.createElement("div");
+  actionGroup.className = "form-group sta-utils-token-diagnostics-action";
 
-  const input = field.querySelector(`input[name="${name}"]`);
-  if (!input) return;
-
-  const selectedPackIds = _parseCompendiumPackIds(
-    input.getAttribute("value") ?? input.value,
+  const label = document.createElement("label");
+  label.textContent = t(
+    "sta-utils.settings.tokenInteractionDiagnostics.copyLabel",
   );
-  const optionLabels = new Map();
 
-  const hiddenInput = document.createElement("input");
-  hiddenInput.type = "hidden";
-  hiddenInput.name = input.name;
-  hiddenInput.value = selectedPackIds.join(",");
+  const fields = document.createElement("div");
+  fields.className = "form-fields";
 
-  const wrapper = document.createElement("div");
-  wrapper.className = "sta-utils-pack-selector";
+  const button = document.createElement("button");
+  button.type = "button";
+  button.innerHTML = `<i class="fas fa-copy"></i> ${t(
+    "sta-utils.settings.tokenInteractionDiagnostics.copyButton",
+  )}`;
 
-  const controls = document.createElement("div");
-  controls.style.display = "flex";
-  controls.style.gap = "0.4rem";
-  controls.style.alignItems = "center";
-
-  const select = document.createElement("select");
-  select.className = input.className;
-  select.style.flex = "1 1 auto";
-
-  const emptyOption = document.createElement("option");
-  emptyOption.value = "";
-  emptyOption.textContent = "Loading actor compendiums...";
-  select.appendChild(emptyOption);
-
-  const addButton = document.createElement("button");
-  addButton.type = "button";
-  addButton.className = "button";
-  addButton.textContent = "Add";
-
-  const badgeContainer = document.createElement("div");
-  badgeContainer.style.display = "flex";
-  badgeContainer.style.flexWrap = "wrap";
-  badgeContainer.style.gap = "0.35rem";
-  badgeContainer.style.marginTop = "0.45rem";
-
-  const syncInputValue = () => {
-    hiddenInput.value = selectedPackIds.join(",");
-  };
-
-  const renderBadges = () => {
-    badgeContainer.innerHTML = "";
-
-    if (!selectedPackIds.length) {
-      const none = document.createElement("span");
-      none.className = "hint";
-      none.textContent = "No actor compendium packs selected.";
-      badgeContainer.appendChild(none);
-      return;
-    }
-
-    for (const packId of selectedPackIds) {
-      const badge = document.createElement("span");
-      badge.style.display = "inline-flex";
-      badge.style.alignItems = "center";
-      badge.style.gap = "0.3rem";
-      badge.style.padding = "0.2rem 0.45rem";
-      badge.style.border = "1px solid var(--color-border-light-2)";
-      badge.style.borderRadius = "999px";
-      badge.style.background = "var(--color-bg-option)";
-
-      const label = document.createElement("span");
-      const title = optionLabels.get(packId);
-      label.textContent = title
-        ? `${title} (${packId})`
-        : `${packId} (missing)`;
-      badge.appendChild(label);
-
-      const remove = document.createElement("button");
-      remove.type = "button";
-      remove.className = "button";
-      remove.style.padding = "0 0.35rem";
-      remove.style.minHeight = "1.25rem";
-      remove.textContent = "x";
-      remove.setAttribute("aria-label", `Remove ${packId}`);
-      remove.addEventListener("click", () => {
-        const idx = selectedPackIds.indexOf(packId);
-        if (idx === -1) return;
-        selectedPackIds.splice(idx, 1);
-        syncInputValue();
-        renderBadges();
-      });
-      badge.appendChild(remove);
-
-      badgeContainer.appendChild(badge);
-    }
-  };
-
-  addButton.addEventListener("click", () => {
-    const packId = String(select.value ?? "").trim();
-    if (!packId) return;
-    if (selectedPackIds.includes(packId)) return;
-    selectedPackIds.push(packId);
-    syncInputValue();
-    renderBadges();
-  });
-
-  controls.appendChild(select);
-  controls.appendChild(addButton);
-  wrapper.appendChild(controls);
-  wrapper.appendChild(badgeContainer);
-
-  input.replaceWith(hiddenInput);
-  hiddenInput.after(wrapper);
-  renderBadges();
-
-  const form = tab.closest("form");
-  if (form) {
-    const formdataHandler = (event) => {
-      const fd = event.formData;
-      if (fd && typeof fd.set === "function") {
-        fd.set(name, selectedPackIds.join(","));
+  const diagnostics = game.staUtils?.tokenDiagnostics;
+  if (!diagnostics) {
+    button.disabled = true;
+    button.title = t(
+      "sta-utils.settings.tokenInteractionDiagnostics.reloadRequired",
+    );
+  } else {
+    button.addEventListener("click", async () => {
+      try {
+        await diagnostics.copy();
+      } catch (error) {
+        console.error(
+          `${MODULE_ID} | Failed to copy token diagnostic report`,
+          error,
+        );
+        ui.notifications?.error?.(
+          t("sta-utils.settings.tokenInteractionDiagnostics.copyFailed"),
+        );
       }
-    };
-
-    const handlerKey = `_staUtilsCharacterBrowserPackHandler`;
-    if (form[handlerKey]) {
-      form.removeEventListener("formdata", form[handlerKey]);
-    }
-    form.addEventListener("formdata", formdataHandler);
-    form[handlerKey] = formdataHandler;
+    });
   }
 
-  void _populateActorCompendiumPackSelect(select, optionLabels, renderBadges);
-}
+  const hint = document.createElement("p");
+  hint.className = "hint";
+  hint.textContent = diagnostics
+    ? t("sta-utils.settings.tokenInteractionDiagnostics.copyHint")
+    : t("sta-utils.settings.tokenInteractionDiagnostics.reloadRequired");
 
-async function _populateActorCompendiumPackSelect(
-  select,
-  optionLabels,
-  renderBadges,
-) {
-  const options = _getActorCompendiumPackOptions();
-  optionLabels.clear();
-
-  for (const option of options) {
-    optionLabels.set(option.id, option.label);
-  }
-
-  select.innerHTML = "";
-  const emptyOption = document.createElement("option");
-  emptyOption.value = "";
-  emptyOption.textContent = "Select an actor compendium pack...";
-  select.appendChild(emptyOption);
-
-  for (const option of options) {
-    const el = document.createElement("option");
-    el.value = option.id;
-    el.textContent = `${option.label} (${option.id})`;
-    select.appendChild(el);
-  }
-
-  if (!options.length) {
-    emptyOption.textContent = "No actor compendiums available";
-  }
-
-  renderBadges();
-}
-
-function _getActorCompendiumPackOptions() {
-  const packs = Array.from(game.packs?.values?.() ?? game.packs ?? []);
-  const actorPacks = [];
-
-  for (const pack of packs) {
-    const id = String(pack?.collection ?? "").trim();
-    if (!id) continue;
-
-    const documentName = String(
-      pack?.documentName ?? pack?.metadata?.type ?? "",
-    ).toLowerCase();
-    if (documentName !== "actor") continue;
-
-    const label = String(pack?.title ?? pack?.metadata?.label ?? id).trim();
-    actorPacks.push({ id, label });
-  }
-
-  actorPacks.sort((a, b) => a.label.localeCompare(b.label));
-  return actorPacks;
+  fields.appendChild(button);
+  actionGroup.append(label, fields, hint);
+  settingGroup.after(actionGroup);
 }
 
 function _upgradeNpcBuilderCompendiumField(tab) {
@@ -1770,20 +1805,6 @@ function _createGroupHeader(label) {
   const h3 = document.createElement("h3");
   h3.textContent = label;
   wrapper.appendChild(h3);
-  return wrapper;
-}
-
-/**
- * Create a styled subheader element for a settings subgroup.
- * @param {string} label
- * @returns {HTMLElement}
- */
-function _createSubgroupHeader(label) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "form-group sta-utils-settings-subgroup-header";
-  const h4 = document.createElement("h4");
-  h4.textContent = label;
-  wrapper.appendChild(h4);
   return wrapper;
 }
 

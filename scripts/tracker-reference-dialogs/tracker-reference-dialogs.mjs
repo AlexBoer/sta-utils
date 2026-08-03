@@ -34,32 +34,40 @@ function setupTrackerContextMenu({ container, selector, label, onSelect }) {
 
   closeTrackerContextMenu();
 
+  const selectEntry = async (target) => {
+    try {
+      const element =
+        target instanceof HTMLElement
+          ? target
+          : target?.[0] instanceof HTMLElement
+            ? target[0]
+            : null;
+      if (!element) return;
+      await onSelect?.(element);
+    } catch (err) {
+      console.error(
+        `${MODULE_ID} | tracker reference context menu failed`,
+        err,
+      );
+    }
+  };
+  const menuEntry =
+    game.release.generation >= 14
+      ? {
+          label: String(label ?? ""),
+          icon: "",
+          onClick: (_event, target) => selectEntry(target),
+        }
+      : {
+          name: String(label ?? ""),
+          icon: "",
+          callback: selectEntry,
+        };
+
   _trackerContextMenu = new foundry.applications.ux.ContextMenu(
     container,
     selector,
-    [
-      {
-        name: String(label ?? ""),
-        icon: "",
-        callback: async (target) => {
-          try {
-            const element =
-              target instanceof HTMLElement
-                ? target
-                : target?.[0] instanceof HTMLElement
-                  ? target[0]
-                  : null;
-            if (!element) return;
-            await onSelect?.(element);
-          } catch (err) {
-            console.error(
-              `${MODULE_ID} | tracker reference context menu failed`,
-              err,
-            );
-          }
-        },
-      },
-    ],
+    [menuEntry],
     { fixed: true, jQuery: false },
   );
 }

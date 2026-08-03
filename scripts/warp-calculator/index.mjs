@@ -7,6 +7,9 @@ export {
   calculateDistance,
   calculateTime,
   calculateWarpFactor,
+  calculateWarpTrip,
+  parseTravelTime,
+  formatTravelTime,
   openWarpCalculator,
   warpCalculator,
 } from "./warp-calculator.mjs";

@@ -19,5 +19,7 @@ export {
   getGroupShipActor,
   getWorldTraitsActorUuid,
   isPersonalThreatEnabled,
+  getCompendiumBrowserExclusions,
+  setCompendiumBrowserExclusions,
 } from "./settings.mjs";
 export { getModuleSocket, initSocket } from "./socket.mjs";
