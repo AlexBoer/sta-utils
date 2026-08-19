@@ -1,4 +1,5 @@
 import { MODULE_ID } from "../core/constants.mjs";
+import { combineAssistSuccesses } from "./assist-successes.mjs";
 
 let _installed = false;
 
@@ -170,12 +171,10 @@ async function _handleSplitNpcReroll(rollData, splitData) {
   };
   const shipRerolledResult = await this._taskResult(shipRerolledTaskDice);
 
+  const crewSuccesses = crewRetainedResult.success + crewRerolledResult.success;
+  const shipSuccesses = shipRetainedResult.success + shipRerolledResult.success;
   const shipcrewData = {
-    success:
-      shipRetainedResult.success +
-      shipRerolledResult.success +
-      crewRetainedResult.success +
-      crewRerolledResult.success,
+    success: combineAssistSuccesses(crewSuccesses, shipSuccesses),
     complication:
       shipRetainedResult.complication +
       shipRerolledResult.complication +

@@ -53,6 +53,23 @@ const ITEM_IMAGE_PICKER_USE_STA_FOLDERS_SETTING =
   "itemImagePickerUseStaFolders";
 const ITEM_IMAGE_PICKER_USE_GM_FOLDER_SETTING = "itemImagePickerUseGmFolder";
 const ITEM_IMAGE_PICKER_GM_FOLDER_PATH_SETTING = "itemImagePickerGmFolderPath";
+const ITEM_IMAGE_PICKER_TYPE_FOLDER_SETTINGS = {
+  log: "itemImagePickerFolderLog",
+  milestone: "itemImagePickerFolderMilestone",
+  item: "itemImagePickerFolderItem",
+  armor: "itemImagePickerFolderArmor",
+  characterweapon: "itemImagePickerFolderCharacterWeapon",
+  characterweapon2e: "itemImagePickerFolderCharacterWeapon2e",
+  starshipweapon: "itemImagePickerFolderStarshipWeapon",
+  starshipweapon2e: "itemImagePickerFolderStarshipWeapon2e",
+  talent: "itemImagePickerFolderTalent",
+  focus: "itemImagePickerFolderFocus",
+  trait: "itemImagePickerFolderTrait",
+  injury: "itemImagePickerFolderInjury",
+  smallcraftcontainer: "itemImagePickerFolderSmallCraftContainer",
+  value: "itemImagePickerFolderValue",
+  npc: "itemImagePickerFolderNpc",
+};
 const TOKEN_INTERACTION_DIAGNOSTICS_SETTING = "tokenInteractionDiagnostics";
 
 /** Localized group labels for the settings menu. */
@@ -506,9 +523,25 @@ export function registerSettings() {
     scope: "world",
     config: true,
     type: String,
+    filePicker: "folder",
     default: "",
     group: GROUP_WORLD,
   });
+
+  for (const [itemType, settingKey] of Object.entries(
+    ITEM_IMAGE_PICKER_TYPE_FOLDER_SETTINGS,
+  )) {
+    game.settings.register(MODULE_ID, settingKey, {
+      name: t(`sta-utils.settings.itemImagePickerTypeFolders.${itemType}`),
+      hint: t("sta-utils.settings.itemImagePickerTypeFolderHint"),
+      scope: "world",
+      config: true,
+      type: String,
+      filePicker: "folder",
+      default: "",
+      group: GROUP_WORLD,
+    });
+  }
 
   game.settings.register(MODULE_ID, ENABLE_FATIGUE_SETTING, {
     name: t("sta-utils.settings.enableFatigue.name"),
@@ -1278,6 +1311,27 @@ export function getItemImagePickerGmFolderPath() {
   } catch (_) {
     return "";
   }
+}
+
+/** @returns {string[]} */
+export function getItemImagePickerGmFolderPaths(itemType) {
+  const paths = [getItemImagePickerGmFolderPath()];
+  const settingKey =
+    ITEM_IMAGE_PICKER_TYPE_FOLDER_SETTINGS[
+      String(itemType ?? "")
+        .trim()
+        .toLowerCase()
+    ];
+
+  if (settingKey) {
+    try {
+      paths.push(String(game.settings.get(MODULE_ID, settingKey) ?? ""));
+    } catch (_) {
+      // Ignore unavailable settings during early initialization.
+    }
+  }
+
+  return Array.from(new Set(paths.map((path) => path.trim()).filter(Boolean)));
 }
 
 /**

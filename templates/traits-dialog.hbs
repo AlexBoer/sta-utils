@@ -56,7 +56,7 @@
       {{#each sceneItems}}
       <li class="sta-traits-dialog-row{{#unless this.isVisible}} is-hidden-for-players{{/unless}}" draggable="true" data-uuid="{{this.uuid}}" data-visible="{{#if this.isVisible}}true{{else}}false{{/if}}">
         <img class="sta-traits-img" src="{{this.img}}" alt="" aria-hidden="true">
-        <span class="sta-traits-name">{{this.name}}</span>
+        <span class="sta-traits-name"{{#if this.descriptionTooltip}} data-tooltip="{{this.descriptionTooltip}}" data-tooltip-direction="UP"{{/if}}>{{this.name}}</span>
         {{#if ../canRevealTraits}}
         <button type="button" class="sta-traits-visibility-btn" data-action="toggle-visibility" title="{{this.visibilityActionLabel}}" aria-label="{{this.visibilityActionLabel}}">
           {{#if this.isVisible}}
@@ -92,7 +92,7 @@
       {{#each worldItems}}
       <li class="sta-traits-dialog-row{{#unless this.isVisible}} is-hidden-for-players{{/unless}}" draggable="true" data-uuid="{{this.uuid}}" data-visible="{{#if this.isVisible}}true{{else}}false{{/if}}">
         <img class="sta-traits-img" src="{{this.img}}" alt="" aria-hidden="true">
-        <span class="sta-traits-name">{{this.name}}</span>
+        <span class="sta-traits-name"{{#if this.descriptionTooltip}} data-tooltip="{{this.descriptionTooltip}}" data-tooltip-direction="UP"{{/if}}>{{this.name}}</span>
         {{#if ../canRevealTraits}}
         <button type="button" class="sta-traits-visibility-btn" data-action="toggle-visibility" title="{{this.visibilityActionLabel}}" aria-label="{{this.visibilityActionLabel}}">
           {{#if this.isVisible}}

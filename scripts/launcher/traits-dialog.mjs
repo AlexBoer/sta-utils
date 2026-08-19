@@ -226,17 +226,21 @@ function installTraitsDialogSyncHooks() {
 }
 
 async function ensureObserverOwnership(actor) {
-  if (!actor) return;
+  if (!actor || actor.pack || !actor.isOwner) return;
   const observer = Number(CONST?.DOCUMENT_OWNERSHIP_LEVELS?.OBSERVER ?? 2);
   const current = Number(actor?.ownership?.default ?? 0);
   if (Number.isFinite(current) && current >= observer) return;
 
-  await actor.update({
-    ownership: {
-      ...(actor.ownership ?? {}),
-      default: observer,
-    },
-  });
+  try {
+    await actor.update({
+      ownership: {
+        ...(actor.ownership ?? {}),
+        default: observer,
+      },
+    });
+  } catch (err) {
+    console.warn(`${MODULE_ID} | Failed to set observer ownership`, err);
+  }
 }
 
 async function createTraitOnActor(actor) {
@@ -248,15 +252,11 @@ async function createTraitOnActor(actor) {
   }
 
   await ensureObserverOwnership(actor);
-  const observer = Number(CONST?.DOCUMENT_OWNERSHIP_LEVELS?.OBSERVER ?? 2);
 
   const [created] = await actor.createEmbeddedDocuments("Item", [
     {
       name: t("sta-utils.launcher.traitsDialog.newTraitDefaultName"),
       type: "trait",
-      ownership: {
-        default: observer,
-      },
     },
   ]);
   return created ?? null;
@@ -275,6 +275,25 @@ function formatTraitDisplayName(item) {
     return `${baseName} ${qty}`;
   }
   return baseName;
+}
+
+async function getTraitDescriptionTooltip(item) {
+  let rawDescription =
+    foundry.utils.getProperty(item, "system.description.value") ??
+    foundry.utils.getProperty(item, "system.description") ??
+    "";
+  if (typeof rawDescription !== "string") {
+    rawDescription = rawDescription?.value ?? "";
+  }
+  rawDescription = String(rawDescription).trim();
+  if (!rawDescription) return "";
+
+  return foundry.applications.ux.TextEditor.enrichHTML(rawDescription, {
+    async: true,
+    documents: true,
+    rolls: true,
+    secrets: false,
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -365,24 +384,22 @@ class TraitsDialogApp extends fapi.HandlebarsApplicationMixin(
 
     const sceneTraitActor = getActiveSceneTraitsActor();
     const worldTraitActor = await getWorldTraitActor();
-    const sceneItems = getSceneTraitItems().map((i) => ({
-      uuid: i.uuid,
-      name: formatTraitDisplayName(i),
-      img: i.img ?? "icons/svg/d20-grey.svg",
-      isVisible: isTraitVisible(i),
-      visibilityActionLabel: isTraitVisible(i)
+    const prepareTrait = async (item) => ({
+      uuid: item.uuid,
+      name: formatTraitDisplayName(item),
+      img: item.img ?? "icons/svg/d20-grey.svg",
+      descriptionTooltip: await getTraitDescriptionTooltip(item),
+      isVisible: isTraitVisible(item),
+      visibilityActionLabel: isTraitVisible(item)
         ? t("sta-utils.launcher.traitsDialog.hideFromPlayers")
         : t("sta-utils.launcher.traitsDialog.revealToPlayers"),
-    }));
-    const worldItems = (await getWorldTraitItems()).map((i) => ({
-      uuid: i.uuid,
-      name: formatTraitDisplayName(i),
-      img: i.img ?? "icons/svg/d20-grey.svg",
-      isVisible: isTraitVisible(i),
-      visibilityActionLabel: isTraitVisible(i)
-        ? t("sta-utils.launcher.traitsDialog.hideFromPlayers")
-        : t("sta-utils.launcher.traitsDialog.revealToPlayers"),
-    }));
+    });
+    const [sceneItems, worldItems] = await Promise.all([
+      Promise.all(getSceneTraitItems().map(prepareTrait)),
+      getWorldTraitItems().then((items) =>
+        Promise.all(items.map(prepareTrait)),
+      ),
+    ]);
 
     return {
       isSimpleTraitsMode: false,
@@ -470,7 +487,9 @@ class TraitsDialogApp extends fapi.HandlebarsApplicationMixin(
       .forEach((btn) => {
         btn.addEventListener("click", async () => {
           try {
-            const created = await createTraitOnActor(getSceneTraitActor());
+            const created = await createTraitOnActor(
+              getActiveSceneTraitsActor(),
+            );
             this._saveScrollState();
             await this.render();
             created?.sheet?.render(true);

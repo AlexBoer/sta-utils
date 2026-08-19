@@ -107,9 +107,9 @@ function _injectUsesFields(root, item) {
 }
 
 /**
- * Install the renderApplicationV2 hook that adds "Award" to the talent type
- * dropdown.  This runs unconditionally — it is a permanent data extension, not
- * gated by any user setting.
+ * Install the renderApplicationV2 hook that adds custom talent types to the
+ * talent type dropdown. This runs unconditionally — it is a permanent data
+ * extension, not gated by any user setting.
  */
 export function installTalentTypeExtensionHook() {
   Hooks.on("renderApplicationV2", (app, html) => {
@@ -121,19 +121,69 @@ export function installTalentTypeExtensionHook() {
     );
     if (!select) return;
 
-    // Guard against double-injection.
-    if (select.querySelector('option[value="award"]')) return;
+    const customTypes = [
+      ["award", "sta-utils.talentUses.awardType"],
+      ["role", "sta-utils.talentUses.roleType"],
+      ["speciesability", "sta-utils.talentUses.speciesAbilityType"],
+    ];
 
-    const option = document.createElement("option");
-    option.value = "award";
-    option.textContent = t("sta-utils.talentUses.awardType");
-    select.appendChild(option);
+    for (const [value, labelKey] of customTypes) {
+      if (select.querySelector(`option[value="${value}"]`)) continue;
 
-    // Only update the selection if the talent already uses the "award" type —
-    // that is the only value the template doesn't know about and won't have
-    // pre-selected.  For all other types we leave the DOM untouched.
-    if (item.system?.talenttype?.typeenum === "award") {
-      select.value = "award";
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = t(labelKey);
+      select.appendChild(option);
     }
+
+    const currentType = item.system?.talenttype?.typeenum;
+    if (customTypes.some(([value]) => value === currentType)) {
+      select.value = currentType;
+    }
+
+    _syncSpeciesAbilityRequirementField(html, item, select);
   });
+}
+
+/**
+ * Mirror the system's "Species" requirement field for the custom
+ * "speciesability" type. The core talent template only renders the species
+ * name input for the built-in "species" type, so we inject an equivalent
+ * `system.talenttype.description` text field when "Species Ability" is
+ * selected. Foundry's ApplicationV2 form processing saves it automatically.
+ *
+ * @param {HTMLElement} root
+ * @param {Item} item
+ * @param {HTMLSelectElement} select
+ */
+function _syncSpeciesAbilityRequirementField(root, item, select) {
+  const FIELD_CLASS = "sta-utils-species-ability-req";
+  const existing = root.querySelector(`.${FIELD_CLASS}`);
+
+  if (item.system?.talenttype?.typeenum !== "speciesability") {
+    existing?.remove();
+    return;
+  }
+  if (existing) return;
+
+  // The type dropdown sits in a `.columnx4`; the sibling `.column` holds the
+  // requirement field for built-in types and is empty for custom types.
+  const column = select.closest(".row")?.querySelector(".column");
+  if (!(column instanceof HTMLElement)) return;
+
+  const requires =
+    game.i18n?.localize?.("sta.item.talent.requires") ?? "Requires";
+  const species =
+    game.i18n?.localize?.("sta.actor.character.species") ?? "Species";
+  const value = foundry.utils.escapeHTML(
+    String(item.system?.talenttype?.description ?? ""),
+  );
+
+  const wrapper = document.createElement("div");
+  wrapper.className = FIELD_CLASS;
+  wrapper.innerHTML = `
+    <div class="title">${requires} ${species}</div>
+    <input type="text" name="system.talenttype.description" value="${value}" />
+  `;
+  column.appendChild(wrapper);
 }

@@ -40,6 +40,7 @@ const SUPPORTED_ITEM_TYPES = new Set([
   "trait",
   "injury",
   "smallcraftcontainer",
+  "value",
 ]);
 
 export function installItemImagePickerHook() {

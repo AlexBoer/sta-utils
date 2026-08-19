@@ -526,10 +526,6 @@ Hooks.once("init", () => {
   registerMigrationSetting();
   installCompendiumBrowserSidebarHooks();
 
-  tokenDiagnostics = isTokenInteractionDiagnosticsEnabled()
-    ? installTokenInteractionDiagnostics()
-    : null;
-
   // --- Attack Calculator chat button ---
   // Registered at init time so it catches weapon cards rendered from the
   // chat log cache before the ready hook fires.
@@ -639,6 +635,11 @@ Hooks.once("ready", async () => {
   console.log(`${MODULE_ID} | Ready`);
 
   installSta257DisciplineCompatPatch();
+
+  // game.user is only available here, not at init, so the GM check works.
+  tokenDiagnostics = isTokenInteractionDiagnosticsEnabled()
+    ? installTokenInteractionDiagnostics()
+    : null;
 
   // --- Socket (requires socketlib, available at ready) ---
   initSocket();

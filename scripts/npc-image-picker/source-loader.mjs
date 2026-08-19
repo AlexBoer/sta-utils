@@ -1,7 +1,7 @@
 import { MODULE_ID } from "../core/constants.mjs";
 import { getModuleSocket } from "../core/socket.mjs";
 import {
-  getItemImagePickerGmFolderPath,
+  getItemImagePickerGmFolderPaths,
   isItemImagePickerUseGmFolderEnabled,
 } from "../core/settings.mjs";
 
@@ -13,7 +13,7 @@ function _normalizePath(path) {
   return String(path ?? "")
     .trim()
     .replace(/\\+/g, "/")
-    .replace(/\/+/g, "/");
+    .replace(/(^|[^:])\/{2,}/g, "$1/");
 }
 
 function _getFilePickerClass() {
@@ -48,14 +48,50 @@ async function _browseFolder(folderPath) {
   const FilePickerCls = _getFilePickerClass();
   if (!FilePickerCls?.browse) return [];
 
+  let source = "data";
+  let target = folderPath;
+  const options = {};
+
   try {
-    const result = await FilePickerCls.browse("data", folderPath);
-    const files = Array.isArray(result?.files) ? result.files : [];
-    return files.filter(_isImagePath).map(_normalizePath);
-  } catch (err) {
-    console.warn(`${MODULE_ID} | Failed to browse folder "${folderPath}"`, err);
-    return [];
+    const picker = new FilePickerCls({ type: "folder", current: folderPath });
+    source = picker.activeSource ?? source;
+    target = picker.target || target;
+    if (picker.source?.bucket) options.bucket = picker.source.bucket;
+  } catch (_) {
+    // Fall back to the Data source for older or customized FilePickers.
   }
+
+  const files = [];
+  const visited = new Set();
+
+  async function browseTarget(currentTarget) {
+    const normalizedTarget = _normalizePath(currentTarget);
+    const visitKey = normalizedTarget.replace(/\/+$/, "");
+    if (visited.has(visitKey)) return;
+    visited.add(visitKey);
+
+    let result;
+    try {
+      result = await FilePickerCls.browse(source, normalizedTarget, options);
+    } catch (err) {
+      console.warn(
+        `${MODULE_ID} | Failed to browse folder "${normalizedTarget}"`,
+        err,
+      );
+      return;
+    }
+
+    const resultFiles = Array.isArray(result?.files) ? result.files : [];
+    files.push(...resultFiles.filter(_isImagePath).map(_normalizePath));
+
+    const childFolders = Array.isArray(result?.dirs) ? result.dirs : [];
+    for (const childFolder of childFolders) {
+      await browseTarget(childFolder);
+    }
+  }
+
+  await browseTarget(target);
+  return files;
 }
 
 async function _listFoldersLocally(folderPaths) {
@@ -107,9 +143,10 @@ export async function loadNpcLcarsImageOptions() {
   entries.push(..._buildEntries(staUtilsFiles, "STA Utils"));
 
   if (isItemImagePickerUseGmFolderEnabled()) {
-    const gmFolder = _normalizePath(getItemImagePickerGmFolderPath());
-    if (gmFolder) {
-      const gmFiles = await _listFoldersAsGm([gmFolder]);
+    const gmFolders =
+      getItemImagePickerGmFolderPaths("npc").map(_normalizePath);
+    if (gmFolders.length) {
+      const gmFiles = await _listFoldersAsGm(gmFolders);
       entries.push(..._buildEntries(gmFiles, "GM"));
     }
   }

@@ -14,6 +14,7 @@
 
 import { MODULE_ID } from "../core/constants.mjs";
 import { getRegisteredMiddleware } from "./dice-pool-override.mjs";
+import { combineAssistSuccesses } from "./assist-successes.mjs";
 
 /* ------------------------------------------------------------------ */
 /*  Roll speaker (Character Chat Selector compatibility)               */
@@ -328,7 +329,7 @@ async function _splitAssistRoll(staRoll, taskData) {
       diceStringship: shipData.diceString,
       diceOutcome: crewData.diceOutcome,
       shipdiceOutcome: shipData.diceOutcome,
-      success: crewData.success + shipData.success,
+      success: combineAssistSuccesses(crewData.success, shipData.success),
       checkTarget: crewData.checkTarget,
       checkTargetship: shipData.checkTarget,
       disDepTarget: crewData.disDepTarget,

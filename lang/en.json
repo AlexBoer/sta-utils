@@ -145,7 +145,25 @@
       },
       "itemImagePickerGmFolderPath": {
         "name": "GM Image Folder Path",
-        "hint": "Data path to a folder of image files (for example: worlds/my-world/images/items)."
+        "hint": "Shared folder included for every supported item type. Use the folder browser to select a Foundry Data or hosted storage folder. Images in child folders are included."
+      },
+      "itemImagePickerTypeFolderHint": "Optional folder included only for this image type, in addition to the shared GM folder. Images in child folders are included.",
+      "itemImagePickerTypeFolders": {
+        "log": "Log Image Folder",
+        "milestone": "Milestone Image Folder",
+        "item": "Equipment Image Folder",
+        "armor": "Armor Image Folder",
+        "characterweapon": "Character Weapon (1e) Image Folder",
+        "characterweapon2e": "Character Weapon (2e) Image Folder",
+        "starshipweapon": "Starship Weapon (1e) Image Folder",
+        "starshipweapon2e": "Starship Weapon (2e) Image Folder",
+        "talent": "Talent Image Folder",
+        "focus": "Focus Image Folder",
+        "trait": "Trait Image Folder",
+        "injury": "Injury Image Folder",
+        "smallcraftcontainer": "Small Craft Container Image Folder",
+        "value": "Value Image Folder",
+        "npc": "NPC Portrait Image Folder"
       },
       "disableTooltips": {
         "name": "Disable Item Tooltips",
@@ -293,7 +311,9 @@
       "usedLabel": "Used",
       "maxLabel": "Uses per Mission",
       "maxHint": "Maximum uses per mission. Set to 0 for unlimited (tracker hidden).",
-      "awardType": "Award"
+      "awardType": "Award",
+      "roleType": "Role",
+      "speciesAbilityType": "Species Ability"
     },
     "itemImagePicker": {
       "open": "Choose Image",

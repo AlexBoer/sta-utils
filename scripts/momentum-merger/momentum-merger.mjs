@@ -21,6 +21,14 @@ const HISTORY_CLASS = "sta-utils-merger-history";
 const DETAILS_CLASS = "sta-utils-merger-details";
 
 /**
+ * Serializes merge operations so concurrent `createChatMessage` hooks never
+ * overlap.  Without this, two rapid tracker messages can both try to update /
+ * delete the same previous message, causing "does not exist" errors.
+ * @type {Promise<void>}
+ */
+let _mergeQueue = Promise.resolve();
+
+/**
  * Regex to extract the numeric delta and direction from a momentum / threat
  * text string.  Matches both "Added N …" and "Removed N …".
  *
@@ -39,12 +47,15 @@ const DELTA_RE = /\b(Added|Removed)\s+(\d+)\s+/i;
  * messages and merges them.
  */
 export function installMomentumMergerHook() {
-  Hooks.on("createChatMessage", async (message) => {
-    try {
-      await _onCreateChatMessage(message);
-    } catch (err) {
-      console.warn(`${MODULE_ID} | Momentum Merger error`, err);
-    }
+  Hooks.on("createChatMessage", (message) => {
+    // Chain onto the queue so merges run strictly one-at-a-time.
+    _mergeQueue = _mergeQueue.then(async () => {
+      try {
+        await _onCreateChatMessage(message);
+      } catch (err) {
+        console.warn(`${MODULE_ID} | Momentum Merger error`, err);
+      }
+    });
   });
 
   console.log(`${MODULE_ID} | Momentum Merger hook installed`);
@@ -129,6 +140,16 @@ async function _onCreateChatMessage(newMessage) {
   // --- Build merged HTML -------------------------------------------
 
   const mergedHtml = _buildMergedHtml(netMomentum, netThreat, historyEntries);
+
+  // Re-validate both messages still exist before mutating.  A prior queued
+  // merge may already have deleted one of them.
+  if (!game.messages.get(prevMessage.id) || !game.messages.get(newMessage.id)) {
+    console.debug(
+      `${MODULE_ID} | Merger: skipping — a target message no longer exists`,
+    );
+    return;
+  }
+
   await prevMessage.update({ content: mergedHtml });
   await newMessage.delete();
 }
