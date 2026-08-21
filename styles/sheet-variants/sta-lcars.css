@@ -3901,34 +3901,142 @@ body.sta-officers-lcars-active {
 
 /* =============================================================================
  * OPAQUE BACKGROUND OVERRIDE
- * Client setting (sta-utils.lcarsOpaqueBackgrounds) toggles `body.sta-lcars-opaque-bg`.
- *
- * Two things were tried and rejected here, for future reference:
- *  1. `--lcars-bg: rgb(from var(--lcars-bg) ...) !important` on the SAME
- *     element that already sets --lcars-bg is a custom-property self-reference
- *     cycle -> computes to the guaranteed-invalid value -> background vanished
- *     entirely (looked like frosted glass).
- *  2. Capturing the opaque color under a new property name via relative-color
- *     syntax (`rgb(from ...)`) avoided the cycle, but still produced no visible
- *     change — Foundry's bundled Electron/Chromium build does not reliably
- *     apply relative-color syntax when it's threaded through custom-property
- *     indirection, so the value stayed effectively invalid.
- *
- * Fix: skip color math entirely. Use flat, hardcoded opaque replacement colors
- * keyed off the `.theme-dark` / `.theme-light` class Foundry puts on <body>,
- * and reassign --lcars-bg / --lcars-bg-panel to those on DESCENDANTS only
- * (never the root itself, to dodge any cycle). This sacrifices per-scheme
- * panel hue accuracy in opaque mode, but is simple, robust, and always valid
- * CSS.
+ * Client setting (sta-utils.lcarsOpaqueBackgrounds) toggles this mode.
+ * Tokens match each scheme's authored background RGB values without alpha.
  * ============================================================================= */
-body.sta-lcars-opaque-bg.theme-dark {
-  --sta-lcars-opaque-bg: #0e0e16;
-  --sta-lcars-opaque-bg-panel: #17171f;
-}
-body.sta-lcars-opaque-bg.theme-light {
-  --sta-lcars-opaque-bg: #f5f2e8;
-  --sta-lcars-opaque-bg-panel: #e6e0cf;
-}
+body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-tng,
+body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-tng,
+body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-tng) { --sta-lcars-opaque-bg: #010105; --sta-lcars-opaque-bg-panel: #000000; }
+body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-sta,
+body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-sta,
+body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-sta) { --sta-lcars-opaque-bg: #000516; --sta-lcars-opaque-bg-panel: #00051e; }
+body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-voyager,
+body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-voyager,
+body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-voyager) { --sta-lcars-opaque-bg: #0e0e16; --sta-lcars-opaque-bg-panel: #000000; }
+body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-ds9,
+body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-ds9,
+body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-ds9) { --sta-lcars-opaque-bg: #0e0e16; --sta-lcars-opaque-bg-panel: #000000; }
+body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-tos,
+body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-tos,
+body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-tos) { --sta-lcars-opaque-bg: #0a0a0a; --sta-lcars-opaque-bg-panel: #101010; }
+body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-enterprise,
+body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-enterprise,
+body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-enterprise) { --sta-lcars-opaque-bg: #0e0e16; --sta-lcars-opaque-bg-panel: #000408; }
+body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-kelvin,
+body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-kelvin,
+body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-kelvin) { --sta-lcars-opaque-bg: #0e0e16; --sta-lcars-opaque-bg-panel: #000004; }
+body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-picard,
+body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-picard,
+body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-picard) { --sta-lcars-opaque-bg: #0e0e16; --sta-lcars-opaque-bg-panel: #000000; }
+body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-lowerDecks,
+body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-lowerDecks,
+body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-lowerDecks) { --sta-lcars-opaque-bg: #1d1d1d; --sta-lcars-opaque-bg-panel: #111111; }
+body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-prodigy,
+body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-prodigy,
+body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-prodigy) { --sta-lcars-opaque-bg: #0a0a1e; --sta-lcars-opaque-bg-panel: #04041c; }
+body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-academy,
+body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-academy,
+body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-academy) { --sta-lcars-opaque-bg: #0f0f0f; --sta-lcars-opaque-bg-panel: #000000; }
+body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-romulan,
+body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-romulan,
+body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-romulan) { --sta-lcars-opaque-bg: #030904; --sta-lcars-opaque-bg-panel: #000a02; }
+body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-klingon,
+body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-klingon,
+body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-klingon) { --sta-lcars-opaque-bg: #070302; --sta-lcars-opaque-bg-panel: #0a0402; }
+body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-dominion,
+body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-dominion,
+body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-dominion) { --sta-lcars-opaque-bg: #0a0a0c; --sta-lcars-opaque-bg-panel: #0e0e12; }
+body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-cardassian,
+body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-cardassian,
+body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-cardassian) { --sta-lcars-opaque-bg: #0e0b07; --sta-lcars-opaque-bg-panel: #1c1408; }
+body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-borg,
+body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-borg,
+body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-borg) { --sta-lcars-opaque-bg: #040804; --sta-lcars-opaque-bg-panel: #000e04; }
+body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-ferengi,
+body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-ferengi,
+body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-ferengi) { --sta-lcars-opaque-bg: #0e0a04; --sta-lcars-opaque-bg-panel: #1e1404; }
+body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-orion,
+body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-orion,
+body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-orion) { --sta-lcars-opaque-bg: #040c0a; --sta-lcars-opaque-bg-panel: #04140e; }
+body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-sfCommand,
+body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-sfCommand,
+body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-sfCommand) { --sta-lcars-opaque-bg: #080204; --sta-lcars-opaque-bg-panel: #0a0206; }
+body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-sfSciences,
+body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-sfSciences,
+body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-sfSciences) { --sta-lcars-opaque-bg: #02040a; --sta-lcars-opaque-bg-panel: #02040e; }
+body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-sfOperations,
+body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-sfOperations,
+body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-sfOperations) { --sta-lcars-opaque-bg: #080502; --sta-lcars-opaque-bg-panel: #040302; }
+body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-redAlert,
+body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-redAlert,
+body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-redAlert) { --sta-lcars-opaque-bg: #100808; --sta-lcars-opaque-bg-panel: #0c0000; }
+
+body.sta-lcars-opaque-bg.theme-light .lcars-scheme-tng,
+body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-tng,
+body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-tng) { --sta-lcars-opaque-bg: #f5f2e8; --sta-lcars-opaque-bg-panel: #fffff0; }
+body.sta-lcars-opaque-bg.theme-light .lcars-scheme-sta,
+body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-sta,
+body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-sta) { --sta-lcars-opaque-bg: #f0f5ff; --sta-lcars-opaque-bg-panel: #ffffff; }
+body.sta-lcars-opaque-bg.theme-light .lcars-scheme-voyager,
+body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-voyager,
+body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-voyager) { --sta-lcars-opaque-bg: #e4f2f0; --sta-lcars-opaque-bg-panel: #f0ffff; }
+body.sta-lcars-opaque-bg.theme-light .lcars-scheme-ds9,
+body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-ds9,
+body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-ds9) { --sta-lcars-opaque-bg: #f0e8d0; --sta-lcars-opaque-bg-panel: #fff8e6; }
+body.sta-lcars-opaque-bg.theme-light .lcars-scheme-tos,
+body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-tos,
+body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-tos) { --sta-lcars-opaque-bg: #e8e8e8; --sta-lcars-opaque-bg-panel: #d2d2d2; }
+body.sta-lcars-opaque-bg.theme-light .lcars-scheme-enterprise,
+body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-enterprise,
+body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-enterprise) { --sta-lcars-opaque-bg: #e8ecf0; --sta-lcars-opaque-bg-panel: #f0f4ff; }
+body.sta-lcars-opaque-bg.theme-light .lcars-scheme-kelvin,
+body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-kelvin,
+body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-kelvin) { --sta-lcars-opaque-bg: #e8f0f8; --sta-lcars-opaque-bg-panel: #ebf5ff; }
+body.sta-lcars-opaque-bg.theme-light .lcars-scheme-picard,
+body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-picard,
+body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-picard) { --sta-lcars-opaque-bg: #ececef; --sta-lcars-opaque-bg-panel: #f5f5fc; }
+body.sta-lcars-opaque-bg.theme-light .lcars-scheme-lowerDecks,
+body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-lowerDecks,
+body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-lowerDecks) { --sta-lcars-opaque-bg: #b6b7be; --sta-lcars-opaque-bg-panel: #f0f4ff; }
+body.sta-lcars-opaque-bg.theme-light .lcars-scheme-prodigy,
+body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-prodigy,
+body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-prodigy) { --sta-lcars-opaque-bg: #eee8f8; --sta-lcars-opaque-bg-panel: #faf0ff; }
+body.sta-lcars-opaque-bg.theme-light .lcars-scheme-academy,
+body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-academy,
+body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-academy) { --sta-lcars-opaque-bg: #e8e6e0; --sta-lcars-opaque-bg-panel: #fffffa; }
+body.sta-lcars-opaque-bg.theme-light .lcars-scheme-romulan,
+body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-romulan,
+body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-romulan) { --sta-lcars-opaque-bg: #e8f0e8; --sta-lcars-opaque-bg-panel: #e6f8e8; }
+body.sta-lcars-opaque-bg.theme-light .lcars-scheme-klingon,
+body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-klingon,
+body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-klingon) { --sta-lcars-opaque-bg: #f0e4e0; --sta-lcars-opaque-bg-panel: #fceee8; }
+body.sta-lcars-opaque-bg.theme-light .lcars-scheme-dominion,
+body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-dominion,
+body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-dominion) { --sta-lcars-opaque-bg: #ebebed; --sta-lcars-opaque-bg-panel: #dadae4; }
+body.sta-lcars-opaque-bg.theme-light .lcars-scheme-cardassian,
+body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-cardassian,
+body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-cardassian) { --sta-lcars-opaque-bg: #f4ede0; --sta-lcars-opaque-bg-panel: #fcf0d2; }
+body.sta-lcars-opaque-bg.theme-light .lcars-scheme-borg,
+body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-borg,
+body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-borg) { --sta-lcars-opaque-bg: #e8e8e8; --sta-lcars-opaque-bg-panel: #d2d2d2; }
+body.sta-lcars-opaque-bg.theme-light .lcars-scheme-ferengi,
+body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-ferengi,
+body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-ferengi) { --sta-lcars-opaque-bg: #f5edd0; --sta-lcars-opaque-bg-panel: #fff2c4; }
+body.sta-lcars-opaque-bg.theme-light .lcars-scheme-orion,
+body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-orion,
+body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-orion) { --sta-lcars-opaque-bg: #e4f2ec; --sta-lcars-opaque-bg-panel: #d2f8e4; }
+body.sta-lcars-opaque-bg.theme-light .lcars-scheme-sfCommand,
+body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-sfCommand,
+body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-sfCommand) { --sta-lcars-opaque-bg: #f2e8ec; --sta-lcars-opaque-bg-panel: #fceef4; }
+body.sta-lcars-opaque-bg.theme-light .lcars-scheme-sfSciences,
+body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-sfSciences,
+body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-sfSciences) { --sta-lcars-opaque-bg: #e8eef8; --sta-lcars-opaque-bg-panel: #eaf2ff; }
+body.sta-lcars-opaque-bg.theme-light .lcars-scheme-sfOperations,
+body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-sfOperations,
+body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-sfOperations) { --sta-lcars-opaque-bg: #f8f0d8; --sta-lcars-opaque-bg-panel: #fffae0; }
+body.sta-lcars-opaque-bg.theme-light .lcars-scheme-redAlert,
+body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-redAlert,
+body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-redAlert) { --sta-lcars-opaque-bg: #f5e8e8; --sta-lcars-opaque-bg-panel: #fff0f0; }
 
 body.sta-lcars-opaque-bg
   :is(

@@ -423,8 +423,28 @@ async function openStressResetDialog() {
 /*  Initialization                              */
 /* -------------------------------------------- */
 
+function registerStaShowNotesInLimitedCompatibilitySetting() {
+  const settingKey = "sta.showNotesInLimited";
+  if (game.settings.settings.has(settingKey)) return;
+
+  game.settings.register("sta", "showNotesInLimited", {
+    name: "Show notes in limited view",
+    hint: "Display character notes in the limited view.",
+    scope: "world",
+    config: false,
+    type: Boolean,
+    default: false,
+  });
+
+  console.warn(
+    `${MODULE_ID} | Registered compatibility fallback for missing ${settingKey} setting.`,
+  );
+}
+
 Hooks.once("init", () => {
   console.log(`${MODULE_ID} | Initializing STA Utilities`);
+
+  registerStaShowNotesInLimitedCompatibilitySetting();
 
   try {
     foundry.utils.setProperty(

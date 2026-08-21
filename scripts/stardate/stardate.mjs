@@ -13,21 +13,124 @@ import { t } from "../core/i18n.mjs";
 // CONVERSION FUNCTIONS
 // ─────────────────────────────────────────────────────────────────────────────
 
-const STARDATE_ORIGIN = new Date("July 5, 2318 12:00:00");
-const MS_PER_STARDATE_UNIT = 34367056.4;
+// Era anchors and rates (derived from TrekGuide.com / Phillip L. Sublett).
+const E_TNG = new Date(2318, 6, 5, 12, 0, 0).getTime();
+const K_TNG = 34367056.4; // ms per unit — TNG/DS9/VOY (918.23186 sd/yr)
+const E_TOS = new Date(2265, 3, 25, 0, 0, 0).getTime();
+const K_TOS = 11975570.7; // ms per unit — TOS (2635.10833 sd/yr)
+const TOS_CAP = 5943.7; // last on-screen TOS stardate; caps extrapolation
+const DAYS_PER_YEAR = 365.2422;
+const MS_PER_DAY = 86400000;
+const MS_PER_YEAR = DAYS_PER_YEAR * MS_PER_DAY;
+// Gentle "catch-up" slope used to bridge era resets so the value never drops.
+const R_BRIDGE_PER_MS = 50 / MS_PER_YEAR;
 
 /**
- * Converts a calendar date to its corresponding TNG Stardate.
+ * Per-era canonical stardate for an instant (ms), with TOS extrapolation capped.
+ * Kelvin `YYYY.xx` is used for eras without an on-screen stardate system.
+ * @param {number} t - Unix milliseconds.
+ * @returns {number}
+ */
+function _canonicalStardate(t) {
+  if (t >= E_TNG) return (t - E_TNG) / K_TNG;
+  if (t >= E_TOS && new Date(t).getFullYear() <= 2270) {
+    return Math.min((t - E_TOS) / K_TOS, TOS_CAP);
+  }
+  const y = new Date(t).getFullYear();
+  const jan1 = new Date(y, 0, 1).getTime();
+  return y + (t - jan1) / MS_PER_YEAR;
+}
+
+// Lazily-built monotonic lookup table (weekly knots). The stored curve follows
+// the canonical value while it rises, and bridges upward slowly across the
+// downward era resets so the sequence is strictly increasing and never negative.
+let _knotMs = null;
+let _knotSd = null;
+function _buildKnots() {
+  const start = new Date(1900, 0, 1).getTime();
+  const end = new Date(2600, 0, 1).getTime();
+  const step = 7 * MS_PER_DAY;
+  const ms = [];
+  const sd = [];
+  let f = _canonicalStardate(start);
+  let tPrev = start;
+  for (let t = start; t <= end; t += step) {
+    const c = _canonicalStardate(t);
+    f = c > f ? c : f + R_BRIDGE_PER_MS * (t - tPrev);
+    ms.push(t);
+    sd.push(f);
+    tPrev = t;
+  }
+  _knotMs = ms;
+  _knotSd = sd;
+}
+
+/**
+ * Convert an instant (ms) to a continuous, monotonic stardate.
+ * @param {number} t - Unix milliseconds.
+ * @returns {number}
+ */
+function _stardateFromMs(t) {
+  if (!_knotMs) _buildKnots();
+  const n = _knotMs.length;
+  if (t <= _knotMs[0]) {
+    const slope = (_knotSd[1] - _knotSd[0]) / (_knotMs[1] - _knotMs[0]);
+    return _knotSd[0] + slope * (t - _knotMs[0]);
+  }
+  if (t >= _knotMs[n - 1]) {
+    const slope =
+      (_knotSd[n - 1] - _knotSd[n - 2]) / (_knotMs[n - 1] - _knotMs[n - 2]);
+    return _knotSd[n - 1] + slope * (t - _knotMs[n - 1]);
+  }
+  let lo = 0;
+  let hi = n - 1;
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    if (_knotMs[mid] <= t) lo = mid;
+    else hi = mid;
+  }
+  const frac = (t - _knotMs[lo]) / (_knotMs[hi] - _knotMs[lo]);
+  return _knotSd[lo] + frac * (_knotSd[hi] - _knotSd[lo]);
+}
+
+/**
+ * Convert a stardate back to an instant (ms). Inverse of `_stardateFromMs`.
+ * @param {number} sd
+ * @returns {number} Unix milliseconds.
+ */
+function _msFromStardate(sd) {
+  if (!_knotMs) _buildKnots();
+  const n = _knotSd.length;
+  if (sd <= _knotSd[0]) {
+    const slope = (_knotSd[1] - _knotSd[0]) / (_knotMs[1] - _knotMs[0]);
+    return _knotMs[0] + (sd - _knotSd[0]) / slope;
+  }
+  if (sd >= _knotSd[n - 1]) {
+    const slope =
+      (_knotSd[n - 1] - _knotSd[n - 2]) / (_knotMs[n - 1] - _knotMs[n - 2]);
+    return _knotMs[n - 1] + (sd - _knotSd[n - 1]) / slope;
+  }
+  let lo = 0;
+  let hi = n - 1;
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    if (_knotSd[mid] <= sd) lo = mid;
+    else hi = mid;
+  }
+  const frac = (sd - _knotSd[lo]) / (_knotSd[hi] - _knotSd[lo]);
+  return _knotMs[lo] + frac * (_knotMs[hi] - _knotMs[lo]);
+}
+
+/**
+ * Converts a calendar date to its corresponding stardate.
+ * Era-aware and continuous: values are always positive and never decrease.
  * @param {Date|string} calendarDateInput - A Date object or date string.
  * @returns {string} The stardate, fixed to one decimal place.
  */
 export function calendarDateToStardateTng(calendarDateInput) {
   const calendarInput = new Date(calendarDateInput);
   calendarInput.setSeconds(0);
-
-  const msSinceOrigin = calendarInput.getTime() - STARDATE_ORIGIN.getTime();
-  const stardate = msSinceOrigin / MS_PER_STARDATE_UNIT;
-  return stardate.toFixed(1);
+  return _stardateFromMs(calendarInput.getTime()).toFixed(1);
 }
 
 /**
@@ -36,9 +139,7 @@ export function calendarDateToStardateTng(calendarDateInput) {
  * @returns {string} Formatted calendar date.
  */
 export function stardateTngToCalendarDate(stardateInput) {
-  const msSinceOrigin = stardateInput * MS_PER_STARDATE_UNIT;
-  const resultMs = STARDATE_ORIGIN.getTime() + msSinceOrigin;
-  const resultDate = new Date(resultMs);
+  const resultDate = new Date(_msFromStardate(stardateInput));
 
   const weekdayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const monthNames = [
@@ -172,7 +273,7 @@ function computeWorldTimeSeconds(mode, stardateValue, dateValue, timeValue) {
   // toCalendar
   const sd = parseFloat(stardateValue);
   if (isNaN(sd)) return null;
-  const ms = STARDATE_ORIGIN.getTime() + sd * MS_PER_STARDATE_UNIT;
+  const ms = _msFromStardate(sd);
   return Math.round(ms / 1000);
 }
 
