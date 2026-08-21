@@ -18,6 +18,8 @@ export function installCreateChatMessageHook() {
     if (message.author?.id !== game.user?.id) return;
 
     const html = message.content ?? "";
+    if (message.flags?.sta?.rollType === "acclaim") return;
+
     // STA v2.5.0 changed chat card class from "sta roll chat card" to "chatcard"
     const isStaChatCard =
       html.includes('class="sta roll chat card"') ||

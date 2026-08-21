@@ -5,6 +5,7 @@ import {
   registerMigrationSetting,
   runMigrations,
   initSocket,
+  isLcarsOpaqueBackgroundsEnabled,
 } from "./core/index.mjs";
 import {
   registerSidebarWidget,
@@ -184,7 +185,6 @@ import {
   isStaToolsSidebarGmOnly,
 } from "./core/settings.mjs";
 
-import { MobileCharacterSheet2e } from "./mobile-sheet/mobile-character-sheet2e.mjs";
 import { LcarsCharacterSheet2e } from "./lcars-sheet/lcars-character-sheet2e.mjs";
 import { LcarsSupportingSheet2e } from "./lcars-sheet/lcars-supporting-sheet2e.mjs";
 import { LcarsNPCSheet2e } from "./lcars-sheet/lcars-npc-sheet2e.mjs";
@@ -475,14 +475,6 @@ Hooks.once("init", () => {
     `modules/${MODULE_ID}/templates/sta-tools-sidebar.hbs`,
   ]);
 
-  // --- Mobile sheet registration ---
-  foundry.applications.apps.DocumentSheetConfig.registerSheet(
-    Actor,
-    MODULE_ID,
-    MobileCharacterSheet2e,
-    { types: ["character"], label: "Character (2e) Mobile" },
-  );
-
   // --- LCARS sheet registration ---
   foundry.applications.apps.DocumentSheetConfig.registerSheet(
     Actor,
@@ -582,6 +574,12 @@ Hooks.once("init", () => {
     true,
   );
   syncOfficersLogLcars(true);
+
+  // Client setting: force LCARS sheet backgrounds to be fully opaque
+  document.body.classList.toggle(
+    "sta-lcars-opaque-bg",
+    isLcarsOpaqueBackgroundsEnabled(),
+  );
 
   // Flag for CSS: mark if Character Chat Selector is active
   if (game.modules.get("character-chat-selector")?.active) {

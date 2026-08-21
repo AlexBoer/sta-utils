@@ -21,39 +21,6 @@
   border: 0;
 }
 
-/* Inline item-edit controls injected by sta-utils on character sheet rows. */
-.row.entry > .control.sta-utils-inline-item-edit,
-.row.entry .control.sta-utils-inline-item-edit {
-  display: flex !important;
-  order: 5;
-  align-items: center;
-  justify-content: flex-end;
-  margin-left: auto;
-  flex: 0 0 auto;
-  width: auto !important;
-}
-
-/* Sheet variants hide generic div.control columns; explicitly re-enable only
-   our injected edit control on those layouts. */
-.sta-lcars-sheet .section .row.entry > div.control.sta-utils-inline-item-edit,
-.character-sheet.sta-mobile-sheet .row.entry div.control.sta-utils-inline-item-edit {
-  display: flex !important;
-}
-
-.sta-utils-inline-item-edit-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.35rem;
-  min-height: 1.35rem;
-  padding: 0.1rem;
-  border-radius: 4px;
-}
-
-.sta-utils-inline-item-edit-btn i {
-  pointer-events: none;
-}
-
 /* When the value-used toggle icon is hidden, collapse the wrapper so it
    doesn't reserve layout space in the row. */
 .row.entry a.value-used.control.toggle:has(> i[style*="display: none"]) {
@@ -61,47 +28,6 @@
   width: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
-}
-
-/* When enabled, reveal native row controls on sheet variants that normally hide
-   them, and keep only the edit/open action visible. */
-.sta-utils-show-item-edit-buttons .row.entry > div.control,
-.sta-utils-show-item-edit-buttons .section .row.entry > div.control,
-.sta-utils-show-item-edit-buttons .row.entry div.control {
-  display: flex !important;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-.sta-utils-show-item-edit-buttons .row.entry > div.control .delete,
-.sta-utils-show-item-edit-buttons .row.entry div.control .delete {
-  display: none !important;
-}
-
-/* Theme-aware edit icon colors for readability. */
-.theme-dark .sta-utils-show-item-edit-buttons .row.entry > div.control .edit,
-.theme-dark .sta-utils-show-item-edit-buttons .row.entry > div.control .edit i,
-.theme-dark .sta-utils-show-item-edit-buttons .row.entry div.control .edit,
-.theme-dark .sta-utils-show-item-edit-buttons .row.entry div.control .edit i,
-.sta-lcars-window.theme-dark .sta-utils-show-item-edit-buttons .row.entry > div.control .edit,
-.sta-lcars-window.theme-dark .sta-utils-show-item-edit-buttons .row.entry > div.control .edit i {
-  color: var(--lcars-lavender, var(--color-text-light-highlight, #d7dff0)) !important;
-}
-
-.theme-light .sta-utils-show-item-edit-buttons .row.entry > div.control .edit,
-.theme-light .sta-utils-show-item-edit-buttons .row.entry > div.control .edit i,
-.theme-light .sta-utils-show-item-edit-buttons .row.entry div.control .edit,
-.theme-light .sta-utils-show-item-edit-buttons .row.entry div.control .edit i,
-.sta-lcars-window.theme-light .sta-utils-show-item-edit-buttons .row.entry > div.control .edit,
-.sta-lcars-window.theme-light .sta-utils-show-item-edit-buttons .row.entry > div.control .edit i {
-  color: var(--lcars-text-title, var(--color-text-dark-primary, #1c1c1c)) !important;
-}
-
-.sta-utils-show-item-edit-buttons .row.entry > div.control .edit:hover,
-.sta-utils-show-item-edit-buttons .row.entry > div.control .edit:hover i,
-.sta-utils-show-item-edit-buttons .row.entry > div.control .edit:focus-visible,
-.sta-utils-show-item-edit-buttons .row.entry > div.control .edit:focus-visible i {
-  color: var(--lcars-orange, var(--color-text-hyperlink, #3b82f6)) !important;
 }
 
 /* =============================================================================

@@ -13,7 +13,6 @@ const ENABLE_FATIGUE_SETTING = "enableFatigue";
 const ENABLE_STYLE_ENHANCE_SETTING = "enableStyleEnhance";
 const ENABLE_TALENT_AUTOMATIONS_SETTING = "enableTalentAutomations";
 const DISABLE_TOOLTIPS_SETTING = "disableTooltips";
-const SHOW_ITEM_EDIT_BUTTONS_SETTING = "showItemEditButtons";
 const SHOW_ROW_CONTEXT_MENU_SETTING = "showRowContextMenuButtons";
 const ENABLE_ACTION_CHOOSER_SETTING = "enableActionChooser";
 const ACTION_CHOOSER_AS_TAB_SETTING = "actionChooserAsTab";
@@ -37,7 +36,7 @@ const NPC_BUILDER_SPECIAL_RULES_PACK_SETTING = "npcBuilderSpecialRulesPack";
 const COMPENDIUM_BROWSER_EXCLUSIONS_SETTING = "compendiumBrowserExclusions";
 const ENABLE_PERSONAL_THREAT_SETTING = "enablePersonalThreat";
 const ENABLE_ROLL_REQUEST_SETTING = "enableRollRequest";
-const MOBILE_THEME_SETTING = "mobileSheetTheme";
+const LCARS_OPAQUE_BACKGROUNDS_SETTING = "lcarsOpaqueBackgrounds";
 const PIERCING_MODE_SETTING = "piercingMode";
 const SHOW_ADVANCED_CALCULATOR_SETTING = "showAdvancedCalculator";
 const DEFAULT_WARP_FORMULA_SETTING = "defaultWarpFormula";
@@ -803,40 +802,6 @@ export function registerSettings() {
     group: GROUP_CLIENT,
   });
 
-  game.settings.register(MODULE_ID, SHOW_ITEM_EDIT_BUTTONS_SETTING, {
-    name: t("sta-utils.settings.showItemEditButtons.name"),
-    hint: t("sta-utils.settings.showItemEditButtons.hint"),
-    scope: "client",
-    config: true,
-    type: Boolean,
-    default: false,
-    onChange: () => {
-      try {
-        for (const app of Object.values(ui?.windows ?? {})) {
-          try {
-            const appId = String(app?.id ?? "");
-            if (
-              appId.startsWith("STACharacterSheet2e") ||
-              appId.startsWith("STASupportingSheet2e") ||
-              appId.startsWith("STANPCSheet2e") ||
-              appId.startsWith("MobileCharacterSheet2e") ||
-              appId.startsWith("LcarsCharacterSheet2e") ||
-              appId.startsWith("LcarsSupportingSheet2e") ||
-              appId.startsWith("LcarsNPCSheet2e")
-            ) {
-              app.render?.(true);
-            }
-          } catch (_) {
-            // sheet may have closed
-          }
-        }
-      } catch (_) {
-        // safe to fail silently
-      }
-    },
-    group: GROUP_CLIENT,
-  });
-
   game.settings.register(MODULE_ID, SHOW_ROW_CONTEXT_MENU_SETTING, {
     name: t("sta-utils.settings.showRowContextMenuButtons.name"),
     hint: t("sta-utils.settings.showRowContextMenuButtons.hint"),
@@ -871,20 +836,19 @@ export function registerSettings() {
     group: GROUP_CLIENT,
   });
 
-  game.settings.register(MODULE_ID, MOBILE_THEME_SETTING, {
-    name: t("sta-utils.settings.mobileSheetTheme.name"),
-    hint: t("sta-utils.settings.mobileSheetTheme.hint"),
+  game.settings.register(MODULE_ID, LCARS_OPAQUE_BACKGROUNDS_SETTING, {
+    name: t("sta-utils.settings.lcarsOpaqueBackgrounds.name"),
+    hint: t("sta-utils.settings.lcarsOpaqueBackgrounds.hint"),
     scope: "client",
     config: true,
-    type: String,
-    default: "blue",
-    choices: {
-      blue: t("sta-utils.settings.mobileSheetTheme.choices.blue"),
-      red: t("sta-utils.settings.mobileSheetTheme.choices.red"),
-      gold: t("sta-utils.settings.mobileSheetTheme.choices.gold"),
-      teal: t("sta-utils.settings.mobileSheetTheme.choices.teal"),
-      purple: t("sta-utils.settings.mobileSheetTheme.choices.purple"),
-      green: t("sta-utils.settings.mobileSheetTheme.choices.green"),
+    type: Boolean,
+    default: false,
+    onChange: (value) => {
+      try {
+        document.body.classList.toggle("sta-lcars-opaque-bg", !!value);
+      } catch (_) {
+        // body may not be available on very early calls; safe to ignore
+      }
     },
     group: GROUP_CLIENT,
   });
@@ -973,6 +937,17 @@ export function getDefaultWarpFormula() {
 }
 
 /** @returns {boolean} */
+export function isLcarsOpaqueBackgroundsEnabled() {
+  try {
+    return Boolean(
+      game.settings.get(MODULE_ID, LCARS_OPAQUE_BACKGROUNDS_SETTING),
+    );
+  } catch (_) {
+    return false;
+  }
+}
+
+/** @returns {boolean} */
 export function isStaToolsSidebarGmOnly() {
   try {
     return Boolean(game.settings.get(MODULE_ID, STA_TOOLS_GM_ONLY_SETTING));
@@ -1007,17 +982,6 @@ export function setStaToolsCollapsedWidgets(value) {
 export function isTooltipsDisabled() {
   try {
     return Boolean(game.settings.get(MODULE_ID, DISABLE_TOOLTIPS_SETTING));
-  } catch (_) {
-    return false;
-  }
-}
-
-/** @returns {boolean} */
-export function shouldShowItemEditButtons() {
-  try {
-    return Boolean(
-      game.settings.get(MODULE_ID, SHOW_ITEM_EDIT_BUTTONS_SETTING),
-    );
   } catch (_) {
     return false;
   }
@@ -1169,16 +1133,13 @@ export function isMomentumMergerEnabled() {
 }
 
 /**
- * Returns the selected mobile sheet color theme key.
- * Defaults to "blue" if unset or on error.
+ * Returns the default mobile sheet color theme key.
+ * The world-level default setting was removed (mobile sheet is not yet
+ * public); per-actor theme flags set via the in-sheet picker still work.
  * @returns {string}
  */
 export function getMobileSheetTheme() {
-  try {
-    return String(game.settings.get(MODULE_ID, MOBILE_THEME_SETTING) ?? "blue");
-  } catch (_) {
-    return "blue";
-  }
+  return "blue";
 }
 
 /** @returns {boolean} */

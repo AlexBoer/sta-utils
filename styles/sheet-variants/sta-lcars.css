@@ -922,41 +922,9 @@ body {
     margin-right: 0;
   }
 
-  /* On LCARS non-belongings rows (traits/injuries/etc), keep qty before
-     the injected inline edit button and pin the edit button to the far right. */
+  /* On LCARS non-belongings rows (traits/injuries/etc), keep qty at the far right. */
   .sta-lcars-sheet .section:not(.belongings) .row.entry .item-quantity {
     margin-left: auto;
-  }
-
-  .sta-lcars-sheet .section:not(.belongings) .row.entry > .control.sta-utils-inline-item-edit,
-  .sta-lcars-sheet .section:not(.belongings) .row.entry .control.sta-utils-inline-item-edit {
-    order: 5 !important;
-    margin-left: 6px !important;
-    flex: 0 0 auto;
-  }
-
-  .sta-lcars-sheet.sta-utils-show-item-edit-buttons .section.traits .row.entry > div.control {
-    order: 5 !important;
-    margin-left: 6px !important;
-    flex: 0 0 auto;
-  }
-
-  .character-sheet.sta-lcars-sheet.sta-utils-show-item-edit-buttons .section.traits .row.entry .item-quantity,
-  .character-sheet.sta-lcars-sheet.sta-utils-show-item-edit-buttons .section.injuries .row.entry .item-quantity {
-    margin-left: auto !important;
-    order: 4 !important;
-  }
-
-  .character-sheet.sta-lcars-sheet.sta-utils-show-item-edit-buttons .section.traits .row.entry > div.control,
-  .character-sheet.sta-lcars-sheet.sta-utils-show-item-edit-buttons .section.injuries .row.entry > div.control {
-    order: 6 !important;
-    margin-left: 6px !important;
-    flex: 0 0 auto !important;
-  }
-
-  .sta-utils-show-item-edit-buttons .section.belongings .row.entry .two-column-with-roll-secondary,
-  .sta-utils-show-item-edit-buttons .section.belongings .row.entry .item-quantity {
-    margin-right: 5px;
   }
 
   .row.entry .sta-inline-sheet-btn {
@@ -1458,8 +1426,7 @@ body {
     min-width: 0;
   }
 
-  .section.belongings .header.row.belongings-row .control.create,
-  .section.belongings .row.entry.belongings-row .control.sta-utils-inline-item-edit {
+  .section.belongings .header.row.belongings-row .control.create {
     grid-column: 4;
     margin-left: 0;
   }
@@ -3930,4 +3897,62 @@ body.sta-officers-lcars-active {
   .row.entry.belongings-item
   .item-quantity.quantity {
   grid-column: 3;
+}
+
+/* =============================================================================
+ * OPAQUE BACKGROUND OVERRIDE
+ * Client setting (sta-utils.lcarsOpaqueBackgrounds) toggles `body.sta-lcars-opaque-bg`.
+ *
+ * Two things were tried and rejected here, for future reference:
+ *  1. `--lcars-bg: rgb(from var(--lcars-bg) ...) !important` on the SAME
+ *     element that already sets --lcars-bg is a custom-property self-reference
+ *     cycle -> computes to the guaranteed-invalid value -> background vanished
+ *     entirely (looked like frosted glass).
+ *  2. Capturing the opaque color under a new property name via relative-color
+ *     syntax (`rgb(from ...)`) avoided the cycle, but still produced no visible
+ *     change — Foundry's bundled Electron/Chromium build does not reliably
+ *     apply relative-color syntax when it's threaded through custom-property
+ *     indirection, so the value stayed effectively invalid.
+ *
+ * Fix: skip color math entirely. Use flat, hardcoded opaque replacement colors
+ * keyed off the `.theme-dark` / `.theme-light` class Foundry puts on <body>,
+ * and reassign --lcars-bg / --lcars-bg-panel to those on DESCENDANTS only
+ * (never the root itself, to dodge any cycle). This sacrifices per-scheme
+ * panel hue accuracy in opaque mode, but is simple, robust, and always valid
+ * CSS.
+ * ============================================================================= */
+body.sta-lcars-opaque-bg.theme-dark {
+  --sta-lcars-opaque-bg: #0e0e16;
+  --sta-lcars-opaque-bg-panel: #17171f;
+}
+body.sta-lcars-opaque-bg.theme-light {
+  --sta-lcars-opaque-bg: #f5f2e8;
+  --sta-lcars-opaque-bg-panel: #e6e0cf;
+}
+
+body.sta-lcars-opaque-bg
+  :is(
+    .character-sheet,
+    .starship-sheet,
+    .extended-tasks,
+    .item-sheet,
+    .scenetraits-sheet,
+    .dialogue
+  ).sta-lcars *,
+body.sta-lcars-opaque-bg .sta-lcars-dialogue-app *,
+body.sta-lcars-opaque-bg.sta-officers-lcars-active * {
+  --lcars-bg: var(--sta-lcars-opaque-bg) !important;
+  --lcars-bg-panel: var(--sta-lcars-opaque-bg-panel) !important;
+}
+
+/* A few roots paint their own `background` directly instead of relying on a
+ * descendant panel element — patch the visible background paint directly. */
+body.sta-lcars-opaque-bg .sta-lcars-window.application,
+body.sta-lcars-opaque-bg .item-sheet.sta-lcars,
+body.sta-lcars-opaque-bg .scenetraits-sheet.sta-lcars,
+body.sta-lcars-opaque-bg .dialogue.sta-lcars,
+body.sta-lcars-opaque-bg .extended-tasks.sta-lcars,
+body.sta-lcars-opaque-bg .sta-officers-log.application,
+body.sta-lcars-opaque-bg .officers-log-dialog.application {
+  background: var(--sta-lcars-opaque-bg) !important;
 }

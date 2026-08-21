@@ -21,5 +21,6 @@ export {
   isPersonalThreatEnabled,
   getCompendiumBrowserExclusions,
   setCompendiumBrowserExclusions,
+  isLcarsOpaqueBackgroundsEnabled,
 } from "./settings.mjs";
 export { getModuleSocket, initSocket } from "./socket.mjs";

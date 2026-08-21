@@ -169,10 +169,6 @@
         "name": "Disable Item Tooltips",
         "hint": "Hide the item description tooltip popups that appear when hovering over item names on actor sheets."
       },
-      "showItemEditButtons": {
-        "name": "Show Item Edit Buttons on Character Sheets",
-        "hint": "Add a right-side edit button to each listed item row on character sheets. The button opens that item's sheet."
-      },
       "showRowContextMenuButtons": {
         "name": "Show Row Menu Buttons on Character Sheets",
         "hint": "Add a small three-dot button to each item row that opens the right-click actions menu. When off, the menu is still available by right-clicking the row."
@@ -221,17 +217,9 @@
         "name": "Enable Stardate Display",
         "hint": "Show a live stardate bar at the top of the chat panel, updated whenever the game time advances. Uses the same TNG stardate formula as the Stardate Calculator. Requires a world reload when changed."
       },
-      "mobileSheetTheme": {
-        "name": "Mobile Sheet Theme (Default)",
-        "hint": "Default color palette for the mobile character sheet when no per-character theme has been chosen. Each character can override this individually via the palette icon in its sheet header. Only applies to Character (2e) Mobile sheets.",
-        "choices": {
-          "blue": "Blue — Federation",
-          "red": "Red — Command",
-          "gold": "Gold — Operations",
-          "teal": "Teal — Sciences",
-          "purple": "Purple — Nebula",
-          "green": "Green — Borg"
-        }
+      "lcarsOpaqueBackgrounds": {
+        "name": "LCARS Opaque Backgrounds",
+        "hint": "Force the slightly transparent panel and window backgrounds on LCARS-themed sheets to be fully opaque. This only affects your own display."
       }
     },
     "trackerMacroButtons": {
