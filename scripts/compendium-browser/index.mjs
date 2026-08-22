@@ -3,6 +3,7 @@ export {
   getCompendiumBrowser,
   openCompendiumBrowser,
 } from "./compendium-browser-app.mjs";
+export { TalentPickerApp, openTalentPicker } from "./talent-picker-app.mjs";
 export { openCompendiumBrowserSettings } from "./compendium-browser-settings.mjs";
 export { installCompendiumBrowserSidebarHooks } from "./sidebar-integration.mjs";
 export {

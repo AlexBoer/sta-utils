@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Talent Picker — Functional Mockup</title>
+
+  <!-- Pull in the REAL browser stylesheet so the layout matches exactly. -->
+  <link rel="stylesheet" href="../styles/sta-utils.css" />
+
+  <style>
+    /* ──────────────────────────────────────────────────────────────────────
+       Foundry base fallbacks — only present so the browser CSS renders when
+       this file is opened outside Foundry. NOT part of the real feature.
+       ────────────────────────────────────────────────────────────────────── */
+    :root {
+      --color-cool-5-90: #15191d;
+      --color-cool-4: #252b31;
+      --color-border-dark-4: #444;
+      --color-level-warning: #f6d06f;
+      --sta-accent: #f1a43c;
+      --sta-teal: #469ca4;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0c0f12;
+      color: #d9dde1;
+      font-family: "Roboto", "Signika", system-ui, sans-serif;
+      font-size: 14px;
+    }
+    button { font-family: inherit; color: inherit; cursor: pointer; }
+    input, select {
+      font-family: inherit;
+      color: #e8ebee;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--color-border-dark-4);
+      border-radius: 3px;
+      padding: 5px 7px;
+      min-height: 30px;
+    }
+    input:focus, select:focus { outline: 1px solid var(--sta-accent); }
+    .sta-compendium-browser .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--color-border-dark-4);
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .sta-compendium-browser .icon:hover { background: rgba(255, 255, 255, 0.1); }
+    .sta-compendium-browser-window {
+      position: relative;
+      width: 980px;
+      height: 660px;
+      border: 1px solid #000;
+      border-radius: 6px;
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.6);
+      background: var(--color-cool-5-90);
+    }
+    .sta-compendium-browser-window .window-content { height: 100%; }
+    .mock-titlebar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-bottom: 1px solid #000;
+      background: #10151a;
+      border-radius: 6px 6px 0 0;
+      font-family: "Roboto Condensed", sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.02em;
+    }
+    .mock-titlebar .fa-book-atlas { color: var(--sta-accent); }
+    .mock-note {
+      margin-top: 14px;
+      max-width: 980px;
+      font-size: 0.78rem;
+      opacity: 0.6;
+      text-align: center;
+    }
+    .mock-wrap { display: grid; }
+
+    /* ──────────────────────────────────────────────────────────────────────
+       PICKER-MODE additions — this CSS is the blueprint for what gets added
+       to sta-utils.css (scoped under .sta-compendium-browser) in Phase A.
+       ────────────────────────────────────────────────────────────────────── */
+    .sta-compendium-browser__viewall {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex: 0 0 auto;
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+    .sta-compendium-browser__viewall input { min-height: 0; }
+
+    .sta-compendium-browser__desc {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      font-size: 0.82rem;
+      line-height: 1.4;
+      padding-top: 9px;
+      padding-bottom: 9px;
+      opacity: 0.9;
+    }
+    .sta-compendium-browser__desc .req {
+      display: block;
+      margin-bottom: 3px;
+      font-weight: 700;
+      font-size: 0.78rem;
+      color: var(--sta-teal);
+    }
+    .sta-compendium-browser__desc .req.none { color: #9aa4ad; font-weight: 600; }
+    .sta-compendium-browser__desc .desc-body {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 1;
+      overflow: hidden;
+      opacity: 0.82;
+    }
+    .sta-compendium-browser__desc.is-expanded .desc-body {
+      display: block;
+      -webkit-line-clamp: unset;
+      overflow: visible;
+    }
+    .sta-compendium-browser__desc .desc-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 3px;
+      padding: 0;
+      border: 0;
+      background: none;
+      color: var(--sta-teal);
+      font-size: 0.74rem;
+      font-weight: 600;
+    }
+    .sta-compendium-browser__desc .desc-toggle i { transition: transform 120ms ease; }
+    .sta-compendium-browser__desc.is-expanded .desc-toggle i { transform: rotate(180deg); }
+    .sta-compendium-browser__row.is-ineligible .sta-compendium-browser__name {
+      opacity: 0.72;
+    }
+    .sta-compendium-browser__row.is-ineligible .sta-compendium-browser__desc .req {
+      color: var(--color-level-warning);
+    }
+    /* Description wraps, so top-align cells (headings stay centered). Override the
+       browser's min-width:max-content so wrapping text can't force horizontal scroll. */
+    .sta-compendium-browser__table .sta-compendium-browser__row { align-items: start; min-width: 0; }
+    .sta-compendium-browser__table .sta-compendium-browser__row--heading { align-items: center; min-width: 0; }
+    .sta-compendium-browser__table .sta-compendium-browser__row .sta-compendium-browser__name { padding-top: 10px; }
+    .sta-compendium-browser__table .sta-compendium-browser__row .sta-compendium-browser__choose { margin-top: 7px; }
+    .sta-compendium-browser__lock {
+      margin-left: 6px;
+      font-size: 0.72rem;
+      color: var(--color-level-warning);
+    }
+    .sta-compendium-browser__eligible-dot {
+      flex: 0 0 auto;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4bbf73;
+      box-shadow: 0 0 6px rgba(75, 191, 115, 0.6);
+    }
+    .sta-compendium-browser__row.is-ineligible .sta-compendium-browser__eligible-dot {
+      background: #6b7280;
+      box-shadow: none;
+    }
+
+    .sta-compendium-browser__choose {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      min-height: 28px;
+      width: 100%;
+      padding: 3px 10px;
+      border: 1px solid var(--sta-teal);
+      border-radius: 3px;
+      background: rgba(70, 156, 164, 0.16);
+      color: #dff2f4;
+      font-size: 0.76rem;
+      font-weight: 600;
+    }
+    .sta-compendium-browser__choose:hover { background: rgba(70, 156, 164, 0.3); }
+    .sta-compendium-browser__row.is-ineligible .sta-compendium-browser__choose {
+      border-color: rgba(246, 208, 111, 0.6);
+      background: rgba(246, 208, 111, 0.1);
+      color: var(--color-level-warning);
+    }
+
+    .sta-compendium-browser__footer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-top: 1px solid var(--color-border-dark-4);
+      background: rgba(0, 0, 0, 0.18);
+    }
+    .sta-compendium-browser__footer .spacer { flex: 1; }
+    .sta-compendium-browser__footer button {
+      min-height: 32px;
+      padding: 5px 14px;
+      border: 1px solid var(--color-border-dark-4);
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .sta-compendium-browser__footer button:hover { background: rgba(255, 255, 255, 0.1); }
+    .sta-compendium-browser__footer .primary {
+      border-color: var(--sta-accent);
+      color: var(--sta-accent);
+    }
+
+    /* Simple modal + toast for the mockup interactions. */
+    .mock-overlay {
+      position: absolute;
+      inset: 0;
+      display: none;
+      place-items: center;
+      background: rgba(0, 0, 0, 0.55);
+      border-radius: 6px;
+      z-index: 20;
+    }
+    .mock-overlay.open { display: grid; }
+    .mock-dialog {
+      width: 400px;
+      max-width: calc(100% - 40px);
+      border: 1px solid var(--sta-accent);
+      border-radius: 6px;
+      background: #171c21;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+    }
+    .mock-dialog h2 {
+      margin: 0;
+      padding: 10px 14px;
+      font-family: "Roboto Condensed", sans-serif;
+      font-size: 1rem;
+      background: rgba(241, 164, 60, 0.14);
+      border-bottom: 1px solid rgba(241, 164, 60, 0.4);
+    }
+    .mock-dialog .body { padding: 14px; font-size: 0.86rem; line-height: 1.45; }
+    .mock-dialog .body .warn {
+      color: var(--color-level-warning);
+      font-weight: 600;
+    }
+    .mock-dialog .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 10px 14px;
+      border-top: 1px solid var(--color-border-dark-4);
+    }
+    .mock-dialog .actions button {
+      min-height: 32px;
+      padding: 5px 14px;
+      border: 1px solid var(--color-border-dark-4);
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .mock-dialog .actions .confirm {
+      border-color: var(--sta-accent);
+      color: var(--sta-accent);
+    }
+    #toaster {
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      display: grid;
+      gap: 8px;
+      z-index: 30;
+    }
+    .mock-toast {
+      min-width: 240px;
+      padding: 9px 12px;
+      border-left: 3px solid var(--sta-teal);
+      border-radius: 4px;
+      background: #1b2228;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+      font-size: 0.82rem;
+      animation: toastin 140ms ease;
+    }
+    .mock-toast.gm { border-left-color: var(--sta-accent); }
+    @keyframes toastin { from { opacity: 0; transform: translateY(6px); } }
+  </style>
+</head>
+<body>
+  <div class="mock-wrap">
+    <div class="sta-compendium-browser-window">
+      <div class="mock-titlebar">
+        <i class="fa-solid fa-book-atlas"></i>
+        <span id="mockTitle">Choose a Talent — Lt. Cmdr. T'Vel (Vulcan)</span>
+      </div>
+
+      <div class="window-content">
+        <div class="sta-compendium-browser sta-compendium-browser--compact">
+          <section class="sta-compendium-browser__content">
+            <header class="sta-compendium-browser__header">
+              <div>
+                <h1>Talents</h1>
+                <span><span id="visibleCount">0</span> / <span id="totalCount">0</span> talents</span>
+              </div>
+              <label class="sta-compendium-browser__viewall">
+                <input type="checkbox" id="viewAll" />
+                <span>View all (show talents you don't qualify for)</span>
+              </label>
+            </header>
+
+            <div class="sta-compendium-browser__filters-shell">
+              <div class="sta-compendium-browser__filters">
+                <label>
+                  <span>Search</span>
+                  <input type="search" id="search" placeholder="Filter talents…" />
+                </label>
+                <label>
+                  <span>Source</span>
+                  <select id="source"></select>
+                </label>
+                <label>
+                  <span>Type</span>
+                  <select id="type"></select>
+                </label>
+              </div>
+              <div class="sta-compendium-browser__field-filters">
+                <label>
+                  <span>Requirement</span>
+                  <select id="reqCategory"></select>
+                </label>
+                <label>
+                  <span>Requires</span>
+                  <select id="reqValue"></select>
+                </label>
+                <label id="reqMinWrap" hidden>
+                  <span>Minimum</span>
+                  <input type="number" id="reqMin" min="0" placeholder="Any" />
+                </label>
+                <button type="button" class="icon" id="resetReq" title="Reset requirement filters">
+                  <i class="fa-solid fa-filter-circle-xmark"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="sta-compendium-browser__table" style="--sta-browser-columns: minmax(200px, 1.3fr) minmax(340px, 3fr) 132px;">
+              <div class="sta-compendium-browser__row sta-compendium-browser__row--heading">
+                <button type="button" class="sta-compendium-browser__cell--left" data-sort="name">Name</button>
+                <div class="sta-compendium-browser__cell--left">Description</div>
+                <div class="sta-compendium-browser__cell--right">&nbsp;</div>
+              </div>
+              <div id="rows"></div>
+              <div class="sta-compendium-browser__state" id="emptyState" hidden>No talents match your filters.</div>
+            </div>
+
+            <footer class="sta-compendium-browser__footer">
+              <button type="button" class="primary" id="createCustom">
+                <i class="fa-solid fa-plus"></i> Create Custom Talent
+              </button>
+              <span class="spacer"></span>
+              <button type="button" id="cancel">Cancel</button>
+            </footer>
+          </section>
+        </div>
+      </div>
+
+      <!-- Ineligible-choose confirm dialog -->
+      <div class="mock-overlay" id="overlay">
+        <div class="mock-dialog" role="dialog" aria-modal="true">
+          <h2 id="dlgTitle">Requirements Not Met</h2>
+          <div class="body">
+            <p id="dlgBody"></p>
+            <p class="warn" id="dlgReq"></p>
+            <p>Choose this talent anyway? The GM will be notified.</p>
+          </div>
+          <div class="actions">
+            <button type="button" id="dlgCancel">Cancel</button>
+            <button type="button" class="confirm" id="dlgConfirm">Choose Anyway</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="toaster"></div>
+    </div>
+
+    <p class="mock-note">
+      Functional mockup — links the real <code>sta-utils.css</code>. Search, source/type filters,
+      column sort, the “View all” toggle, and the Choose → confirm → GM-notice flow are
+      all live. Sample data only; no Foundry required.
+    </p>
+  </div>
+
+  <script>
+    // ── Sample actor context (drives eligibility for the mockup) ────────────
+    const ACTOR = {
+      name: "Lt. Cmdr. T'Vel",
+      species: "vulcan",
+      house: "",
+      attributes: { control: 9, daring: 10, fitness: 8, insight: 11, presence: 9, reason: 10 },
+      disciplines: { command: 3, conn: 2, engineering: 1, medicine: 1, science: 4, security: 2 },
+    };
+
+    // ── Sample talents ──────────────────────────────────────────────────────
+    // eligible + requirement are precomputed here; in the real feature they
+    // come from the officers-log requirements engine via a callback.
+    const TALENTS = [
+      { name: "Bold (Command)", type: "General", category: "general", source: "STA 2e Core", req: "", eligible: true, desc: "When you attempt a Task with Command and buy additional dice with Threat, you may re-roll a number of dice up to your Command score." },
+      { name: "Vulcan Nerve Pinch", type: "Species", category: "species", source: "STA 2e Core", req: "Species: Vulcan", eligible: true, desc: "Use the melee Attack action to render a living target unconscious with a precise nerve pinch, dealing Stun damage." },
+      { name: "The Ushaan", type: "Species", category: "species", source: "STA 2e Core", req: "Species: Andorian", eligible: false, desc: "While engaged in an Ushaan duel, reduce the Difficulty of attacks made with an Ushaan-tor by 1." },
+      { name: "Advisor", type: "Discipline", category: "discipline", source: "STA 2e Core", req: "Command 2+", eligible: true, desc: "When you assist another character using Command, they may re-roll one d20 in their pool." },
+      { name: "Studious", type: "Discipline", category: "discipline", source: "STA 2e Core", req: "Science 3+", eligible: true, desc: "Whenever you spend two or more Momentum to Obtain Information, you may ask one additional question." },
+      { name: "Testing a Theory", type: "Discipline", category: "discipline", source: "STA 1e Core", req: "Science 2+", conditions: ["You must have proposed a hypothesis this scene."], eligible: true, desc: "When you succeed at a Task guided by a hypothesis, add 1 to Threat to generate bonus Momentum." },
+      { name: "Precise Evacuation", type: "Attribute", category: "attribute", source: "Homebrew", req: "Control 10+", eligible: false, desc: "Reduce the Difficulty of Tasks to move endangered civilians to safety by 1 when using Control." },
+      { name: "Dauntless", type: "Attribute", category: "attribute", source: "STA 2e Core", req: "Daring 9+", eligible: true, desc: "You may ignore any penalty to your dice pool caused by fear, intimidation, or threats to your person." },
+      { name: "Mean Right Hook", type: "Discipline", category: "discipline", source: "STA 2e Core", req: "Security 2+", eligible: true, desc: "Your Unarmed Strike attack gains the Vicious 1 damage effect." },
+      { name: "Close Protection", type: "Discipline", category: "discipline", source: "STA 2e Core", req: "Security 1+", conditions: ["An ally must be within Reach of you."], eligible: true, desc: "When an adjacent ally is attacked, you may interpose yourself and take the damage in their place." },
+      { name: "Untapped Potential", type: "General", category: "general", source: "STA 2e Core", req: "", eligible: true, desc: "While you have no Values marked as used, add 1 to the pool of any Task using your chosen attribute." },
+      { name: "Adaptable", type: "Discipline", category: "discipline", source: "Homebrew", req: "Command 2+ OR Insight 3+", conditions: ["Once per scene."], eligible: true, desc: "Re-roll a d20 when attempting a Task with a department you have not used yet this scene." },
+      { name: "Klingon-Bred", type: "House", category: "house", source: "KDF Sourcebook", req: "House: Warriors", eligible: false, desc: "You count as having the Warrior tradition and reduce the cost of Klingon reputation benefits." },
+      { name: "Improved Warp Drive", type: "Starship", category: "ship", source: "Utopia Planitia", req: "Ship (Engines)", eligible: false, desc: "Reduce the Difficulty of the Warp Field Task by 1; the ship may reach Warp 9.99." },
+      { name: "Advanced Sensor Suites", type: "Starship", category: "ship", source: "Utopia Planitia", req: "Ship (Sensors)", eligible: false, desc: "The ship's Sensors gain +1 and reduce the Difficulty of Tasks to detect cloaked vessels." },
+      { name: "Empath", type: "Species", category: "species", source: "STA 2e Core", req: "Species: Betazoid", eligible: false, desc: "You can sense the surface emotions of most living beings nearby without attempting a Task." },
+    ];
+
+    // ── State ───────────────────────────────────────────────────────────────
+    const state = {
+      search: "",
+      source: "all",
+      type: "all",
+      reqCategory: "all",
+      reqValue: "all",
+      reqMin: "",
+      viewAll: false,
+      sort: "name",
+      dir: "asc",
+    };
+
+    const el = (id) => document.getElementById(id);
+
+    // ── Parse each talent's requirement into a category + value keywords ─────
+    // In the real feature this comes from the officers-log requirements engine.
+    const ATTR_KEYS = ["control", "daring", "fitness", "insight", "presence", "reason"];
+    const DISC_KEYS = ["command", "conn", "engineering", "medicine", "science", "security"];
+    const REQ_CATEGORY_LABELS = {
+      none: "No requirement", attribute: "Attribute", discipline: "Discipline",
+      species: "Species", house: "House", systems: "Ship systems", condition: "Condition",
+    };
+    const NUMERIC_CATS = new Set(["attribute", "discipline", "systems"]);
+
+    function parseReq(t) {
+      const req = String(t.req ?? "").trim();
+      const clauses = [];
+      let category = "none";
+      if (/^species:/i.test(req)) {
+        category = "species";
+        clauses.push({ value: req.replace(/^species:/i, "").trim().toLowerCase(), minimum: 0 });
+      } else if (/^house:/i.test(req)) {
+        category = "house";
+        clauses.push({ value: req.replace(/^house:/i, "").trim().toLowerCase(), minimum: 0 });
+      } else if (/^ship/i.test(req)) {
+        category = "systems";
+        const m = req.match(/\(([^)]+)\)/);
+        if (m) clauses.push({ value: m[1].trim().toLowerCase(), minimum: 0 });
+      } else if (req) {
+        for (const part of req.split(/\bOR\b|\bAND\b|,/i)) {
+          const word = part.trim().split(/\s+/)[0]?.toLowerCase();
+          if (!word) continue;
+          const minimum = Number((part.match(/(\d+)\s*\+?/) ?? [])[1] ?? 0);
+          if (ATTR_KEYS.includes(word)) { category = category === "none" ? "attribute" : category; clauses.push({ value: word, minimum }); }
+          else if (DISC_KEYS.includes(word)) { category = category === "none" ? "discipline" : category; clauses.push({ value: word, minimum }); }
+        }
+      }
+      return { category, clauses, values: clauses.map((c) => c.value), hasCondition: (t.conditions ?? []).length > 0 };
+    }
+    for (const t of TALENTS) t._req = parseReq(t);
+
+    const titleCase = (s) => String(s).replace(/\b\w/g, (c) => c.toUpperCase());
+
+    function iconFor(cat) {
+      const colors = {
+        species: "#8e6fd0", attribute: "#e0803c", discipline: "#469ca4",
+        general: "#9aa4ad", house: "#c05b5b", ship: "#5b93c0",
+      };
+      const c = colors[cat] || "#9aa4ad";
+      const svg =
+        `<svg xmlns='http://www.w3.org/2000/svg' width='30' height='30'>` +
+        `<rect width='30' height='30' rx='3' fill='${c}' opacity='0.85'/>` +
+        `<path d='M15 6l2.5 5 5.5.8-4 3.9.95 5.5L15 24l-4.9 2.6L11 21l-4-3.9 5.5-.8z' fill='#fff' opacity='0.9'/>` +
+        `</svg>`;
+      return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+    }
+
+    // ── Build filter options ────────────────────────────────────────────────
+    function buildChrome() {
+      const sources = ["all", ...Array.from(new Set(TALENTS.map((t) => t.source)))];
+      el("source").innerHTML = sources
+        .map((s) => `<option value="${s}"${s === state.source ? " selected" : ""}>${s === "all" ? "All sources" : s}</option>`)
+        .join("");
+
+      const types = ["all", ...Array.from(new Set(TALENTS.map((t) => t.type)))];
+      el("type").innerHTML = types
+        .map((t) => `<option value="${t}"${t === state.type ? " selected" : ""}>${t === "all" ? "All types" : t}</option>`)
+        .join("");
+
+      const cats = new Set();
+      for (const t of TALENTS) {
+        cats.add(t._req.category);
+        if (t._req.hasCondition) cats.add("condition");
+      }
+      const catOrder = ["none", "attribute", "discipline", "species", "house", "systems", "condition"];
+      const catOptions = ["all", ...catOrder.filter((c) => cats.has(c))];
+      el("reqCategory").innerHTML = catOptions
+        .map((c) => `<option value="${c}"${c === state.reqCategory ? " selected" : ""}>${c === "all" ? "Any requirement" : REQ_CATEGORY_LABELS[c]}</option>`)
+        .join("");
+
+      const values = new Set();
+      for (const t of TALENTS) for (const v of t._req.values) values.add(v);
+      const valOptions = ["all", ...Array.from(values).sort()];
+      el("reqValue").innerHTML = valOptions
+        .map((v) => `<option value="${v}"${v === state.reqValue ? " selected" : ""}>${v === "all" ? "Any value" : titleCase(v)}</option>`)
+        .join("");
+
+      const numeric = NUMERIC_CATS.has(state.reqCategory);
+      el("reqMinWrap").hidden = !numeric;
+      el("reqMin").value = state.reqMin;
+    }
+
+    // ── Filtering + sorting ─────────────────────────────────────────────────
+    function currentRows() {
+      const q = state.search.trim().toLowerCase();
+      let rows = TALENTS.filter((t) => {
+        if (state.source !== "all" && t.source !== state.source) return false;
+        if (state.type !== "all" && t.type !== state.type) return false;
+        if (state.reqCategory !== "all") {
+          if (state.reqCategory === "condition") {
+            if (!t._req.hasCondition) return false;
+          } else if (t._req.category !== state.reqCategory) return false;
+        }
+        if (state.reqValue !== "all" && !t._req.values.includes(state.reqValue)) return false;
+        if (NUMERIC_CATS.has(state.reqCategory) && state.reqMin !== "") {
+          const min = Number(state.reqMin);
+          const clauses = t._req.clauses.filter((c) => state.reqValue === "all" || c.value === state.reqValue);
+          if (!clauses.some((c) => c.minimum >= min)) return false;
+        }
+        if (!state.viewAll && !t.eligible) return false;
+        if (q && !(`${t.name} ${t.type} ${t.req} ${(t.conditions ?? []).join(" ")} ${t.desc}`.toLowerCase().includes(q))) return false;
+        return true;
+      });
+      rows.sort((a, b) => {
+        const av = String(a[state.sort] ?? "");
+        const bv = String(b[state.sort] ?? "");
+        const r = av.localeCompare(bv, undefined, { numeric: true, sensitivity: "base" });
+        return state.dir === "desc" ? -r : r;
+      });
+      return rows;
+    }
+
+    function render() {
+      const rows = currentRows();
+      const host = el("rows");
+      host.innerHTML = "";
+
+      for (const t of rows) {
+        const row = document.createElement("div");
+        row.className = "sta-compendium-browser__row" + (t.eligible ? "" : " is-ineligible");
+
+        const name = document.createElement("div");
+        name.className = "sta-compendium-browser__name sta-compendium-browser__cell--left";
+        name.innerHTML =
+          `<span class="sta-compendium-browser__eligible-dot" title="${t.eligible ? "You qualify" : "Requirement not met"}"></span>` +
+          `<img src="${iconFor(t.category)}" alt="" />` +
+          `<span>${t.name}</span>` +
+          (t.eligible ? "" : `<i class="fa-solid fa-lock sta-compendium-browser__lock" title="Requirement not met"></i>`);
+
+        const desc = document.createElement("div");
+        desc.className = "sta-compendium-browser__cell--left sta-compendium-browser__desc";
+        const reqParts = [];
+        if (t.req) reqParts.push(`<span class="req">Requires: ${t.req}</span>`);
+        for (const c of t.conditions ?? []) reqParts.push(`<span class="req cond">Condition: ${c}</span>`);
+        if (!reqParts.length) reqParts.push(`<span class="req none">No requirements</span>`);
+        desc.innerHTML =
+          reqParts.join("") +
+          `<div class="desc-body"><span class="text">${t.desc}</span></div>` +
+          `<button type="button" class="desc-toggle"><i class="fa-solid fa-chevron-down"></i> <span class="lbl">Show more</span></button>`;
+        const toggle = desc.querySelector(".desc-toggle");
+        toggle.addEventListener("click", () => {
+          const expanded = desc.classList.toggle("is-expanded");
+          toggle.querySelector(".lbl").textContent = expanded ? "Show less" : "Show more";
+        });
+
+        const action = document.createElement("div");
+        action.className = "sta-compendium-browser__cell--right";
+        const choose = document.createElement("button");
+        choose.type = "button";
+        choose.className = "sta-compendium-browser__choose";
+        choose.innerHTML = t.eligible
+          ? `<i class="fa-solid fa-check"></i> Choose`
+          : `<i class="fa-solid fa-triangle-exclamation"></i> Choose`;
+        choose.addEventListener("click", () => onChoose(t));
+        action.appendChild(choose);
+
+        row.append(name, desc, action);
+        host.appendChild(row);
+      }
+
+      el("visibleCount").textContent = String(rows.length);
+      el("totalCount").textContent = String(TALENTS.length);
+      el("emptyState").hidden = rows.length > 0;
+    }
+
+    // ── Choose flow ─────────────────────────────────────────────────────────
+    let pendingIneligible = null;
+
+    function onChoose(t) {
+      if (t.eligible) {
+        toast(`Added talent: <strong>${t.name}</strong>`);
+        return;
+      }
+      pendingIneligible = t;
+      el("dlgBody").textContent = `${ACTOR.name} does not meet the requirement for "${t.name}".`;
+      el("dlgReq").textContent = `Requires: ${t.req}`;
+      el("overlay").classList.add("open");
+    }
+
+    el("dlgCancel").addEventListener("click", () => {
+      el("overlay").classList.remove("open");
+      pendingIneligible = null;
+    });
+    el("dlgConfirm").addEventListener("click", () => {
+      const t = pendingIneligible;
+      el("overlay").classList.remove("open");
+      pendingIneligible = null;
+      if (!t) return;
+      toast(`Added talent: <strong>${t.name}</strong> <em>(requirement waived)</em>`);
+      toast(`GM notified: ${ACTOR.name} took <strong>${t.name}</strong> without meeting <em>${t.req}</em>`, true);
+    });
+
+    el("createCustom").addEventListener("click", () => toast("Create Custom Talent → opens a blank talent sheet"));
+    el("cancel").addEventListener("click", () => toast("Picker cancelled"));
+
+    // ── Wiring ──────────────────────────────────────────────────────────────
+    el("search").addEventListener("input", (e) => { state.search = e.target.value; render(); });
+    el("source").addEventListener("change", (e) => { state.source = e.target.value; render(); });
+    el("type").addEventListener("change", (e) => { state.type = e.target.value; render(); });
+    el("reqCategory").addEventListener("change", (e) => {
+      state.reqCategory = e.target.value;
+      state.reqValue = "all";
+      if (!NUMERIC_CATS.has(state.reqCategory)) state.reqMin = "";
+      buildChrome();
+      render();
+    });
+    el("reqValue").addEventListener("change", (e) => { state.reqValue = e.target.value; render(); });
+    el("reqMin").addEventListener("input", (e) => { state.reqMin = e.target.value; render(); });
+    el("resetReq").addEventListener("click", () => {
+      state.reqCategory = "all";
+      state.reqValue = "all";
+      state.reqMin = "";
+      buildChrome();
+      render();
+    });
+    el("viewAll").addEventListener("change", (e) => { state.viewAll = e.target.checked; render(); });
+    document.querySelectorAll("[data-sort]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const key = btn.dataset.sort;
+        state.dir = state.sort === key && state.dir === "asc" ? "desc" : "asc";
+        state.sort = key;
+        render();
+      });
+    });
+
+    function toast(html, gm = false) {
+      const node = document.createElement("div");
+      node.className = "mock-toast" + (gm ? " gm" : "");
+      node.innerHTML = html;
+      el("toaster").appendChild(node);
+      setTimeout(() => node.remove(), 4200);
+    }
+
+    buildChrome();
+    render();
+  </script>
+</body>
+</html>

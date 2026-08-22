@@ -2191,6 +2191,41 @@ input.selector.attribute.sta-fatigued-attribute {
  * ATTACK PRESET DIALOG (sentence-style calculator)
  * ============================================================================= */
 
+/* Quality picker dropdown — appended to document.body, so it must be top-level
+   (not nested inside .sta-attack-preset-dialog) for these styles to apply. */
+.sad-quality-menu {
+  position: fixed;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  min-width: 8rem;
+  max-height: 16rem;
+  overflow-y: auto;
+  padding: 0.2rem;
+  background: rgba(18, 22, 32, 0.98);
+  border: 1px solid rgba(155, 143, 194, 0.4);
+  border-radius: 4px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+}
+
+.sad-quality-menu-item {
+  text-align: left;
+  padding: 0.3rem 0.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  color: rgba(220, 235, 255, 0.85);
+  font-size: 0.78rem;
+  line-height: 1.1;
+  cursor: pointer;
+}
+
+.sad-quality-menu-item:hover,
+.sad-quality-menu-item:focus-visible {
+  background: rgba(241, 164, 60, 0.18);
+  color: #fff;
+}
+
 .sta-attack-preset-dialog {
   --lcars-orange: #f1a43c;
   --lcars-peach: #f0b872;
@@ -2236,12 +2271,35 @@ input.selector.attribute.sta-fatigued-attribute {
   }
 
   .sad-qtag {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
     font-size: 0.7rem;
     padding: 0.07rem 0.38rem;
     background: rgba(100, 150, 200, 0.1);
     border: 1px solid rgba(100, 150, 200, 0.25);
     border-radius: 3px;
     color: rgba(180, 220, 255, 0.7);
+  }
+
+  .sad-qtag-remove {
+    margin-left: 0.28rem;
+    padding: 0;
+    width: 0.95rem;
+    height: 0.95rem;
+    line-height: 0.9rem;
+    background: transparent;
+    border: none;
+    border-radius: 2px;
+    color: rgba(180, 220, 255, 0.55);
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+
+  .sad-qtag-remove:hover,
+  .sad-qtag-remove:focus-visible {
+    background: rgba(208, 80, 80, 0.25);
+    color: #fff;
   }
 
   .sad-quality-tags {
@@ -4566,6 +4624,237 @@ input.selector.attribute.sta-fatigued-attribute {
 .sta-compendium-browser__errors {
   color: var(--color-level-warning, #f6d06f);
 }
+
+/* ── Talent picker (browser-styled selection dialog) ─────────────────────── */
+.sta-compendium-browser__viewall {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.sta-compendium-browser__desc {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  padding-top: 9px;
+  padding-bottom: 9px;
+  opacity: 0.9;
+}
+
+.sta-compendium-browser__desc .req {
+  display: block;
+  margin-bottom: 3px;
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: var(--sta-teal, #469ca4);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.sta-compendium-browser__desc .req.none {
+  color: #9aa4ad;
+  font-weight: 600;
+}
+
+.sta-compendium-browser__desc .req.cat {
+  color: #9aa4ad;
+  font-weight: 600;
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.sta-compendium-browser__desc .desc-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.sta-compendium-browser__desc .desc-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  overflow: hidden;
+  opacity: 0.82;
+}
+
+.sta-compendium-browser__desc.is-expanded .desc-body {
+  display: block;
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+  overflow: visible;
+}
+
+.sta-compendium-browser__desc .desc-toggle {
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--sta-teal, #469ca4);
+  font-size: 0.74rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Compact header: rely on the window titlebar for the name. */
+.sta-talent-picker__header {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.sta-talent-picker__count {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.sta-talent-picker__header .spacer {
+  flex: 1;
+}
+
+/* Single combined filter row; wrap only if the window is very narrow. */
+.sta-talent-picker .sta-compendium-browser__filters {
+  flex-wrap: wrap;
+}
+
+.sta-talent-picker .sta-compendium-browser__filters label {
+  min-width: 120px;
+}
+
+.sta-talent-picker__min {
+  flex: 0 0 90px !important;
+  min-width: 90px !important;
+}
+
+.sta-talent-picker__reset.icon {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  align-self: end;
+}
+
+.sta-talent-picker__name-btn {
+  width: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sta-talent-picker__name-btn:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.sta-compendium-browser__eligible-dot {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4bbf73;
+  box-shadow: 0 0 6px rgba(75, 191, 115, 0.6);
+}
+
+.sta-compendium-browser__lock {
+  margin-left: 6px;
+  font-size: 0.72rem;
+  color: var(--color-level-warning, #f6d06f);
+}
+
+.sta-compendium-browser__row.is-ineligible .sta-compendium-browser__name {
+  opacity: 0.72;
+}
+
+.sta-compendium-browser__row.is-ineligible .sta-compendium-browser__eligible-dot {
+  background: #6b7280;
+  box-shadow: none;
+}
+
+.sta-compendium-browser__row.is-ineligible .sta-compendium-browser__desc .req {
+  color: var(--color-level-warning, #f6d06f);
+}
+
+.sta-compendium-browser__choose {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+  min-height: 28px;
+  padding: 3px 10px;
+  border: 1px solid var(--sta-teal, #469ca4);
+  border-radius: 3px;
+  background: rgba(70, 156, 164, 0.16);
+  color: #dff2f4;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.sta-compendium-browser__choose:hover {
+  background: rgba(70, 156, 164, 0.3);
+}
+
+.sta-compendium-browser__row.is-ineligible .sta-compendium-browser__choose {
+  border-color: rgba(246, 208, 111, 0.6);
+  background: rgba(246, 208, 111, 0.1);
+  color: var(--color-level-warning, #f6d06f);
+}
+
+/* Description wraps, so top-align cells; override the browser's
+   min-width:max-content so wrapping text can't force horizontal scroll. */
+.sta-talent-picker .sta-compendium-browser__table .sta-compendium-browser__row {
+  align-items: start;
+  min-width: 0;
+}
+
+.sta-talent-picker .sta-compendium-browser__table .sta-compendium-browser__row--heading {
+  align-items: center;
+}
+
+.sta-talent-picker .sta-compendium-browser__table .sta-compendium-browser__row .sta-compendium-browser__name {
+  padding-top: 10px;
+}
+
+.sta-talent-picker .sta-compendium-browser__table .sta-compendium-browser__row .sta-compendium-browser__choose {
+  margin-top: 7px;
+}
+
+.sta-compendium-browser__footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--color-border-dark-4, #444);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.sta-compendium-browser__footer .spacer {
+  flex: 1;
+}
+
+.sta-compendium-browser__footer .primary {
+  border-color: #f1a43c;
+  color: #f1a43c;
+}
+
+.sta-talent-picker-confirm-body ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
 
 .sta-compendium-browser-settings__content {
   display: flex;

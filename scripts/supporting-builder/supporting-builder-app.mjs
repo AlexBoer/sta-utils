@@ -240,7 +240,15 @@ function _meetsTalentRequirementsForSupporting(talentDoc, context) {
 
       if (category === "species") {
         if (!speciesNorm) return false;
-        return speciesNorm === required || speciesNorm.includes(required);
+        // A species requirement may list several qualifying species separated by
+        // commas; any match qualifies.
+        const opts = String(required)
+          .split(",")
+          .map((s) => _normalizeRequirementString(s))
+          .filter(Boolean);
+        return opts.some(
+          (opt) => speciesNorm === opt || speciesNorm.includes(opt),
+        );
       }
 
       if (category === "type") {
@@ -248,6 +256,9 @@ function _meetsTalentRequirementsForSupporting(talentDoc, context) {
         if (required === "npc") return false;
         if (required === "starship") return false;
       }
+
+      // Ship-system requirement — a supporting character can never meet it.
+      if (category === "systems") return false;
 
       return true;
     });

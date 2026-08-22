@@ -765,7 +765,13 @@ export async function loadSpecialRulesItems() {
         const requirementType = _normalizeRequirementString(
           foundry.utils.getProperty(doc, "system.talenttype.typeenum"),
         );
-        if (requirementType === "starship" || requirementType === "systems") {
+        // Ship talents are never NPC special rules.
+        if (
+          requirementType === "starship" ||
+          requirementType === "starshipservicerecord" ||
+          requirementType === "starshipspecialrule" ||
+          requirementType === "systems"
+        ) {
           continue;
         }
 

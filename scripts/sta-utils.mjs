@@ -130,6 +130,7 @@ import {
   getCompendiumBrowser,
   getBrowserPresets,
   openCompendiumBrowser,
+  openTalentPicker,
   installCompendiumBrowserSidebarHooks,
 } from "./compendium-browser/index.mjs";
 import { openSupportingBuilder } from "./supporting-builder/index.mjs";
@@ -738,6 +739,8 @@ Hooks.once("ready", async () => {
     npcBuilder: openNpcBuilder,
     compendiumBrowser: openCompendiumBrowser,
     compendiumBrowserPresets: getBrowserPresets,
+    talentPicker: openTalentPicker,
+    focusPicker: openTalentPicker,
     sidebarWidgets: {
       register: registerSidebarWidget,
       unregister: unregisterSidebarWidget,

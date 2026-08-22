@@ -7,7 +7,7 @@
   <div class="sad-qualities" data-hook="qualities-row">
     <span class="sad-info-label">{{qualitiesLabel}}</span>
     <span class="sad-quality-tags" data-hook="quality-tags">
-      {{#each qualityTags}}<span class="sad-qtag">{{this}}</span>{{/each}}
+      {{#each qualityTags}}<span class="sad-qtag">{{this.label}}<button type="button" class="sad-qtag-remove" data-action="remove-quality" data-quality="{{this.key}}" aria-label="Remove">&times;</button></span>{{/each}}
     </span>
     {{#if showQualityAddButton}}
     <button class="sad-mini-btn sad-mini-btn--quality" data-action="add-quality" type="button" aria-label="{{addQualityLabel}}">

@@ -98,13 +98,16 @@ class AttackPresetDialog extends HandlebarsApplicationMixin(ApplicationV2) {
 
   async _prepareContext(_options) {
     const s = this._dlg;
-    const qualityTags = QUALITY_KEYS.filter((k) => s.qualityFlags[k]).map((k) =>
-      t(`sta-utils.attackCalculator.qualities.${k}`),
+    const qualityTags = QUALITY_KEYS.filter((k) => s.qualityFlags[k]).map(
+      (k) => ({
+        key: k,
+        label: t(`sta-utils.attackCalculator.qualities.${k}`),
+      }),
     );
     return {
       weaponName: s.weaponName,
       qualityTags,
-      showQualitiesRow: s.publicApi || qualityTags.length > 0,
+      showQualitiesRow: true,
       showBaseDamageButton: s.publicApi,
       showQualityAddButton: true,
       calibrate: s.calibrate,
@@ -139,7 +142,9 @@ class AttackPresetDialog extends HandlebarsApplicationMixin(ApplicationV2) {
     this._updateSentences(root);
   }
 
-  _addQualityInstant(root) {
+  /** Open a dropdown menu listing the qualities that can still be added. */
+  _openQualityMenu(root, anchorBtn) {
+    this._closeQualityMenu();
     const availableKeys = this._availableQualityKeys();
     if (!availableKeys.length) {
       ui?.notifications?.info?.(
@@ -147,10 +152,68 @@ class AttackPresetDialog extends HandlebarsApplicationMixin(ApplicationV2) {
       );
       return;
     }
-    // Add the first available quality (alphabetical order)
-    const key = availableKeys[0];
-    this._dlg.qualityFlags[key] = true;
-    this._updateSentences(root);
+
+    const menu = document.createElement("div");
+    menu.className = "sad-quality-menu sta-utils sta-utils-ms-lcars";
+    menu.innerHTML = availableKeys
+      .map(
+        (k) =>
+          `<button type="button" class="sad-quality-menu-item" data-quality="${k}">${t(
+            `sta-utils.attackCalculator.qualities.${k}`,
+          )}</button>`,
+      )
+      .join("");
+    document.body.appendChild(menu);
+
+    // Position beneath the anchor, keeping the menu on-screen.
+    const rect = anchorBtn.getBoundingClientRect();
+    const left = Math.min(rect.left, window.innerWidth - menu.offsetWidth - 8);
+    menu.style.top = `${rect.bottom + 2}px`;
+    menu.style.left = `${Math.max(8, left)}px`;
+
+    menu.addEventListener("click", (e) => {
+      const key = e.target.closest("[data-quality]")?.dataset.quality;
+      if (!key) return;
+      this._dlg.qualityFlags[key] = true;
+      this._updateQualityTags(root);
+      this._updateSentences(root);
+      this._closeQualityMenu();
+    });
+
+    this._qualityMenuOutside = (e) => {
+      if (menu.contains(e.target) || anchorBtn.contains(e.target)) return;
+      this._closeQualityMenu();
+    };
+    setTimeout(
+      () => document.addEventListener("mousedown", this._qualityMenuOutside),
+      0,
+    );
+    this._qualityMenu = menu;
+  }
+
+  _closeQualityMenu() {
+    if (this._qualityMenu) {
+      this._qualityMenu.remove();
+      this._qualityMenu = null;
+    }
+    if (this._qualityMenuOutside) {
+      document.removeEventListener("mousedown", this._qualityMenuOutside);
+      this._qualityMenuOutside = null;
+    }
+  }
+
+  /** Rebuild the quality tags bar to reflect the current quality flags. */
+  _updateQualityTags(root) {
+    const container = root.querySelector("[data-hook='quality-tags']");
+    if (!container) return;
+    container.innerHTML = QUALITY_KEYS.filter((k) => this._dlg.qualityFlags[k])
+      .map(
+        (k) =>
+          `<span class="sad-qtag">${t(
+            `sta-utils.attackCalculator.qualities.${k}`,
+          )}<button type="button" class="sad-qtag-remove" data-action="remove-quality" data-quality="${k}" aria-label="Remove">\u00d7</button></span>`,
+      )
+      .join("");
   }
 
   _resolveOnce(value) {
@@ -160,12 +223,12 @@ class AttackPresetDialog extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   _calcMomentum() {
-    const { hits, dmg, intense, spread } = this._dlg;
+    const { hits, dmg, qualityFlags } = this._dlg;
     const eb = this._effectiveBase();
     const devCount = hits - 1;
     const incCount = Math.max(0, dmg - eb);
-    const incCost = intense ? 1 : 2;
-    const devCost = spread ? 1 : 2;
+    const incCost = qualityFlags.intense ? 1 : 2;
+    const devCost = qualityFlags.spread ? 1 : 2;
     return devCount * devCost + incCount * incCost;
   }
 
@@ -245,7 +308,20 @@ class AttackPresetDialog extends HandlebarsApplicationMixin(ApplicationV2) {
       }
       if (action === "add-quality") {
         e.preventDefault();
-        this._addQualityInstant(root);
+        this._openQualityMenu(
+          root,
+          e.target.closest("[data-action='add-quality']"),
+        );
+        return;
+      }
+      if (action === "remove-quality") {
+        e.preventDefault();
+        const key = e.target.closest("[data-quality]")?.dataset.quality;
+        if (key) {
+          delete this._dlg.qualityFlags[key];
+          this._updateQualityTags(root);
+          this._updateSentences(root);
+        }
         return;
       }
       if (action === "confirm") {
@@ -368,6 +444,7 @@ class AttackPresetDialog extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   _onClose(_options) {
+    this._closeQualityMenu();
     if (this._momentumHookId !== undefined) {
       Hooks.off("updateSetting", this._momentumHookId);
       this._momentumHookId = undefined;

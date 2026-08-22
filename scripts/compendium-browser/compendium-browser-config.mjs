@@ -204,13 +204,13 @@ const TYPE_CONFIG = {
       columns: [
         {
           key: "system.talenttype.typeenum",
-          label: "sta-utils.compendiumBrowser.columns.requirement",
+          label: "sta-utils.compendiumBrowser.columns.type",
         },
       ],
       filters: [
         {
           key: "system.talenttype.typeenum",
-          label: "sta-utils.compendiumBrowser.columns.requirement",
+          label: "sta-utils.compendiumBrowser.columns.type",
           type: "select",
         },
       ],

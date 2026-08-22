@@ -3904,6 +3904,15 @@ body.sta-officers-lcars-active {
  * Client setting (sta-utils.lcarsOpaqueBackgrounds) toggles this mode.
  * Tokens match each scheme's authored background RGB values without alpha.
  * ============================================================================= */
+body.sta-lcars-opaque-bg.theme-dark {
+  --sta-lcars-opaque-bg: #0e0e16;
+  --sta-lcars-opaque-bg-panel: #17171f;
+}
+body.sta-lcars-opaque-bg.theme-light {
+  --sta-lcars-opaque-bg: #f5f2e8;
+  --sta-lcars-opaque-bg-panel: #e6e0cf;
+}
+
 body.sta-lcars-opaque-bg.theme-dark .lcars-scheme-tng,
 body.sta-lcars-opaque-bg.theme-dark.sta-officers-lcars-active.lcars-scheme-tng,
 body.sta-lcars-opaque-bg.theme-dark .sta-lcars-window.application:has(.lcars-scheme-tng) { --sta-lcars-opaque-bg: #010105; --sta-lcars-opaque-bg-panel: #000000; }
@@ -4039,18 +4048,28 @@ body.sta-lcars-opaque-bg.theme-light.sta-officers-lcars-active.lcars-scheme-redA
 body.sta-lcars-opaque-bg.theme-light .sta-lcars-window.application:has(.lcars-scheme-redAlert) { --sta-lcars-opaque-bg: #f5e8e8; --sta-lcars-opaque-bg-panel: #fff0f0; }
 
 body.sta-lcars-opaque-bg
-  :is(
-    .character-sheet,
-    .starship-sheet,
-    .extended-tasks,
-    .item-sheet,
-    .scenetraits-sheet,
-    .dialogue
-  ).sta-lcars *,
-body.sta-lcars-opaque-bg .sta-lcars-dialogue-app *,
-body.sta-lcars-opaque-bg.sta-officers-lcars-active * {
-  --lcars-bg: var(--sta-lcars-opaque-bg) !important;
-  --lcars-bg-panel: var(--sta-lcars-opaque-bg-panel) !important;
+  :is(.character-sheet, .starship-sheet).sta-lcars
+  .bottom-right-column,
+body.sta-lcars-opaque-bg
+  :is(.character-sheet, .starship-sheet).sta-lcars
+  .sheet-tabs.tabs,
+body.sta-lcars-opaque-bg
+  :is(.character-sheet, .starship-sheet).sta-lcars
+  .sheet-body,
+body.sta-lcars-opaque-bg .starship-sheet.sta-lcars .left-column,
+body.sta-lcars-opaque-bg .starship-sheet.sta-lcars .right-column {
+  background: var(--sta-lcars-opaque-bg-panel) !important;
+}
+
+body.sta-lcars-opaque-bg .sta-action-chooser,
+body.sta-lcars-opaque-bg .sta-action-chooser .window-content,
+body.sta-lcars-opaque-bg .sta-lcars-dialogue-app,
+body.sta-lcars-opaque-bg .sta-lcars-dialogue-app .window-content {
+  --ac-bg: var(--sta-lcars-opaque-bg) !important;
+  --ac-minor-panel-bg: var(--sta-lcars-opaque-bg-panel) !important;
+  --ac-major-panel-bg: var(--sta-lcars-opaque-bg-panel) !important;
+  --ac-social-panel-bg: var(--sta-lcars-opaque-bg-panel) !important;
+  background: var(--sta-lcars-opaque-bg) !important;
 }
 
 /* A few roots paint their own `background` directly instead of relying on a
@@ -4061,6 +4080,10 @@ body.sta-lcars-opaque-bg .scenetraits-sheet.sta-lcars,
 body.sta-lcars-opaque-bg .dialogue.sta-lcars,
 body.sta-lcars-opaque-bg .extended-tasks.sta-lcars,
 body.sta-lcars-opaque-bg .sta-officers-log.application,
-body.sta-lcars-opaque-bg .officers-log-dialog.application {
+body.sta-lcars-opaque-bg .officers-log-dialog.application,
+body.sta-lcars-opaque-bg .sta-officers-log.application .window-content,
+body.sta-lcars-opaque-bg .officers-log-dialog.application .window-content,
+body.sta-lcars-opaque-bg .officers-talent-sheet,
+body.sta-lcars-opaque-bg .officers-log-sheet {
   background: var(--sta-lcars-opaque-bg) !important;
 }

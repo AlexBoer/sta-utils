@@ -1,0 +1,140 @@
+<div class="sta-compendium-browser sta-compendium-browser--compact sta-talent-picker">
+  <section class="sta-compendium-browser__content">
+    <header class="sta-compendium-browser__header sta-talent-picker__header">
+      <span class="sta-talent-picker__count">{{countText}}</span>
+      <span class="spacer"></span>
+      {{#each toggles as |tg|}}
+      <label class="sta-compendium-browser__viewall">
+        <input type="checkbox" data-role="toggle" data-toggle="{{tg.key}}" {{#if tg.checked}}checked{{/if}} />
+        <span>{{tg.label}}</span>
+      </label>
+      {{/each}}
+      {{#if showEligibility}}
+      <label class="sta-compendium-browser__viewall">
+        <input type="checkbox" data-role="view-all" {{#if viewAll}}checked{{/if}} />
+        <span>{{labels.viewAll}}</span>
+      </label>
+      {{/if}}
+    </header>
+
+    <div class="sta-compendium-browser__filters-shell">
+      <div class="sta-compendium-browser__filters">
+        <label>
+          <span>{{labels.search}}</span>
+          <input type="search" data-role="search" value="{{search}}" placeholder="{{labels.searchPlaceholder}}" />
+        </label>
+        <label>
+          <span>{{labels.source}}</span>
+          <select data-role="source">
+            {{#each sources as |source|}}
+            <option value="{{source.id}}" {{#if source.selected}}selected{{/if}}>{{source.label}}</option>
+            {{/each}}
+          </select>
+        </label>
+        {{#if categoryLabel}}
+        <label>
+          <span>{{categoryLabel}}</span>
+          <select data-role="group">
+            {{#each groups as |grp|}}
+            <option value="{{grp.id}}" {{#if grp.selected}}selected{{/if}}>{{grp.label}}</option>
+            {{/each}}
+          </select>
+        </label>
+        {{else}}
+        <label>
+          <span>{{labels.requirement}}</span>
+          <select data-role="req-category">
+            {{#each reqCategories as |cat|}}
+            <option value="{{cat.id}}" {{#if cat.selected}}selected{{/if}}>{{cat.label}}</option>
+            {{/each}}
+          </select>
+        </label>
+        <label>
+          <span>{{labels.requires}}</span>
+          {{#if reqValueCombobox}}
+          <input type="text" data-role="req-value-text" list="sta-talent-picker-values" value="{{reqValueText}}" placeholder="{{labels.anyValue}}" autocomplete="off" />
+          <datalist id="sta-talent-picker-values">
+            {{#each reqValues as |val|}}
+            {{#unless val.isAll}}<option value="{{val.label}}"></option>{{/unless}}
+            {{/each}}
+          </datalist>
+          {{else}}
+          <select data-role="req-value">
+            {{#each reqValues as |val|}}
+            <option value="{{val.id}}" {{#if val.selected}}selected{{/if}}>{{val.label}}</option>
+            {{/each}}
+          </select>
+          {{/if}}
+        </label>
+        {{#if showReqMin}}
+        <label class="sta-talent-picker__min">
+          <span>{{labels.minimum}}</span>
+          <input type="number" data-role="req-min" min="0" value="{{reqMin}}" placeholder="{{labels.minimumPlaceholder}}" />
+        </label>
+        {{/if}}
+        <button type="button" class="icon sta-talent-picker__reset" data-action="reset-req" data-tooltip title="{{labels.reset}}" aria-label="{{labels.reset}}">
+          <i class="fa-solid fa-filter-circle-xmark"></i>
+        </button>
+        {{/if}}
+      </div>
+    </div>
+
+    <div class="sta-compendium-browser__table" style="--sta-browser-columns: minmax(200px, 1.3fr) minmax(320px, 3fr) 132px;">
+      <div class="sta-compendium-browser__row sta-compendium-browser__row--heading">
+        <button type="button" class="sta-compendium-browser__cell--left" data-sort="name">{{labels.name}}</button>
+        <div class="sta-compendium-browser__cell--left">{{labels.description}}</div>
+        <div class="sta-compendium-browser__cell--right">&nbsp;</div>
+      </div>
+
+      {{#if hasTalents}}
+      {{#each talents as |talent|}}
+      <div class="sta-compendium-browser__row sta-talent-picker__row{{#unless talent.eligible}} is-ineligible{{/unless}}" data-uuid="{{talent.uuid}}">
+        <div class="sta-compendium-browser__name sta-compendium-browser__cell--left">
+          {{#if ../showEligibility}}<span class="sta-compendium-browser__eligible-dot" title="{{#if talent.eligible}}{{../labels.qualifies}}{{else}}{{../labels.notQualified}}{{/if}}"></span>{{/if}}
+          {{#if talent.img}}<img src="{{talent.img}}" alt="" />{{/if}}
+          <button type="button" class="sta-talent-picker__name-btn" data-action="open" data-uuid="{{talent.uuid}}" title="{{../labels.openSheet}}">{{talent.name}}</button>
+          {{#if ../showEligibility}}{{#unless talent.eligible}}<i class="fa-solid fa-lock sta-compendium-browser__lock" title="{{../labels.notQualified}}"></i>{{/unless}}{{/if}}
+        </div>
+
+        <div class="sta-compendium-browser__cell--left sta-compendium-browser__desc{{#if talent.expanded}} is-expanded{{/if}}">
+          {{#if talent.hasRequirements}}
+            {{#each talent.requirementLines as |line|}}
+            <span class="req">{{line.text}}</span>
+            {{/each}}
+          {{else if talent.tag}}
+            <span class="req cat">{{talent.tag}}</span>
+          {{else if ../showEligibility}}
+            <span class="req none">{{../labels.noRequirements}}</span>
+          {{/if}}
+          <div class="desc-line">
+            <span class="desc-body"><span class="text">{{talent.descriptionText}}</span></span>
+            {{#if talent.showToggle}}
+            <button type="button" class="desc-toggle" data-action="expand" data-uuid="{{talent.uuid}}">{{#if talent.expanded}}{{../labels.showLess}}{{else}}{{../labels.showMore}}{{/if}}</button>
+            {{/if}}
+          </div>
+        </div>
+
+        <div class="sta-compendium-browser__cell--right">
+          <button type="button" class="sta-compendium-browser__choose" data-action="choose" data-uuid="{{talent.uuid}}">
+            {{#if talent.eligible}}<i class="fa-solid fa-check"></i>{{else}}<i class="fa-solid fa-triangle-exclamation"></i>{{/if}}
+            {{../labels.choose}}
+          </button>
+        </div>
+      </div>
+      {{/each}}
+      {{else}}
+      <div class="sta-compendium-browser__state">{{labels.empty}}</div>
+      {{/if}}
+    </div>
+
+    <footer class="sta-compendium-browser__footer">
+      {{#if allowCustom}}
+      <button type="button" class="primary" data-action="custom">
+        <i class="fa-solid fa-plus"></i> {{labels.createCustom}}
+      </button>
+      {{/if}}
+      <span class="spacer"></span>
+      <button type="button" data-action="cancel">{{labels.cancel}}</button>
+    </footer>
+  </section>
+</div>

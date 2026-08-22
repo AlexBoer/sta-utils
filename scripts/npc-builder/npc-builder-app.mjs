@@ -227,7 +227,14 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
               this._wizardState.species,
             );
             if (!selected) return false;
-            return selected === required || selected.includes(required);
+            // Comma-separated species list: any listed species qualifies.
+            const opts = String(required)
+              .split(",")
+              .map((s) => this._normalizeRequirementString(s))
+              .filter(Boolean);
+            return opts.some(
+              (opt) => selected === opt || selected.includes(opt),
+            );
           }
           case "type": {
             const npcType = this._normalizeRequirementString(
@@ -238,6 +245,9 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
             if (required === "starship") return false;
             return false;
           }
+          case "systems":
+            // Ship-system requirement — an NPC/character can never meet it.
+            return false;
           default:
             return true;
         }
