@@ -18,3 +18,8 @@ export {
   openTraitDrawingSettings,
   initTraitDrawingSettingsHook,
 } from "./trait-drawing-settings.mjs";
+export {
+  initTraitStickers,
+  createTraitSticker,
+  isGinzzzuActive,
+} from "./trait-sticker.mjs";

@@ -227,3 +227,82 @@ export async function addTraitToProxy(proxyActor, sourceItem) {
   ]);
   return created;
 }
+
+/**
+ * Resolve (or create) the embedded trait Item that a canvas placeable should
+ * reference, given the dropped item UUID.  Shared by trait drawings and trait
+ * stickers so both features stay in sync.
+ *
+ * @param {Actor}  proxyActor        The per-scene scenetraits actor.
+ * @param {object} params
+ * @param {string|null} params.uuid  Source item UUID (null for a brand-new trait).
+ * @param {string} params.name       Trait name (used when uuid is null).
+ * @param {number} params.quantity   Trait quantity (used when uuid is null).
+ * @returns {Promise<{embeddedItem: Item, ownerActor: Actor, isOwnedByRealActor: boolean}>}
+ * @throws {Error} If the item cannot be resolved or created.
+ */
+export async function resolveTraitEmbeddedItem(
+  proxyActor,
+  { uuid, name, quantity },
+) {
+  if (!uuid) {
+    // No source item — create a brand-new trait on the proxy actor
+    const currentOwnership = Number(proxyActor?.ownership?.default ?? 0);
+    if (
+      !(Number.isFinite(currentOwnership) && currentOwnership >= OBSERVER_LEVEL)
+    ) {
+      await proxyActor.update({
+        ownership: {
+          ...(proxyActor.ownership ?? {}),
+          default: OBSERVER_LEVEL,
+        },
+      });
+    }
+
+    const [created] = await proxyActor.createEmbeddedDocuments("Item", [
+      {
+        name,
+        type: "trait",
+        ownership: { default: OBSERVER_LEVEL },
+        system: { quantity, description: "" },
+      },
+    ]);
+    return {
+      embeddedItem: created,
+      ownerActor: proxyActor,
+      isOwnedByRealActor: false,
+    };
+  }
+
+  const sourceItem = await fromUuid(uuid);
+  if (!sourceItem) throw new Error(`Could not resolve source item ${uuid}`);
+
+  const sourceActor = sourceItem?.parent;
+  const isWorldActor =
+    sourceActor?.getFlag(MODULE_ID, "isWorldTraitActor") === true;
+  const isOnProxyActor =
+    sourceActor?.documentName === "Actor" &&
+    !isWorldActor &&
+    (sourceActor.getFlag(MODULE_ID, "isProxyActor") === true ||
+      sourceActor.type === "scenetraits");
+  const isOwnedByRealActor =
+    sourceActor?.documentName === "Actor" && !isOnProxyActor;
+
+  if (isOwnedByRealActor) {
+    return {
+      embeddedItem: sourceItem,
+      ownerActor: sourceActor,
+      isOwnedByRealActor: true,
+    };
+  }
+  if (sourceActor?.id === proxyActor.id) {
+    return {
+      embeddedItem: sourceItem,
+      ownerActor: proxyActor,
+      isOwnedByRealActor: false,
+    };
+  }
+
+  const embeddedItem = await addTraitToProxy(proxyActor, sourceItem);
+  return { embeddedItem, ownerActor: proxyActor, isOwnedByRealActor: false };
+}

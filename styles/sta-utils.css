@@ -367,6 +367,125 @@ li.row.entry.sta-utils-trait-hidden {
   .item-name { text-decoration: line-through; }
 }
 
+/* Trait sticker — Ginzzzu's Stickers integration.
+ * A frameless sticker whose whole surface is the coloured trait label; the
+ * sticker controls overlay the colour and are hidden until hover. The colour
+ * comes from Ginzzzu's own per-sticker variable so its Manage menu recolours
+ * the sticker. */
+.sta-trait-sticker-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.5em;
+  height: 100%;
+  padding: 0.5em 0.75em;
+  box-sizing: border-box;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.45em;
+  line-height: 1.15;
+  color: #000;
+  background: var(--threeo-sticker-bg, #ff9900);
+  border: 2px solid rgba(0, 0, 0, 0.35);
+  border-radius: 6px;
+  overflow-wrap: anywhere;
+}
+
+/* Frameless sticker chrome: drop the note background, border, shadow and
+ * dog-ear corner so only the coloured trait body shows. `article` prefix
+ * raises specificity above Ginzzzu's own compact rules. `contain: none`
+ * lets the toolbar paint outside the sticker box (Ginzzzu sets paint
+ * containment which would otherwise clip it). */
+article.threeo-sticker.sta-trait-sticker {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
+  contain: none;
+}
+
+article.threeo-sticker.sta-trait-sticker::after {
+  display: none;
+}
+
+/* Content area fills the sticker with no padding so the body is the surface. */
+article.threeo-sticker.sta-trait-sticker .threeo-sticker__content {
+  display: grid;
+  padding: 0;
+  overflow: hidden;
+}
+
+article.threeo-sticker.sta-trait-sticker .sta-trait-sticker-body {
+  height: 100%;
+  border: none;
+  border-radius: 3px;
+}
+
+/* Controls sit ABOVE the coloured body as a full-width, transparent drag
+ * strip (the header is Ginzzzu's drag handle, so dragging anywhere along the
+ * top moves the sticker); hidden until hover/focus, single row, no title. */
+article.threeo-sticker.sta-trait-sticker .threeo-sticker__header {
+  position: absolute;
+  bottom: calc(100% - 2px);
+  top: auto;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 4px;
+  min-height: 0;
+  padding: 3px 5px;
+  border: none;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--threeo-sticker-bg, #ff9900) 40%, transparent);
+  box-shadow: none;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+article.threeo-sticker.sta-trait-sticker:hover .threeo-sticker__header,
+article.threeo-sticker.sta-trait-sticker:focus-within .threeo-sticker__header {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Hide the duplicate trait name (and edit input / status) and the label icons,
+ * which aren't needed for traits. */
+article.threeo-sticker.sta-trait-sticker .threeo-sticker__title,
+article.threeo-sticker.sta-trait-sticker .threeo-sticker__title-input,
+article.threeo-sticker.sta-trait-sticker .threeo-sticker__status,
+article.threeo-sticker.sta-trait-sticker .threeo-sticker__label-markers {
+  display: none;
+}
+
+/* Collapse the header rows so pin/lock/manage sit inline with the quick
+ * actions (share / token / scene / labels) in one row. */
+article.threeo-sticker.sta-trait-sticker .threeo-sticker__header-main {
+  flex: 0 0 auto;
+  min-height: 0;
+  padding: 0;
+  gap: 4px;
+}
+
+article.threeo-sticker.sta-trait-sticker.is-compact .threeo-sticker__quickbar {
+  max-height: none;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  opacity: 1;
+  overflow: visible;
+  pointer-events: auto;
+}
+
+article.threeo-sticker.sta-trait-sticker .threeo-sticker__quickbar {
+  flex: 1 1 auto;
+  justify-content: flex-start;
+  gap: 4px;
+}
+
 /* =============================================================================
  * TALENT USES — Per-Mission Pip Tracker
  * ============================================================================= */

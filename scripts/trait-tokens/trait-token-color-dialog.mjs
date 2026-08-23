@@ -23,24 +23,43 @@ const SIZE_OPTIONS = [
 
 const LAST_COLOR_KEY = "sta-utils.traitDrawingLastColor";
 const LAST_SIZE_KEY = "sta-utils.traitDrawingLastSize";
+const LAST_TYPE_KEY = "sta-utils.traitTokenLastType";
+
+/**
+ * Whether the GM may choose to create a Ginzzzu's Stickers sticker instead of
+ * a drawing.  Only offered to GMs when the module is installed and active.
+ * @returns {boolean}
+ */
+function canOfferSticker() {
+  return !!game.user?.isGM && !!game.modules.get("ginzzzu-stickers")?.active;
+}
 
 /**
  * Show a color + size picker dialog for the trait post-it note.
  * The user can pick a preset swatch or enter a custom hex color,
  * and choose a relative size (S / M / L).
  *
+ * When Ginzzzu's Stickers is active, GMs also choose whether to create a
+ * canvas drawing or a sticker before creation.
+ *
  * Remembers the last selection in localStorage across page reloads.
  * Cancel does not overwrite the stored preference.
  *
- * @returns {Promise<{color: string, sizeMultiplier: number}|null>}
- *   The chosen color and size multiplier, or null if cancelled.
+ * @returns {Promise<{color: string, sizeMultiplier: number, type: "drawing"|"sticker"}|null>}
+ *   The chosen color, size multiplier, and creation type, or null if cancelled.
  */
 export async function pickTraitColor() {
+  const offerSticker = canOfferSticker();
   const defaultColor =
     localStorage.getItem(LAST_COLOR_KEY) ?? COLOR_PRESETS[0].hex;
   const defaultMultiplier = parseFloat(
     localStorage.getItem(LAST_SIZE_KEY) ?? "1",
   );
+  const defaultType = offerSticker
+    ? localStorage.getItem(LAST_TYPE_KEY) === "sticker"
+      ? "sticker"
+      : "drawing"
+    : "drawing";
 
   const swatches = COLOR_PRESETS.map(
     (c) =>
@@ -60,7 +79,31 @@ export async function pickTraitColor() {
         >${s.label}</button>`,
   ).join("");
 
+  const typeOptions = [
+    { value: "drawing", label: "Drawing" },
+    { value: "sticker", label: "Sticker" },
+  ];
+  const typeBtns = typeOptions
+    .map(
+      (o) =>
+        `<button type="button" class="sta-utils-type-btn" data-type="${o.value}"
+        style="min-width:80px; height:34px; font-weight:bold; cursor:pointer; margin:3px;
+               border:2px solid #555; border-radius:4px;
+               background: ${o.value === defaultType ? "#888" : "#444"};
+               color: #fff;"
+        >${o.label}</button>`,
+    )
+    .join("");
+  const typeSection = offerSticker
+    ? `
+    <p style="margin-bottom:6px;">Create as:</p>
+    <div style="display:flex; flex-wrap:wrap; gap:2px; margin-bottom:12px;">
+      ${typeBtns}
+    </div>`
+    : "";
+
   const content = `
+    ${typeSection}
     <p style="margin-bottom:6px;">Size:</p>
     <div style="display:flex; flex-wrap:wrap; gap:2px; margin-bottom:12px;">
       ${sizeBtns}
@@ -79,6 +122,7 @@ export async function pickTraitColor() {
   // Track selections via closure — updated by buttons, read by OK callback.
   let selectedColor = defaultColor;
   let selectedMultiplier = defaultMultiplier;
+  let selectedType = defaultType;
 
   return new Promise((resolve) => {
     let resolved = false;
@@ -88,6 +132,7 @@ export async function pickTraitColor() {
       if (value !== null) {
         localStorage.setItem(LAST_COLOR_KEY, value.color);
         localStorage.setItem(LAST_SIZE_KEY, String(value.sizeMultiplier));
+        localStorage.setItem(LAST_TYPE_KEY, value.type);
       }
       resolve(value);
     };
@@ -102,6 +147,7 @@ export async function pickTraitColor() {
           callback: () => ({
             color: selectedColor,
             sizeMultiplier: selectedMultiplier,
+            type: selectedType,
           }),
         },
         {
@@ -146,13 +192,31 @@ export async function pickTraitColor() {
           updateSizeBtnStyles(selectedMultiplier);
         });
       });
+
+      const updateTypeBtnStyles = (activeType) => {
+        el.querySelectorAll(".sta-utils-type-btn").forEach((btn) => {
+          btn.style.background =
+            btn.dataset.type === activeType ? "#888" : "#444";
+        });
+      };
+
+      el.querySelectorAll(".sta-utils-type-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          selectedType = btn.dataset.type;
+          updateTypeBtnStyles(selectedType);
+        });
+      });
     });
 
     dlg
       .then((result) =>
         finish(
           result !== null && result !== undefined
-            ? { color: result.color, sizeMultiplier: result.sizeMultiplier }
+            ? {
+                color: result.color,
+                sizeMultiplier: result.sizeMultiplier,
+                type: result.type === "sticker" ? "sticker" : "drawing",
+              }
             : null,
         ),
       )

@@ -38,6 +38,7 @@ import {
   initTraitDrawings,
   initTraitDrawingClick,
   initTraitDrawingSettingsHook,
+  initTraitStickers,
 } from "./trait-tokens/index.mjs";
 
 import {
@@ -572,6 +573,7 @@ Hooks.once("init", () => {
     initTraitDrawingSettingsHook();
     initTraitVisibility();
     initSceneConfig();
+    initTraitStickers();
     console.log(`${MODULE_ID} | Trait Tokens feature enabled (drawings mode)`);
   }
 

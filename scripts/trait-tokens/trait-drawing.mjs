@@ -1,9 +1,12 @@
 import { pickTraitColor } from "./trait-token-color-dialog.mjs";
-import { getOrCreateProxyActor, addTraitToProxy } from "./proxy-actor.mjs";
+import {
+  getOrCreateProxyActor,
+  resolveTraitEmbeddedItem,
+} from "./proxy-actor.mjs";
 import { isTraitVisible } from "./trait-visibility.mjs";
+import { createTraitSticker } from "./trait-sticker.mjs";
 
 const MODULE_ID = "sta-utils";
-const OBSERVER_LEVEL = Number(CONST?.DOCUMENT_OWNERSHIP_LEVELS?.OBSERVER ?? 2);
 
 /**
  * Build the display label for a trait drawing, appending the quantity
@@ -220,7 +223,9 @@ async function _onDropCanvasData(canvas, data) {
       sceneId: canvas.scene.id,
     };
 
-    if (game.user.isGM) {
+    if (pick.type === "sticker" && game.user.isGM) {
+      await createTraitSticker(msg);
+    } else if (game.user.isGM) {
       await _createTraitDrawing(msg);
     } else {
       try {
@@ -253,7 +258,9 @@ async function _onDropCanvasData(canvas, data) {
     sceneId: canvas.scene.id,
   };
 
-  if (game.user.isGM) {
+  if (pick.type === "sticker" && game.user.isGM) {
+    await createTraitSticker(msg);
+  } else if (game.user.isGM) {
     await _createTraitDrawing(msg);
   } else {
     try {
@@ -330,78 +337,12 @@ async function _createTraitDrawing({
   let ownerActor;
   let isOwnedByRealActor = false;
 
-  if (!uuid) {
-    // No source item — create a brand-new trait on the proxy actor
-    try {
-      const currentOwnership = Number(proxyActor?.ownership?.default ?? 0);
-      if (
-        !(
-          Number.isFinite(currentOwnership) &&
-          currentOwnership >= OBSERVER_LEVEL
-        )
-      ) {
-        await proxyActor.update({
-          ownership: {
-            ...(proxyActor.ownership ?? {}),
-            default: OBSERVER_LEVEL,
-          },
-        });
-      }
-
-      const [created] = await proxyActor.createEmbeddedDocuments("Item", [
-        {
-          name,
-          type: "trait",
-          ownership: {
-            default: OBSERVER_LEVEL,
-          },
-          system: { quantity, description: "" },
-        },
-      ]);
-      embeddedItem = created;
-      ownerActor = proxyActor;
-    } catch (err) {
-      console.error(
-        `${MODULE_ID} | Failed to create trait on proxy actor`,
-        err,
-      );
-      return;
-    }
-  } else {
-    let sourceItem;
-    try {
-      sourceItem = await fromUuid(uuid);
-    } catch {
-      console.warn(`${MODULE_ID} | Could not resolve source item ${uuid}`);
-      return;
-    }
-
-    const sourceActor = sourceItem?.parent;
-    const isWorldActor =
-      sourceActor?.getFlag(MODULE_ID, "isWorldTraitActor") === true;
-    const isOnProxyActor =
-      sourceActor?.documentName === "Actor" &&
-      !isWorldActor &&
-      (sourceActor.getFlag(MODULE_ID, "isProxyActor") === true ||
-        sourceActor.type === "scenetraits");
-    isOwnedByRealActor =
-      sourceActor?.documentName === "Actor" && !isOnProxyActor;
-
-    if (isOwnedByRealActor) {
-      embeddedItem = sourceItem;
-      ownerActor = sourceActor;
-    } else if (sourceActor?.id === proxyActor.id) {
-      embeddedItem = sourceItem;
-      ownerActor = proxyActor;
-    } else {
-      try {
-        embeddedItem = await addTraitToProxy(proxyActor, sourceItem);
-        ownerActor = proxyActor;
-      } catch (err) {
-        console.error(`${MODULE_ID} | Failed to add trait to proxy actor`, err);
-        return;
-      }
-    }
+  try {
+    ({ embeddedItem, ownerActor, isOwnedByRealActor } =
+      await resolveTraitEmbeddedItem(proxyActor, { uuid, name, quantity }));
+  } catch (err) {
+    console.error(`${MODULE_ID} | Failed to resolve trait item`, err);
+    return;
   }
 
   // Read drawing style settings
