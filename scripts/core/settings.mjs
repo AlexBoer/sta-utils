@@ -27,6 +27,8 @@ const ALERT_STATUS_PLAYER_CONTROL_SETTING = "alertStatusPlayerControl";
 const ALERT_STATUS_SETTING = "alertStatus";
 const SETTING_TRAIT_TOKENS = "enableTraitTokens";
 const SETTING_TRAIT_TOKEN_AUTO_LAYER = "traitTokenAutoLayerSwitch";
+const SETTING_TRAIT_STICKERS = "enableTraitStickers";
+const SETTING_DRAWINGS_LAYER_HOTKEY = "enableDrawingsLayerHotkey";
 const SETTING_WORLD_TRAITS_ACTOR_UUID = "worldTraitsActorUuid";
 const SETTING_TRACKER_MACRO_MENU = "trackerMacroButtonsConfig";
 const TRACKER_MACRO_DEBUG_LOGS_SETTING = "trackerMacroDebugLogs";
@@ -284,6 +286,27 @@ export function registerSettings() {
     group: GROUP_WORLD,
   });
 
+  game.settings.register(MODULE_ID, SETTING_TRAIT_STICKERS, {
+    name: t("sta-utils.settings.enableTraitStickers.name"),
+    hint: t("sta-utils.settings.enableTraitStickers.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, SETTING_DRAWINGS_LAYER_HOTKEY, {
+    name: t("sta-utils.settings.enableDrawingsLayerHotkey.name"),
+    hint: t("sta-utils.settings.enableDrawingsLayerHotkey.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    group: GROUP_WORLD,
+  });
+
   game.settings.register(MODULE_ID, SETTING_WORLD_TRAITS_ACTOR_UUID, {
     name: t("sta-utils.settings.worldTraitsActorUuid.name"),
     hint: t("sta-utils.settings.worldTraitsActorUuid.hint"),
@@ -532,7 +555,6 @@ export function registerSettings() {
   )) {
     game.settings.register(MODULE_ID, settingKey, {
       name: t(`sta-utils.settings.itemImagePickerTypeFolders.${itemType}`),
-      hint: t("sta-utils.settings.itemImagePickerTypeFolderHint"),
       scope: "world",
       config: true,
       type: String,

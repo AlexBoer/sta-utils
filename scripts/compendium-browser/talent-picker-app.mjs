@@ -112,6 +112,7 @@ export class TalentPickerApp extends Base {
       toggles = [],
       eligibility = true,
       categoryLabel = "",
+      createCustomLabel = "",
     } = {},
     options = {},
   ) {
@@ -123,6 +124,8 @@ export class TalentPickerApp extends Base {
       normalizeTalent,
     );
     this._allowCustom = allowCustom !== false;
+    this._createCustomLabel =
+      createCustomLabel || t("sta-utils.talentPicker.createCustom");
     this._onIneligibleChosen =
       typeof onIneligibleChosen === "function" ? onIneligibleChosen : null;
     this._onFlaggedChosen =
@@ -383,7 +386,7 @@ export class TalentPickerApp extends Base {
         showLess: t("sta-utils.talentPicker.showLess"),
         openSheet: t("sta-utils.talentPicker.openSheet"),
         noRequirements: t("sta-utils.talentPicker.noRequirements"),
-        createCustom: t("sta-utils.talentPicker.createCustom"),
+        createCustom: this._createCustomLabel,
         cancel: t("sta-utils.talentPicker.cancel"),
         empty: t("sta-utils.talentPicker.empty"),
         qualifies: t("sta-utils.talentPicker.qualifies"),

@@ -9,6 +9,7 @@
  * Writes the same data the "Talent (Officers Log)" sheet uses:
  *   - system.talenttype.typeenum
  *   - flags.sta-officers-log.requirements  (array of requirement entries)
+ *   - flags.sta-officers-log.source        (free-text source label)
  */
 
 (async () => {
@@ -23,6 +24,7 @@
   }
 
   const REQ_FLAG = "flags.sta-officers-log.requirements";
+  const SOURCE_FLAG = "flags.sta-officers-log.source";
 
   // ── Option data (kept in sync with the officers-log talent model) ──────────
   const TALENT_TYPES = [
@@ -238,6 +240,11 @@
         <select name="type" style="flex:1;min-width:0;">${typeOptions}</select>
       </div>
       <hr/>
+      <div style="display:flex;gap:.5rem;align-items:center;">
+        <label style="flex:0 0 8rem;"><input type="checkbox" name="setSource"/> Set source</label>
+        <input type="text" name="source" placeholder="e.g. Core Rulebook, p. 137" style="flex:1;min-width:0;"/>
+      </div>
+      <hr/>
       <label style="font-weight:600;"><input type="checkbox" name="setReq" checked/> Set requirements (replaces existing)</label>
       <div style="display:flex;gap:.5rem;align-items:center;">
         <select name="addCategory" style="flex:1;min-width:0;">${categoryOptions}</select>
@@ -330,6 +337,10 @@
       rootEl.querySelector('select[name="folder"]').value || null;
     const setType = rootEl.querySelector('input[name="setType"]').checked;
     const type = rootEl.querySelector('select[name="type"]').value;
+    const setSource = rootEl.querySelector('input[name="setSource"]').checked;
+    const source = String(
+      rootEl.querySelector('input[name="source"]').value ?? "",
+    ).trim();
     const setReq = rootEl.querySelector('input[name="setReq"]').checked;
 
     const requirements = [];
@@ -356,7 +367,16 @@
       if (clauses.length) requirements.push({ category, operator, clauses });
     }
 
-    return { packId, folderId, setType, type, setReq, requirements };
+    return {
+      packId,
+      folderId,
+      setType,
+      type,
+      setSource,
+      source,
+      setReq,
+      requirements,
+    };
   }
 
   // ── Show dialog ────────────────────────────────────────────────────────────
@@ -382,8 +402,17 @@
 
   if (!result || result === "cancel") return;
 
-  const { packId, folderId, setType, type, setReq, requirements } = result;
-  if (!setType && !setReq) {
+  const {
+    packId,
+    folderId,
+    setType,
+    type,
+    setSource,
+    source,
+    setReq,
+    requirements,
+  } = result;
+  if (!setType && !setSource && !setReq) {
     ui.notifications.info("Nothing selected to set.");
     return;
   }
@@ -402,6 +431,7 @@
 
   const patch = {};
   if (setType) patch["system.talenttype.typeenum"] = type;
+  if (setSource) patch[SOURCE_FLAG] = source;
   if (setReq) patch[REQ_FLAG] = requirements;
 
   const updates = ids.map((id) => ({ _id: id, ...patch }));

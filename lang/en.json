@@ -6,6 +6,12 @@
         "armor": "Armor"
       }
     },
+    "keybindings": {
+      "activateDrawingsLayer": {
+        "name": "Activate Drawings Layer (Hold)",
+        "hint": "While held, switch to the Drawings layer to interact with drawings; releases back to your previous layer. Must be enabled via the world setting."
+      }
+    },
     "settings": {
       "groups": {
         "world": "World Settings (GM Only)",
@@ -52,6 +58,14 @@
       "traitTokenAutoLayerSwitch": {
         "name": "Trait Token Auto Layer Switch",
         "hint": "When on the token layer, automatically switch to the drawings layer when clicking or dragging a trait drawing. Turn this off if you experience issues where tokens become unselectable or unmovable."
+      },
+      "enableTraitStickers": {
+        "name": "Enable Ginzzzu's Stickers Integration",
+        "hint": "When Ginzzzu's Stickers is installed, let the GM choose to create a trait as a sticker (instead of a drawing) when dropping it on the canvas. Requires a world reload when changed."
+      },
+      "enableDrawingsLayerHotkey": {
+        "name": "Enable Drawings Layer Hotkey",
+        "hint": "Enable a hold-to-activate hotkey that temporarily switches to the Drawings layer so you can interact with drawings, then returns to your previous layer on release. Assign the key in Configure Controls."
       },
       "worldTraitsActorUuid": {
         "name": "Campaign Traits Actor",
@@ -145,9 +159,8 @@
       },
       "itemImagePickerGmFolderPath": {
         "name": "GM Image Folder Path",
-        "hint": "Shared folder included for every supported item type. Use the folder browser to select a Foundry Data or hosted storage folder. Images in child folders are included."
+        "hint": "Shared folder included for every supported item type. Use the folder browser to select a Foundry Data or hosted storage folder. Images in child folders are included. Each image type below has its own optional folder, included in addition to this shared folder."
       },
-      "itemImagePickerTypeFolderHint": "Optional folder included only for this image type, in addition to the shared GM folder. Images in child folders are included.",
       "itemImagePickerTypeFolders": {
         "log": "Log Image Folder",
         "milestone": "Milestone Image Folder",
@@ -1714,6 +1727,7 @@
       "openSheet": "Open talent sheet",
       "noRequirements": "No requirements",
       "createCustom": "Create Custom Talent",
+      "createCustomFocus": "Create Custom Focus",
       "cancel": "Cancel",
       "empty": "No talents match your filters.",
       "count": "{visible} / {total} talents",
@@ -1794,7 +1808,36 @@
         "damage": "Damage",
         "range": "Range",
         "formula": "Formula",
-        "resultCount": "Results"
+        "resultCount": "Results",
+        "qualities": "Qualities",
+        "protection": "Protection"
+      },
+      "categoryBadge": {
+        "main": "Main Character",
+        "supporting": "Supporting Character",
+        "majorNpc": "Major NPC",
+        "notableNpc": "Notable NPC",
+        "minorNpc": "Minor NPC"
+      },
+      "talents": {
+        "requirement": "Requirement",
+        "requires": "Requires",
+        "anyRequirement": "Any requirement",
+        "anyValue": "Any value",
+        "minimum": "Minimum",
+        "minimumPlaceholder": "Any",
+        "resetRequirement": "Reset requirement filters",
+        "noRequirements": "No requirements",
+        "descriptionColumn": "Requirements & Description",
+        "category": {
+          "none": "No requirement",
+          "attribute": "Attribute",
+          "discipline": "Department",
+          "systems": "Ship system",
+          "species": "Species",
+          "house": "House",
+          "npc": "NPC"
+        }
       },
       "settings": {
         "title": "Compendium Browser Sources",

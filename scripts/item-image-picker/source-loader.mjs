@@ -173,17 +173,19 @@ async function _browseFolder(folderPath) {
   const FilePickerCls = _getFilePickerClass();
   if (!FilePickerCls?.browse) return [];
 
+  // Resolve source/target directly rather than via `new FilePicker({ current })`:
+  // that helper assumes a *file* path (it strips the last segment if it contains
+  // a ".", mistaking folder names like "v1.2" for filenames) and falls back to
+  // the unrelated global `LAST_BROWSED_DIRECTORY` on a falsy path.
   let source = "data";
   let target = folderPath;
   const options = {};
 
-  try {
-    const picker = new FilePickerCls({ type: "folder", current: folderPath });
-    source = picker.activeSource ?? source;
-    target = picker.target || target;
-    if (picker.source?.bucket) options.bucket = picker.source.bucket;
-  } catch (_) {
-    // Fall back to the Data source for older or customized FilePickers.
+  const s3Match = FilePickerCls.matchS3URL?.(folderPath);
+  if (s3Match) {
+    source = "s3";
+    target = s3Match.groups.key;
+    options.bucket = s3Match.groups.bucket;
   }
 
   const files = [];

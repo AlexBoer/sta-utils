@@ -5,6 +5,7 @@ import { loadSpeciesCatalog } from "../npc-builder/npc-builder-data.mjs";
 import {
   enrichCharacterIndexRow,
   getCharacterCategories,
+  getCharacterCategoryBadge,
 } from "./character-metadata.mjs";
 import {
   getBrowserPreset,
@@ -14,6 +15,12 @@ import {
   getTypeConfig,
 } from "./compendium-browser-config.mjs";
 import { openCompendiumBrowserSettings } from "./compendium-browser-settings.mjs";
+import {
+  enrichTalentIndexRow,
+  getTalentRequirementCategories,
+  isNumericTalentRequirement,
+} from "./talent-metadata.mjs";
+import { enrichWeaponIndexRow } from "./weapon-metadata.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 const Base = HandlebarsApplicationMixin(ApplicationV2);
@@ -109,6 +116,10 @@ export class CompendiumBrowserApp extends Base {
     this._pendingInputFocus = null;
     this._presetId = "";
     this._compact = false;
+    this._reqCategory = "all";
+    this._reqValue = "all";
+    this._reqMin = "";
+    this._expandedDescriptions = new Set();
   }
 
   static DEFAULT_OPTIONS = {
@@ -181,6 +192,10 @@ export class CompendiumBrowserApp extends Base {
     this._pendingInputFocus = null;
     this._presetId = "";
     this._compact = false;
+    this._reqCategory = "all";
+    this._reqValue = "all";
+    this._reqMin = "";
+    this._expandedDescriptions = new Set();
   }
 
   refresh({ clearCache = false } = {}) {
@@ -221,6 +236,12 @@ export class CompendiumBrowserApp extends Base {
       this._selection.type,
     );
     const showRollActions = this._selection.documentName === "RollTable";
+    const isTalentView =
+      this._selection.documentName === "Item" &&
+      this._selection.type === "talent";
+    const isCharacterView =
+      this._selection.documentName === "Actor" &&
+      this._selection.type === "character";
     const sourceLabels = new Map(
       this._records.map((record) => [record.packId, record.packLabel]),
     );
@@ -240,6 +261,9 @@ export class CompendiumBrowserApp extends Base {
           record.characterCategory === this._characterCategory,
       )
       .filter((record) => this._matchesFieldFilters(record, config.filters))
+      .filter(
+        (record) => !isTalentView || this._matchesTalentRequirement(record),
+      )
       .sort((a, b) => this._compareRecords(a, b))
       .map((record) => ({
         ...record,
@@ -248,7 +272,21 @@ export class CompendiumBrowserApp extends Base {
           value: formatValue(record.row, column.key),
           align: column.align ?? "left",
         })),
+        ...(isTalentView
+          ? {
+              requirementLines: record.talentHasRequirements
+                ? [{ text: record.talentRequirementText }]
+                : [],
+              hasRequirements: Boolean(record.talentHasRequirements),
+              descriptionText: record.talentDescriptionText ?? "",
+              showToggle: (record.talentDescriptionText ?? "").length > 75,
+              expanded: this._expandedDescriptions.has(record.uuid),
+            }
+          : {}),
       }));
+    const talentContext = isTalentView
+      ? this._prepareTalentFilterContext()
+      : null;
 
     return {
       ...context,
@@ -268,10 +306,24 @@ export class CompendiumBrowserApp extends Base {
         label: game.i18n.localize(column.label),
         align: column.align ?? "left",
       })),
-      gridTemplateColumns:
-        `minmax(220px, 2fr) repeat(${config.columns.length}, minmax(100px, 1fr))` +
-        (showRollActions ? " 72px" : ""),
+      gridTemplateColumns: isTalentView
+        ? "minmax(220px, 1.3fr) minmax(320px, 3fr)"
+        : (isCharacterView ? "28px " : "") +
+          `minmax(220px, 2fr) repeat(${config.columns.length}, minmax(100px, 1fr))` +
+          (showRollActions ? " 72px" : ""),
       showRollActions,
+      isTalentView,
+      isCharacterView,
+      talentLabels: isTalentView ? this._getTalentLabels() : null,
+      talentReqCategories: talentContext?.reqCategories ?? [],
+      talentReqValues: talentContext?.reqValues ?? [],
+      talentReqValueCombobox: this._reqCategory === "species",
+      talentReqValueText:
+        talentContext?.reqValues.find(
+          (entry) => entry.selected && entry.id !== "all",
+        )?.label ?? "",
+      talentShowReqMin: isNumericTalentRequirement(this._reqCategory),
+      talentReqMin: this._reqMin,
       hasFieldFilters: config.filters.length > 0,
       filtersExpanded: this._filtersExpanded,
       fieldFilters: this._prepareFieldFilters(config.filters),
@@ -397,6 +449,56 @@ export class CompendiumBrowserApp extends Base {
       });
       button.addEventListener("dblclick", (event) => event.stopPropagation());
     });
+    root
+      .querySelector("[data-role='req-category']")
+      ?.addEventListener("change", (event) => {
+        this._reqCategory = event.currentTarget.value;
+        this._reqValue = "all";
+        if (!isNumericTalentRequirement(this._reqCategory)) this._reqMin = "";
+        this.render({ force: true });
+      });
+    root
+      .querySelector("[data-role='req-value']")
+      ?.addEventListener("change", (event) => {
+        this._reqValue = event.currentTarget.value;
+        this.render({ force: true });
+      });
+    root
+      .querySelector("[data-role='req-value-text']")
+      ?.addEventListener("change", (event) => {
+        const value = normalize(event.currentTarget.value);
+        this._reqValue = value || "all";
+        this.render({ force: true });
+      });
+    root
+      .querySelector("[data-role='req-min']")
+      ?.addEventListener("input", (event) => {
+        this._reqMin = event.currentTarget.value;
+        this.render({ force: true });
+      });
+    root
+      .querySelector("[data-action='reset-req']")
+      ?.addEventListener("click", () => {
+        this._reqCategory = "all";
+        this._reqValue = "all";
+        this._reqMin = "";
+        this.render({ force: true });
+      });
+    root
+      .querySelectorAll("[data-action='expand-description']")
+      .forEach((button) => {
+        button.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          const uuid = button.dataset.uuid;
+          if (this._expandedDescriptions.has(uuid)) {
+            this._expandedDescriptions.delete(uuid);
+          } else {
+            this._expandedDescriptions.add(uuid);
+          }
+          this.render({ force: true });
+        });
+      });
 
     new foundry.applications.ux.DragDrop.implementation({
       dragSelector: "[data-document-uuid]",
@@ -468,6 +570,10 @@ export class CompendiumBrowserApp extends Base {
     if (documentName !== "Actor" || type !== "character") {
       this._characterCategory = "all";
     }
+    this._reqCategory = "all";
+    this._reqValue = "all";
+    this._reqMin = "";
+    this._expandedDescriptions = new Set();
     this._loadedKey = "";
   }
 
@@ -516,6 +622,18 @@ export class CompendiumBrowserApp extends Base {
               },
               { inplace: false },
             );
+          } else if (documentName === "Item" && type === "talent") {
+            enrichedRow = enrichTalentIndexRow(row);
+          } else if (
+            documentName === "Item" &&
+            [
+              "characterweapon",
+              "characterweapon2e",
+              "starshipweapon",
+              "starshipweapon2e",
+            ].includes(type)
+          ) {
+            enrichedRow = enrichWeaponIndexRow(row);
           }
           const characterCategory = foundry.utils.getProperty(
             enrichedRow,
@@ -533,6 +651,42 @@ export class CompendiumBrowserApp extends Base {
             packLabel: packLabel(pack),
             sourceLabel: getPackSourceLabel(pack),
             characterCategory,
+            categoryBadge:
+              documentName === "Actor" && type === "character"
+                ? getCharacterCategoryBadge(characterCategory)
+                : null,
+            talentTypeLabel: foundry.utils.getProperty(
+              enrichedRow,
+              "browser.talentTypeLabel",
+            ),
+            talentRequirementCategory: foundry.utils.getProperty(
+              enrichedRow,
+              "browser.requirementCategory",
+            ),
+            talentRequirementValue: foundry.utils.getProperty(
+              enrichedRow,
+              "browser.requirementValue",
+            ),
+            talentRequirementValueLabel: foundry.utils.getProperty(
+              enrichedRow,
+              "browser.requirementValueLabel",
+            ),
+            talentRequirementMinimum: foundry.utils.getProperty(
+              enrichedRow,
+              "browser.requirementMinimum",
+            ),
+            talentRequirementText: foundry.utils.getProperty(
+              enrichedRow,
+              "browser.requirementText",
+            ),
+            talentHasRequirements: foundry.utils.getProperty(
+              enrichedRow,
+              "browser.hasRequirements",
+            ),
+            talentDescriptionText: foundry.utils.getProperty(
+              enrichedRow,
+              "browser.descriptionText",
+            ),
             row: enrichedRow,
             searchText: buildSearchText(enrichedRow, [
               packLabel(pack),
@@ -667,6 +821,99 @@ export class CompendiumBrowserApp extends Base {
         return false;
     }
     return true;
+  }
+
+  _matchesTalentRequirement(record) {
+    const category = record.talentRequirementCategory || "none";
+    if (this._reqCategory !== "all" && category !== this._reqCategory) {
+      return false;
+    }
+    if (this._reqValue !== "all" && this._reqValue !== "") {
+      if (!(record.talentRequirementValue ?? "").includes(this._reqValue)) {
+        return false;
+      }
+    }
+    if (isNumericTalentRequirement(this._reqCategory) && this._reqMin !== "") {
+      const min = Number(this._reqMin);
+      if (!(Number(record.talentRequirementMinimum ?? 0) >= min)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  _prepareTalentFilterContext() {
+    const presentCategories = new Set(
+      this._records.map((record) => record.talentRequirementCategory || "none"),
+    );
+    const reqCategories = [
+      {
+        id: "all",
+        label: t("sta-utils.compendiumBrowser.talents.anyRequirement"),
+        selected: this._reqCategory === "all",
+      },
+      ...getTalentRequirementCategories()
+        .filter((category) => presentCategories.has(category))
+        .map((category) => ({
+          id: category,
+          label: t(`sta-utils.compendiumBrowser.talents.category.${category}`),
+          selected: this._reqCategory === category,
+        })),
+    ];
+    if (presentCategories.has("none")) {
+      reqCategories.splice(1, 0, {
+        id: "none",
+        label: t("sta-utils.compendiumBrowser.talents.category.none"),
+        selected: this._reqCategory === "none",
+      });
+    }
+
+    const values = new Map();
+    for (const record of this._records) {
+      const category = record.talentRequirementCategory || "none";
+      if (this._reqCategory !== "all" && category !== this._reqCategory) {
+        continue;
+      }
+      const value = record.talentRequirementValue;
+      if (!value || values.has(value)) continue;
+      values.set(value, record.talentRequirementValueLabel || value);
+    }
+    const reqValues = [
+      {
+        id: "all",
+        label: t("sta-utils.compendiumBrowser.talents.anyValue"),
+        selected: this._reqValue === "all",
+        isAll: true,
+      },
+      ...Array.from(values, ([id, label]) => ({
+        id,
+        label,
+        selected: this._reqValue === id,
+      })).sort((a, b) => a.label.localeCompare(b.label, game.i18n.lang)),
+    ];
+
+    return { reqCategories, reqValues };
+  }
+
+  _getTalentLabels() {
+    return {
+      requirement: t("sta-utils.compendiumBrowser.talents.requirement"),
+      requires: t("sta-utils.compendiumBrowser.talents.requires"),
+      anyValue: t("sta-utils.compendiumBrowser.talents.anyValue"),
+      minimum: t("sta-utils.compendiumBrowser.talents.minimum"),
+      minimumPlaceholder: t(
+        "sta-utils.compendiumBrowser.talents.minimumPlaceholder",
+      ),
+      resetRequirement: t(
+        "sta-utils.compendiumBrowser.talents.resetRequirement",
+      ),
+      noRequirements: t("sta-utils.compendiumBrowser.talents.noRequirements"),
+      descriptionColumn: t(
+        "sta-utils.compendiumBrowser.talents.descriptionColumn",
+      ),
+      showMore: t("sta-utils.talentPicker.showMore"),
+      showLess: t("sta-utils.talentPicker.showLess"),
+    };
   }
 
   async _openDocument(uuid) {

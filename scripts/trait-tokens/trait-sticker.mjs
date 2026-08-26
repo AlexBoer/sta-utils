@@ -394,33 +394,31 @@ async function _onDeleteStickerPage(page) {
 /* -------------------------------------------- */
 
 const STICKER_ELEMENT_CLASS = "sta-trait-sticker";
+// GM stickers and player shared copies use different element classes.
+const STICKER_SELECTOR = ".threeo-sticker, .threeo-player-sticker";
 let _styleObserver = null;
 
 /**
  * Add (or remove) the marker class on rendered Ginzzzu sticker elements so the
- * trait sticker CSS can restyle them. Ginzzzu emits no render hook, so the DOM
- * is tagged directly from the linked page flags.
+ * trait sticker CSS can restyle them. Detection is by the content marker
+ * (`.sta-trait-sticker-body`), which travels with the sticker's HTML — this
+ * works for the GM's stickers and for players' shared copies alike (players
+ * cannot read the journal page flags). Ginzzzu emits no render hook, so the
+ * DOM is tagged directly.
  * @param {ParentNode} [root]
  */
 function tagTraitStickerElements(root = document) {
-  const api = getGinzzzuApi();
-  if (!api?.getPages) return;
-  const ids = new Set(
-    api
-      .getPages()
-      .filter((page) => page.getFlag(MODULE_ID, FLAG_TRAIT_STICKER))
-      .map((page) => page.id),
-  );
-  const elements = root.querySelectorAll?.(".threeo-sticker[data-page-id]");
+  const elements = root.querySelectorAll?.(STICKER_SELECTOR);
   if (!elements) return;
   for (const el of elements) {
-    el.classList.toggle(STICKER_ELEMENT_CLASS, ids.has(el.dataset.pageId));
+    const isTrait = !!el.querySelector(".sta-trait-sticker-body");
+    el.classList.toggle(STICKER_ELEMENT_CLASS, isTrait);
   }
 }
 
 /**
  * Watch the DOM for Ginzzzu sticker elements being (re)rendered and tag any
- * that belong to a trait sticker. Runs on the GM's client only.
+ * trait stickers. Runs on every client (GM and players).
  */
 function initTraitStickerStyling() {
   const retag = () => tagTraitStickerElements(document);
@@ -431,8 +429,8 @@ function initTraitStickerStyling() {
       for (const node of mutation.addedNodes) {
         if (node.nodeType !== Node.ELEMENT_NODE) continue;
         if (
-          node.matches?.(".threeo-sticker[data-page-id]") ||
-          node.querySelector?.(".threeo-sticker[data-page-id]")
+          node.matches?.(STICKER_SELECTOR) ||
+          node.querySelector?.(STICKER_SELECTOR)
         ) {
           retag();
           return;

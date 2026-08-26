@@ -69,6 +69,42 @@
             {{/each}}
           </select>
         </label>
+        {{#if isTalentView}}
+        <label>
+          <span>{{talentLabels.requirement}}</span>
+          <select data-role="req-category">
+            {{#each talentReqCategories as |cat|}}
+            <option value="{{cat.id}}" {{#if cat.selected}}selected{{/if}}>{{cat.label}}</option>
+            {{/each}}
+          </select>
+        </label>
+        <label>
+          <span>{{talentLabels.requires}}</span>
+          {{#if talentReqValueCombobox}}
+          <input type="text" list="sta-compendium-browser-talent-values" data-role="req-value-text" value="{{talentReqValueText}}" placeholder="{{talentLabels.anyValue}}" autocomplete="off" />
+          <datalist id="sta-compendium-browser-talent-values">
+            {{#each talentReqValues as |val|}}
+            {{#unless val.isAll}}<option value="{{val.label}}"></option>{{/unless}}
+            {{/each}}
+          </datalist>
+          {{else}}
+          <select data-role="req-value">
+            {{#each talentReqValues as |val|}}
+            <option value="{{val.id}}" {{#if val.selected}}selected{{/if}}>{{val.label}}</option>
+            {{/each}}
+          </select>
+          {{/if}}
+        </label>
+        {{#if talentShowReqMin}}
+        <label class="sta-talent-picker__min">
+          <span>{{talentLabels.minimum}}</span>
+          <input type="number" data-role="req-min" min="0" value="{{talentReqMin}}" placeholder="{{talentLabels.minimumPlaceholder}}" />
+        </label>
+        {{/if}}
+        <button type="button" class="icon" data-action="reset-req" data-tooltip aria-label="{{talentLabels.resetRequirement}}">
+          <i class="fa-solid fa-filter-circle-xmark"></i>
+        </button>
+        {{/if}}
         {{#if hasFieldFilters}}
         <button type="button" class="sta-compendium-browser__filter-toggle{{#if filtersExpanded}} active{{/if}}" data-action="toggle-filters">
           <i class="fa-solid fa-filter"></i> {{localize "sta-utils.compendiumBrowser.filters.title"}}
@@ -117,16 +153,54 @@
 
     <div class="sta-compendium-browser__table" style="--sta-browser-columns: {{gridTemplateColumns}};">
       <div class="sta-compendium-browser__row sta-compendium-browser__row--heading">
+        {{#if isCharacterView}}<span aria-hidden="true"></span>{{/if}}
         <button type="button" class="sta-compendium-browser__cell--left" data-sort-key="name">{{localize "Name"}}</button>
+        {{#if isTalentView}}
+        <div class="sta-compendium-browser__cell--left">{{talentLabels.descriptionColumn}}</div>
+        {{else}}
         {{#each columns as |column|}}
         <button type="button" class="sta-compendium-browser__cell--{{column.align}}" data-sort-key="{{column.key}}">{{column.label}}</button>
         {{/each}}
+        {{/if}}
         {{#if showRollActions}}<span aria-hidden="true"></span>{{/if}}
       </div>
       <div class="sta-compendium-browser__rows">
+        {{#if isTalentView}}
+        {{#each records as |record|}}
+        <article class="sta-compendium-browser__row sta-compendium-browser__row--talent" data-document-uuid="{{record.uuid}}" draggable="true" tabindex="0">
+          <div class="sta-compendium-browser__name">
+            <img src="{{record.img}}" alt="" loading="lazy" />
+            <span class="sta-compendium-browser__name-text">
+              <span class="sta-compendium-browser__name-title" title="{{record.name}}">{{record.name}}</span>
+              <span class="sta-compendium-browser__name-subtype">{{record.talentTypeLabel}}</span>
+            </span>
+          </div>
+          <div class="sta-compendium-browser__cell--left sta-compendium-browser__desc{{#if record.expanded}} is-expanded{{/if}}">
+            {{#if record.hasRequirements}}
+            {{#each record.requirementLines as |line|}}
+            <span class="req">{{line.text}}</span>
+            {{/each}}
+            {{else}}
+            <span class="req none">{{../talentLabels.noRequirements}}</span>
+            {{/if}}
+            <div class="desc-line">
+              <span class="desc-body"><span class="text">{{record.descriptionText}}</span></span>
+              {{#if record.showToggle}}
+              <button type="button" class="desc-toggle" data-action="expand-description" data-uuid="{{record.uuid}}">{{#if record.expanded}}{{../talentLabels.showLess}}{{else}}{{../talentLabels.showMore}}{{/if}}</button>
+              {{/if}}
+            </div>
+          </div>
+        </article>
+        {{/each}}
+        {{else}}
         {{#each records as |record|}}
         <article class="sta-compendium-browser__row" data-document-uuid="{{record.uuid}}" draggable="true" tabindex="0">
-          <div class="sta-compendium-browser__name"><img src="{{record.img}}" alt="" loading="lazy" /><span>{{record.name}}</span></div>
+          {{#if ../isCharacterView}}
+          <span class="sta-compendium-browser__category-badge" style="color: {{record.categoryBadge.color}};" data-tooltip="{{record.categoryBadge.tooltip}}">
+            <i class="{{record.categoryBadge.icon}}" aria-hidden="true"></i>
+          </span>
+          {{/if}}
+          <div class="sta-compendium-browser__name"><img src="{{record.img}}" alt="" loading="lazy" /><span class="sta-compendium-browser__name-label" title="{{record.name}}">{{record.name}}</span></div>
           {{#each record.values as |cell|}}<span class="sta-compendium-browser__cell--{{cell.align}}">{{cell.value}}</span>{{/each}}
           {{#if record.canRoll}}
           <button type="button" class="sta-compendium-browser__roll" data-action="roll-table" data-roll-table-uuid="{{record.uuid}}" draggable="false" data-tooltip aria-label="{{localize 'sta-utils.compendiumBrowser.rollTable'}}">
@@ -136,6 +210,7 @@
           {{/if}}
         </article>
         {{/each}}
+        {{/if}}
       </div>
     </div>
 

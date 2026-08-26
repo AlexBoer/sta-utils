@@ -92,7 +92,7 @@
         <div class="sta-compendium-browser__name sta-compendium-browser__cell--left">
           {{#if ../showEligibility}}<span class="sta-compendium-browser__eligible-dot" title="{{#if talent.eligible}}{{../labels.qualifies}}{{else}}{{../labels.notQualified}}{{/if}}"></span>{{/if}}
           {{#if talent.img}}<img src="{{talent.img}}" alt="" />{{/if}}
-          <button type="button" class="sta-talent-picker__name-btn" data-action="open" data-uuid="{{talent.uuid}}" title="{{../labels.openSheet}}">{{talent.name}}</button>
+          <button type="button" class="sta-talent-picker__name-btn" data-action="open" data-uuid="{{talent.uuid}}" title="{{talent.name}}">{{talent.name}}</button>
           {{#if ../showEligibility}}{{#unless talent.eligible}}<i class="fa-solid fa-lock sta-compendium-browser__lock" title="{{../labels.notQualified}}"></i>{{/unless}}{{/if}}
         </div>
 

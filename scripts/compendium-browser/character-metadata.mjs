@@ -86,6 +86,44 @@ export function getCharacterCategories() {
   return CHARACTER_CATEGORIES.map((category) => ({ ...category }));
 }
 
+const CATEGORY_BADGES = {
+  main: {
+    icon: "fa-solid fa-star",
+    color: "#f1a43c",
+    labelKey: "sta-utils.compendiumBrowser.categoryBadge.main",
+  },
+  supporting: {
+    icon: "fa-solid fa-user",
+    color: "#469ca4",
+    labelKey: "sta-utils.compendiumBrowser.categoryBadge.supporting",
+  },
+  "npc-major": {
+    icon: "fa-solid fa-circle",
+    color: "#d9534f",
+    labelKey: "sta-utils.compendiumBrowser.categoryBadge.majorNpc",
+  },
+  "npc-notable": {
+    icon: "fa-solid fa-circle",
+    color: "#e8837e",
+    labelKey: "sta-utils.compendiumBrowser.categoryBadge.notableNpc",
+  },
+  "npc-minor": {
+    icon: "fa-solid fa-circle",
+    color: "#f4bcb8",
+    labelKey: "sta-utils.compendiumBrowser.categoryBadge.minorNpc",
+  },
+};
+
+// Small icon + color + tooltip shown in the left-hand badge column.
+export function getCharacterCategoryBadge(category) {
+  const entry = CATEGORY_BADGES[category] ?? CATEGORY_BADGES.main;
+  return {
+    icon: entry.icon,
+    color: entry.color,
+    tooltip: game.i18n.localize(entry.labelKey),
+  };
+}
+
 export function enrichCharacterIndexRow(row, speciesCatalog) {
   const speciesMatchers = createSpeciesMatchers(speciesCatalog);
   const explicitSpecies = foundry.utils.getProperty(row, "system.species");

@@ -39,6 +39,7 @@ import {
   initTraitDrawingClick,
   initTraitDrawingSettingsHook,
   initTraitStickers,
+  registerDrawingsLayerHotkey,
 } from "./trait-tokens/index.mjs";
 
 import {
@@ -535,6 +536,7 @@ Hooks.once("init", () => {
 
   // --- Register settings ---
   registerSettings();
+  registerDrawingsLayerHotkey();
   registerStaToolsSidebar({ gmOnly: isStaToolsSidebarGmOnly() });
   installSettingsHeaderHook();
   registerMigrationSetting();
@@ -573,7 +575,9 @@ Hooks.once("init", () => {
     initTraitDrawingSettingsHook();
     initTraitVisibility();
     initSceneConfig();
-    initTraitStickers();
+    if (game.settings.get(MODULE_ID, "enableTraitStickers")) {
+      initTraitStickers();
+    }
     console.log(`${MODULE_ID} | Trait Tokens feature enabled (drawings mode)`);
   }
 
@@ -742,7 +746,11 @@ Hooks.once("ready", async () => {
     compendiumBrowser: openCompendiumBrowser,
     compendiumBrowserPresets: getBrowserPresets,
     talentPicker: openTalentPicker,
-    focusPicker: openTalentPicker,
+    focusPicker: (config = {}) =>
+      openTalentPicker({
+        createCustomLabel: t("sta-utils.talentPicker.createCustomFocus"),
+        ...config,
+      }),
     sidebarWidgets: {
       register: registerSidebarWidget,
       unregister: unregisterSidebarWidget,

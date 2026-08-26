@@ -200,23 +200,19 @@ const TYPE_CONFIG = {
   },
   Item: {
     talent: {
-      fields: ["system.talenttype.typeenum", "system.talenttype.description"],
-      columns: [
-        {
-          key: "system.talenttype.typeenum",
-          label: "sta-utils.compendiumBrowser.columns.type",
-        },
+      fields: [
+        "system.talenttype.typeenum",
+        "system.talenttype.description",
+        "system.talenttype.minimum",
+        "system.description",
       ],
-      filters: [
-        {
-          key: "system.talenttype.typeenum",
-          label: "sta-utils.compendiumBrowser.columns.type",
-          type: "select",
-        },
-      ],
+      // Type and requirements are rendered specially (subtext + merged
+      // requirement/description column) instead of generic columns/filters.
+      columns: [],
+      filters: [],
     },
     characterweapon: {
-      fields: ["system.damage", "system.range"],
+      fields: ["system.damage", "system.range", "system.qualities"],
       columns: [
         {
           key: "system.damage",
@@ -226,6 +222,10 @@ const TYPE_CONFIG = {
         {
           key: "system.range",
           label: "sta-utils.compendiumBrowser.columns.range",
+        },
+        {
+          key: "browser.qualitiesText",
+          label: "sta-utils.compendiumBrowser.columns.qualities",
         },
       ],
       filters: [
@@ -243,7 +243,7 @@ const TYPE_CONFIG = {
       ],
     },
     characterweapon2e: {
-      fields: ["system.damage", "system.range"],
+      fields: ["system.damage", "system.range", "system.qualities"],
       columns: [
         {
           key: "system.damage",
@@ -253,6 +253,10 @@ const TYPE_CONFIG = {
         {
           key: "system.range",
           label: "sta-utils.compendiumBrowser.columns.range",
+        },
+        {
+          key: "browser.qualitiesText",
+          label: "sta-utils.compendiumBrowser.columns.qualities",
         },
       ],
       filters: [
@@ -270,7 +274,7 @@ const TYPE_CONFIG = {
       ],
     },
     starshipweapon: {
-      fields: ["system.damage", "system.range"],
+      fields: ["system.damage", "system.range", "system.qualities"],
       columns: [
         {
           key: "system.damage",
@@ -279,6 +283,10 @@ const TYPE_CONFIG = {
         {
           key: "system.range",
           label: "sta-utils.compendiumBrowser.columns.range",
+        },
+        {
+          key: "browser.qualitiesText",
+          label: "sta-utils.compendiumBrowser.columns.qualities",
         },
       ],
       filters: [
@@ -295,7 +303,7 @@ const TYPE_CONFIG = {
       ],
     },
     starshipweapon2e: {
-      fields: ["system.damage", "system.range"],
+      fields: ["system.damage", "system.range", "system.qualities"],
       columns: [
         {
           key: "system.damage",
@@ -304,6 +312,10 @@ const TYPE_CONFIG = {
         {
           key: "system.range",
           label: "sta-utils.compendiumBrowser.columns.range",
+        },
+        {
+          key: "browser.qualitiesText",
+          label: "sta-utils.compendiumBrowser.columns.qualities",
         },
       ],
       filters: [
@@ -315,6 +327,24 @@ const TYPE_CONFIG = {
         {
           key: "system.damage",
           label: "sta-utils.compendiumBrowser.columns.damage",
+          type: "range",
+        },
+      ],
+    },
+    armor: {
+      fields: ["system.protection"],
+      columns: [
+        {
+          key: "system.protection",
+          label: "sta-utils.compendiumBrowser.columns.protection",
+          align: "right",
+        },
+      ],
+      filters: [
+        {
+          key: "system.protection",
+          label: "sta-utils.compendiumBrowser.columns.protection",
+          align: "right",
           type: "range",
         },
       ],

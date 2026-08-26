@@ -27,11 +27,16 @@ const LAST_TYPE_KEY = "sta-utils.traitTokenLastType";
 
 /**
  * Whether the GM may choose to create a Ginzzzu's Stickers sticker instead of
- * a drawing.  Only offered to GMs when the module is installed and active.
+ * a drawing.  Only offered to GMs when the integration setting is on and the
+ * module is installed and active.
  * @returns {boolean}
  */
 function canOfferSticker() {
-  return !!game.user?.isGM && !!game.modules.get("ginzzzu-stickers")?.active;
+  return (
+    !!game.user?.isGM &&
+    game.settings.get(MODULE_ID, "enableTraitStickers") === true &&
+    !!game.modules.get("ginzzzu-stickers")?.active
+  );
 }
 
 /**

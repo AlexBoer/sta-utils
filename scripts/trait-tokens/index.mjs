@@ -23,3 +23,4 @@ export {
   createTraitSticker,
   isGinzzzuActive,
 } from "./trait-sticker.mjs";
+export { registerDrawingsLayerHotkey } from "./drawings-layer-hotkey.mjs";

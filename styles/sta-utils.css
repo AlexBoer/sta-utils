@@ -382,7 +382,7 @@ li.row.entry.sta-utils-trait-hidden {
   box-sizing: border-box;
   text-align: center;
   font-weight: 700;
-  font-size: 1.45em;
+  font-size: 2.5em;
   line-height: 1.15;
   color: #000;
   background: var(--threeo-sticker-bg, #ff9900);
@@ -484,6 +484,75 @@ article.threeo-sticker.sta-trait-sticker .threeo-sticker__quickbar {
   flex: 1 1 auto;
   justify-content: flex-start;
   gap: 4px;
+}
+
+/* --- Player shared copy: mirror the frameless trait look --------------------
+ * Shared stickers render as `.threeo-player-sticker` on players' clients, so
+ * the same treatment is applied to that element and its sub-parts. */
+article.threeo-player-sticker.sta-trait-sticker {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
+  contain: none;
+}
+
+article.threeo-player-sticker.sta-trait-sticker::after {
+  display: none;
+}
+
+article.threeo-player-sticker.sta-trait-sticker .threeo-player-sticker__content {
+  display: grid;
+  padding: 0;
+  overflow: hidden;
+}
+
+article.threeo-player-sticker.sta-trait-sticker .sta-trait-sticker-body {
+  height: 100%;
+  border: none;
+  border-radius: 3px;
+}
+
+/* Controls above the body as a full-width, translucent drag strip, hidden
+ * until hover; the title, read-only tag, icon and labels are removed. */
+article.threeo-player-sticker.sta-trait-sticker .threeo-player-sticker__header {
+  position: absolute;
+  bottom: calc(100% - 2px);
+  top: auto;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: 4px;
+  min-height: 0;
+  padding: 3px 5px;
+  border: none;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--threeo-sticker-bg, #ff9900) 40%, transparent);
+  box-shadow: none;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+article.threeo-player-sticker.sta-trait-sticker:hover .threeo-player-sticker__header,
+article.threeo-player-sticker.sta-trait-sticker:focus-within
+  .threeo-player-sticker__header {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+article.threeo-player-sticker.sta-trait-sticker .threeo-player-sticker__header > strong,
+article.threeo-player-sticker.sta-trait-sticker .threeo-player-sticker__readonly,
+article.threeo-player-sticker.sta-trait-sticker .threeo-player-sticker__labels,
+article.threeo-player-sticker.sta-trait-sticker
+  .threeo-player-sticker__header
+  > i.fa-solid {
+  display: none;
 }
 
 /* =============================================================================
@@ -4538,6 +4607,10 @@ input.selector.attribute.sta-fatigued-attribute {
   border-bottom: 1px solid var(--color-border-dark-4, #444);
 }
 
+.sta-compendium-browser__filters {
+  flex-wrap: wrap;
+}
+
 .sta-compendium-browser__filters-shell {
   border-bottom: 1px solid var(--color-border-dark-4, #444);
 }
@@ -4653,7 +4726,6 @@ input.selector.attribute.sta-fatigued-attribute {
   display: grid;
   grid-template-columns: var(--sta-browser-columns);
   align-items: center;
-  min-width: max-content;
   min-height: 42px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
@@ -4712,6 +4784,54 @@ input.selector.attribute.sta-fatigued-attribute {
   border: 0;
   border-radius: 2px;
   object-fit: cover;
+}
+
+.sta-compendium-browser__name-label,
+.sta-compendium-browser__name-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sta-compendium-browser__name-text {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sta-compendium-browser__name-subtype {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  opacity: 0.65;
+}
+
+.sta-compendium-browser__category-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+  font-size: 0.8rem;
+}
+
+/* Talent rows wrap requirement/description text, so let them grow. */
+.sta-compendium-browser__row--talent {
+  align-items: start;
+  min-width: 0;
+}
+
+.sta-compendium-browser__row--talent > .sta-compendium-browser__name {
+  padding-top: 10px;
+  white-space: normal;
 }
 
 .sta-compendium-browser__row > .sta-compendium-browser__roll {
@@ -4862,6 +4982,8 @@ input.selector.attribute.sta-fatigued-attribute {
 
 .sta-talent-picker__name-btn {
   width: auto;
+  min-width: 0;
+  flex: 1 1 auto;
   padding: 0;
   border: 0;
   background: none;
@@ -4870,6 +4992,9 @@ input.selector.attribute.sta-fatigued-attribute {
   font: inherit;
   font-weight: 600;
   text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   cursor: pointer;
 }
 
