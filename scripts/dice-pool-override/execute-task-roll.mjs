@@ -282,6 +282,7 @@ async function _splitAssistRoll(staRoll, taskData) {
     selectedDepartmentValue: 0,
     reputationValue: taskData.reputationValue,
     useReputationInstead: taskData.useReputationInstead,
+    squadDice: taskData.squadDice,
   };
 
   const crewTaskRollData = await staRoll._performRollTask(crewData);

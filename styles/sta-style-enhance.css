@@ -1,12 +1,18 @@
 
 body.system-sta {
-    .right-column:not(.sta-lcars *) {
+    /* Scoped to actor sheets only — the STA v2.7.0 Ship Roster app also uses
+       a bare .right-column, and must not be turned into a flex-wrap row. */
+    .character-sheet .right-column:not(.sta-lcars *),
+    .starship-sheet .right-column:not(.sta-lcars *),
+    .smallcraft-sheet .right-column:not(.sta-lcars *) {
         display: flex;
         flex-wrap: wrap;
         flex: 1;
     }
 
-    .top-right-column:not(.sta-lcars *) {
+    .character-sheet .top-right-column:not(.sta-lcars *),
+    .starship-sheet .top-right-column:not(.sta-lcars *),
+    .smallcraft-sheet .top-right-column:not(.sta-lcars *) {
         display: flex;
         flex-wrap: wrap;
         flex: 1;
@@ -19,13 +25,17 @@ body.system-sta {
         }
     }
 
-    .bottom-left-column:not(.sta-lcars *) {
+    .character-sheet .bottom-left-column:not(.sta-lcars *),
+    .starship-sheet .bottom-left-column:not(.sta-lcars *),
+    .smallcraft-sheet .bottom-left-column:not(.sta-lcars *) {
         display: flex;
         flex-wrap: nowrap;
         flex-direction: column;
     }
 
-    .bottom-right-column:not(.sta-lcars *) {
+    .character-sheet .bottom-right-column:not(.sta-lcars *),
+    .starship-sheet .bottom-right-column:not(.sta-lcars *),
+    .smallcraft-sheet .bottom-right-column:not(.sta-lcars *) {
         display: flex;
         flex-wrap: wrap;
         flex: 1;
@@ -110,6 +120,11 @@ body.system-sta {
 .tracker-container .tracker .button-group {
     height: auto;
     align-self: stretch;
+}
+
+/* Native ship roster button is replaced by the STA Utilities launcher entry */
+#sta-roll-roster-button {
+    display: none;
 }
 
 .chat-message.message.flexcol {

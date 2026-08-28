@@ -183,6 +183,8 @@ async function _overriddenAttributeTest(event, _original) {
   let complicationRange = 1;
   let calculatedComplicationRange = await staRoll._sceneComplications();
   const template = this.taskRollData.template;
+  // STA v2.7.0: squad/squadron auto-assist dice (NPC & smallcraft sheets only)
+  const squadDice = this.taskRollData.squadDice;
 
   /* ---- Starship list ---- */
   // Resolve the group ship ID up front so it can be force-included below.
@@ -458,7 +460,9 @@ async function _overriddenAttributeTest(event, _original) {
   if (isShipAssist) {
     if (skillLevel) {
       // STA v2.5.3+: starship sheet NPC crew roll — use fixed stat values
+      // STA v2.7.0 added the "poor" quality.
       const npcValues = {
+        poor: [7, 0],
         basic: [8, 1],
         proficient: [9, 2],
         talented: [10, 3],
@@ -502,6 +506,7 @@ async function _overriddenAttributeTest(event, _original) {
     usingReservePower,
     complicationRange,
     skillLevel,
+    squadDice,
   };
 
   /* ================================================================ */

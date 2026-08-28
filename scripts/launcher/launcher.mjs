@@ -41,6 +41,32 @@ function openPerformTaskDialog() {
   ui.notifications?.warn("Perform Task is not available yet.");
 }
 
+// STA v2.7.0 added a native ship roster button to the tracker; sta-utils
+// hides it via CSS and exposes it here instead, so it lives alongside the
+// rest of the launcher's roll shortcuts.
+function openShipRosterDialog() {
+  const tracker = game?.STATracker ?? null;
+  const ctor = tracker?.constructor ?? null;
+
+  const handler =
+    ctor?.DEFAULT_OPTIONS?.actions?.onShipRoster ??
+    ctor?.defaultOptions?.actions?.onShipRoster ??
+    tracker?.options?.actions?.onShipRoster;
+
+  if (typeof handler === "function") {
+    const eventLike = { preventDefault: () => {} };
+    return handler.call(tracker, eventLike);
+  }
+
+  const nativeButton = document.getElementById("sta-roll-roster-button");
+  if (nativeButton) {
+    nativeButton.click();
+    return;
+  }
+
+  ui.notifications?.warn("Ship Roster is not available yet.");
+}
+
 /**
  * Sections group launcher buttons by module.
  * Sections with a non-null `moduleId` are hidden when that module is not
@@ -79,6 +105,14 @@ const LAUNCHER_SECTIONS = [
         gmOnly: false,
         available: () => true,
         call: () => openPerformTaskDialog(),
+      },
+      {
+        id: "shipRoster",
+        labelKey: "sta-utils.launcher.shipRoster",
+        icon: "fa-solid fa-ship",
+        gmOnly: false,
+        available: () => true,
+        call: () => openShipRosterDialog(),
       },
       {
         id: "attackCalculator",
