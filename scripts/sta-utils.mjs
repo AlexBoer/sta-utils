@@ -98,6 +98,7 @@ import {
   installSta257DisciplineCompatPatch,
   installQuickInsertItemTypeTaglinePatch,
   installTokenInteractionDiagnostics,
+  installShipRosterSheetClassificationPatch,
 } from "./misc/index.mjs";
 
 import { crewManifest } from "./crew-manifest/index.mjs";
@@ -660,6 +661,7 @@ Hooks.once("ready", async () => {
   console.log(`${MODULE_ID} | Ready`);
 
   installSta257DisciplineCompatPatch();
+  installShipRosterSheetClassificationPatch();
 
   // game.user is only available here, not at init, so the GM check works.
   tokenDiagnostics = isTokenInteractionDiagnosticsEnabled()
