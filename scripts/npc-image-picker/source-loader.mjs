@@ -17,9 +17,11 @@ function _normalizePath(path) {
 }
 
 function _getFilePickerClass() {
-  return (
-    foundry.applications?.apps?.FilePicker ?? globalThis.FilePicker ?? null
-  );
+  // `.implementation` resolves to whatever FilePicker subclass hosts actually
+  // configure (e.g. The Forge swaps in an Assets-Library-aware subclass);
+  // the base class alone cannot browse those paths.
+  const base = foundry.applications?.apps?.FilePicker ?? globalThis.FilePicker;
+  return base?.implementation ?? base ?? null;
 }
 
 function _isImagePath(filePath) {
