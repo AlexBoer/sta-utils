@@ -308,6 +308,7 @@
       "search": "Search images",
       "sourceAll": "All",
       "empty": "No images were found for this item type.",
+      "loading": "Loading images…",
       "apply": "Apply",
       "selectPrompt": "Select an image, then click Apply.",
       "selected": "Selected: {name}",

@@ -18,6 +18,8 @@ export class ItemImagePickerApp extends Base {
         ? options.onFooterAction
         : null;
     this.item = item;
+    // A non-array `entries` (e.g. null) means options are still loading.
+    this._loading = !Array.isArray(entries);
     this.entries = Array.isArray(entries) ? entries : [];
     this._preparedEntries = this.entries.map((entry) => ({
       ...entry,
@@ -27,12 +29,79 @@ export class ItemImagePickerApp extends Base {
     }));
     this._sourceFilters = this._buildSourceFilters(this._preparedEntries);
     this._selectedPath = "";
+    this._pendingSearchTerm = "";
+    this._entriesSignature = this._preparedEntries
+      .map((entry) => entry.path)
+      .join("\n");
     this._cards = [];
     this._applyButton = null;
     this._selectionHint = null;
     this._setSelectedPath = null;
     this._delegatedSearchBound = false;
     this._onDelegatedSearchEvent = null;
+  }
+
+  /**
+   * Replace the picker's entries, e.g. once async folder loading resolves.
+   * Safe to call repeatedly with growing partial results while still loading.
+   * Updates are serialized so concurrently-resolving folder groups can't
+   * interleave DOM replacements.
+   */
+  async setEntries(entries, options = {}) {
+    this._setEntriesQueue = (this._setEntriesQueue ?? Promise.resolve())
+      .catch(() => {})
+      .then(() => this._applySetEntries(entries, options));
+    return this._setEntriesQueue;
+  }
+
+  async _applySetEntries(entries, { loading = false } = {}) {
+    const root = this._getLivePickerRoot();
+    const liveSearchValue = root?.querySelector('input[name="q"]')?.value;
+    if (liveSearchValue) this._pendingSearchTerm = liveSearchValue;
+
+    const nextEntries = Array.isArray(entries) ? entries : [];
+    const signature = nextEntries.map((entry) => entry?.path ?? "").join("\n");
+    this._loading = loading;
+
+    // Skip the full re-render (which rebuilds every <img>, causing a flash and
+    // wasted decodes) when the image set is unchanged and only the loading
+    // flag flipped — e.g. the final loading:false after the last group.
+    if (signature === this._entriesSignature && this.rendered) {
+      this._syncLoadingState();
+      return;
+    }
+    this._entriesSignature = signature;
+
+    this.entries = nextEntries;
+    this._preparedEntries = nextEntries.map((entry) => ({
+      ...entry,
+      lcSource: String(entry?.sourceLabel ?? "")
+        .trim()
+        .toLowerCase(),
+    }));
+    this._sourceFilters = this._buildSourceFilters(this._preparedEntries);
+
+    // Preserve the grid scroll position so a late-arriving group doesn't yank
+    // the user back to the top (and reload a different set of lazy images).
+    const grid = root?.querySelector(".sta-utils-item-image-picker-grid");
+    const scrollTop = grid?.scrollTop ?? 0;
+
+    await this.render();
+
+    if (scrollTop) {
+      const newGrid = this._getLivePickerRoot()?.querySelector(
+        ".sta-utils-item-image-picker-grid",
+      );
+      if (newGrid) newGrid.scrollTop = scrollTop;
+    }
+  }
+
+  /** Update loading indicators in place without rebuilding the image grid. */
+  _syncLoadingState() {
+    const root = this._getLivePickerRoot();
+    if (!root || this._loading) return;
+    root.querySelector('[data-hook="loading"]')?.remove();
+    root.querySelector('[data-hook="loadingInline"]')?.remove();
   }
 
   static DEFAULT_OPTIONS = {
@@ -62,10 +131,12 @@ export class ItemImagePickerApp extends Base {
       currentImage: this.item?.img ?? "",
       entries: this._preparedEntries,
       sourceFilters: this._sourceFilters,
+      loading: this._loading,
       labels: {
         search: t("sta-utils.itemImagePicker.search"),
         sourceAll: t("sta-utils.itemImagePicker.sourceAll"),
         empty: t("sta-utils.itemImagePicker.empty"),
+        loading: t("sta-utils.itemImagePicker.loading"),
         apply: t("sta-utils.itemImagePicker.apply"),
         selectPrompt: t("sta-utils.itemImagePicker.selectPrompt"),
         close: t("sta-utils.itemImagePicker.close"),
@@ -309,17 +380,20 @@ export class ItemImagePickerApp extends Base {
     searchInput?.addEventListener("keyup", onSearchEvent);
     searchInput?.addEventListener("change", onSearchEvent);
 
+    if (this._pendingSearchTerm) {
+      searchInput.value = this._pendingSearchTerm;
+    }
+
     setActiveSource("");
     applyFilter("initial");
-    const currentPath = String(this.item?.img ?? "").trim();
-    const hasCurrentPath = cards.some(
-      (card) => card.dataset.path === currentPath,
+    // Prefer a selection made during a progressive (partial-results) render
+    // over resetting back to the item's current image.
+    const preferredPath =
+      this._selectedPath || String(this.item?.img ?? "").trim();
+    const hasPreferredPath = cards.some(
+      (card) => card.dataset.path === preferredPath,
     );
-    if (hasCurrentPath) {
-      setSelectedPath(currentPath);
-    } else {
-      setSelectedPath("");
-    }
+    setSelectedPath(hasPreferredPath ? preferredPath : "");
   }
 
   _getLivePickerRoot() {
@@ -428,7 +502,6 @@ export class ItemImagePickerApp extends Base {
         selectionHint.textContent = t("sta-utils.itemImagePicker.selectPrompt");
       }
     }
-
   }
 
   _getSelectedPathFromLiveDom() {

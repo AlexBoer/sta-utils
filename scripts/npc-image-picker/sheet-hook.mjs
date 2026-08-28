@@ -1,4 +1,5 @@
 import { t } from "../core/i18n.mjs";
+import { MODULE_ID } from "../core/constants.mjs";
 import { isItemImagePickerEnabled } from "../core/settings.mjs";
 import { LcarsNPCSheet2e } from "../lcars-sheet/lcars-npc-sheet2e.mjs";
 import { ItemImagePickerApp } from "../item-image-picker/picker-app.mjs";
@@ -122,13 +123,7 @@ async function _setTokenImage(actor, img) {
 }
 
 async function _openPicker(actor) {
-  const entries = await loadNpcLcarsImageOptions();
-  if (!entries.length) {
-    ui.notifications.info(t("sta-utils.itemImagePicker.empty"));
-    return;
-  }
-
-  const picker = new ItemImagePickerApp(_getPortraitAdapter(actor), entries, {
+  const picker = new ItemImagePickerApp(_getPortraitAdapter(actor), null, {
     window: {
       title: t("sta-utils.npcImagePicker.title"),
     },
@@ -177,4 +172,17 @@ async function _openPicker(actor) {
     },
   });
   picker.render(true);
+  _loadEntries(picker);
+}
+
+async function _loadEntries(picker) {
+  try {
+    const entries = await loadNpcLcarsImageOptions((partial) =>
+      picker.setEntries(partial, { loading: true }),
+    );
+    await picker.setEntries(entries, { loading: false });
+  } catch (err) {
+    console.error(`${MODULE_ID} | Failed to load NPC image options`, err);
+    await picker.setEntries([], { loading: false });
+  }
 }

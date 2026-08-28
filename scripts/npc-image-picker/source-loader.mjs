@@ -137,24 +137,13 @@ function _buildEntries(paths, sourceLabel) {
   });
 }
 
-export async function loadNpcLcarsImageOptions() {
-  const entries = [];
+// Session-scoped: avoids re-scanning folders (slow on hosts like The Forge)
+// every time the picker is opened. Keyed by the GM folders actually
+// consulted, so it self-invalidates if the relevant settings change.
+const _optionsCache = new Map();
+const CACHE_TTL_MS = 5 * 60 * 1000;
 
-  const staFiles = await _listFoldersAsGm([STA_TOKENS_CORE_FOLDER]);
-  entries.push(..._buildEntries(staFiles, "STA"));
-
-  const staUtilsFiles = await _listFoldersAsGm([STA_UTILS_NPC_FOLDER]);
-  entries.push(..._buildEntries(staUtilsFiles, "STA Utils"));
-
-  if (isItemImagePickerUseGmFolderEnabled()) {
-    const gmFolders =
-      getItemImagePickerGmFolderPaths("npc").map(_normalizePath);
-    if (gmFolders.length) {
-      const gmFiles = await _listFoldersAsGm(gmFolders);
-      entries.push(..._buildEntries(gmFiles, "GM"));
-    }
-  }
-
+function _finalizeEntries(entries) {
   const deduped = [];
   const seen = new Set();
   for (const entry of entries) {
@@ -165,4 +154,43 @@ export async function loadNpcLcarsImageOptions() {
 
   deduped.sort((a, b) => a.name.localeCompare(b.name));
   return deduped;
+}
+
+/**
+ * @param {Function} [onProgress] Called with the entries found so far after
+ *   each folder group resolves, so the picker can populate before every
+ *   group finishes loading.
+ */
+export async function loadNpcLcarsImageOptions(onProgress) {
+  const gmFolders = isItemImagePickerUseGmFolderEnabled()
+    ? getItemImagePickerGmFolderPaths("npc").map(_normalizePath)
+    : [];
+
+  const cacheKey = JSON.stringify(gmFolders);
+  const cached = _optionsCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+    onProgress?.(cached.entries);
+    return cached.entries;
+  }
+
+  const entries = [];
+  // Enumerate folder groups concurrently and paint each as it resolves, so a
+  // slow source (e.g. a large GM folder on The Forge) doesn't delay the rest.
+  const groups = [
+    ["STA", [STA_TOKENS_CORE_FOLDER]],
+    ["STA Utils", [STA_UTILS_NPC_FOLDER]],
+  ];
+  if (gmFolders.length) groups.push(["GM", gmFolders]);
+
+  await Promise.all(
+    groups.map(async ([label, folders]) => {
+      const files = await _listFoldersAsGm(folders);
+      entries.push(..._buildEntries(files, label));
+      onProgress?.(_finalizeEntries(entries));
+    }),
+  );
+
+  const finalized = _finalizeEntries(entries);
+  _optionsCache.set(cacheKey, { entries: finalized, timestamp: Date.now() });
+  return finalized;
 }

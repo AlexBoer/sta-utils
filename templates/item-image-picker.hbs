@@ -30,8 +30,25 @@
           {{label}}
         </button>
       {{/each}}
+      {{#if loading}}
+        {{#if entries}}
+          <span class="sta-utils-item-image-picker-loading-inline" data-hook="loadingInline">
+            <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+            {{labels.loading}}
+          </span>
+        {{/if}}
+      {{/if}}
     </div>
   </div>
+
+  {{#if loading}}
+    {{#unless entries}}
+      <div class="sta-utils-item-image-picker-loading" data-hook="loading">
+        <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+        <span>{{labels.loading}}</span>
+      </div>
+    {{/unless}}
+  {{/if}}
 
   <ul class="sta-utils-item-image-picker-grid">
     {{#each entries}}
@@ -46,7 +63,7 @@
           title="{{name}}"
         >
           <span class="sta-utils-item-image-picker-preview">
-            <img src="{{path}}" alt="" loading="lazy" />
+            <img src="{{path}}" alt="" loading="lazy" decoding="async" />
           </span>
           <span class="sta-utils-item-image-picker-name">{{name}}</span>
         </button>

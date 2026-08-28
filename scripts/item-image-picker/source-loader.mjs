@@ -270,29 +270,13 @@ export async function listItemImagesAsGM({ folders = [] } = {}) {
   return { files };
 }
 
-export async function loadItemImageOptions(itemOrType) {
-  const { itemType, parentActorType } = _resolveItemContext(itemOrType);
-  const entries = [];
+// Session-scoped: avoids re-scanning folders (slow on hosts like The Forge)
+// every time the picker is opened. Keyed by the folders actually consulted,
+// so it self-invalidates if the relevant settings change.
+const _optionsCache = new Map();
+const CACHE_TTL_MS = 5 * 60 * 1000;
 
-  if (isItemImagePickerUseStaFoldersEnabled()) {
-    const staFolders = _getStaFoldersForItemContext(itemType, parentActorType);
-    const staFiles = await _listFoldersAsGm(staFolders);
-    entries.push(..._buildEntries(staFiles, "STA", itemType));
-
-    const staUtilsFolders = _getStaUtilsFoldersForItemType(itemType);
-    const staUtilsFiles = await _listFoldersAsGm(staUtilsFolders);
-    entries.push(..._buildEntries(staUtilsFiles, "STA Utils", itemType));
-  }
-
-  if (isItemImagePickerUseGmFolderEnabled()) {
-    const gmFolders =
-      getItemImagePickerGmFolderPaths(itemType).map(_normalizePath);
-    if (gmFolders.length) {
-      const gmFiles = await _listFoldersAsGm(gmFolders);
-      entries.push(..._buildEntries(gmFiles, "GM", itemType));
-    }
-  }
-
+function _finalizeEntries(entries) {
   const deduped = [];
   const seen = new Set();
   for (const entry of entries) {
@@ -308,4 +292,56 @@ export async function loadItemImageOptions(itemOrType) {
   });
 
   return deduped;
+}
+
+/**
+ * @param {Function} [onProgress] Called with the entries found so far after
+ *   each folder group resolves, so the picker can populate before every
+ *   group finishes loading.
+ */
+export async function loadItemImageOptions(itemOrType, onProgress) {
+  const { itemType, parentActorType } = _resolveItemContext(itemOrType);
+
+  const staFolders = isItemImagePickerUseStaFoldersEnabled()
+    ? _getStaFoldersForItemContext(itemType, parentActorType)
+    : [];
+  const staUtilsFolders = isItemImagePickerUseStaFoldersEnabled()
+    ? _getStaUtilsFoldersForItemType(itemType)
+    : [];
+  const gmFolders = isItemImagePickerUseGmFolderEnabled()
+    ? getItemImagePickerGmFolderPaths(itemType).map(_normalizePath)
+    : [];
+
+  const cacheKey = JSON.stringify([
+    itemType,
+    parentActorType,
+    staFolders,
+    staUtilsFolders,
+    gmFolders,
+  ]);
+  const cached = _optionsCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+    onProgress?.(cached.entries);
+    return cached.entries;
+  }
+
+  const entries = [];
+  // Enumerate folder groups concurrently and paint each as it resolves, so a
+  // slow source (e.g. a large GM folder on The Forge) doesn't delay the rest.
+  const groups = [];
+  if (staFolders.length) groups.push(["STA", staFolders]);
+  if (staUtilsFolders.length) groups.push(["STA Utils", staUtilsFolders]);
+  if (gmFolders.length) groups.push(["GM", gmFolders]);
+
+  await Promise.all(
+    groups.map(async ([label, folders]) => {
+      const files = await _listFoldersAsGm(folders);
+      entries.push(..._buildEntries(files, label, itemType));
+      onProgress?.(_finalizeEntries(entries));
+    }),
+  );
+
+  const finalized = _finalizeEntries(entries);
+  _optionsCache.set(cacheKey, { entries: finalized, timestamp: Date.now() });
+  return finalized;
 }

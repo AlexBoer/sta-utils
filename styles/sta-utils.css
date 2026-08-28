@@ -702,6 +702,31 @@ article.threeo-player-sticker.sta-trait-sticker
   box-shadow: 0 0 0 2px rgba(238, 155, 58, 0.2);
 }
 
+.sta-utils-item-image-picker-loading-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  opacity: 0.75;
+  margin-left: auto;
+}
+
+.sta-utils-item-image-picker-loading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 160px;
+  opacity: 0.8;
+  font-size: 0.85rem;
+}
+
+.sta-utils-item-image-picker-loading i {
+  font-size: 1.6rem;
+}
+
 .sta-utils-item-image-picker-current {
   display: flex;
   align-items: center;

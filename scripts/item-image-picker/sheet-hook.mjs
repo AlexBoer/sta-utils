@@ -1,4 +1,5 @@
 import { t } from "../core/i18n.mjs";
+import { MODULE_ID } from "../core/constants.mjs";
 import { isItemImagePickerEnabled } from "../core/settings.mjs";
 import { ItemImagePickerApp } from "./picker-app.mjs";
 import { loadItemImageOptions } from "./source-loader.mjs";
@@ -101,17 +102,26 @@ function _injectButton(root, item) {
     event.preventDefault();
     event.stopPropagation();
 
-    const entries = await loadItemImageOptions(item);
-    if (!entries.length) {
-      ui.notifications.info(t("sta-utils.itemImagePicker.empty"));
-      return;
-    }
-
-    const app = new ItemImagePickerApp(item, entries);
+    // Open immediately (showing a loading state) instead of waiting for
+    // folder scanning to finish, which can be slow on hosts like The Forge.
+    const app = new ItemImagePickerApp(item, null);
     app.render(true);
+    _loadEntries(app, item);
   });
 
   imageField.appendChild(button);
+}
+
+async function _loadEntries(app, item) {
+  try {
+    const entries = await loadItemImageOptions(item, (partial) =>
+      app.setEntries(partial, { loading: true }),
+    );
+    await app.setEntries(entries, { loading: false });
+  } catch (err) {
+    console.error(`${MODULE_ID} | Failed to load item image options`, err);
+    await app.setEntries([], { loading: false });
+  }
 }
 
 function _resolveImageField(image) {
