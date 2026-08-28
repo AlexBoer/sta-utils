@@ -17,12 +17,21 @@ export async function installShipRosterSheetClassificationPatch() {
   try {
     ({ ShipRoster } = await import("/systems/sta/module/apps/ShipRoster.mjs"));
   } catch (_) {
-    return; // Older STA version without a Ship Roster app.
+    ShipRoster = null;
   }
 
+  if (!patchShipRosterClass(ShipRoster)) {
+    Hooks.on("renderApplicationV2", (app) => {
+      if (app?.constructor?.name !== "ShipRoster") return;
+      if (patchShipRosterClass(app.constructor)) app.render(true);
+    });
+  }
+}
+
+function patchShipRosterClass(ShipRoster) {
   try {
-    const existing = ShipRoster.prototype._prepareContext;
-    if (typeof existing !== "function" || existing[PATCH_MARKER]) return;
+    const existing = ShipRoster?.prototype?._prepareContext;
+    if (typeof existing !== "function" || existing[PATCH_MARKER]) return false;
 
     async function _prepareContext(options) {
       const context = await existing.call(this, options);
@@ -35,11 +44,13 @@ export async function installShipRosterSheetClassificationPatch() {
     console.log(
       `${MODULE_ID} | Ship Roster custom-sheet classification patch installed`,
     );
+    return true;
   } catch (error) {
     console.error(
       `${MODULE_ID} | Ship Roster custom-sheet classification patch failed`,
       error,
     );
+    return false;
   }
 }
 
