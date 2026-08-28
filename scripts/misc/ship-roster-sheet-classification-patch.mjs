@@ -10,7 +10,7 @@ const PATCH_MARKER = "__staUtilsShipRosterSheetClassification";
  * fails that check and falls through to the Character group.
  *
  * This patches `ShipRoster.prototype._prepareContext` to reclassify the
- * already-built groups using `instanceof`, which every subclass satisfies.
+ * already-built groups using the sheet prototype chain.
  */
 export async function installShipRosterSheetClassificationPatch() {
   let ShipRoster;
@@ -58,8 +58,9 @@ function reclassifyGroups(tabs) {
 
     for (const actor of all) {
       const sheet = actor.sheet;
-      if (sheet instanceof STANPCSheet2e) groups.npc.push(actor);
-      else if (sheet instanceof STASupportingSheet2e)
+      if (isSheetType(sheet, STANPCSheet2e, "STANPCSheet2e"))
+        groups.npc.push(actor);
+      else if (isSheetType(sheet, STASupportingSheet2e, "STASupportingSheet2e"))
         groups.supporting.push(actor);
       else groups.character.push(actor);
     }
@@ -68,4 +69,13 @@ function reclassifyGroups(tabs) {
     tab.supportingCount = groups.supporting.length;
     tab.npcCount = groups.npc.length;
   }
+}
+
+function isSheetType(sheet, baseClass, baseName) {
+  let constructor = sheet?.constructor;
+  while (constructor) {
+    if (constructor === baseClass || constructor.name === baseName) return true;
+    constructor = Object.getPrototypeOf(constructor);
+  }
+  return false;
 }

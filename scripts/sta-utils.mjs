@@ -39,7 +39,6 @@ import {
   initTraitDrawingClick,
   initTraitDrawingSettingsHook,
   initTraitStickers,
-  registerDrawingsLayerHotkey,
 } from "./trait-tokens/index.mjs";
 
 import {
@@ -537,7 +536,6 @@ Hooks.once("init", () => {
 
   // --- Register settings ---
   registerSettings();
-  registerDrawingsLayerHotkey();
   registerStaToolsSidebar({ gmOnly: isStaToolsSidebarGmOnly() });
   installSettingsHeaderHook();
   registerMigrationSetting();
@@ -576,9 +574,7 @@ Hooks.once("init", () => {
     initTraitDrawingSettingsHook();
     initTraitVisibility();
     initSceneConfig();
-    if (game.settings.get(MODULE_ID, "enableTraitStickers")) {
-      initTraitStickers();
-    }
+    initTraitStickers();
     console.log(`${MODULE_ID} | Trait Tokens feature enabled (drawings mode)`);
   }
 
@@ -661,7 +657,7 @@ Hooks.once("ready", async () => {
   console.log(`${MODULE_ID} | Ready`);
 
   installSta257DisciplineCompatPatch();
-  installShipRosterSheetClassificationPatch();
+  await installShipRosterSheetClassificationPatch();
 
   // game.user is only available here, not at init, so the GM check works.
   tokenDiagnostics = isTokenInteractionDiagnosticsEnabled()
