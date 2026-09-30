@@ -130,7 +130,7 @@
         "name": "Group Ship",
         "hint": "Select a starship or small craft actor to serve as the party's group ship. This setting is available for other features to reference.",
         "hintOfficersLog": "This setting is managed by the STA Officer's Log module. Configure it there.",
-        "none": "— None —"
+        "none": "- None -"
       },
       "enableTraitTokens": {
         "name": "Enable Trait Tokens",
@@ -178,23 +178,23 @@
         "hint": "Display bar-style extended task trackers on the canvas with breakthrough markers at 50% and 75%. GM can add, edit, and remove trackers. Requires a world reload when changed."
       },
       "npcBuilderSpecialRulesPack": {
-        "name": "NPC Builder — Special Rules Compendium",
+        "name": "NPC Builder - Special Rules Compendium",
         "hint": "Compendium pack IDs to use for special rules. Enter one per line (e.g. \"world.my-talents\" or \"module.my-module.talents\"). When empty, the NPC Builder shows manual name/description fields instead."
       },
       "npcBuilderEquipmentPacks": {
-        "name": "NPC Builder — Equipment Compendiums",
+        "name": "NPC Builder - Equipment Compendiums",
         "hint": "Compendium pack IDs to search for equipment. Enter one per line (e.g. \"world.my-equipment\" or \"module.my-module.items\")."
       },
       "npcBuilderSpeciesAbilityPacks": {
-        "name": "NPC Builder — Species Ability Compendiums",
+        "name": "NPC Builder - Species Ability Compendiums",
         "hint": "Compendium pack IDs to search for Officers Log Species Ability talents. Enter one per line. A talent is used only when its species requirement matches the selected species."
       },
       "npcBuilderFocusPacks": {
-        "name": "NPC Builder — Focus Compendiums",
+        "name": "NPC Builder - Focus Compendiums",
         "hint": "Compendium pack IDs to search for focus suggestions. Enter one per line."
       },
       "npcBuilderValuePacks": {
-        "name": "NPC Builder — Value Compendiums",
+        "name": "NPC Builder - Value Compendiums",
         "hint": "Compendium pack IDs to search for value suggestions. Enter one per line."
       },
       "compendiumBrowserExclusions": {
@@ -203,7 +203,7 @@
       },
       "enablePersonalThreat": {
         "name": "Enable Personal Threat Dots",
-        "hint": "Replace the resource bar on NPC tokens with a ring of red dots around the token edge — one dot per point of Bar 1 value. Requires a world reload when changed."
+        "hint": "Replace the resource bar on NPC tokens with a ring of red dots around the token edge - one dot per point of Bar 1 value. Requires a world reload when changed."
       },
       "enableRollRequest": {
         "name": "Enable Roll Request",
@@ -217,9 +217,9 @@
         "name": "Piercing Quality Mode",
         "hint": "Controls how the Piercing weapon quality interacts with resistance in the Attack Calculator.",
         "choices": {
-          "raw": "RAW — Piercing ignores resistance on all hits",
-          "firstHit": "First Hit — Piercing ignores resistance on the first hit only; spend 2 momentum (repeatable) to ignore resistance on additional hits",
-          "sciencePiercing": "Science Piercing — Piercing reduces resistance by ⌈Science/2⌉ on all hits"
+          "raw": "RAW - Piercing ignores resistance on all hits",
+          "firstHit": "First Hit - Piercing ignores resistance on the first hit only; spend 2 momentum (repeatable) to ignore resistance on additional hits",
+          "sciencePiercing": "Science Piercing - Piercing reduces resistance by ⌈Science/2⌉ on all hits"
         }
       },
       "showAdvancedCalculator": {
@@ -392,7 +392,7 @@
     },
     "personalThreat": {
       "configureTokenBar": "Configure token: set Bar 1 to Stress and display always to everyone",
-      "tokenBarConfigured": "{name}: token configured — Bar 1 set to Stress, displayed always to everyone.",
+      "tokenBarConfigured": "{name}: token configured - Bar 1 set to Stress, displayed always to everyone.",
       "showPips": "Show Personal Threat pips",
       "hidePips": "Hide Personal Threat pips"
     },
@@ -654,7 +654,7 @@
         "hidden": "Hidden X",
         "hiddenHint": "When the weapon is hidden, it cannot be detected unless a specific scan is attempted; this scan is a task with a Difficulty of X.",
         "highYield": "High Yield",
-        "highYieldHint": "If the attack inflicts one or more breaches to a system, it inflicts one additional breach (or steps up the Potency of a breach inflicted by 1—attacker’s choice).",
+        "highYieldHint": "If the attack inflicts one or more breaches to a system, it inflicts one additional breach (or steps up the Potency of a breach inflicted by 1-attacker’s choice).",
         "jamming": "Jamming",
         "jammingHint": "Until the end of the current round, the target increases the Difficulty for all tasks assisted by Communications and Sensors by 1.",
         "persistent": "Persistent",
@@ -699,7 +699,7 @@
       "sceneTraitsActor": {
         "name": "Scene Traits Actor",
         "hint": "Choose an existing Scene Traits actor for this scene, or leave as auto-create to generate one when first needed.",
-        "autoCreate": "— Auto-create when needed —"
+        "autoCreate": "- Auto-create when needed -"
       },
       "warnNoActiveScene": "No active scene.",
       "warnActorUnavailable": "The scene traits actor is not available."
@@ -1581,7 +1581,7 @@
         "depleting": "This attack strips away the protective layers of deflector shields. The attack cannot cause the ship to be shaken, but the Momentum cost to increase damage is reduced to 1.",
         "devastating": "Tasks to repair breaches caused by this weapon increase in Difficulty by 1.",
         "hiddenx": "This weapon system is concealed from scans. When the weapon is hidden, it cannot be detected unless a specific scan is attempted; this scan is a task with a Difficulty of X.",
-        "highyield": "This weapon inflicts massive damage to energy vessels. If the attack inflicts one or more breaches to a system, it inflicts one additional breach (or steps up the Potency of a breach inflicted by 1—attacker's choice).",
+        "highyield": "This weapon inflicts massive damage to energy vessels. If the attack inflicts one or more breaches to a system, it inflicts one additional breach (or steps up the Potency of a breach inflicted by 1-attacker's choice).",
         "intense": "When making an attack with this weapon, you may increase the damage by 1 by spending 1 Momentum, rather than 2. This is Repeatable.",
         "jamming": "This weapon sends out a scattering field, disrupting the target's sensors or communications systems. Until the end of the current round, the target increases the Difficulty for all tasks assisted by Communications and Sensors by 1.",
         "persistent": "When this weapon hits, you may spend 1–3 Momentum. At the end of each round, the target suffers half the weapon's damage rating (round up) again. This effect lasts for a number of rounds equal to the Momentum spent.",
@@ -1630,7 +1630,7 @@
       "add": "+ Tracker",
       "breakthrough": "Breakthrough",
       "linkedActor": "Linked Actor",
-      "noLinkedActor": "— None —",
+      "noLinkedActor": "- None -",
       "saveToActor": "Save to Actor",
       "breakthroughDialog": {
         "title": "Breakthrough Effect",
@@ -1767,7 +1767,7 @@
       "dialogTitle": "Send Roll Request",
       "promptTitle": "Roll Request",
       "allPlayers": "All Connected Players",
-      "noActor": "— No character specified —",
+      "noActor": "- No character specified -",
       "noSocket": "Socket not available. Please ensure socketlib is installed and active.",
       "noTargets": "No connected players are available to receive the request.",
       "noActorForRoll": "No character found to roll with. Open your character sheet first.",
