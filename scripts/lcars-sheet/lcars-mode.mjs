@@ -16,7 +16,10 @@
 
 import { _installItemContextMenu } from "../character-sheet/sheet-utils.mjs";
 import { syncOfficersLogLcars } from "../character-sheet/lcars/officers-log-sync.mjs";
-import { injectSheetVariantCss } from "../core/settings.mjs";
+import {
+  injectSheetVariantCss,
+  isLcarsTalentPickerEnabled,
+} from "../core/settings.mjs";
 
 const MODULE_ID = "sta-utils";
 const LCARS_CSS_LINK_ID = "sta-utils-lcars";
@@ -190,6 +193,65 @@ function _setSectionCollapsed(actorId, sectionKey, collapsed) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Collapsible sections — attach listeners to template-baked structure
 // ─────────────────────────────────────────────────────────────────────────────
+// Exclusive selector groups (attribute / discipline / system / department)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Checkboxes that should behave like radio buttons within their group.
+const _EXCLUSIVE_SELECTOR_GROUPS = [
+  "attribute",
+  "discipline",
+  "system",
+  "department",
+];
+
+/**
+ * Enforce single-selection for the attribute/discipline/system/department
+ * checkbox groups *before* the sheet's submitOnChange form handler fires.
+ *
+ * The system's STAActors._onSelectAttribute/_onSelectDiscipline/etc. already
+ * uncheck sibling checkboxes, but they run on the `click` event via the
+ * data-action delegate. Browsers dispatch `change` before `click` for
+ * checkbox inputs, and submitOnChange listens for `change` bubbling up to
+ * the <form>. That means the form gets submitted (both the newly-checked
+ * and the still-checked previous box) before the click handler has a
+ * chance to uncheck the sibling, leaving the actor with two "selected"
+ * flags saved at once. Handling this on `change` in the capture phase runs
+ * ahead of that bubbling submitOnChange listener, so siblings are already
+ * unchecked in the DOM by the time the form reads it.
+ *
+ * @param {HTMLElement} sheet - The `.character-sheet.sta-lcars` (or
+ *   `.starship-sheet.sta-lcars`) root element.
+ */
+function _installExclusiveSelectorGroups(sheet) {
+  if (sheet.dataset.staLcarsExclusiveInit) return;
+  sheet.dataset.staLcarsExclusiveInit = "1";
+
+  sheet.addEventListener(
+    "change",
+    (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLInputElement)) return;
+      if (target.type !== "checkbox" || !target.checked) return;
+
+      const group = _EXCLUSIVE_SELECTOR_GROUPS.find((key) =>
+        target.matches(`.selector.${key}`),
+      );
+      if (!group) return;
+
+      sheet.querySelectorAll(`.selector.${group}`).forEach((checkbox) => {
+        if (checkbox !== target) checkbox.checked = false;
+      });
+
+      if (group === "discipline") {
+        const useReputationInstead = sheet.querySelector(
+          '.rollrepnotdis input[type="checkbox"]',
+        );
+        if (useReputationInstead) useReputationInstead.checked = false;
+      }
+    },
+    true,
+  );
+}
 
 /**
  * Attach click-to-collapse listeners to all `.sta-lcars-section` elements
@@ -209,7 +271,7 @@ function _installCollapsibleListeners(sheet, actorId) {
     const titleEl = section.querySelector(":scope > .title");
     const wrapper = section.querySelector(`:scope > .${CSS_PREFIX}-items`);
     const chevron = titleEl?.querySelector(`.${CSS_PREFIX}-chevron`);
-    if (!titleEl || !wrapper) continue;
+    if (!titleEl || !wrapper || !chevron) continue;
 
     // Derive section key from CSS classes
     const sectionKey =
@@ -220,15 +282,16 @@ function _installCollapsibleListeners(sheet, actorId) {
     // Restore persisted state
     if (_isSectionCollapsed(actorId, sectionKey)) {
       wrapper.classList.add("sta-collapsed");
-      if (chevron) chevron.classList.add("sta-collapsed");
+      chevron.classList.add("sta-collapsed");
     }
 
-    // Toggle on title click (ignore clicks on buttons/links/create buttons)
-    titleEl.style.cursor = "pointer";
-    titleEl.addEventListener("click", (e) => {
-      if (e.target.closest(`a, button, .${CSS_PREFIX}-create-btn`)) return;
+    // Toggle only when the chevron itself is clicked.
+    chevron.style.cursor = "pointer";
+    chevron.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const isCollapsed = wrapper.classList.toggle("sta-collapsed");
-      if (chevron) chevron.classList.toggle("sta-collapsed", isCollapsed);
+      chevron.classList.toggle("sta-collapsed", isCollapsed);
       _setSectionCollapsed(actorId, sectionKey, isCollapsed);
     });
   }
@@ -303,6 +366,53 @@ function _installThemePicker(sheetApp, sheet) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Talents "+" → requirement-aware talent picker (Officer's Log)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Actor types that use the character talent picker.
+const _TALENT_PICKER_ACTOR_TYPES = new Set(["character", "supporting", "npc"]);
+
+/**
+ * When the world setting is enabled and Officer's Log is active, make the
+ * Talents section "+" button open the requirement-aware talent picker for this
+ * actor instead of creating a blank talent.
+ *
+ * @param {Application} sheetApp - The LCARS sheet ApplicationV2 instance.
+ * @param {HTMLElement} sheet    - The `.character-sheet.sta-lcars` root.
+ */
+function _installTalentPickerButton(sheetApp, sheet) {
+  if (!isLcarsTalentPickerEnabled()) return;
+  if (!game.modules?.get?.("sta-officers-log")?.active) return;
+
+  const actor = sheetApp?.document ?? null;
+  if (!actor || !_TALENT_PICKER_ACTOR_TYPES.has(actor.type)) return;
+
+  const btn = sheet.querySelector(
+    `.${CSS_PREFIX}-section.talents .${CSS_PREFIX}-create-btn[data-action="onItemCreate"][data-type="talent"]`,
+  );
+  if (!btn || btn.dataset.staLcarsTalentPickerInit) return;
+  btn.dataset.staLcarsTalentPickerInit = "1";
+
+  // Capture-phase listener runs before ApplicationV2's delegated action
+  // handler on the frame root; stopPropagation prevents the blank-talent create.
+  btn.addEventListener(
+    "click",
+    async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const openPicker = game.staofficerslog?.openDefineTalentDialog;
+      if (typeof openPicker !== "function") return;
+      try {
+        await openPicker(actor);
+      } catch (err) {
+        console.error(`${MODULE_ID} | LCARS talent picker failed`, err);
+      }
+    },
+    true,
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Strict item tooltip hover behavior (LCARS sheets)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -367,6 +477,9 @@ export async function installLcarsSheetMode(sheetApp, root) {
 
   const actorId = sheetApp?.document?.id ?? "unknown";
 
+  // ── Enforce single-selection for attribute/discipline/system/department ──
+  _installExclusiveSelectorGroups(sheet);
+
   // ── Collapsible sections (listeners only — structure is in template) ──
   _installCollapsibleListeners(sheet, actorId);
 
@@ -375,6 +488,9 @@ export async function installLcarsSheetMode(sheetApp, root) {
 
   // ── Per-actor LCARS scheme picker ─────────────────────────────────────
   _installThemePicker(sheetApp, sheet);
+
+  // ── Talents "+" → requirement-aware talent picker (optional) ──────────
+  _installTalentPickerButton(sheetApp, sheet);
 
   // ── Sync Officers Log LCARS body class ────────────────────────────────
   syncOfficersLogLcars(true);

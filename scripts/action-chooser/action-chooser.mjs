@@ -1,7 +1,10 @@
 import { MODULE_ID } from "../core/constants.mjs";
 import { ATTRIBUTE_KEYS, ATTRIBUTE_LABELS } from "../core/gameConstants.mjs";
 import { t, tf } from "../core/i18n.mjs";
-import { getGroupShipActorId } from "../core/settings.mjs";
+import {
+  ENABLE_FKW_TACTICAL_RULES_SETTING,
+  getGroupShipActorId,
+} from "../core/settings.mjs";
 import { showDicePoolDialog } from "../dice-pool-override/dice-pool-dialog.mjs";
 import {
   executeTaskRoll,
@@ -12,7 +15,7 @@ import {
   PERSONAL_CONFLICT_SPENDS,
   STARSHIP_COMBAT_SPENDS,
 } from "../momentum-spend/momentum-spend-data.mjs";
-import { openAttackCalculator } from "../attack-calculator/attack-calculator.mjs";
+import { openAttackPresetDialog } from "../attack-calculator/preset-dialog.mjs";
 
 /**
  * Flat lookup of all momentum-spend definitions keyed by spend ID.
@@ -368,16 +371,27 @@ class ActionChooserApp extends BaseApp {
   };
 
   async _prepareContext() {
-    const actions = this.actionSet?.actions ?? [];
+    const fkwRulesEnabled = isFkwTacticalRulesEnabled();
+    const optionalActionIds = new Set([
+      "brace",
+      "dive-for-cover",
+      "retreat",
+      "hot-loading",
+      "set-phasers-to-stun",
+    ]);
+    const actions = (this.actionSet?.actions ?? []).filter(
+      (action) => fkwRulesEnabled || !optionalActionIds.has(action.id),
+    );
     const minorActions = [];
     const majorActions = [];
+    const reactionActions = [];
     const socialTools = [];
 
     for (const action of actions) {
       const localized = {
         ...action,
         name: t(action.name),
-        description: t(action.description),
+        description: `${t(action.description)}${fkwRulesEnabled && action.optionalDescription ? t(action.optionalDescription) : ""}`,
         isSubtle: !!action.subtle,
       };
 
@@ -417,6 +431,7 @@ class ActionChooserApp extends BaseApp {
 
       if (action.type === "minor") minorActions.push(localized);
       else if (action.type === "social") socialTools.push(localized);
+      else if (action.type === "reaction") reactionActions.push(localized);
       else majorActions.push(localized);
     }
 
@@ -426,6 +441,7 @@ class ActionChooserApp extends BaseApp {
       a.isSubtle === b.isSubtle ? 0 : a.isSubtle ? 1 : -1;
     minorActions.sort(subtleLast);
     majorActions.sort(subtleLast);
+    reactionActions.sort(subtleLast);
     socialTools.sort(subtleLast);
 
     // Build action-set list from the label registry (sync — no dynamic imports).
@@ -533,9 +549,11 @@ class ActionChooserApp extends BaseApp {
       actionSets,
       minorActions,
       majorActions,
+      reactionActions,
       socialTools,
       hasMinorActions: minorActions.length > 0,
       hasMajorActions: majorActions.length > 0,
+      hasReactionActions: reactionActions.length > 0,
       hasSocialTools: socialTools.length > 0,
       actorName: actor?.name ?? t("sta-utils.actionChooser.noActorSelected"),
       actorImg: actor?.img ?? "icons/svg/mystery-man.svg",
@@ -882,6 +900,10 @@ class ActionChooserApp extends BaseApp {
         const momentumSpendsHtml = actionDef?.momentumSpends
           ? `<div class="sta-momentum-spends-container" data-action-tab="${tabId}"></div>`
           : "";
+        const firingModesHtml =
+          actionDef?.id === "fire"
+            ? `<div class="sta-firing-modes-container"></div>`
+            : "";
 
         detail.innerHTML = `
           <div class="sta-action-detail__name">${name}</div>
@@ -889,6 +911,7 @@ class ActionChooserApp extends BaseApp {
           <div class="sta-action-detail__desc-wrapper">${desc}</div>
           ${momentumSpendsHtml}
           ${weaponPickerHtml}
+          ${firingModesHtml}
           ${footerHtml}
         `;
 
@@ -903,7 +926,7 @@ class ActionChooserApp extends BaseApp {
           );
         }
 
-        // Attach button handler for reroute-power
+        // Attach reroute-power handlers
         if (actionDef?.id === "reroute-power" && this.selectedStarship) {
           const rerouteButtons = detail.querySelectorAll(".sta-reroute-btn");
           rerouteButtons.forEach((btn) => {
@@ -1009,7 +1032,7 @@ class ActionChooserApp extends BaseApp {
                   }
                 }
               }
-              openAttackCalculator(defaults);
+              openAttackPresetDialog(defaults);
             });
           }
         }
@@ -1147,12 +1170,16 @@ class ActionChooserApp extends BaseApp {
           const weaponSelect = detail.querySelector("#sta-weapon-select");
           const weaponInfo = detail.querySelector("#sta-weapon-info");
           const threatBadge = detail.querySelector("[data-threat-badge]");
+          const firingModesContainer = detail.querySelector(
+            ".sta-firing-modes-container",
+          );
 
           const updateWeaponInfo = (weaponId) => {
             if (!weaponInfo) return;
             const weapon = this.selectedStarship.items.get(weaponId);
             if (!weapon) {
               weaponInfo.innerHTML = "";
+              if (firingModesContainer) firingModesContainer.innerHTML = "";
               // Re-render momentum spends without weapon context
               if (spendsContainer) {
                 spendsContainer.innerHTML = this._buildMomentumSpendsHtml(
@@ -1195,7 +1222,7 @@ class ActionChooserApp extends BaseApp {
             }
 
             if (actionDef?.id === "fire" && threatBadge) {
-              if (isTorpedo) {
+              if (isTorpedo && isFkwTacticalRulesEnabled()) {
                 const weaponName = (weapon?.name ?? "").toLowerCase();
                 const threatCost = weaponName.includes("salvo") ? 3 : 1;
                 threatBadge.textContent = tf(
@@ -1209,6 +1236,28 @@ class ActionChooserApp extends BaseApp {
                 threatBadge.textContent = "";
                 threatBadge.hidden = true;
               }
+            }
+
+            if (firingModesContainer) {
+              const specialRules = [];
+              if (isTorpedo) {
+                specialRules.push({
+                  name: t(
+                    "sta-utils.actionChooser.tacticalStation.actions.fire.special.fireForEffect.name",
+                  ),
+                  description: t(
+                    "sta-utils.actionChooser.tacticalStation.actions.fire.special.fireForEffect.description",
+                  ),
+                });
+              }
+              firingModesContainer.innerHTML = specialRules.length
+                ? `<div class="sta-firing-modes"><div class="sta-firing-modes__header">${t("sta-utils.actionChooser.firingModes")}</div>${specialRules
+                    .map(
+                      (rule) =>
+                        `<div class="sta-firing-mode"><strong>${rule.name}</strong><div>${rule.description}</div></div>`,
+                    )
+                    .join("")}</div>`
+                : "";
             }
 
             // Extract active qualities (boolean values that are true)
@@ -2242,6 +2291,14 @@ Hooks.once("ready", () => {
  */
 /** Module-level store for embedded apps, keyed by actor ID. Survives DOM destruction. */
 const _embeddedApps = new Map();
+
+function isFkwTacticalRulesEnabled() {
+  try {
+    return game.settings.get(MODULE_ID, ENABLE_FKW_TACTICAL_RULES_SETTING);
+  } catch {
+    return false;
+  }
+}
 
 async function renderActionChooserEmbed(container, actor) {
   const actorId = actor?.id ?? "unknown";

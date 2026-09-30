@@ -8,6 +8,125 @@
  * ACCESSIBILITY UTILITIES
  * ============================================================================= */
 
+.sta-ship-advancement-dialog .sta-ship-advancement-tabs {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  color: #f7f3e8;
+  font-family: var(--lcars-font, "Antonio"), "Roboto Condensed", sans-serif;
+}
+
+.sta-ship-advancement-dialog .window-header {
+  background: #ee9b3a;
+  color: #111111;
+  border-bottom: 0;
+}
+
+.sta-ship-advancement-dialog .window-header .window-title,
+.sta-ship-advancement-dialog .window-header .header-control {
+  color: #111111;
+  font-family: var(--lcars-font, "Antonio"), "Roboto Condensed", sans-serif;
+  text-transform: uppercase;
+}
+
+.sta-ship-advancement-dialog .window-header .header-control {
+  font-family: var(--font-awesome, "Font Awesome 6 Pro") !important;
+}
+
+.sta-ship-advancement-dialog .window-header .header-control::before {
+  font-family: var(--font-awesome, "Font Awesome 6 Pro") !important;
+}
+
+.sta-ship-advancement-dialog .window-content {
+  background: #0b0a13;
+  color: #f7f3e8;
+}
+
+.sta-ship-advancement-dialog .sta-ship-advancement-tabs nav.tabs {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  gap: 0.35rem;
+  border-bottom: 1px solid #9f8475;
+}
+
+.sta-ship-advancement-dialog .sta-ship-advancement-tabs nav.tabs .item {
+  flex: 1 1 0;
+  padding: 0.4rem 0.65rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #ee9b3a;
+  font-family: var(--lcars-font, "Antonio"), "Roboto Condensed", sans-serif;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-align: center;
+}
+
+.sta-ship-advancement-dialog .sta-ship-advancement-tabs nav.tabs .item:hover,
+.sta-ship-advancement-dialog .sta-ship-advancement-tabs nav.tabs .item:focus-visible {
+  color: #ffd08a;
+  text-shadow: 0 0 8px rgba(238, 155, 58, 0.65);
+}
+
+.sta-ship-advancement-dialog .sta-ship-advancement-tabs nav.tabs .item.active {
+  border-bottom-color: #ee9b3a;
+  color: #ffd08a;
+  font-weight: 700;
+}
+
+.sta-ship-advancement-dialog .sta-ship-advancement-tabs .content {
+  width: 100%;
+  box-sizing: border-box;
+  padding-top: 0.5rem;
+}
+
+.sta-ship-advancement-dialog .sta-ship-advancement-tabs .tab:not(.active) {
+  display: none;
+}
+
+.sta-ship-advancement-dialog .sta-ship-advancement-tabs p {
+  color: #f7f3e8;
+  font-family: var(--lcars-font, "Antonio"), "Roboto Condensed", sans-serif;
+}
+
+.sta-ship-advancement-dialog .sta-callbacks-vertical-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.sta-ship-advancement-dialog .sta-callbacks-vertical-footer .dialog-button {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: 36px;
+  margin: 0;
+  border: 2px solid #ee9b3a;
+  border-radius: 14px;
+  background: #0b0a13;
+  color: #ee9b3a;
+  font-family: var(--lcars-font, "Antonio"), "Roboto Condensed", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.sta-ship-advancement-dialog .sta-callbacks-vertical-footer .dialog-button:hover,
+.sta-ship-advancement-dialog .sta-callbacks-vertical-footer .dialog-button:focus-visible {
+  border-color: #ffd08a;
+  background: rgba(238, 155, 58, 0.12);
+  color: #ffd08a;
+  box-shadow: 0 0 8px rgba(238, 155, 58, 0.35);
+}
+
 /* Screen-reader-only content — visually hidden but accessible to assistive tech */
 .sr-only {
   position: absolute;
@@ -5753,21 +5872,25 @@ input.selector.attribute.sta-fatigued-attribute {
   /* Action type colours — tabs, detail borders, names, descriptions */
   --ac-minor:     #6688cc;
   --ac-major:     #f0b872;
+  --ac-reaction:  #5cb87a;
   --ac-social:    #d05050;
 
   /* Per-type tab button background (default: the accent colour) */
   --ac-minor-tab:        var(--ac-minor);
   --ac-major-tab:        var(--ac-major);
+  --ac-reaction-tab:     var(--ac-reaction);
   --ac-social-tab:       var(--ac-social);
 
   /* Per-type detail panel background (default: faint tint matching the accent) */
   --ac-minor-panel-bg:   rgba(153, 153, 204, 0.08);
   --ac-major-panel-bg:   rgba(255, 153, 102, 0.08);
+  --ac-reaction-panel-bg: rgba(92, 184, 122, 0.08);
   --ac-social-panel-bg:  rgba(255, 102, 102, 0.08);
 
   /* Per-type detail panel description text (default: readable body text) */
   --ac-minor-panel-text: var(--ac-body);
   --ac-major-panel-text: var(--ac-body);
+  --ac-reaction-panel-text: var(--ac-body);
   --ac-social-panel-text: var(--ac-body);
 
   /* Info / value text — momentum list, shields value, common spends */
@@ -5878,6 +6001,11 @@ input.selector.attribute.sta-fatigued-attribute {
       border-left: 4px solid var(--ac-major);
     }
 
+    &[data-section="reaction"] h3 {
+      color: var(--ac-reaction);
+      border-left: 4px solid var(--ac-reaction);
+    }
+
     &[data-section="social"] h3 {
       color: var(--ac-social);
       border-left: 4px solid var(--ac-social);
@@ -5902,6 +6030,7 @@ input.selector.attribute.sta-fatigued-attribute {
     color: var(--ac-chrome-fg);
     &[data-type="minor"] { background: var(--ac-minor-tab); }
     &[data-type="major"] { background: var(--ac-major-tab); }
+    &[data-type="reaction"] { background: var(--ac-reaction-tab); }
     &[data-type="social"] { background: var(--ac-social-tab); }
   }
 
@@ -5913,6 +6042,10 @@ input.selector.attribute.sta-fatigued-attribute {
     &[data-type="major"] {
       background: var(--ac-major-panel-bg);
       border-color: var(--ac-major);
+    }
+    &[data-type="reaction"] {
+      background: var(--ac-reaction-panel-bg);
+      border-color: var(--ac-reaction);
     }
     &[data-type="social"] {
       background: var(--ac-social-panel-bg);
@@ -6141,6 +6274,7 @@ input.selector.attribute.sta-fatigued-attribute {
 
   &[data-type="minor"] { background: var(--ac-minor-tab); }
   &[data-type="major"] { background: var(--ac-major-tab); }
+  &[data-type="reaction"] { background: var(--ac-reaction-tab); }
   &[data-type="social"] { background: var(--ac-social-tab); }
 
   &:hover { filter: brightness(1.15); }
@@ -6189,6 +6323,16 @@ input.selector.attribute.sta-fatigued-attribute {
     .sta-action-detail__desc-wrapper { color: var(--ac-major-panel-text); }
     .sta-action-detail__weapon-label { color: var(--ac-major); }
     .sta-action-detail__btn { border: 2px solid var(--ac-major); color: var(--ac-major); }
+  }
+
+  &[data-type="reaction"] {
+    background: var(--ac-reaction-panel-bg);
+    border: 2px solid var(--ac-reaction);
+    .sta-action-detail__name { color: var(--ac-reaction); }
+    .sta-action-detail__desc,
+    .sta-action-detail__desc-wrapper { color: var(--ac-reaction-panel-text); }
+    .sta-action-detail__weapon-label { color: var(--ac-reaction); }
+    .sta-action-detail__btn { border: 2px solid var(--ac-reaction); color: var(--ac-reaction); }
   }
 
   &[data-type="social"] {
@@ -6275,6 +6419,7 @@ input.selector.attribute.sta-fatigued-attribute {
   .sta-action-chooser {
     --ac-minor:  #2244aa; /* deep cobalt */
     --ac-major:  #996600; /* deep amber */
+    --ac-reaction: #227744; /* deep green */
     --ac-social: #882222; /* deep red   */
     --ac-bg:     #f4f1eb; /* warm light neutral — replaces #000 in dropdowns */
     --ac-body:   #2a1800; /* dark brown text on light bg */
@@ -6337,6 +6482,37 @@ input.selector.attribute.sta-fatigued-attribute {
     color: var(--ac-chrome);
     font-size: 0.7rem;
   }
+}
+
+.sta-firing-modes {
+  margin-top: 0.4rem;
+  padding: 0.4rem 0.5rem;
+  background: rgba(0, 0, 0, 0.16);
+  border-radius: 6px;
+  border-left: 3px solid var(--ac-reaction);
+}
+
+.sta-firing-modes__header {
+  font-family: var(--ac-font);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--ac-reaction);
+  margin-bottom: 0.25rem;
+}
+
+.sta-firing-mode {
+  font-family: 'Roboto Condensed', var(--ac-font);
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--ac-body);
+}
+
+.sta-firing-mode + .sta-firing-mode {
+  margin-top: 0.35rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .sta-action-detail__weapon-picker {
@@ -8508,6 +8684,16 @@ input.selector.attribute.sta-fatigued-attribute {
   line-height: 1;
 }
 
+.npc-hybrid-toggle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.3rem;
+  color: rgba(240, 184, 114, 0.8);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
 /* ── Species combobox ── */
 .npc-species-combobox {
   position: relative;
@@ -8881,6 +9067,12 @@ input.selector.attribute.sta-fatigued-attribute {
   gap: 0.3rem;
   max-height: 240px;
   overflow-y: auto;
+}
+
+.npc-equipment-section {
+  border: 1px solid rgba(241, 164, 60, 0.4);
+  border-radius: 6px;
+  padding: 0.3rem;
 }
 
 .npc-equip-item {

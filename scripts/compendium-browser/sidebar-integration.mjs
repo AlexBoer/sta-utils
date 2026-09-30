@@ -4,7 +4,6 @@ import { openCompendiumBrowser } from "./compendium-browser-app.mjs";
 const BUTTON_CLASS = "sta-utils-compendium-browser-button";
 
 function injectButton(application, html) {
-  if (!game.user?.isGM) return;
   const root =
     html instanceof HTMLElement
       ? html
@@ -14,7 +13,12 @@ function injectButton(application, html) {
   if (!root) return;
 
   const tab = application?.tabName ?? root.dataset.tab;
-  if (!["actors", "items", "tables", "compendium"].includes(tab)) return;
+  const isGM = Boolean(game.user?.isGM);
+  // Non-GM players only get the browser on the items sidebar.
+  const allowedTabs = isGM
+    ? ["actors", "items", "tables", "compendium"]
+    : ["items"];
+  if (!allowedTabs.includes(tab)) return;
 
   const header =
     root.querySelector(".header-actions") ??

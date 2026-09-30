@@ -249,10 +249,51 @@ export const RANDOM_ROLES = [
   "Scientist",
   "Pilot",
 ];
-// Set to a compendium pack ID (e.g. "sta.items-2e") to load focuses from a compendium.
-// Items of type "focus" will be used for randomization. Leave null to use the app's
-// built-in fallback names.
-export const FOCUSES_PACK_ID = "sta.items-2e";
+const NPC_BUILDER_SPECIAL_RULES_PACK_SETTING = "npcBuilderSpecialRulesPack";
+const NPC_BUILDER_EQUIPMENT_PACKS_SETTING = "npcBuilderEquipmentPacks";
+const NPC_BUILDER_SPECIES_ABILITY_PACKS_SETTING =
+  "npcBuilderSpeciesAbilityPacks";
+const NPC_BUILDER_FOCUS_PACKS_SETTING = "npcBuilderFocusPacks";
+const NPC_BUILDER_VALUE_PACKS_SETTING = "npcBuilderValuePacks";
+
+function _parsePackIds(value) {
+  return String(value ?? "")
+    .split(/[\n,;]/)
+    .map((id) => id.trim())
+    .filter(Boolean);
+}
+
+function _getConfiguredPackIds(setting) {
+  try {
+    return _parsePackIds(game.settings.get(MODULE_ID, setting));
+  } catch {
+    return [];
+  }
+}
+
+async function _loadNamedItemsFromPacks(setting, itemType) {
+  const names = new Map();
+  for (const packId of _getConfiguredPackIds(setting)) {
+    const pack = game.packs.get(packId);
+    if (!pack) {
+      console.warn(`${MODULE_ID} | NPC Builder: pack "${packId}" not found`);
+      continue;
+    }
+    try {
+      const index = await pack.getIndex();
+      for (const entry of index) {
+        if (entry.type !== itemType || !entry.name?.trim()) continue;
+        names.set(entry.name.trim().toLocaleLowerCase(), entry.name.trim());
+      }
+    } catch (err) {
+      console.warn(
+        `${MODULE_ID} | NPC Builder: could not load pack "${packId}"`,
+        err,
+      );
+    }
+  }
+  return [...names.values()].sort((a, b) => a.localeCompare(b));
+}
 
 let _focusCacheLoaded = false;
 let _focusNamesCache = [];
@@ -260,20 +301,11 @@ let _focusNamesCache = [];
 export async function loadFocusNames() {
   if (_focusCacheLoaded) return _focusNamesCache;
   _focusCacheLoaded = true;
-  if (!FOCUSES_PACK_ID) return _focusNamesCache;
   try {
-    const pack = game.packs.get(FOCUSES_PACK_ID);
-    if (!pack) {
-      console.warn(
-        `${MODULE_ID} | NPC Builder: pack "${FOCUSES_PACK_ID}" not found`,
-      );
-      return _focusNamesCache;
-    }
-    const index = await pack.getIndex();
-    _focusNamesCache = index
-      .filter((e) => e.type === "focus")
-      .map((e) => e.name)
-      .sort();
+    _focusNamesCache = await _loadNamedItemsFromPacks(
+      NPC_BUILDER_FOCUS_PACKS_SETTING,
+      "focus",
+    );
   } catch (e) {
     console.warn(
       `${MODULE_ID} | NPC Builder: could not load focuses from pack`,
@@ -289,15 +321,11 @@ let _valueNamesCache = [];
 export async function loadValueNames() {
   if (_valueCacheLoaded) return _valueNamesCache;
   _valueCacheLoaded = true;
-  if (!FOCUSES_PACK_ID) return _valueNamesCache;
   try {
-    const pack = game.packs.get(FOCUSES_PACK_ID);
-    if (!pack) return _valueNamesCache;
-    const index = await pack.getIndex();
-    _valueNamesCache = index
-      .filter((e) => e.type === "value")
-      .map((e) => e.name)
-      .sort();
+    _valueNamesCache = await _loadNamedItemsFromPacks(
+      NPC_BUILDER_VALUE_PACKS_SETTING,
+      "value",
+    );
   } catch (e) {
     console.warn(
       `${MODULE_ID} | NPC Builder: could not load values from pack`,
@@ -372,15 +400,6 @@ export async function loadSpeciesCatalog() {
   return _speciesCatalogCache;
 }
 
-// ── Equipment ─────────────────────────────────────────────────────────────────
-// Pack ID and one or more folder paths (each is an array of names from root to
-// target folder). Items from all paths are merged and sorted alphabetically.
-export const EQUIPMENT_PACK_ID = "sta.items-2e";
-export const EQUIPMENT_FOLDER_PATHS = [
-  ["Equipment", "Crew"],
-  ["Weapons", "Crew"],
-];
-
 // ── Equipment loadout presets ─────────────────────────────────────────────────
 // Each preset selects a named set of items by their compendium item IDs.
 // Applying a preset that is already fully selected will deselect those items.
@@ -410,6 +429,55 @@ export const EQUIPMENT_LOADOUTS = [
     ],
   },
 ];
+
+const STANDARD_EQUIPMENT_NAMES = [
+  "Communicator",
+  "Tricorder",
+  "Uniform",
+  "Uniform Blue",
+  "Uniform Red",
+  "Uniform Gold",
+  "Phaser Type-1",
+  "Phaser Type-2",
+  "Engineering Toolkit",
+  "Medkit",
+  "Knife",
+  "Prosthesis",
+];
+
+const STANDARD_EQUIPMENT_ALIASES = new Map([
+  ["engineering kit", "Engineering Toolkit"],
+  ["medical kit", "Medkit"],
+]);
+
+const EXCLUDED_EQUIPMENT_NAME_PARTS = [
+  "runabout module",
+  "grappler cable",
+  "tractor beam",
+];
+
+function _normalizeEquipmentName(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, " ");
+}
+
+function _getEquipmentCategory(type) {
+  if (type === "armor") return "armor";
+  if (type === "characterweapon" || type === "characterweapon2e")
+    return "weapon";
+  return "equipment";
+}
+
+function _getStandardEquipmentOrder(name) {
+  const normalizedName =
+    STANDARD_EQUIPMENT_ALIASES.get(_normalizeEquipmentName(name)) ??
+    _normalizeEquipmentName(name);
+  return STANDARD_EQUIPMENT_NAMES.findIndex(
+    (standardName) => _normalizeEquipmentName(standardName) === normalizedName,
+  );
+}
 
 // ── Talent templates ──────────────────────────────────────────────────────────
 // Preset templates can be inserted on the NPC Builder special-rules step and
@@ -448,7 +516,6 @@ export const TALENT_TEMPLATES = [
 ];
 
 // ── Special Rules ─────────────────────────────────────────────────────────────
-const NPC_BUILDER_SPECIAL_RULES_PACK_SETTING = "npcBuilderSpecialRulesPack";
 const REQUIREMENTS_FLAG_KEY = "requirements";
 
 const REQUIREMENT_TYPE_LABELS = {
@@ -665,23 +732,8 @@ function _getGroupedRequirementsFromDoc(doc) {
   return [];
 }
 
-function _parseSpecialRulesPackIds(value) {
-  return String(value ?? "")
-    .split(/[\n,;]/)
-    .map((id) => id.trim())
-    .filter(Boolean);
-}
-
 function _getSpecialRulesPackIds() {
-  try {
-    const raw = game.settings.get(
-      MODULE_ID,
-      NPC_BUILDER_SPECIAL_RULES_PACK_SETTING,
-    );
-    return _parseSpecialRulesPackIds(raw);
-  } catch {
-    return [];
-  }
+  return _getConfiguredPackIds(NPC_BUILDER_SPECIAL_RULES_PACK_SETTING);
 }
 
 function _isInStarshipFolder(doc, pack) {
@@ -698,28 +750,51 @@ function _isInStarshipFolder(doc, pack) {
   return false;
 }
 
-/**
- * Search the configured Special Rules packs for a talent whose name matches
- * `abilityName` (case-insensitive). Returns the first matching UUID or null.
- *
- * @param {string} abilityName
- * @returns {Promise<string|null>}
- */
-async function _findSpeciesTalentByName(abilityName) {
-  if (!abilityName?.trim()) return null;
-  const normalizedName = abilityName.trim().toLowerCase();
-  for (const packId of _getSpecialRulesPackIds()) {
+export async function findSpeciesAbilityTalentUuid(species) {
+  const selectedSpecies = _normalizeRequirementString(species);
+  if (!selectedSpecies) return null;
+
+  for (const packId of _getConfiguredPackIds(
+    NPC_BUILDER_SPECIES_ABILITY_PACKS_SETTING,
+  )) {
     const pack = game.packs.get(packId);
-    if (!pack) continue;
-    try {
-      const index = await pack.getIndex();
-      const entry = index.find(
-        (e) => e.type === "talent" && e.name.toLowerCase() === normalizedName,
+    if (!pack) {
+      console.warn(
+        `${MODULE_ID} | NPC Builder: species ability pack "${packId}" not found`,
       );
-      if (entry) return entry.uuid;
+      continue;
+    }
+    try {
+      const docs = await pack.getDocuments();
+      for (const doc of docs) {
+        if (doc.type !== "talent") continue;
+        if (
+          _normalizeRequirementString(
+            foundry.utils.getProperty(doc, "system.talenttype.typeenum"),
+          ) !== "speciesability"
+        ) {
+          continue;
+        }
+        const matchesSpecies = _getGroupedRequirementsFromDoc(doc).some(
+          (entry) =>
+            entry.category === "species" &&
+            entry.clauses.some((clause) =>
+              String(clause?.value ?? "")
+                .split(",")
+                .map(_normalizeRequirementString)
+                .filter(Boolean)
+                .some(
+                  (requiredSpecies) =>
+                    requiredSpecies === selectedSpecies ||
+                    selectedSpecies.includes(requiredSpecies),
+                ),
+            ),
+        );
+        if (matchesSpecies && doc.uuid) return doc.uuid;
+      }
     } catch (err) {
       console.warn(
-        `${MODULE_ID} | NPC Builder: could not search pack "${packId}" for species talent`,
+        `${MODULE_ID} | NPC Builder: could not search species ability pack "${packId}"`,
         err,
       );
     }
@@ -822,60 +897,56 @@ export async function loadSpecialRulesItems() {
 }
 
 export async function loadEquipmentItems() {
-  try {
-    const pack = game.packs.get(EQUIPMENT_PACK_ID);
+  const equipmentTypes = new Set([
+    "item",
+    "armor",
+    "characterweapon",
+    "characterweapon2e",
+  ]);
+  const results = [];
+  const seenUuids = new Set();
+  for (const packId of _getConfiguredPackIds(
+    NPC_BUILDER_EQUIPMENT_PACKS_SETTING,
+  )) {
+    const pack = game.packs.get(packId);
     if (!pack) {
       console.warn(
-        `${MODULE_ID} | NPC Builder: compendium "${EQUIPMENT_PACK_ID}" not found`,
+        `${MODULE_ID} | NPC Builder: equipment pack "${packId}" not found`,
       );
-      return [];
+      continue;
     }
-    // Ensure folders are populated
-    await pack.getDocuments();
-
-    const resolveFolderId = (path) => {
-      let parentId = null;
-      let folderId = null;
-      for (const segment of path) {
-        const folder = pack.folders.find(
-          (f) => f.name === segment && (f.folder?.id ?? null) === parentId,
-        );
-        if (!folder) {
-          console.warn(
-            `${MODULE_ID} | NPC Builder: folder "${segment}" not found in "${EQUIPMENT_PACK_ID}"`,
-          );
-          return null;
+    try {
+      const index = await pack.getIndex({ fields: ["name", "img", "type"] });
+      for (const entry of index) {
+        if (!equipmentTypes.has(entry.type) || !entry.uuid || !entry.name)
+          continue;
+        const normalizedName = _normalizeEquipmentName(entry.name);
+        if (
+          EXCLUDED_EQUIPMENT_NAME_PARTS.some((excludedName) =>
+            normalizedName.includes(excludedName),
+          )
+        ) {
+          continue;
         }
-        parentId = folder.id;
-        folderId = folder.id;
+        if (seenUuids.has(entry.uuid)) continue;
+        seenUuids.add(entry.uuid);
+        const standardOrder = _getStandardEquipmentOrder(entry.name);
+        results.push({
+          uuid: entry.uuid,
+          name: entry.name,
+          img: entry.img || "icons/svg/item-bag.svg",
+          category: _getEquipmentCategory(entry.type),
+          standardOrder,
+        });
       }
-      return folderId;
-    };
-
-    const folderIds =
-      EQUIPMENT_FOLDER_PATHS.map(resolveFolderId).filter(Boolean);
-
-    if (!folderIds.length) return [];
-
-    const index = await pack.getIndex({ fields: ["name", "img", "folder"] });
-    const seen = new Set();
-    return index
-      .filter((e) => folderIds.includes(e.folder))
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .filter((e) => {
-        if (seen.has(e.uuid)) return false;
-        seen.add(e.uuid);
-        return true;
-      })
-      .map((e) => ({
-        uuid: e.uuid,
-        name: e.name,
-        img: e.img || "icons/svg/item-bag.svg",
-      }));
-  } catch (e) {
-    console.warn(`${MODULE_ID} | NPC Builder: could not load equipment`, e);
-    return [];
+    } catch (err) {
+      console.warn(
+        `${MODULE_ID} | NPC Builder: could not load equipment pack "${packId}"`,
+        err,
+      );
+    }
   }
+  return results.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 // ── Actor creation ─────────────────────────────────────────────────────────────
@@ -883,6 +954,8 @@ export async function createNpcActor({
   name,
   npcType,
   species,
+  isHybrid = false,
+  hybridSpecies = "",
   role,
   attributes,
   disciplines,
@@ -947,16 +1020,20 @@ export async function createNpcActor({
   // Species and role each become a separate trait item
   if (species?.trim())
     embeddedItems.push({ name: species.trim(), type: "trait" });
+  if (
+    isHybrid &&
+    hybridSpecies?.trim() &&
+    _normalizeRequirementString(hybridSpecies) !==
+      _normalizeRequirementString(species)
+  ) {
+    embeddedItems.push({ name: hybridSpecies.trim(), type: "trait" });
+  }
   if (role?.trim()) embeddedItems.push({ name: role.trim(), type: "trait" });
 
-  // Species ability talent — lookup order:
-  //   1. Explicit talentUuid in catalog (always wins)
-  //   2. abilityName search across configured Special Rules packs
+  // Configured Officers Log Species Ability talents take precedence over legacy
+  // catalog UUIDs, so world compendiums can provide their own species abilities.
   const speciesTalentUuid =
-    speciesEntry?.talentUuid ??
-    (speciesEntry?.abilityName
-      ? await _findSpeciesTalentByName(speciesEntry.abilityName)
-      : null);
+    (await findSpeciesAbilityTalentUuid(species)) ?? speciesEntry?.talentUuid;
   if (speciesTalentUuid) {
     try {
       const talent = await fromUuid(speciesTalentUuid);

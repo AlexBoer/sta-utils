@@ -12,9 +12,13 @@ const AMBIENT_AUDIO_SELECTION_ONLY_SETTING = "playerAmbientAudioSelectionOnly";
 const ENABLE_FATIGUE_SETTING = "enableFatigue";
 const ENABLE_STYLE_ENHANCE_SETTING = "enableStyleEnhance";
 const ENABLE_TALENT_AUTOMATIONS_SETTING = "enableTalentAutomations";
+const TALENT_IMPORT_OVERRIDE_COMPENDIUM_SETTING =
+  "talentImportOverrideCompendium";
+const LCARS_TALENT_PICKER_SETTING = "lcarsTalentPickerButton";
 const DISABLE_TOOLTIPS_SETTING = "disableTooltips";
 const SHOW_ROW_CONTEXT_MENU_SETTING = "showRowContextMenuButtons";
 const ENABLE_ACTION_CHOOSER_SETTING = "enableActionChooser";
+export const ENABLE_FKW_TACTICAL_RULES_SETTING = "enableFkwTacticalRules";
 const ACTION_CHOOSER_AS_TAB_SETTING = "actionChooserAsTab";
 const ENABLE_DICE_POOL_OVERRIDE_SETTING = "enableDicePoolOverride";
 const ENABLE_MOMENTUM_SPEND_SETTING = "enableMomentumSpend";
@@ -30,11 +34,18 @@ const SETTING_TRAIT_TOKEN_AUTO_LAYER = "traitTokenAutoLayerSwitch";
 const SETTING_TRAIT_STICKERS = "enableTraitStickers";
 const SETTING_DRAWINGS_LAYER_HOTKEY = "enableDrawingsLayerHotkey";
 const SETTING_WORLD_TRAITS_ACTOR_UUID = "worldTraitsActorUuid";
+export const SCENE_TRAIT_ACTOR_CLEANUP_SETTING =
+  "deleteSceneTraitActorOnSceneDelete";
 const SETTING_TRACKER_MACRO_MENU = "trackerMacroButtonsConfig";
 const TRACKER_MACRO_DEBUG_LOGS_SETTING = "trackerMacroDebugLogs";
 const GROUP_SHIP_ACTOR_SETTING = "groupShipActorId";
 const ENABLE_EXTENDED_TASK_TRACKER_SETTING = "enableExtendedTaskTracker";
 const NPC_BUILDER_SPECIAL_RULES_PACK_SETTING = "npcBuilderSpecialRulesPack";
+const NPC_BUILDER_EQUIPMENT_PACKS_SETTING = "npcBuilderEquipmentPacks";
+const NPC_BUILDER_SPECIES_ABILITY_PACKS_SETTING =
+  "npcBuilderSpeciesAbilityPacks";
+const NPC_BUILDER_FOCUS_PACKS_SETTING = "npcBuilderFocusPacks";
+const NPC_BUILDER_VALUE_PACKS_SETTING = "npcBuilderValuePacks";
 const COMPENDIUM_BROWSER_EXCLUSIONS_SETTING = "compendiumBrowserExclusions";
 const ENABLE_PERSONAL_THREAT_SETTING = "enablePersonalThreat";
 const ENABLE_ROLL_REQUEST_SETTING = "enableRollRequest";
@@ -222,6 +233,16 @@ export function registerSettings() {
     group: GROUP_WORLD,
   });
 
+  game.settings.register(MODULE_ID, ENABLE_FKW_TACTICAL_RULES_SETTING, {
+    name: t("sta-utils.settings.enableFkwTacticalRules.name"),
+    hint: t("sta-utils.settings.enableFkwTacticalRules.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    group: GROUP_WORLD,
+  });
+
   game.settings.register(MODULE_ID, ACTION_CHOOSER_AS_TAB_SETTING, {
     name: t("sta-utils.settings.actionChooserAsTab.name"),
     hint: t("sta-utils.settings.actionChooserAsTab.hint"),
@@ -230,6 +251,29 @@ export function registerSettings() {
     type: Boolean,
     default: false,
     requiresReload: true,
+    group: GROUP_WORLD,
+  });
+
+  // ----- Talent import overrides -----
+
+  game.settings.register(MODULE_ID, TALENT_IMPORT_OVERRIDE_COMPENDIUM_SETTING, {
+    name: t("sta-utils.settings.talentImportOverrideCompendium.name"),
+    hint: t("sta-utils.settings.talentImportOverrideCompendium.hint"),
+    scope: "world",
+    config: true,
+    type: String,
+    default: "",
+    choices: () => {
+      const choices = {
+        "": t("sta-utils.settings.talentImportOverrideCompendium.none"),
+      };
+      for (const pack of game.packs.values()) {
+        if (pack.metadata.type !== "Item") continue;
+        choices[pack.collection] =
+          `${pack.metadata.label} (${pack.collection})`;
+      }
+      return choices;
+    },
     group: GROUP_WORLD,
   });
 
@@ -273,6 +317,16 @@ export function registerSettings() {
     type: Boolean,
     default: false,
     requiresReload: true,
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, SCENE_TRAIT_ACTOR_CLEANUP_SETTING, {
+    name: t("sta-utils.settings.deleteSceneTraitActorOnSceneDelete.name"),
+    hint: t("sta-utils.settings.deleteSceneTraitActorOnSceneDelete.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
     group: GROUP_WORLD,
   });
 
@@ -494,6 +548,16 @@ export function registerSettings() {
     group: GROUP_WORLD,
   });
 
+  game.settings.register(MODULE_ID, LCARS_TALENT_PICKER_SETTING, {
+    name: t("sta-utils.settings.lcarsTalentPickerButton.name"),
+    hint: t("sta-utils.settings.lcarsTalentPickerButton.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    group: GROUP_WORLD,
+  });
+
   game.settings.register(
     MODULE_ID,
     ENABLE_QUICK_INSERT_ITEM_TYPE_PATCH_SETTING,
@@ -589,6 +653,46 @@ export function registerSettings() {
   game.settings.register(MODULE_ID, NPC_BUILDER_SPECIAL_RULES_PACK_SETTING, {
     name: t("sta-utils.settings.npcBuilderSpecialRulesPack.name"),
     hint: t("sta-utils.settings.npcBuilderSpecialRulesPack.hint"),
+    scope: "world",
+    config: true,
+    type: String,
+    default: "sta.items-2e",
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, NPC_BUILDER_EQUIPMENT_PACKS_SETTING, {
+    name: t("sta-utils.settings.npcBuilderEquipmentPacks.name"),
+    hint: t("sta-utils.settings.npcBuilderEquipmentPacks.hint"),
+    scope: "world",
+    config: true,
+    type: String,
+    default: "sta.items-2e",
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, NPC_BUILDER_SPECIES_ABILITY_PACKS_SETTING, {
+    name: t("sta-utils.settings.npcBuilderSpeciesAbilityPacks.name"),
+    hint: t("sta-utils.settings.npcBuilderSpeciesAbilityPacks.hint"),
+    scope: "world",
+    config: true,
+    type: String,
+    default: "sta.items-2e",
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, NPC_BUILDER_FOCUS_PACKS_SETTING, {
+    name: t("sta-utils.settings.npcBuilderFocusPacks.name"),
+    hint: t("sta-utils.settings.npcBuilderFocusPacks.hint"),
+    scope: "world",
+    config: true,
+    type: String,
+    default: "sta.items-2e",
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, NPC_BUILDER_VALUE_PACKS_SETTING, {
+    name: t("sta-utils.settings.npcBuilderValuePacks.name"),
+    hint: t("sta-utils.settings.npcBuilderValuePacks.hint"),
     scope: "world",
     config: true,
     type: String,
@@ -924,6 +1028,27 @@ export function isTalentAutomationsEnabled() {
     return Boolean(
       game.settings.get(MODULE_ID, ENABLE_TALENT_AUTOMATIONS_SETTING),
     );
+  } catch (_) {
+    return false;
+  }
+}
+
+/** @returns {string} */
+export function getTalentImportOverrideCompendium() {
+  try {
+    return String(
+      game.settings.get(MODULE_ID, TALENT_IMPORT_OVERRIDE_COMPENDIUM_SETTING) ??
+        "",
+    ).trim();
+  } catch (_) {
+    return "";
+  }
+}
+
+/** @returns {boolean} */
+export function isLcarsTalentPickerEnabled() {
+  try {
+    return Boolean(game.settings.get(MODULE_ID, LCARS_TALENT_PICKER_SETTING));
   } catch (_) {
     return false;
   }

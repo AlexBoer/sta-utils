@@ -6,7 +6,8 @@
  * uses a <details><summary> wrapper so users can click to expand the full
  * history of individual changes that were combined.
  *
- * Only the GM client performs the merge to avoid permission issues.
+ * Only the primary active GM client performs the merge to avoid permission
+ * issues and duplicate work when multiple GMs are connected.
  *
  * Gated behind the "enableMomentumMerger" world setting.
  */
@@ -75,9 +76,11 @@ async function _onCreateChatMessage(newMessage) {
     `${MODULE_ID} | Merger: createChatMessage fired, id=${newMessage.id}`,
   );
 
-  // Only the GM performs merges to avoid permission issues.
-  if (!game.user.isGM) {
-    console.debug(`${MODULE_ID} | Merger: skipping — not GM`);
+  // Only the primary active GM performs merges. Every GM receives the hook,
+  // so checking only isGM would let multiple clients update/delete the same
+  // messages concurrently.
+  if (!_isPrimaryActiveGM()) {
+    console.debug(`${MODULE_ID} | Merger: skipping — not primary active GM`);
     return;
   }
 
@@ -152,6 +155,17 @@ async function _onCreateChatMessage(newMessage) {
 
   await prevMessage.update({ content: mergedHtml });
   await newMessage.delete();
+}
+
+/**
+ * Select one deterministic merger owner when multiple GMs are connected.
+ */
+function _isPrimaryActiveGM() {
+  if (!game.user?.isGM) return false;
+  const primaryGM = [...(game.users ?? [])]
+    .filter((user) => user.active && user.isGM)
+    .sort((left, right) => left.id.localeCompare(right.id))[0];
+  return primaryGM?.id === game.user.id;
 }
 
 /**

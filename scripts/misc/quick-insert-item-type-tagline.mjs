@@ -7,8 +7,73 @@ let retryTimerId = null;
 let retryAttempts = 0;
 const MAX_RETRY_ATTEMPTS = 20;
 
-function localizeItemType(subType) {
+// system.talenttype.typeenum values that identify NPC-only / Starship-only talents.
+const NPC_TALENT_TYPES = new Set(["npc"]);
+const STARSHIP_TALENT_TYPES = new Set(["systems", "starship"]);
+
+// Compendium search results don't index system data, so the talent subtype is
+// resolved lazily by fetching the full document once and caching the label.
+const talentTypeLabelCache = new WeakMap();
+const pendingTalentTypeFetches = new WeakSet();
+
+function localizeTalentSubtypeLabel(typeenum) {
+  const normalized = String(typeenum ?? "")
+    .trim()
+    .toLowerCase();
+
+  if (NPC_TALENT_TYPES.has(normalized)) {
+    return game.i18n.localize("sta-utils.quickInsert.npcTalent") || "NPC Talent";
+  }
+  if (STARSHIP_TALENT_TYPES.has(normalized)) {
+    return (
+      game.i18n.localize("sta-utils.quickInsert.starshipTalent") ||
+      "Starship Talent"
+    );
+  }
+
+  return null;
+}
+
+function talentTypeLabelFromSystem(system) {
+  const typeenum = foundry.utils.getProperty(system, "talenttype.typeenum");
+  return localizeTalentSubtypeLabel(typeenum);
+}
+
+function resolveTalentTypeLabelAsync(item) {
+  if (
+    !item ||
+    typeof item.get !== "function" ||
+    pendingTalentTypeFetches.has(item) ||
+    talentTypeLabelCache.has(item)
+  ) {
+    return;
+  }
+
+  pendingTalentTypeFetches.add(item);
+
+  Promise.resolve()
+    .then(() => item.get())
+    .then((document) => {
+      const label = talentTypeLabelFromSystem(document?.system);
+      if (label) talentTypeLabelCache.set(item, label);
+    })
+    .catch(() => {})
+    .finally(() => pendingTalentTypeFetches.delete(item));
+}
+
+function localizeItemType(item) {
+  const subType = item?.subType;
   if (!subType) return game.i18n.localize("DOCUMENT.Item") || "Item";
+
+  if (subType === "talent") {
+    const cachedLabel = talentTypeLabelCache.get(item);
+    if (cachedLabel) return cachedLabel;
+
+    const immediateLabel = talentTypeLabelFromSystem(item?.system);
+    if (immediateLabel) return immediateLabel;
+
+    resolveTalentTypeLabelAsync(item);
+  }
 
   const labelKey = CONFIG?.Item?.typeLabels?.[subType];
   if (typeof labelKey === "string" && labelKey.length) {
@@ -39,7 +104,7 @@ function patchTaglinePrototypeForItem(item) {
     enumerable: false,
     get() {
       if (this?.documentType === "Item") {
-        return localizeItemType(this.subType);
+        return localizeItemType(this);
       }
 
       return originalGetter.call(this);

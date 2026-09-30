@@ -10,6 +10,7 @@ import {
   RANDOM_FOCUSES_FALLBACK,
   RANDOM_VALUES,
   loadSpeciesCatalog,
+  findSpeciesAbilityTalentUuid,
   loadEquipmentItems,
   loadFocusNames,
   loadValueNames,
@@ -283,6 +284,8 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
       name: "",
       charType: "supporting", // "supporting" | "supervisory"
       species: "",
+      isHybrid: false,
+      hybridSpecies: "",
       purpose: "",
       rank: "",
       attributes: Object.fromEntries(ATTRIBUTE_KEYS.map((k) => [k, null])),
@@ -293,6 +296,8 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
       selectedAttributeBonuses: [],
       selectedEquipment: [],
       equipmentItems: [],
+      equipmentSearch: "",
+      equipmentType: "all",
       focusNames: [],
       valueNames: [],
     };
@@ -444,6 +449,8 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
       isSupporting: state.charType === "supporting",
       isSupervisory: state.charType === "supervisory",
       species: state.species,
+      isHybrid: state.isHybrid,
+      hybridSpecies: state.hybridSpecies,
       purpose: state.purpose,
       speciesList: state.speciesCatalog.map((s) => ({
         name: s.name,
@@ -503,10 +510,21 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
           state.selectedEquipment,
         ),
       })),
-      equipmentItems: state.equipmentItems.map((item) => ({
-        ...item,
-        checked: state.selectedEquipment.includes(item.uuid),
-      })),
+      standardEquipmentItems: state.equipmentItems
+        .filter((item) => item.standardOrder >= 0)
+        .sort((a, b) => a.standardOrder - b.standardOrder)
+        .map((item) => ({
+          ...item,
+          checked: state.selectedEquipment.includes(item.uuid),
+        })),
+      equipmentItems: state.equipmentItems
+        .filter((item) => item.standardOrder < 0)
+        .map((item) => ({
+          ...item,
+          checked: state.selectedEquipment.includes(item.uuid),
+        })),
+      equipmentSearch: state.equipmentSearch,
+      equipmentType: state.equipmentType,
     };
   }
 
@@ -597,23 +615,36 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
       });
     }
 
-    this._setupSpeciesCombobox(html);
+    this._setupSpeciesCombobox(html, "species");
+    if (this._wizardState.isHybrid)
+      this._setupSpeciesCombobox(html, "hybridSpecies");
+    html.querySelector("[name='isHybrid']")?.addEventListener("change", (e) => {
+      this._wizardState.isHybrid = e.target.checked;
+      this.render();
+    });
 
     html.querySelector("[name='purpose']")?.addEventListener("input", (e) => {
       this._wizardState.purpose = e.target.value;
     });
   }
 
-  _setupSpeciesCombobox(html) {
-    const input = html.querySelector(".npc-species-combobox [name='species']");
+  _setupSpeciesCombobox(html, fieldName) {
+    const input = html.querySelector(
+      `.npc-species-combobox [name='${fieldName}']`,
+    );
     if (!input) {
-      html.querySelector("[name='species']")?.addEventListener("input", (e) => {
-        this._wizardState.species = e.target.value;
-      });
+      html
+        .querySelector(`[name='${fieldName}']`)
+        ?.addEventListener("input", (e) => {
+          this._wizardState[fieldName] = e.target.value;
+        });
       return;
     }
 
-    const dropdown = html.querySelector(".npc-species-dropdown");
+    const dropdown = input
+      .closest(".npc-species-combobox")
+      ?.querySelector(".npc-species-dropdown");
+    if (!dropdown) return;
     const options = [...dropdown.querySelectorAll(".npc-species-option")];
 
     const showDropdown = () => {
@@ -634,9 +665,9 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
     };
 
     const selectSpecies = (name) => {
-      if (this._wizardState.species !== name)
+      if (fieldName === "species" && this._wizardState.species !== name)
         this._wizardState.selectedAttributeBonuses = [];
-      this._wizardState.species = name;
+      this._wizardState[fieldName] = name;
       input.value = name;
       filterOptions("");
       hideDropdown();
@@ -647,9 +678,9 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
       showDropdown();
     });
     input.addEventListener("input", () => {
-      if (this._wizardState.species !== input.value)
+      if (fieldName === "species" && this._wizardState.species !== input.value)
         this._wizardState.selectedAttributeBonuses = [];
-      this._wizardState.species = input.value;
+      this._wizardState[fieldName] = input.value;
       filterOptions(input.value);
       showDropdown();
     });
@@ -849,9 +880,15 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
   }
 
   _isLoadoutActive(loadout, equipmentItems, selectedEquipment) {
+    const itemIds = (loadout.itemIds ?? [])
+      .map((id) => String(id ?? "").trim())
+      .filter(Boolean);
     const uuids = equipmentItems
-      .filter((item) => loadout.itemIds.some((id) => item.uuid.endsWith(id)))
-      .map((item) => item.uuid);
+      .filter((item) =>
+        itemIds.some((id) => String(item?.uuid ?? "").endsWith(id)),
+      )
+      .map((item) => String(item?.uuid ?? ""))
+      .filter(Boolean);
     return (
       uuids.length > 0 &&
       uuids.every((uuid) => selectedEquipment.includes(uuid))
@@ -862,6 +899,7 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
     html.querySelector("[name='rank']")?.addEventListener("change", (e) => {
       this._wizardState.rank = e.target.value;
     });
+    this._setupEquipmentFilters(html);
 
     for (const cb of html.querySelectorAll(".npc-equip-checkbox")) {
       cb.addEventListener("change", () => {
@@ -878,10 +916,13 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
       btn.addEventListener("click", () => {
         const loadout = EQUIPMENT_LOADOUTS[parseInt(btn.dataset.loadout)];
         if (!loadout) return;
+        const itemIds = (loadout.itemIds ?? [])
+          .map((id) => String(id ?? "").trim())
+          .filter(Boolean);
         const items = this._wizardState.equipmentItems;
         const uuids = items
           .filter((item) =>
-            loadout.itemIds.some((id) => item.uuid.endsWith(id)),
+            itemIds.some((id) => String(item?.uuid ?? "").endsWith(id)),
           )
           .map((item) => item.uuid);
         const set = new Set(this._wizardState.selectedEquipment);
@@ -895,6 +936,28 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
         this.render();
       });
     }
+  }
+
+  _setupEquipmentFilters(html) {
+    const search = html.querySelector(".npc-equipment-search");
+    const type = html.querySelector(".npc-equipment-type-filter");
+    const applyFilter = () => {
+      this._wizardState.equipmentSearch = search?.value ?? "";
+      this._wizardState.equipmentType = type?.value ?? "all";
+      const query = this._wizardState.equipmentSearch.trim().toLowerCase();
+      const category = this._wizardState.equipmentType;
+      for (const row of html.querySelectorAll(".npc-equip-item")) {
+        const name = row.dataset.equipmentName ?? "";
+        const matchesName = !query || name.includes(query);
+        const matchesType =
+          category === "all" || row.dataset.equipmentType === category;
+        row.hidden = !matchesName || !matchesType;
+      }
+    };
+
+    search?.addEventListener("input", applyFilter);
+    type?.addEventListener("change", applyFilter);
+    applyFilter();
   }
 
   // ── Drag and drop ─────────────────────────────────────────────────────────
@@ -1077,6 +1140,8 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
       name: state.name,
       charType: state.charType,
       species: state.species,
+      isHybrid: state.isHybrid,
+      hybridSpecies: state.hybridSpecies,
       purpose: state.purpose,
       rank: state.rank,
       attributes: state.attributes,
@@ -1097,6 +1162,8 @@ async function createSupportingActor({
   name,
   charType,
   species,
+  isHybrid = false,
+  hybridSpecies = "",
   purpose,
   rank,
   attributes,
@@ -1148,7 +1215,7 @@ async function createSupportingActor({
         DISCIPLINE_KEYS.map((k) => [k, { value: disciplines[k] ?? 0 }]),
       ),
     },
-    flags: { core: { sheetClass: "sta.STASupportingSheet2e" } },
+    flags: { core: { sheetClass: "sta-utils.LcarsSupportingSheet2e" } },
   });
 
   if (!actor) return null;
@@ -1157,12 +1224,22 @@ async function createSupportingActor({
 
   if (species?.trim())
     embeddedItems.push({ name: species.trim(), type: "trait" });
+  if (
+    isHybrid &&
+    hybridSpecies?.trim() &&
+    _normalizeRequirementString(hybridSpecies) !==
+      _normalizeRequirementString(species)
+  ) {
+    embeddedItems.push({ name: hybridSpecies.trim(), type: "trait" });
+  }
   if (purpose?.trim())
     embeddedItems.push({ name: purpose.trim(), type: "trait" });
 
-  if (speciesEntry?.talentUuid) {
+  const speciesTalentUuid =
+    (await findSpeciesAbilityTalentUuid(species)) ?? speciesEntry?.talentUuid;
+  if (speciesTalentUuid) {
     try {
-      const talent = await fromUuid(speciesEntry.talentUuid);
+      const talent = await fromUuid(speciesTalentUuid);
       if (
         talent &&
         _meetsTalentRequirementsForSupporting(talent, {
@@ -1177,7 +1254,7 @@ async function createSupportingActor({
       }
     } catch (e) {
       console.warn(
-        `${MODULE_ID} | Supporting Builder: could not load species talent ${speciesEntry.talentUuid}`,
+        `${MODULE_ID} | Supporting Builder: could not load species talent ${speciesTalentUuid}`,
         e,
       );
     }

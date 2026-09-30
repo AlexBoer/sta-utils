@@ -44,6 +44,8 @@ const actions = [
     name: "sta-utils.actionChooser.tacticalStation.actions.prepare.name",
     description:
       "sta-utils.actionChooser.tacticalStation.actions.prepare.description",
+    optionalDescription:
+      "sta-utils.actionChooser.tacticalStation.actions.prepare.fkwDescription",
     chatSummary:
       "sta-utils.actionChooser.tacticalStation.actions.prepare.chatSummary",
     roll: null,
@@ -165,6 +167,8 @@ const actions = [
     name: "sta-utils.actionChooser.tacticalStation.actions.defensiveFire.name",
     description:
       "sta-utils.actionChooser.tacticalStation.actions.defensiveFire.description",
+    optionalDescription:
+      "sta-utils.actionChooser.tacticalStation.actions.defensiveFire.fkwDescription",
     chatSummary:
       "sta-utils.actionChooser.tacticalStation.actions.defensiveFire.chatSummary",
     roll: {
@@ -226,6 +230,23 @@ const actions = [
       discipline: "security",
       difficulty: 2,
       shipAssist: { system: "sensors", department: "science" },
+    },
+    momentumCost: 0,
+    callback: sendActionChat,
+  },
+  {
+    id: "set-phasers-to-stun",
+    type: "major",
+    name: "sta-utils.actionChooser.sensorsStation.actions.setPhasersToStun.name",
+    description:
+      "sta-utils.actionChooser.sensorsStation.actions.setPhasersToStun.description",
+    chatSummary:
+      "sta-utils.actionChooser.sensorsStation.actions.setPhasersToStun.chatSummary",
+    roll: {
+      ...rollDefaults,
+      attribute: "daring",
+      discipline: "medicine",
+      difficulty: 2,
     },
     momentumCost: 0,
     callback: sendActionChat,

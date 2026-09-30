@@ -45,7 +45,32 @@
       <input class="npc-builder-input" type="text" name="species" value="{{species}}"
         placeholder="e.g. Vulcan">
       {{/if}}
+      <label class="npc-hybrid-toggle">
+        <input type="checkbox" name="isHybrid" {{#if isHybrid}}checked{{/if}}>
+        Hybrid
+      </label>
     </div>
+
+    {{#if isHybrid}}
+    <div class="npc-builder-field-row">
+      <label class="npc-builder-label">Second Species <span class="npc-hint">(becomes a trait)</span></label>
+      {{#if speciesFromCatalog}}
+      <div class="npc-species-combobox">
+        <input class="npc-builder-input" type="text" name="hybridSpecies" value="{{hybridSpecies}}"
+          placeholder="Search species…" autocomplete="off" role="combobox"
+          aria-expanded="false" aria-autocomplete="list">
+        <ul class="npc-species-dropdown" role="listbox">
+          {{#each speciesList}}
+          <li class="npc-species-option" role="option" data-value="{{name}}">{{name}}</li>
+          {{/each}}
+        </ul>
+      </div>
+      {{else}}
+      <input class="npc-builder-input" type="text" name="hybridSpecies" value="{{hybridSpecies}}"
+        placeholder="e.g. Human">
+      {{/if}}
+    </div>
+    {{/if}}
 
     <div class="npc-builder-field-row">
       <label class="npc-builder-label">
@@ -220,18 +245,46 @@
       {{/each}}
     </div>
     {{/if}}
-    <ul class="npc-equip-list">
-      {{#each equipmentItems}}
-      <li class="npc-equip-item">
-        <label class="npc-equip-label">
-          <input class="npc-equip-checkbox" type="checkbox" value="{{uuid}}"
-            {{#if checked}}checked{{/if}}>
-          <img class="npc-equip-img" src="{{img}}" alt="">
-          <span class="npc-equip-name">{{name}}</span>
-        </label>
-      </li>
-      {{/each}}
-    </ul>
+    <div class="npc-builder-field-row" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0.4rem;margin-top:0.75rem;">
+      <input class="npc-builder-input npc-equipment-search" type="search" value="{{equipmentSearch}}" placeholder="Search equipment...">
+      <select class="npc-builder-input npc-equipment-type-filter" style="width:auto;">
+        <option value="all" {{#if (eq equipmentType "all")}}selected{{/if}}>All types</option>
+        <option value="equipment" {{#if (eq equipmentType "equipment")}}selected{{/if}}>Equipment</option>
+        <option value="weapon" {{#if (eq equipmentType "weapon")}}selected{{/if}}>Weapons</option>
+        <option value="armor" {{#if (eq equipmentType "armor")}}selected{{/if}}>Armor</option>
+      </select>
+    </div>
+    {{#if standardEquipmentItems.length}}
+    <div class="npc-builder-section-label npc-section-gap">Standard Options</div>
+    <div class="npc-equipment-section">
+      <ul class="npc-equip-list">
+        {{#each standardEquipmentItems}}
+        <li class="npc-equip-item" data-equipment-name="{{name}}" data-equipment-type="{{category}}">
+          <label class="npc-equip-label">
+            <input class="npc-equip-checkbox" type="checkbox" value="{{uuid}}" {{#if checked}}checked{{/if}}>
+            <img class="npc-equip-img" src="{{img}}" alt="">
+            <span class="npc-equip-name">{{name}}</span>
+          </label>
+        </li>
+        {{/each}}
+      </ul>
+    </div>
+    {{/if}}
+    <div class="npc-builder-section-label npc-section-gap">Extras</div>
+    <div class="npc-equipment-section">
+      <ul class="npc-equip-list">
+        {{#each equipmentItems}}
+        <li class="npc-equip-item" data-equipment-name="{{name}}" data-equipment-type="{{category}}">
+          <label class="npc-equip-label">
+            <input class="npc-equip-checkbox" type="checkbox" value="{{uuid}}"
+              {{#if checked}}checked{{/if}}>
+            <img class="npc-equip-img" src="{{img}}" alt="">
+            <span class="npc-equip-name">{{name}}</span>
+          </label>
+        </li>
+        {{/each}}
+      </ul>
+    </div>
     {{/if}}
   </div>
 

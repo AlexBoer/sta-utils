@@ -13,6 +13,7 @@ import { STACharacterSheet2e } from "/systems/sta/module/actors/character-sheet2
 
 import { LCARS_THEMES } from "./lcars-mode.mjs";
 import { performAssistRoll } from "./lcars-assist.mjs";
+import { getDivisionContext } from "./division-control.mjs";
 
 const MODULE_ID = "sta-utils";
 
@@ -88,6 +89,7 @@ export class LcarsCharacterSheet2e extends STACharacterSheet2e {
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const scheme = this.getLcarsScheme();
+    Object.assign(context, getDivisionContext(this.actor));
     context.lcarsSchemeClass = scheme
       ? `lcars-scheme-${scheme}`
       : "lcars-scheme-tng";

@@ -22,5 +22,6 @@ export {
   getCompendiumBrowserExclusions,
   setCompendiumBrowserExclusions,
   isLcarsOpaqueBackgroundsEnabled,
+  SCENE_TRAIT_ACTOR_CLEANUP_SETTING,
 } from "./settings.mjs";
 export { getModuleSocket, initSocket } from "./socket.mjs";

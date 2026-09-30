@@ -31,6 +31,26 @@
             {{/each}}
           </select>
         </label>
+        {{#if showCompendiumFilter}}
+        <label>
+          <span>{{labels.compendium}}</span>
+          <select data-role="compendium">
+            {{#each compendiums as |compendium|}}
+            <option value="{{compendium.id}}" {{#if compendium.selected}}selected{{/if}}>{{compendium.label}}</option>
+            {{/each}}
+          </select>
+        </label>
+        {{/if}}
+        {{#if showTypeFilter}}
+        <label>
+          <span>{{labels.type}}</span>
+          <select data-role="type">
+            {{#each types as |type|}}
+            <option value="{{type.id}}" {{#if type.selected}}selected{{/if}}>{{type.label}}</option>
+            {{/each}}
+          </select>
+        </label>
+        {{/if}}
         {{#if categoryLabel}}
         <label>
           <span>{{categoryLabel}}</span>
@@ -49,6 +69,7 @@
             {{/each}}
           </select>
         </label>
+        {{#if showReqValue}}
         <label>
           <span>{{labels.requires}}</span>
           {{#if reqValueCombobox}}
@@ -66,6 +87,7 @@
           </select>
           {{/if}}
         </label>
+        {{/if}}
         {{#if showReqMin}}
         <label class="sta-talent-picker__min">
           <span>{{labels.minimum}}</span>

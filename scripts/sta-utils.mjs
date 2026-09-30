@@ -39,6 +39,8 @@ import {
   initTraitDrawingClick,
   initTraitDrawingSettingsHook,
   initTraitStickers,
+  installSceneTraitActorCleanupHook,
+  openSceneTraitCleanupDialog,
 } from "./trait-tokens/index.mjs";
 
 import {
@@ -106,6 +108,7 @@ import {
   initTalentAutomations,
   registerAllMiddleware,
 } from "./talent-automations/index.mjs";
+import { installTalentImportOverrides } from "./talent-import-overrides/talent-import-overrides.mjs";
 
 import {
   installDicePoolOverride,
@@ -170,6 +173,7 @@ import {
   installItemImagePickerHook,
 } from "./item-image-picker/index.mjs";
 import { installNpcLcarsImagePickerHook } from "./npc-image-picker/index.mjs";
+import { installSourceFieldHook } from "./source-field/source-field.mjs";
 
 import {
   isDicePoolOverrideEnabled,
@@ -193,6 +197,8 @@ import { LcarsSupportingSheet2e } from "./lcars-sheet/lcars-supporting-sheet2e.m
 import { LcarsNPCSheet2e } from "./lcars-sheet/lcars-npc-sheet2e.mjs";
 import { LcarsStarshipSheet2e } from "./lcars-sheet/lcars-starship-sheet2e.mjs";
 import { LcarsSmallCraftSheet2e } from "./lcars-sheet/lcars-smallcraft-sheet2e.mjs";
+import { recordShipAdvancement } from "./lcars-sheet/ship-assignment.mjs";
+import { registerLcarsHouseSheet } from "./lcars-sheet/lcars-house-sheet.mjs";
 import { t } from "./core/i18n.mjs";
 
 const MODULE_ID = "sta-utils";
@@ -485,6 +491,7 @@ Hooks.once("init", () => {
     `modules/${MODULE_ID}/templates/supporting-sheet2e-lcars.hbs`,
     `modules/${MODULE_ID}/templates/npc-sheet2e-lcars.hbs`,
     `modules/${MODULE_ID}/templates/starship-sheet2e-lcars.hbs`,
+    `modules/${MODULE_ID}/templates/ship-advancement-dialog.hbs`,
     `modules/${MODULE_ID}/templates/smallcraft-sheet2e-lcars.hbs`,
     `modules/${MODULE_ID}/templates/limited-ship-lcars.hbs`,
     `modules/${MODULE_ID}/templates/roll-request-dialog.hbs`,
@@ -533,6 +540,10 @@ Hooks.once("init", () => {
     LcarsSmallCraftSheet2e,
     { types: ["smallcraft"], label: "Small Craft (2e) LCARS" },
   );
+
+  registerLcarsHouseSheet().catch((err) => {
+    console.error(`${MODULE_ID} | Failed to register LCARS House sheet`, err);
+  });
 
   // --- Register settings ---
   registerSettings();
@@ -617,6 +628,8 @@ Hooks.once("init", () => {
   installDefaultItemImageHook();
   installItemImagePickerHook();
   installNpcLcarsImagePickerHook();
+  installSourceFieldHook();
+  installTalentImportOverrides();
   installRenderApplicationV2Hook();
   installTrackerLauncherButton();
   installTrackerMacroButtonsHook();
@@ -668,6 +681,7 @@ Hooks.once("ready", async () => {
   initSocket();
 
   installSceneTraitsSceneSyncHook();
+  installSceneTraitActorCleanupHook();
 
   sanitizeTrackerLayoutQueryParams();
   normalizeUiControlColumns();
@@ -738,6 +752,7 @@ Hooks.once("ready", async () => {
     noteStyler,
     openDicePoolMonitor,
     crewManifest,
+    recordShipAdvancement,
     actionChooser,
     dicePool: dicePoolApi,
     npcBuilder: openNpcBuilder,
@@ -764,6 +779,7 @@ Hooks.once("ready", async () => {
     openSceneTraits: openSceneTraitsSheet,
     ensureActiveSceneTraitsActor,
     openWorldTraits: openWorldTraitsSheet,
+    cleanupSceneTraitActors: openSceneTraitCleanupDialog,
     openTraitsDialog,
     getSceneTraitsActor: getActiveSceneTraitsActor,
     getWorldTraitsActor: getWorldTraitActor,

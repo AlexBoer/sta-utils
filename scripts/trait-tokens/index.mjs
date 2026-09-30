@@ -24,3 +24,9 @@ export {
   isGinzzzuActive,
 } from "./trait-sticker.mjs";
 export { registerDrawingsLayerHotkey } from "./drawings-layer-hotkey.mjs";
+export {
+  openSceneTraitCleanupDialog,
+  installSceneTraitActorCleanupHook,
+  getOrphanedSceneTraitActors,
+  SCENE_TRAIT_ACTOR_CLEANUP_SETTING,
+} from "./scene-trait-cleanup.mjs";

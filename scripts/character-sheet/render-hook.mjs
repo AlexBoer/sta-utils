@@ -34,6 +34,12 @@ import { installTraitFatigueCheckbox } from "../fatigue/trait-fatigue-checkbox.m
 import { disableItemTooltips } from "../disable-tooltips/index.mjs";
 import { actionChooser } from "../action-chooser/index.mjs";
 import { t } from "../core/i18n.mjs";
+import {
+  installShipAssignmentControl,
+  installShipAssignmentHooks,
+  installStarshipTabs,
+} from "../lcars-sheet/ship-assignment.mjs";
+import { installCharacterDivisionControl } from "../lcars-sheet/division-control.mjs";
 
 import { installMobileMode } from "../mobile-sheet/mobile-mode.mjs";
 import { installLcarsSheetMode } from "../lcars-sheet/lcars-mode.mjs";
@@ -205,14 +211,13 @@ function handleLcarsSheetRender(app, root) {
     !app?.id?.startsWith("LcarsSupportingSheet2e") &&
     !app?.id?.startsWith("LcarsNPCSheet2e") &&
     !app?.id?.startsWith("LcarsStarshipSheet2e") &&
-    !app?.id?.startsWith("LcarsSmallCraftSheet2e")
+    !app?.id?.startsWith("LcarsSmallCraftSheet2e") &&
+    !app?.id?.startsWith("LcarsHouseSheet")
   )
     return;
-  try {
-    installLcarsSheetMode(app, root);
-  } catch (_) {
-    // ignore
-  }
+  void installLcarsSheetMode(app, root).catch((err) => {
+    console.error(`${MODULE_ID} | LCARS sheet enhancement failed`, err);
+  });
 
   const actor = app.actor;
 
@@ -1002,6 +1007,15 @@ function handleStarshipSheetRender(app, root) {
   if (!actor) return;
   if (actor.type !== "starship" && actor.type !== "smallcraft") return;
 
+  if (
+    actor.type === "starship" &&
+    app?.id?.startsWith("LcarsStarshipSheet2e")
+  ) {
+    void installStarshipTabs(root, app, actor).catch((error) => {
+      console.error(`${MODULE_ID} | LCARS starship tabs failed`, error);
+    });
+  }
+
   // LCARS starship/smallcraft sheets have their own strict tooltip handling.
   const appId = String(app?.id ?? "");
   if (!appId.startsWith("Lcars")) {
@@ -1260,6 +1274,7 @@ function _installCombatTurnHooks() {
 export function installRenderApplicationV2Hook() {
   if (_staUtilsRenderApplicationV2HookInstalled) return;
   _staUtilsRenderApplicationV2HookInstalled = true;
+  installShipAssignmentHooks();
 
   Hooks.on("renderApplicationV2", (app, root /* HTMLElement */, context) => {
     // Early exit for non-STA applications to minimize overhead
@@ -1275,6 +1290,7 @@ export function installRenderApplicationV2Hook() {
       appId.startsWith("LcarsNPCSheet2e") ||
       appId.startsWith("LcarsStarshipSheet2e") ||
       appId.startsWith("LcarsSmallCraftSheet2e") ||
+      appId.startsWith("LcarsHouseSheet") ||
       app?.constructor?.name?.startsWith?.("STA");
     const isDialog =
       app?.constructor?.name === "DialogV2" || appId.startsWith("dialog-");
@@ -1282,6 +1298,24 @@ export function installRenderApplicationV2Hook() {
 
     // Skip entirely if this is clearly not an STA-related application
     if (!isStaApp && !isDialog && !isItemSheet) return;
+
+    if (
+      app?.actor?.type === "character" &&
+      root?.querySelector?.(".column.assignment")
+    ) {
+      try {
+        installShipAssignmentControl(root, app.actor);
+      } catch (error) {
+        console.warn(`${MODULE_ID} | Ship assignment control failed`, error);
+      }
+    }
+    if (app?.actor?.type === "character") {
+      try {
+        installCharacterDivisionControl(root, app.actor);
+      } catch (error) {
+        console.warn(`${MODULE_ID} | Character Division control failed`, error);
+      }
+    }
 
     // Handle dialogs (Dice Pool).
     handleDialogRender(app, root, context);

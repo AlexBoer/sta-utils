@@ -291,6 +291,7 @@ export class CompendiumBrowserApp extends Base {
     return {
       ...context,
       navigation,
+      isGM: Boolean(game.user?.isGM),
       compact: this._compact,
       presets: getBrowserPresets().map((preset) => ({
         id: preset.id,
@@ -398,6 +399,7 @@ export class CompendiumBrowserApp extends Base {
     root
       .querySelector("[data-action='settings']")
       ?.addEventListener("click", () => {
+        if (!game.user?.isGM) return;
         openCompendiumBrowserSettings();
       });
     root
@@ -597,6 +599,7 @@ export class CompendiumBrowserApp extends Base {
     const packs = Array.from(game.packs?.values?.() ?? game.packs ?? []).filter(
       (pack) =>
         pack.documentName === documentName &&
+        pack.visible &&
         !exclusions.packs.includes(pack.collection) &&
         !exclusions.packages.includes(getPackPackageId(pack)),
     );
@@ -964,9 +967,9 @@ export function getCompendiumBrowser() {
 }
 
 export function openCompendiumBrowser(preset = {}) {
+  // Players can only browse Items; other document types remain GM-only.
   if (!game.user?.isGM) {
-    ui.notifications?.warn?.(t("sta-utils.compendiumBrowser.gmOnly"));
-    return null;
+    preset = { ...preset, documentName: "Item", lockDocumentName: true };
   }
   return getCompendiumBrowser().open(preset);
 }

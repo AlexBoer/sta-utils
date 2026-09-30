@@ -223,6 +223,23 @@ const actions = [
     },
     callback: sendActionChat,
   },
+  {
+    id: "set-phasers-to-stun",
+    type: "major",
+    name: "sta-utils.actionChooser.sensorsStation.actions.setPhasersToStun.name",
+    description:
+      "sta-utils.actionChooser.sensorsStation.actions.setPhasersToStun.description",
+    chatSummary:
+      "sta-utils.actionChooser.sensorsStation.actions.setPhasersToStun.chatSummary",
+    roll: {
+      ...rollDefaults,
+      attribute: "daring",
+      discipline: "medicine",
+      difficulty: 2,
+    },
+    momentumCost: 0,
+    callback: sendActionChat,
+  },
 ];
 
 export default {

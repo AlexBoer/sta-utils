@@ -211,7 +211,10 @@ export function _installItemContextMenu(sheetApp, root) {
 
   try {
     const prev = _compactContextMenus.get(sheetApp);
-    if (prev?.element) prev.close();
+    const menus = prev?.menus ?? (prev ? [prev] : []);
+    for (const menu of menus) {
+      if (menu?.element) menu.close();
+    }
   } catch (_) {
     /* ignore */
   }
@@ -356,14 +359,19 @@ export function _installItemContextMenu(sheetApp, root) {
     );
   }
 
+  const isHouseSheet = sheetBody.classList.contains("house-sheet");
+  const rowSelector = isHouseSheet
+    ? ".house-item-section:not(.house-members-section) .row.entry"
+    : ".section .row.entry";
+
   console.debug(
-    `[sta-utils] Creating ContextMenu on sheet container with selector ".section .row.entry"`,
+    `[sta-utils] Creating ContextMenu on sheet container with selector "${rowSelector}"`,
     `menuItems count=${menuItems.length}`,
     `names=[${menuItems.map((m) => m.name).join(", ")}]`,
   );
 
   // Check how many rows match the selector
-  const matchingRows = sheetBody.querySelectorAll(".section .row.entry");
+  const matchingRows = sheetBody.querySelectorAll(rowSelector);
   console.debug(
     `[sta-utils] Rows matching ".section .row.entry": ${matchingRows.length}`,
   );
@@ -378,7 +386,7 @@ export function _installItemContextMenu(sheetApp, root) {
 
   const menu = new foundry.applications.ux.ContextMenu(
     sheetBody,
-    ".section .row.entry",
+    rowSelector,
     menuItems,
     { fixed: true, jQuery: false },
   );
@@ -418,6 +426,76 @@ export function _installItemContextMenu(sheetApp, root) {
   });
 
   _compactContextMenus.set(sheetApp, menu);
+
+  if (isHouseSheet) {
+    const memberSelector = ".house-members-section .row.entry";
+    const memberMenuItems = [
+      _compatEntry({
+        label: t("sta-utils.houseMemberMenu.openSheet"),
+        icon: '<i class="fas fa-up-right-from-square"></i>',
+        callback: async (target) => {
+          const row = target instanceof HTMLElement ? target : target?.[0];
+          const member = game.actors?.get(row?.dataset?.actorId);
+          if (!member) return;
+          await member.sheet?.render(true);
+          member.sheet?.bringToFront?.();
+        },
+      }),
+      _compatEntry({
+        label: t("sta-utils.houseMemberMenu.removeMember"),
+        icon: '<i class="fas fa-user-minus"></i>',
+        callback: async (target) => {
+          const row = target instanceof HTMLElement ? target : target?.[0];
+          const member = game.actors?.get(row?.dataset?.actorId);
+          if (!member) return;
+
+          await member.update({
+            "system.houseActorUuid": null,
+            "system.house": "",
+            "system.showklingon": false,
+          });
+          const leaderUuid = String(sheetApp.actor?.system?.leaderUuid ?? "");
+          if (leaderUuid === member.id || leaderUuid === member.uuid) {
+            await sheetApp.actor.update({ "system.leaderUuid": "" });
+          }
+          sheetApp.render(true);
+        },
+      }),
+    ];
+    const memberMenu = new foundry.applications.ux.ContextMenu(
+      sheetBody,
+      memberSelector,
+      memberMenuItems,
+      { fixed: true, jQuery: false },
+    );
+
+    const memberRows = sheetBody.querySelectorAll(memberSelector);
+    memberRows.forEach((row) => {
+      row.querySelector(".sta-utils-row-menu")?.remove();
+      if (!showRowMenu) return;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "sta-utils-row-menu";
+      button.title = t("sta-utils.compactMenu.moreActions");
+      button.setAttribute("aria-label", t("sta-utils.compactMenu.moreActions"));
+      button.innerHTML = '<i class="fa-solid fa-ellipsis-vertical"></i>';
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const bounds = button.getBoundingClientRect();
+        row.dispatchEvent(
+          new MouseEvent("contextmenu", {
+            bubbles: true,
+            clientX: event.clientX || bounds.right,
+            clientY: event.clientY || bounds.bottom,
+          }),
+        );
+      });
+      row.appendChild(button);
+    });
+
+    _compactContextMenus.set(sheetApp, { menus: [menu, memberMenu] });
+  }
 
   // NOTE: The Officers Log module skips its own milestones ContextMenu
   // when it detects sta-compact / sta-tidy on the sheet, so our single

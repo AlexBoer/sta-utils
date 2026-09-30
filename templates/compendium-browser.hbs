@@ -50,9 +50,11 @@
       <button type="button" class="icon" data-action="refresh" data-tooltip aria-label="{{localize 'sta-utils.compendiumBrowser.refresh'}}">
         <i class="fa-solid fa-rotate"></i>
       </button>
+      {{#if isGM}}
       <button type="button" class="icon" data-action="settings" data-tooltip aria-label="{{localize 'sta-utils.compendiumBrowser.settings.title'}}">
         <i class="fa-solid fa-gear"></i>
       </button>
+      {{/if}}
     </header>
 
     <div class="sta-compendium-browser__filters-shell">

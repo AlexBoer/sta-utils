@@ -149,7 +149,7 @@ const actions = [
       ...rollDefaults,
       attribute: "presence",
       discipline: "engineering",
-      difficulty: 2
+      difficulty: 2,
     },
     momentumCost: 0,
     callback: sendActionChat,
@@ -166,7 +166,41 @@ const actions = [
       ...rollDefaults,
       attribute: "control",
       discipline: "engineering",
-      difficulty: 1
+      difficulty: 1,
+    },
+    momentumCost: 0,
+    callback: sendActionChat,
+  },
+  {
+    id: "hot-loading",
+    type: "major",
+    name: "sta-utils.actionChooser.operationsStation.actions.hotLoading.name",
+    description:
+      "sta-utils.actionChooser.operationsStation.actions.hotLoading.description",
+    chatSummary:
+      "sta-utils.actionChooser.operationsStation.actions.hotLoading.chatSummary",
+    roll: {
+      ...rollDefaults,
+      attribute: "control",
+      discipline: "security",
+      difficulty: 2,
+    },
+    momentumCost: 0,
+    callback: sendActionChat,
+  },
+  {
+    id: "set-phasers-to-stun",
+    type: "major",
+    name: "sta-utils.actionChooser.sensorsStation.actions.setPhasersToStun.name",
+    description:
+      "sta-utils.actionChooser.sensorsStation.actions.setPhasersToStun.description",
+    chatSummary:
+      "sta-utils.actionChooser.sensorsStation.actions.setPhasersToStun.chatSummary",
+    roll: {
+      ...rollDefaults,
+      attribute: "daring",
+      discipline: "medicine",
+      difficulty: 2,
     },
     momentumCost: 0,
     callback: sendActionChat,

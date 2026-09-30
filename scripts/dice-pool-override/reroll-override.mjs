@@ -132,6 +132,7 @@ async function _handleSplitNpcReroll(rollData, splitData) {
     customResults: crewkept,
     usingFocus: rollData.usingFocus,
     usingDedicatedFocus: rollData.usingDedicatedFocus,
+    isReroll: true,
   };
   const crewRetainedResult = await this._taskResult(crewRetainedTaskDice);
 
@@ -144,6 +145,7 @@ async function _handleSplitNpcReroll(rollData, splitData) {
     disDepTarget: rollData.disDepTarget,
     usingFocus: rollData.usingFocus,
     usingDedicatedFocus: rollData.usingDedicatedFocus,
+    isReroll: true,
     ...crewTaskRolled,
   };
   const crewRerolledResult = await this._taskResult(crewRerolledTaskDice);
@@ -155,6 +157,7 @@ async function _handleSplitNpcReroll(rollData, splitData) {
     customResults: shipkept,
     usingFocus: true,
     usingDedicatedFocus: false,
+    isReroll: true,
   };
   const shipRetainedResult = await this._taskResult(shipRetainedTaskDice);
 
@@ -167,6 +170,7 @@ async function _handleSplitNpcReroll(rollData, splitData) {
     disDepTarget: rollData.shipdisDepTarget,
     usingFocus: true,
     usingDedicatedFocus: false,
+    isReroll: true,
     ...shipTaskRolled,
   };
   const shipRerolledResult = await this._taskResult(shipRerolledTaskDice);

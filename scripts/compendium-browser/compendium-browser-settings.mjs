@@ -142,6 +142,7 @@ export class CompendiumBrowserSettings extends Base {
 let settingsInstance;
 
 export function openCompendiumBrowserSettings() {
+  if (!game.user?.isGM) return null;
   settingsInstance ??= new CompendiumBrowserSettings();
   return settingsInstance.render({ force: true });
 }

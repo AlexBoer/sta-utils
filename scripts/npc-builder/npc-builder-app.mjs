@@ -65,6 +65,8 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       name: "",
       npcType: "minor",
       species: "",
+      isHybrid: false,
+      hybridSpecies: "",
       role: "",
       incidentalQuality: "proficient",
       quickTemperament: null,
@@ -77,6 +79,8 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       selectedAttributeBonuses: [],
       selectedEquipment: [],
       equipmentItems: [],
+      equipmentSearch: "",
+      equipmentType: "all",
       selectedSpecialRules: [],
       specialRulesItems: [],
       specialRulesSearch: "",
@@ -223,17 +227,22 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
             return minimum == null ? true : value >= minimum;
           }
           case "species": {
-            const selected = this._normalizeRequirementString(
-              this._wizardState.species,
-            );
-            if (!selected) return false;
+            const selectedSpecies = [this._wizardState.species];
+            if (this._wizardState.isHybrid)
+              selectedSpecies.push(this._wizardState.hybridSpecies);
+            const selected = selectedSpecies
+              .map((species) => this._normalizeRequirementString(species))
+              .filter(Boolean);
+            if (!selected.length) return false;
             // Comma-separated species list: any listed species qualifies.
             const opts = String(required)
               .split(",")
               .map((s) => this._normalizeRequirementString(s))
               .filter(Boolean);
-            return opts.some(
-              (opt) => selected === opt || selected.includes(opt),
+            return opts.some((opt) =>
+              selected.some(
+                (species) => species === opt || species.includes(opt),
+              ),
             );
           }
           case "type": {
@@ -425,6 +434,8 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       isIncidental: state.npcType === "incidental",
       isQuick: state.npcType === "quick",
       species: state.species,
+      isHybrid: state.isHybrid,
+      hybridSpecies: state.hybridSpecies,
       role: state.role,
       speciesList: state.speciesCatalog.map((s) => ({
         name: s.name,
@@ -503,10 +514,21 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
           state.selectedEquipment,
         ),
       })),
-      equipmentItems: state.equipmentItems.map((item) => ({
-        ...item,
-        checked: state.selectedEquipment.includes(item.uuid),
-      })),
+      standardEquipmentItems: state.equipmentItems
+        .filter((item) => item.standardOrder >= 0)
+        .sort((a, b) => a.standardOrder - b.standardOrder)
+        .map((item) => ({
+          ...item,
+          checked: state.selectedEquipment.includes(item.uuid),
+        })),
+      equipmentItems: state.equipmentItems
+        .filter((item) => item.standardOrder < 0)
+        .map((item) => ({
+          ...item,
+          checked: state.selectedEquipment.includes(item.uuid),
+        })),
+      equipmentSearch: state.equipmentSearch,
+      equipmentType: state.equipmentType,
       // Special rules
       specialRulesAvailable,
       specialRulesItems,
@@ -544,9 +566,13 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         }
         if (!rawDescription.trim()) return fallback;
 
-        const enriched = await TextEditor.enrichHTML(rawDescription, {
-          async: true,
-        });
+        const enriched =
+          await foundry.applications.ux.TextEditor.implementation.enrichHTML(
+            rawDescription,
+            {
+              async: true,
+            },
+          );
         return enriched || fallback;
       } catch (err) {
         console.warn(
@@ -733,7 +759,13 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       });
     }
 
-    this._setupSpeciesCombobox(html);
+    this._setupSpeciesCombobox(html, "species");
+    if (this._wizardState.isHybrid)
+      this._setupSpeciesCombobox(html, "hybridSpecies");
+    html.querySelector("[name='isHybrid']")?.addEventListener("change", (e) => {
+      this._wizardState.isHybrid = e.target.checked;
+      this.render();
+    });
     html.querySelector("[name='role']")?.addEventListener("input", (e) => {
       this._wizardState.role = e.target.value;
     });
@@ -779,17 +811,24 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       });
   }
 
-  _setupSpeciesCombobox(html) {
-    const input = html.querySelector(".npc-species-combobox [name='species']");
+  _setupSpeciesCombobox(html, fieldName) {
+    const input = html.querySelector(
+      `.npc-species-combobox [name='${fieldName}']`,
+    );
     // Plain text input (no catalog) — simple binding
     if (!input) {
-      html.querySelector("[name='species']")?.addEventListener("input", (e) => {
-        this._wizardState.species = e.target.value;
-      });
+      html
+        .querySelector(`[name='${fieldName}']`)
+        ?.addEventListener("input", (e) => {
+          this._wizardState[fieldName] = e.target.value;
+        });
       return;
     }
 
-    const dropdown = html.querySelector(".npc-species-dropdown");
+    const dropdown = input
+      .closest(".npc-species-combobox")
+      ?.querySelector(".npc-species-dropdown");
+    if (!dropdown) return;
     const options = [...dropdown.querySelectorAll(".npc-species-option")];
 
     const showDropdown = () => {
@@ -810,9 +849,9 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
     };
 
     const selectSpecies = (name) => {
-      if (this._wizardState.species !== name)
+      if (fieldName === "species" && this._wizardState.species !== name)
         this._wizardState.selectedAttributeBonuses = [];
-      this._wizardState.species = name;
+      this._wizardState[fieldName] = name;
       input.value = name;
       filterOptions("");
       hideDropdown();
@@ -824,9 +863,9 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
     });
 
     input.addEventListener("input", () => {
-      if (this._wizardState.species !== input.value)
+      if (fieldName === "species" && this._wizardState.species !== input.value)
         this._wizardState.selectedAttributeBonuses = [];
-      this._wizardState.species = input.value;
+      this._wizardState[fieldName] = input.value;
       filterOptions(input.value);
       showDropdown();
     });
@@ -1029,9 +1068,15 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
   }
 
   _isLoadoutActive(loadout, equipmentItems, selectedEquipment) {
+    const itemIds = (loadout.itemIds ?? [])
+      .map((id) => String(id ?? "").trim())
+      .filter(Boolean);
     const uuids = equipmentItems
-      .filter((item) => loadout.itemIds.some((id) => item.uuid.endsWith(id)))
-      .map((item) => item.uuid);
+      .filter((item) =>
+        itemIds.some((id) => String(item?.uuid ?? "").endsWith(id)),
+      )
+      .map((item) => String(item?.uuid ?? ""))
+      .filter(Boolean);
     return (
       uuids.length > 0 &&
       uuids.every((uuid) => selectedEquipment.includes(uuid))
@@ -1039,6 +1084,7 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
   }
 
   _setupEquipmentStep(html) {
+    this._setupEquipmentFilters(html);
     const refreshLoadoutButtons = () => {
       for (const btn of html.querySelectorAll(".npc-loadout-btn")) {
         const loadout = EQUIPMENT_LOADOUTS[parseInt(btn.dataset.loadout)];
@@ -1069,12 +1115,16 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       btn.addEventListener("click", () => {
         const loadout = EQUIPMENT_LOADOUTS[parseInt(btn.dataset.loadout)];
         if (!loadout) return;
+        const itemIds = (loadout.itemIds ?? [])
+          .map((id) => String(id ?? "").trim())
+          .filter(Boolean);
         const items = this._wizardState.equipmentItems;
         const uuids = items
           .filter((item) =>
-            loadout.itemIds.some((id) => item.uuid.endsWith(id)),
+            itemIds.some((id) => String(item?.uuid ?? "").endsWith(id)),
           )
-          .map((item) => item.uuid);
+          .map((item) => String(item?.uuid ?? ""))
+          .filter(Boolean);
         const set = new Set(this._wizardState.selectedEquipment);
         const allSelected = uuids.every((uuid) => set.has(uuid));
         if (allSelected) {
@@ -1090,6 +1140,28 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         refreshLoadoutButtons();
       });
     }
+  }
+
+  _setupEquipmentFilters(html) {
+    const search = html.querySelector(".npc-equipment-search");
+    const type = html.querySelector(".npc-equipment-type-filter");
+    const applyFilter = () => {
+      this._wizardState.equipmentSearch = search?.value ?? "";
+      this._wizardState.equipmentType = type?.value ?? "all";
+      const query = this._wizardState.equipmentSearch.trim().toLowerCase();
+      const category = this._wizardState.equipmentType;
+      for (const row of html.querySelectorAll(".npc-equip-item")) {
+        const name = row.dataset.equipmentName ?? "";
+        const matchesName = !query || name.includes(query);
+        const matchesType =
+          category === "all" || row.dataset.equipmentType === category;
+        row.hidden = !matchesName || !matchesType;
+      }
+    };
+
+    search?.addEventListener("input", applyFilter);
+    type?.addEventListener("change", applyFilter);
+    applyFilter();
   }
 
   _setupTemperamentStep(html) {
@@ -1514,6 +1586,8 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         name: state.name,
         npcType: "minor",
         species: state.species,
+        isHybrid: state.isHybrid,
+        hybridSpecies: state.hybridSpecies,
         role: state.role,
         attributes: attrs,
         disciplines: discs,
@@ -1534,6 +1608,8 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       name: state.name,
       npcType: state.npcType,
       species: state.species,
+      isHybrid: state.isHybrid,
+      hybridSpecies: state.hybridSpecies,
       role: state.role,
       attributes: state.attributes,
       disciplines: state.disciplines,

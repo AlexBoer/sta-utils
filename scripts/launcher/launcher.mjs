@@ -2,6 +2,7 @@ import { MODULE_ID } from "../core/constants.mjs";
 import { t } from "../core/i18n.mjs";
 import { openIncidentalNpcRollDialog } from "../tracker-incidental-roll/index.mjs";
 import { openTraitsDialog } from "./traits-dialog.mjs";
+import { openSceneTraitCleanupDialog } from "../trait-tokens/scene-trait-cleanup.mjs";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ITEM DEFINITIONS
@@ -241,6 +242,14 @@ const LAUNCHER_SECTIONS = [
         call: () => openTraitsDialog(),
       },
       {
+        id: "sceneTraitCleanup",
+        labelKey: "sta-utils.launcher.sceneTraitCleanup",
+        icon: "fa-trash-can-list",
+        gmOnly: true,
+        available: () => true,
+        call: () => openSceneTraitCleanupDialog(),
+      },
+      {
         id: "manualShaken",
         labelKey: "sta-utils.launcher.manualShaken",
         icon: "fa-burst",
@@ -335,8 +344,17 @@ const LAUNCHER_SECTIONS = [
         labelKey: "sta-utils.launcher.ol.surveyMonitor",
         icon: "fa-chart-bar",
         img: `${OL_ASSET_BASE}/MonitorSurveys.webp`,
-        gmOnly: true,
-        available: () => !!game.staofficerslog?.openGMSurveyMonitor,
+        gmOnly: false,
+        available: () => {
+          if (!game.staofficerslog?.openGMSurveyMonitor) return false;
+          if (game.user?.isGM) return true;
+          return Boolean(
+            game.settings.get(
+              "sta-officers-log",
+              "acclaimSurveyMonitorPlayers",
+            ),
+          );
+        },
         call: () => game.staofficerslog.openGMSurveyMonitor(),
       },
       {

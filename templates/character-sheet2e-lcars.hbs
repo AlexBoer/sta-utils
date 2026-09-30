@@ -150,6 +150,22 @@
             </div>
           </div>
 
+          <div class="row division-row">
+            <div class="column division">
+              <label class="title" for="character-division">{{localize 'sta-utils.characterDivision.label'}}</label>
+              <select id="character-division" name="system.division" class="sta-utils-division-select">
+                <option value="" {{#unless actor.system.division}}selected{{/unless}}>{{localize 'sta-utils.characterDivision.unassigned'}}</option>
+                {{#each divisionChoices as |division|}}
+                  <option value="{{division.value}}" {{#if division.selected}}selected{{/if}}>{{division.label}}</option>
+                {{/each}}
+              </select>
+            </div>
+            <div class="column custom-division {{#unless isCustomDivision}}hidden{{/unless}}" data-custom-division>
+              <label class="title" for="custom-division">{{localize 'sta-utils.characterDivision.customLabel'}}</label>
+              <input id="custom-division" name="system.customDivision" class="text-entry" type="text" value="{{actor.system.customDivision}}" placeholder="{{localize 'sta-utils.characterDivision.customPlaceholder'}}" {{#unless isCustomDivision}}disabled{{/unless}} />
+            </div>
+          </div>
+
           <div class="row">
             <div class="column environment">
               <div class="title">{{localize 'sta.actor.character.environment'}}</div>

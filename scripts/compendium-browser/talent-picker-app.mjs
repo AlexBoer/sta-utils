@@ -5,12 +5,18 @@ const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 const Base = HandlebarsApplicationMixin(ApplicationV2);
 
 // Requirement categories whose clauses carry a numeric minimum.
-const NUMERIC_CATS = new Set(["attribute", "discipline", "systems"]);
+const NUMERIC_CATS = new Set([
+  "attribute",
+  "discipline",
+  "department",
+  "systems",
+]);
 
 const REQ_CATEGORY_LABEL_KEYS = {
   none: "sta-utils.talentPicker.category.none",
   attribute: "sta-utils.talentPicker.category.attribute",
   discipline: "sta-utils.talentPicker.category.discipline",
+  department: "sta-utils.talentPicker.category.discipline",
   species: "sta-utils.talentPicker.category.species",
   house: "sta-utils.talentPicker.category.house",
   systems: "sta-utils.talentPicker.category.systems",
@@ -20,6 +26,7 @@ const REQ_CATEGORY_ORDER = [
   "none",
   "attribute",
   "discipline",
+  "department",
   "species",
   "house",
   "systems",
@@ -63,6 +70,7 @@ function normalizeTalent(raw) {
 
   const name = String(raw?.name ?? "");
   const descriptionText = String(raw?.descriptionText ?? "").trim();
+  const type = normalize(raw?.type);
   const group = raw?.group
     ? {
         key: normalize(raw.group.key) || "misc",
@@ -76,6 +84,8 @@ function normalizeTalent(raw) {
     name,
     img: raw?.img ? String(raw.img) : null,
     source: String(raw?.source ?? ""),
+    compendium: String(raw?.compendium ?? ""),
+    type,
     eligible: raw?.eligible !== false,
     requirementLines,
     hasRequirements: requirementLines.length > 0,
@@ -92,6 +102,8 @@ function normalizeTalent(raw) {
         requirementLines.map((l) => l.text).join(" "),
         tag,
         raw?.source,
+        raw?.compendium,
+        type,
       ]
         .filter(Boolean)
         .join(" "),
@@ -148,6 +160,8 @@ export class TalentPickerApp extends Base {
 
     this._search = "";
     this._source = "all";
+    this._compendium = "all";
+    this._type = "all";
     this._group = "all";
     this._reqCategory = "all";
     this._reqValue = "all";
@@ -212,6 +226,9 @@ export class TalentPickerApp extends Base {
       }
       if (this._source !== "all" && talent.source !== this._source)
         return false;
+      if (this._compendium !== "all" && talent.compendium !== this._compendium)
+        return false;
+      if (this._type !== "all" && talent.type !== this._type) return false;
 
       if (this._categoryLabel) {
         // Focus/group mode: single category filter, no requirements/eligibility.
@@ -282,6 +299,36 @@ export class TalentPickerApp extends Base {
         id,
         label: id,
         selected: this._source === id,
+      })),
+    ];
+    const compendiumValues = Array.from(
+      new Set(this._talents.map((tt) => tt.compendium).filter(Boolean)),
+    ).sort((a, b) => a.localeCompare(b, game.i18n?.lang));
+    const compendiums = [
+      {
+        id: "all",
+        label: t("sta-utils.talentPicker.allCompendiums"),
+        selected: this._compendium === "all",
+      },
+      ...compendiumValues.map((id) => ({
+        id,
+        label: id,
+        selected: this._compendium === id,
+      })),
+    ];
+    const typeValues = Array.from(
+      new Set(this._talents.map((tt) => tt.type).filter(Boolean)),
+    ).sort((a, b) => a.localeCompare(b, game.i18n?.lang));
+    const types = [
+      {
+        id: "all",
+        label: t("sta-utils.talentPicker.allTypes"),
+        selected: this._type === "all",
+      },
+      ...typeValues.map((id) => ({
+        id,
+        label: titleCase(id),
+        selected: this._type === id,
       })),
     ];
 
@@ -373,6 +420,8 @@ export class TalentPickerApp extends Base {
         search: t("sta-utils.talentPicker.search"),
         searchPlaceholder: t("sta-utils.talentPicker.searchPlaceholder"),
         source: t("sta-utils.talentPicker.source"),
+        compendium: t("sta-utils.talentPicker.compendium"),
+        type: t("sta-utils.talentPicker.type"),
         requirement: t("sta-utils.talentPicker.requirement"),
         requires: t("sta-utils.talentPicker.requires"),
         minimum: t("sta-utils.talentPicker.minimum"),
@@ -407,8 +456,13 @@ export class TalentPickerApp extends Base {
       viewAll: this._viewAll,
       search: this._search,
       sources,
+      compendiums,
+      showCompendiumFilter: compendiumValues.length > 0,
+      types,
+      showTypeFilter: typeValues.length > 0,
       reqCategories,
       reqValues,
+      showReqValue: this._reqCategory !== "all",
       reqValueCombobox: this._reqCategory === "species",
       reqValueText: this._reqValue === "all" ? "" : titleCase(this._reqValue),
       showReqMin: NUMERIC_CATS.has(this._reqCategory),
@@ -489,6 +543,18 @@ export class TalentPickerApp extends Base {
       .querySelector('[data-role="source"]')
       ?.addEventListener("change", (event) => {
         this._source = event.currentTarget.value;
+        rerender();
+      });
+    root
+      .querySelector('[data-role="compendium"]')
+      ?.addEventListener("change", (event) => {
+        this._compendium = event.currentTarget.value;
+        rerender();
+      });
+    root
+      .querySelector('[data-role="type"]')
+      ?.addEventListener("change", (event) => {
+        this._type = event.currentTarget.value;
         rerender();
       });
     root

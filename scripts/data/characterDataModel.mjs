@@ -32,6 +32,8 @@ export function registerUtilsCharacterDataModel() {
           nullable: true,
           initial: null,
         }),
+        division: new fields.StringField({ initial: "" }),
+        customDivision: new fields.StringField({ initial: "" }),
       };
     }
   }

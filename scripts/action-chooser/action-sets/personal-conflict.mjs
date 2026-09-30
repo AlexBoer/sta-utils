@@ -281,6 +281,44 @@ const actions = [
     momentumCost: 0,
     callback: sendActionChat,
   },
+
+  // Reactions
+  {
+    id: "brace",
+    type: "reaction",
+    name: "sta-utils.actionChooser.personalConflict.actions.brace.name",
+    description:
+      "sta-utils.actionChooser.personalConflict.actions.brace.description",
+    chatSummary:
+      "sta-utils.actionChooser.personalConflict.actions.brace.chatSummary",
+    roll: null,
+    momentumCost: 0,
+    callback: sendActionChat,
+  },
+  {
+    id: "dive-for-cover",
+    type: "reaction",
+    name: "sta-utils.actionChooser.personalConflict.actions.diveForCover.name",
+    description:
+      "sta-utils.actionChooser.personalConflict.actions.diveForCover.description",
+    chatSummary:
+      "sta-utils.actionChooser.personalConflict.actions.diveForCover.chatSummary",
+    roll: null,
+    momentumCost: 0,
+    callback: sendActionChat,
+  },
+  {
+    id: "retreat",
+    type: "reaction",
+    name: "sta-utils.actionChooser.personalConflict.actions.retreat.name",
+    description:
+      "sta-utils.actionChooser.personalConflict.actions.retreat.description",
+    chatSummary:
+      "sta-utils.actionChooser.personalConflict.actions.retreat.chatSummary",
+    roll: null,
+    momentumCost: 0,
+    callback: sendActionChat,
+  },
 ];
 
 export default {

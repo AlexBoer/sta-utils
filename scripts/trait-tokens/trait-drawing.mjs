@@ -425,10 +425,37 @@ async function _createTraitDrawing({
 /*  Cleanup on drawing deletion                 */
 /* -------------------------------------------- */
 
+async function confirmTraitItemDeletion(itemName) {
+  const title = game.i18n.localize("sta-utils.traitDrawing.deleteTraitTitle");
+  const content = game.i18n.format(
+    "sta-utils.traitDrawing.deleteTraitConfirm",
+    {
+      name: itemName,
+    },
+  );
+
+  if (foundry?.applications?.api?.DialogV2?.confirm) {
+    return Boolean(
+      await foundry.applications.api.DialogV2.confirm({
+        window: { title },
+        content: `<p>${foundry.utils.escapeHTML(content)}</p>`,
+        yes: { default: true },
+      }),
+    );
+  }
+
+  return Boolean(
+    await Dialog.confirm({
+      title,
+      content: `<p>${foundry.utils.escapeHTML(content)}</p>`,
+    }),
+  );
+}
+
 /**
  * When a trait drawing is deleted, remove its embedded Item from the
  * proxy actor only if no other drawings/tokens on the same scene still
- * reference it.
+ * reference it and the GM confirms the deletion.
  */
 async function _onDeleteDrawing(drawingDoc, _options, _userId) {
   if (!game.user.isGM) return;
@@ -461,7 +488,8 @@ async function _onDeleteDrawing(drawingDoc, _options, _userId) {
     if (stillUsed) return;
 
     try {
-      if (actor.items.has(flags.embeddedItemId)) {
+      const item = actor.items.get(flags.embeddedItemId);
+      if (item && (await confirmTraitItemDeletion(item.name))) {
         await actor.deleteEmbeddedDocuments("Item", [flags.embeddedItemId]);
         console.log(
           `${MODULE_ID} | Removed embedded trait "${flags.embeddedItemId}" from proxy actor`,

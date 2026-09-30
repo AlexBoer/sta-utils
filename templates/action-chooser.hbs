@@ -161,6 +161,32 @@
   </section>
   {{/if}}
 
+  {{!-- Reactions --}}
+  {{#if hasReactionActions}}
+  <section class="sta-action-chooser-section" data-section="reaction">
+    <h3>{{localize "sta-utils.actionChooser.reactions"}}</h3>
+    <div class="sta-action-split">
+      <div class="sta-action-tabs">
+        {{#each reactionActions as |action|}}
+          <button type="button"
+            class="sta-action-tab{{#if action.isSubtle}} sta-action-tab--subtle{{/if}}"
+            data-type="reaction"
+            data-tab-id="{{action.id}}"
+            data-action-name="{{action.name}}"
+            data-action-desc="{{action.description}}"
+            data-action-roll="{{action.rollInfo}}"
+            data-action-momentum="{{action.momentumText}}">
+            <span class="sta-action-tab__name">{{action.name}}</span>
+          </button>
+        {{/each}}
+      </div>
+      <div class="sta-action-detail" data-type="reaction">
+        <div class="sta-action-detail__empty">{{localize "sta-utils.actionChooser.reactions"}}</div>
+      </div>
+    </div>
+  </section>
+  {{/if}}
+
   {{!-- Social Tools --}}
   {{#if hasSocialTools}}
   <section class="sta-action-chooser-section" data-section="social">

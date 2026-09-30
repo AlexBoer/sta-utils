@@ -1,10 +1,97 @@
 {
   "sta-utils": {
     "title": "STA Utilities",
+    "source": {
+      "label": "Source",
+      "placeholder": "e.g. Core Rulebook p. 130"
+    },
     "lcars": {
       "belongings": {
         "armor": "Armor"
       }
+    },
+    "starshipTabs": {
+      "label": "Starship tabs",
+      "details": "Details",
+      "crew": "Crew",
+      "manifest": "Manifest",
+      "advancements": "Advancements",
+      "assignedCrew": "Crew",
+      "shipInformation": "Ship Information",
+      "advancementHistory": "Advancement History",
+      "moreAdvancementActions": "More advancement actions",
+      "viewEditAdvancement": "View and Edit",
+      "deleteAdvancement": "Delete",
+      "advancementDescription": "Advancement",
+      "rank": "Rank",
+      "name": "Name",
+      "role": "Role",
+      "noCrew": "No characters are assigned to this ship.",
+      "noAdvancements": "No recorded advancements."
+    },
+    "shipAdvancement": {
+      "addTitle": "Add Ship Advancement",
+      "dialogTitle": "Add Ship Advancement",
+      "chooseType": "Choose an advancement type.",
+      "milestoneTabTitle": "New Milestone",
+      "arcTabTitle": "New Arc",
+      "milestonePrompt": "Choose a ship milestone advancement.",
+      "arcPrompt": "Choose a ship arc advancement.",
+      "milestone": "Milestone Advancement",
+      "arc": "Arc Advancement",
+      "custom": "Custom Advancement (Milestone Item)",
+      "customMilestone": "Custom Milestone",
+      "customArc": "Custom Arc",
+      "applyFailed": "Unable to apply ship advancement.",
+      "milestoneTitle": "Milestone Advancement",
+      "arcTitle": "Arc Advancement",
+      "chooseUpgrade": "Choose a ship upgrade.",
+      "swapSystems": "Swap Ship Systems (-1/+1)",
+      "swapDepartments": "Swap Ship Departments (-1/+1)",
+      "increaseSystem": "Increase Ship System +1",
+      "increaseDepartment": "Increase Ship Department +1",
+      "replaceTalent": "Replace Ship Talent",
+      "addTalent": "Add Ship Talent",
+      "apply": "Apply",
+      "decrease": "Decrease by 1",
+      "increase": "Increase by 1",
+      "differentStats": "Choose two different entries.",
+      "statAtMaximum": "The selected entry is already at its maximum.",
+      "chooseStat": "Choose an entry to increase",
+      "removeTalent": "Talent to replace",
+      "noTalents": "This ship has no talents to replace.",
+      "talentName": "Ship Talent Name",
+      "talentPlaceholder": "Enter talent name",
+      "swapSystemsResult": "Ship Systems Refit",
+      "swapDepartmentsResult": "Ship Departments Refit",
+      "systemIncreaseResult": "Ship System +1",
+      "departmentIncreaseResult": "Ship Department +1",
+      "replacedTalentResult": "Ship Talent Replaced",
+      "addedTalentResult": "Ship Talent Added",
+      "customItemName": "New Ship Advancement",
+      "talentPickerUnavailable": "Starship talent selection requires STA Officers' Log."
+    },
+    "shipAssignment": {
+      "label": "Ship Assignment",
+      "none": "No Ship Assigned",
+      "unavailable": "Current assignment unavailable; choose a ship to change it",
+      "permissionChanged": "You no longer have permission to assign this ship.",
+      "updateFailed": "Unable to update ship assignment."
+    },
+    "characterDivision": {
+      "label": "Division",
+      "unassigned": "Unassigned",
+      "command": "Command",
+      "sciences": "Sciences",
+      "operations": "Operations",
+      "passenger": "Passenger",
+      "custom": "Custom",
+      "customLabel": "Custom Division",
+      "customPlaceholder": "Enter division name"
+    },
+    "quickInsert": {
+      "npcTalent": "NPC Talent",
+      "starshipTalent": "Starship Talent"
     },
     "settings": {
       "groups": {
@@ -57,6 +144,18 @@
         "name": "Campaign Traits Actor",
         "hint": "UUID of the Scene Traits actor to open from the Campaign Traits tool button. Supports compendium actors. Leave blank to auto-create a campaign-level actor."
       },
+      "deleteSceneTraitActorOnSceneDelete": {
+        "name": "Delete Scene Traits Actor with Scene",
+        "hint": "When a scene is deleted, ask whether to delete its automatically created Scene Traits actor. Manually assigned and campaign-level actors are never deleted by this setting."
+      },
+        "enableTraitStickers": {
+          "name": "Enable Trait Stickers",
+          "hint": "Show trait stickers on the canvas for quick visual reference."
+        },
+        "enableDrawingsLayerHotkey": {
+          "name": "Enable Drawings Layer Hotkey",
+          "hint": "Allow the configured keyboard shortcut to switch directly to the Drawings layer."
+        },
       "tokenInteractionDiagnostics": {
         "name": "Enable GM Token Interaction Diagnostics",
         "hint": "Record a bounded history of token and canvas interaction state for troubleshooting. Data is kept only in the GM's browser memory and is reported only when the GM explicitly requests it. Requires a world reload when changed.",
@@ -81,6 +180,22 @@
       "npcBuilderSpecialRulesPack": {
         "name": "NPC Builder — Special Rules Compendium",
         "hint": "Compendium pack IDs to use for special rules. Enter one per line (e.g. \"world.my-talents\" or \"module.my-module.talents\"). When empty, the NPC Builder shows manual name/description fields instead."
+      },
+      "npcBuilderEquipmentPacks": {
+        "name": "NPC Builder — Equipment Compendiums",
+        "hint": "Compendium pack IDs to search for equipment. Enter one per line (e.g. \"world.my-equipment\" or \"module.my-module.items\")."
+      },
+      "npcBuilderSpeciesAbilityPacks": {
+        "name": "NPC Builder — Species Ability Compendiums",
+        "hint": "Compendium pack IDs to search for Officers Log Species Ability talents. Enter one per line. A talent is used only when its species requirement matches the selected species."
+      },
+      "npcBuilderFocusPacks": {
+        "name": "NPC Builder — Focus Compendiums",
+        "hint": "Compendium pack IDs to search for focus suggestions. Enter one per line."
+      },
+      "npcBuilderValuePacks": {
+        "name": "NPC Builder — Value Compendiums",
+        "hint": "Compendium pack IDs to search for value suggestions. Enter one per line."
       },
       "compendiumBrowserExclusions": {
         "name": "Compendium Browser Sources",
@@ -123,9 +238,18 @@
         "name": "Enable Talent Automations",
         "hint": "Automatically apply effects based on talents a character possesses (e.g. modify attributes, post reminders). Requires a world reload when changed."
       },
+      "talentImportOverrideCompendium": {
+        "name": "Talent Import Override Compendium",
+        "hint": "When a GM imports actor JSON, replace matching talents with versions from this compendium. If more than one matching talent is found, choose which version to use.",
+        "none": "- No override compendium -"
+      },
       "enableTalentUses": {
         "name": "Enable Talent Uses Tracker",
         "hint": "Track limited-use talents on character sheets with clickable pips. Open a talent to set its 'Max Uses per Mission'. A max of 0 means unlimited and hides the tracker."
+      },
+      "lcarsTalentPickerButton": {
+        "name": "LCARS: Add Talent via Picker",
+        "hint": "On LCARS character sheets, the Talents \"+\" button opens the talent picker (filtered by the character's requirements) instead of creating a blank talent. Requires the STA Officer's Log module."
       },
       "enableQuickInsertItemTypePatch": {
         "name": "Quick Insert: Show Item Type Subtitle",
@@ -176,6 +300,10 @@
       "enableActionChooser": {
         "name": "Enable Conflict Actions Window",
         "hint": "Show a window listing available actions, roll info, and Momentum costs during conflict scenes. Requires a world reload when changed."
+      },
+      "enableFkwTacticalRules": {
+        "name": "Enable Federation-Klingon War Tactical Rules",
+        "hint": "Enable the optional Reactions and starship firing mode rules from the Federation-Klingon War Tactical Campaign."
       },
       "actionChooserAsTab": {
         "name": "Action Chooser as Sheet Tab",
@@ -576,6 +704,18 @@
       "warnNoActiveScene": "No active scene.",
       "warnActorUnavailable": "The scene traits actor is not available."
     },
+      "sceneTraitCleanup": {
+        "title": "Clean Up Scene Traits Actors",
+        "cleanupPrompt": "These automatically created Scene Traits actors no longer belong to an existing scene:",
+        "noneFound": "No orphaned Scene Traits actors were found.",
+        "deleted": "Deleted {count} orphaned Scene Traits actor(s).",
+        "deleteSceneTitle": "Delete Scene Traits Actor?",
+        "deleteScenePrompt": "The deleted scene had an automatically created Scene Traits actor named \"{name}\". Delete that actor too?"
+      },
+      "traitDrawing": {
+        "deleteTraitTitle": "Delete Scene Trait?",
+        "deleteTraitConfirm": "The drawing for \"{name}\" was deleted. Also delete this trait from the scene traits actor? Cancel to keep the trait for future use."
+      },
     "traitDrawingSettings": {
       "title": "Trait Drawing Style",
       "fontSize": "Font Size",
@@ -719,6 +859,8 @@
       "conflictActionsButton": "Conflict Actions",
       "minorActions": "Minor Actions",
       "majorActions": "Major Actions",
+      "reactions": "Reactions",
+      "firingModes": "Firing Modes",
       "socialTools": "Social Tools",
       "useAction": "Use",
       "sendToChat": "Send to Chat",
@@ -1126,6 +1268,11 @@
             "description": "Roll <strong>Control + Engineering</strong> vs <strong>Difficulty 1</strong> + 1 each time you use this. On success, restore Reserve Power. May succeed at a cost, where complications represent subsystems shutting down.",
             "chatSummary": "Control + Engineering, <strong>Difficulty 1</strong>. Restore Reserve Power."
           },
+          "hotLoading": {
+            "name": "Hot Loading",
+            "description": "Prepare and load a hot-loaded torpedo. Attempt a <strong>Control + Security</strong> task at <strong>Difficulty 2</strong> to create a <strong>Hot-Loaded Torpedoes</strong> trait. While it is active, Photon Torpedoes gain <strong>+2 Damage</strong>, but attacks increase the complication range by 2 and Weapons breaches increase in Potency by 1. You may discard the trait after any torpedo attack.",
+            "chatSummary": "<strong>Control + Security</strong>, <strong>Difficulty 2</strong>. Create the Hot-Loaded Torpedoes trait."
+          },
           "regenerateShields": {
             "name": "Regenerate Shields",
             "description": "Requires Reserve Power. Roll <strong>Control + Engineering</strong> vs <strong>Difficulty 2</strong>, plus 1  Difficulty if the ship's shields are at 0. On success, regain shields equal to your Engineering score, plus 2 per 1 Momentum spent (Repeatable).",
@@ -1214,6 +1361,11 @@
             "name": "Sensor Sweep",
             "description": "Scan for nearby objects, energy signatures, and anomalies. Attempt a <strong>Difficulty 1 Reason + Science</strong> task, assisted by the ship's <strong>Sensors + Science</strong>. On success, learn basic information about a single zone. Spend Momentum for more detail.",
             "chatSummary": "<strong>Reason + Science</strong> (ship <strong>Sensors + Science</strong>), <strong>Difficulty 1</strong>. Learn about nearby objects and anomalies."
+          },
+          "setPhasersToStun": {
+            "name": "Set Phasers to Stun",
+            "description": "Configure the ship's phasers for stun fire. Attempt a <strong>Daring + Medicine</strong> or <strong>Insight + Engineering</strong> task at <strong>Difficulty 2</strong>. Against beings in the open, a successful attack affects a number of targets in one zone equal to the weapon system's Damage Rating, inflicting a Severity 6 Stun Injury. Against a starship, the phasers operate normally until fired at a target with no shields; if a Breach is inflicted, the target gains the <strong>Stunned Crew</strong> complication.",
+            "chatSummary": "<strong>Difficulty 2</strong>: configure phasers for stun fire with <strong>Daring + Medicine</strong> or <strong>Insight + Engineering</strong>."
           }
         }
       },
@@ -1232,6 +1384,7 @@
           "prepare": {
             "name": "Prepare",
             "description": "Spend time setting up a task. At tactical, this action can also be used to raise or lower the ship's shields, or to arm or disarm the ship's weapons.<ul><li><strong>Shields:</strong> When the shields are lowered, the ship's maximum shields are 0. When raised, they are restored to their normal maximum, or to their previous total if the ship has taken any damage this scene.</li><li><strong>Weapons:</strong> The ship may only make Weapons Attacks if the weapons are armed. However, enemy ships can detect whether your ship's weapons are armed.</li></ul>",
+            "fkwDescription": "<ul><li><strong>Point Defense:</strong> Switch the phasers to Point Defense mode (or back again) using this Prepare minor action. In this mode, one energy weapon system cannot make normal attacks, but the ship gains the benefits of the Point Defense System talent.</li></ul>",
             "chatSummary": "Ready a task, raise/lower shields, or arm/disarm weapons."
           },
           "restore": {
@@ -1277,12 +1430,19 @@
           "defensiveFire": {
             "name": "Defensive Fire",
             "description": "Choose a single energy weapon on your ship. Until your next turn, any enemy attack against your ship becomes an opposed task, opposed by your <strong>Daring + Security</strong>, assisted by the ship's <strong>Weapons + Security</strong>.<br><br>If you succeed, you may spend 2 Momentum to counterattack, inflicting your weapon's damage against the attacker.<br><br>You cannot take this action if the ship is currently benefitting from Evasive Action.",
+            "fkwDescription": "<ul><li><strong>Suppressing Fire:</strong> Spend 1 Momentum (Immediate) to protect a single ship within Close range instead of yourself. When the protected ship is attacked, the attack becomes an opposed task and you may counterattack if you succeed and spend 2 Momentum. The protected ship cannot benefit from this if it takes Evasive Action.</li></ul>",
             "chatSummary": "Oppose enemy attacks. On success, spend 2 Momentum to counterattack."
           },
           "fire": {
             "name": "Fire",
             "description": "Attack an enemy ship or target with the ship's weapons. Roll <strong>Control + Security</strong> assisted by the ship's <strong>Weapons + Security</strong>. Base Difficulty 2 for energy weapons. Difficulty 3 for torpedoes.",
-            "chatSummary": "Attack with ship weapons. <strong>Control + Security</strong>."
+            "chatSummary": "Attack with ship weapons. <strong>Control + Security</strong>.",
+            "special": {
+              "fireForEffect": {
+                "name": "Fire for Effect",
+                "description": "Attempt a <strong>Reason + Security</strong> task with Difficulty equal to the number of participating starships. If successful, all participating starships in range armed with photon torpedoes must fire this round. Each ship adds +1 to torpedo Damage Rating for every participating ship beyond the first."
+              }
+            }
           },
           "modulateShields": {
             "name": "Modulate Shields",
@@ -1345,8 +1505,8 @@
           },
           "direct": {
             "name": "Direct",
-            "description": "May only be attempted by one character on each side in a position of authority. Spend <strong>1 Momentum</strong> and select one ally who can hear you. They may immediately attempt a single major action with no <strong>+1 Difficulty</strong>. Assist them with your <strong>Control + Command</strong>.",
-            "chatSummary": "Spend <strong>1 Momentum</strong>. An ally takes a major action. You assist with <strong>Control + Command</strong>."
+            "description": "May only be attempted by one character on each side in a position of authority. Spend <strong>1 Momentum</strong> and select one ally who can hear you. They may immediately attempt a single major action with no <strong>+1 Difficulty</strong>. Assist them with your <strong>Control + Command</strong>.<br><br>If using the optional rule for Reactions, the ally's reaction for the round is spent when they attempt the commanded task. A character who has already used their reaction this round may not be the target of a Direct task.",
+            "chatSummary": "Spend <strong>1 Momentum</strong>. An ally takes a major action. You assist with <strong>Control + Command</strong>. If Reactions are enabled, their reaction is spent."
           },
           "firstAid": {
             "name": "First Aid",
@@ -1377,6 +1537,21 @@
             "name": "Sprint",
             "description": "Move two zones, to any point within Long range. If there is difficult or hazardous terrain, you may attempt a <strong>Fitness + Conn</strong> task with <strong>Difficulty 0</strong> as part of this action, to generate Momentum to cross the terrain.",
             "chatSummary": "Move 2 zones (Long range). <strong>Fitness + Conn</strong> <strong>Difficulty 0</strong> for terrain."
+          },
+          "brace": {
+            "name": "Brace",
+            "description": "When you are the target of a <strong>Melee Attack</strong>, but before any dice are rolled for the attack, you use your reaction to ready your weapon (or adopt a defensive stance). During the opposed task for the enemy's attack, the first bonus d20 you purchase is free. However, you lose your normal minor action during your next turn (you can still gain an extra minor action by spending Momentum).",
+            "chatSummary": "The first bonus d20 you purchase against this Melee Attack is free. Lose your minor action next turn."
+          },
+          "diveForCover": {
+            "name": "Dive for Cover",
+            "description": "When you are the target of a <strong>Ranged Attack</strong>, but before any dice are rolled for the attack, you use your reaction to dive to the ground to avoid it. You can immediately move to any point within Close range and drop prone. In addition to the normal effects of being prone, you gain an additional <strong>+1 Protection</strong> against the attack which triggered this reaction.",
+            "chatSummary": "Move to Close range and drop prone. Gain +1 Protection against the triggering attack."
+          },
+          "retreat": {
+            "name": "Retreat",
+            "description": "When one of your allies within Close range makes a <strong>Movement</strong> minor action away from the enemy, you may use your reaction to follow them, moving to the same destination as them. If you do so, you lose your normal minor action during your next turn (you can still gain an extra minor action by spending Momentum).",
+            "chatSummary": "Follow an ally's Movement to the same destination. Lose your minor action next turn."
           }
         }
       }
@@ -1446,6 +1621,10 @@
       "deleteItem": "Delete",
       "chatItem": "Send to Chat",
       "moreActions": "More actions"
+    },
+    "houseMemberMenu": {
+      "openSheet": "Open Sheet",
+      "removeMember": "Remove Member"
     },
     "extendedTaskTracker": {
       "add": "+ Tracker",
@@ -1698,6 +1877,10 @@
       "searchPlaceholder": "Filter talents…",
       "source": "Source",
       "allSources": "All sources",
+      "compendium": "Compendium",
+      "allCompendiums": "All compendiums",
+      "type": "Type",
+      "allTypes": "All types",
       "requirement": "Requirement",
       "anyRequirement": "Any requirement",
       "requires": "Requires",
@@ -1726,6 +1909,7 @@
         "none": "No requirement",
         "attribute": "Attribute",
         "discipline": "Department",
+        "department": "Department",
         "species": "Species",
         "house": "House",
         "systems": "Ship systems",
@@ -1855,6 +2039,7 @@
       "rollCasualties": "Roll Casualties",
       "openSceneTraits": "Scene Traits",
       "openWorldTraits": "Campaign Traits",
+      "sceneTraitCleanup": "Clean Up Scene Traits Actors",
       "traitsDialog": {
         "label": "Traits",
         "title": "Traits",
