@@ -40,6 +40,10 @@ import {
   installStarshipTabs,
 } from "../lcars-sheet/ship-assignment.mjs";
 import { installCharacterDivisionControl } from "../lcars-sheet/division-control.mjs";
+import {
+  installMissionPodHooks,
+  installMissionPodTalentButton,
+} from "../lcars-sheet/mission-pod.mjs";
 
 import { installMobileMode } from "../mobile-sheet/mobile-mode.mjs";
 import { installLcarsSheetMode } from "../lcars-sheet/lcars-mode.mjs";
@@ -1007,13 +1011,28 @@ function handleStarshipSheetRender(app, root) {
   if (!actor) return;
   if (actor.type !== "starship" && actor.type !== "smallcraft") return;
 
+  const installMissionPodButtonSafely = () => {
+    if (actor.type !== "starship") return;
+    try {
+      installMissionPodTalentButton(root, actor);
+    } catch (error) {
+      console.warn(`${MODULE_ID} | Mission Pod talent button failed`, error);
+    }
+  };
+
   if (
     actor.type === "starship" &&
     app?.id?.startsWith("LcarsStarshipSheet2e")
   ) {
-    void installStarshipTabs(root, app, actor).catch((error) => {
-      console.error(`${MODULE_ID} | LCARS starship tabs failed`, error);
-    });
+    // installStarshipTabs re-parents the talent rows into a detached panel
+    // before attaching it, so the button must be injected once that settles.
+    void installStarshipTabs(root, app, actor)
+      .catch((error) => {
+        console.error(`${MODULE_ID} | LCARS starship tabs failed`, error);
+      })
+      .finally(() => installMissionPodButtonSafely());
+  } else {
+    installMissionPodButtonSafely();
   }
 
   // LCARS starship/smallcraft sheets have their own strict tooltip handling.
@@ -1275,6 +1294,7 @@ export function installRenderApplicationV2Hook() {
   if (_staUtilsRenderApplicationV2HookInstalled) return;
   _staUtilsRenderApplicationV2HookInstalled = true;
   installShipAssignmentHooks();
+  installMissionPodHooks();
 
   Hooks.on("renderApplicationV2", (app, root /* HTMLElement */, context) => {
     // Early exit for non-STA applications to minimize overhead

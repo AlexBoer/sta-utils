@@ -298,6 +298,31 @@ function _installCollapsibleListeners(sheet, actorId) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Window chrome ↔ color-scheme sync
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The LCARS color-scheme class lives on the inner `.character-sheet`/
+ * `.starship-sheet` element, but the window border and native title bar are
+ * styled on `.sta-lcars-window.application`, which is an ANCESTOR of that
+ * element — CSS custom properties don't cascade upward, so the window chrome
+ * would otherwise stay stuck on the default scheme color. Copy the resolved
+ * scheme colors onto the window root as inline custom properties so the
+ * border/header follow whichever scheme is active.
+ *
+ * @param {HTMLElement} root  - The `.application` window root.
+ * @param {HTMLElement} sheet - The `.character-sheet`/`.starship-sheet.sta-lcars` element.
+ */
+function _syncWindowChromeToScheme(root, sheet) {
+  if (!root || !sheet) return;
+  const style = getComputedStyle(sheet);
+  const chrome = style.getPropertyValue("--lcars-primary-color").trim();
+  const textHeader = style.getPropertyValue("--lcars-text-header").trim();
+  if (chrome) root.style.setProperty("--lcars-chrome", chrome);
+  if (textHeader) root.style.setProperty("--lcars-text-header", textHeader);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Per-actor LCARS scheme picker
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -474,6 +499,7 @@ export async function installLcarsSheetMode(sheetApp, root) {
   await injectSheetVariantCss(LCARS_CSS_LINK_ID, LCARS_CSS_PATH, true);
 
   root?.classList.add("sta-lcars-window");
+  _syncWindowChromeToScheme(root, sheet);
 
   const actorId = sheetApp?.document?.id ?? "unknown";
 

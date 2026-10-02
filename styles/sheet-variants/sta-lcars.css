@@ -417,14 +417,14 @@ body {
   background: var(--lcars-chrome, var(--lcars-orange)) !important;
   border-bottom: none;
   border-radius: 0;
-  color: var(--lcars-text-dark, #000);
+  color: var(--lcars-text-header, var(--lcars-text-dark, #000));
   font-family: var(--lcars-font-heading, "Antonio", sans-serif);
   padding: 0.1rem 0.75rem;
 }
 
 .sta-lcars-window.application .window-header .window-title,
 .sta-lcars-window.application .window-header .header-control {
-  color: var(--lcars-text-dark, #000);
+  color: var(--lcars-text-header, var(--lcars-text-dark, #000));
 }
 
 .sta-lcars-window.application .window-header .window-title {
@@ -2628,6 +2628,16 @@ body {
   .value-used .control.toggle i:hover,
   .value-used .control.toggle i:focus-visible {
     color: var(--lcars-orange);
+  }
+
+  /* Must sit in this scope: the generic `.control i { color: black }` above would otherwise win. */
+  a.mission-pod-variants.control i {
+    color: var(--lcars-tracktitle, var(--lcars-lavender));
+  }
+
+  a.mission-pod-variants.control:hover i,
+  a.mission-pod-variants.control:focus-visible i {
+    color: var(--lcars-chrome, var(--lcars-orange));
   }
 }
 

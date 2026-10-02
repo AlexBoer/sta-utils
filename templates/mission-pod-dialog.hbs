@@ -1,0 +1,55 @@
+{{!-- Mission Pod Variants management dialog --}}
+<div class="sta-mission-pod-dialog-body">
+  <p class="hint">{{hint}}</p>
+
+  <div class="sta-mission-pod-members">
+    <div class="sta-mission-pod-member sta-mission-pod-member-self">
+      <img src="{{ship.img}}" alt="{{ship.name}}" />
+      <span class="name">{{ship.name}}</span>
+      {{#if groupShipInThisGroup}}
+        {{#if ship.isGroupShip}}
+          <button type="button" class="sta-mission-pod-btn swap-pod" disabled title="{{currentPodLabel}}">{{currentPodLabel}}</button>
+        {{else}}
+          <button type="button" class="sta-mission-pod-btn swap-pod" data-action="makeGroupShip" data-actor-id="{{ship.id}}" title="{{swapPodTooltip}}">{{swapPodLabel}}</button>
+        {{/if}}
+      {{/if}}
+    </div>
+
+    {{#each variants as |variant|}}
+      <div class="sta-mission-pod-member" data-actor-id="{{variant.id}}">
+        <img src="{{variant.img}}" alt="{{variant.name}}" />
+        <span class="name">{{variant.name}}</span>
+        {{#if ../groupShipInThisGroup}}
+          {{#if variant.isGroupShip}}
+            <button type="button" class="sta-mission-pod-btn swap-pod" disabled title="{{../currentPodLabel}}">{{../currentPodLabel}}</button>
+          {{else}}
+            <button type="button" class="sta-mission-pod-btn swap-pod" data-action="makeGroupShip" data-actor-id="{{variant.id}}" title="{{../swapPodTooltip}}">{{../swapPodLabel}}</button>
+          {{/if}}
+        {{/if}}
+        <a class="preview" data-action="previewVariant" data-actor-id="{{variant.id}}" data-tooltip-html="{{variant.previewTooltip}}">
+          <i class="fas fa-eye"></i>
+        </a>
+        <a class="remove" data-action="removeVariant" data-actor-id="{{variant.id}}" title="{{removeLabel}}">
+          <i class="fas fa-times"></i>
+        </a>
+      </div>
+    {{else}}
+      <p class="sta-mission-pod-empty">{{noVariantsLabel}}</p>
+    {{/each}}
+  </div>
+
+  <div class="sta-mission-pod-add-row">
+    <select name="candidateActorId">
+      <option value="">{{choosePrompt}}</option>
+      {{#each candidates as |candidate|}}
+        <option value="{{candidate.id}}">{{candidate.label}}</option>
+      {{/each}}
+    </select>
+    <button type="button" class="sta-mission-pod-btn" data-action="addVariant" disabled>{{addLabel}}</button>
+  </div>
+
+  <div class="sta-mission-pod-create-row">
+    <button type="button" class="sta-mission-pod-btn" data-action="syncVariants" title="{{syncTooltip}}" {{#unless hasVariants}}disabled{{/unless}}>{{syncLabel}}</button>
+    <button type="button" class="sta-mission-pod-btn" data-action="createVariant">{{createVariantLabel}}</button>
+  </div>
+</div>

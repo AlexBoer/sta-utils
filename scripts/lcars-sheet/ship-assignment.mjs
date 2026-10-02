@@ -1,8 +1,11 @@
 import { MODULE_ID } from "../core/constants.mjs";
+import { getGroupShipActor } from "../core/settings.mjs";
 import { openShipAdvancementDialog } from "./ship-advancement-dialog.mjs";
 
 const SHIP_ASSIGNMENT_FLAG = "assignedShipUuid";
 const ADVANCEMENT_FLAG = "shipAdvancementHistory";
+// Sentinel flag value meaning "always the currently configured Group Ship".
+const GROUP_SHIP_SENTINEL = "__group_ship__";
 const advancementMenus = new WeakMap();
 
 let hooksInstalled = false;
@@ -26,6 +29,25 @@ function getAssignmentUuid(actor) {
 function localize(key, fallback) {
   const value = game.i18n?.localize?.(key);
   return value && value !== key ? value : fallback;
+}
+
+function localizeFormat(key, data, fallback) {
+  const value = game.i18n?.format?.(key, data);
+  return value && value !== key ? value : fallback;
+}
+
+function groupShipOptionLabel() {
+  const ship = getGroupShipActor();
+  return ship
+    ? localizeFormat(
+        "sta-utils.shipAssignment.groupShip",
+        { name: ship.name },
+        `Group Ship (${ship.name})`,
+      )
+    : localize(
+        "sta-utils.shipAssignment.groupShipUnset",
+        "Group Ship (Unassigned)",
+      );
 }
 
 function getCrewDivision(actor) {
@@ -67,7 +89,9 @@ export async function prepareStarshipTabs(ship) {
 
     const assignedUuid = getAssignmentUuid(actor);
     const matchesShip = assignedUuid
-      ? assignedUuid === ship.uuid
+      ? assignedUuid === GROUP_SHIP_SENTINEL
+        ? getGroupShipActor()?.uuid === ship.uuid
+        : assignedUuid === ship.uuid
       : (() => {
           const matches = legacyShipMatches(actor.system?.assignment);
           return matches.length === 1 && matches[0].uuid === ship.uuid;
@@ -331,7 +355,9 @@ function contextTarget(target) {
 function installAdvancementContextMenu(app, list, ship) {
   const previous = advancementMenus.get(app);
   try {
-    previous?.close?.();
+    // close() is async internally; the try/catch alone won't catch a
+    // rejected promise (e.g. when the old menu's element is already gone).
+    Promise.resolve(previous?.close?.()).catch(() => {});
   } catch (_) {
     // The previous menu may already have been removed during a rerender.
   }
@@ -682,6 +708,7 @@ export function installShipAssignmentControl(root, actor) {
     .filter((ship) => ship.isOwner)
     .sort((left, right) => left.name.localeCompare(right.name));
   const currentUuid = getAssignmentUuid(actor);
+  const isGroupShipSelected = currentUuid === GROUP_SHIP_SENTINEL;
   const currentName = String(actor.system?.assignment ?? "").trim();
   const currentLegacyMatches = currentUuid
     ? []
@@ -708,7 +735,13 @@ export function installShipAssignmentControl(root, actor) {
   );
   select.appendChild(noAssignment);
 
-  if (currentName && !selectedShip) {
+  const groupShipOption = document.createElement("option");
+  groupShipOption.value = GROUP_SHIP_SENTINEL;
+  groupShipOption.textContent = groupShipOptionLabel();
+  groupShipOption.selected = isGroupShipSelected;
+  select.appendChild(groupShipOption);
+
+  if (currentName && !selectedShip && !isGroupShipSelected) {
     const unavailable = document.createElement("option");
     unavailable.value = "__current_unavailable__";
     unavailable.textContent = localize(
@@ -729,9 +762,12 @@ export function installShipAssignmentControl(root, actor) {
 
   select.addEventListener("change", async () => {
     if (!actor.isOwner) return;
-    const ship = ships.find((candidate) => candidate.uuid === select.value);
-    if (select.value && !ship) return;
-    if (ship && !ship.isOwner) {
+    const isGroupShip = select.value === GROUP_SHIP_SENTINEL;
+    const ship = isGroupShip
+      ? getGroupShipActor()
+      : ships.find((candidate) => candidate.uuid === select.value);
+    if (select.value && !isGroupShip && !ship) return;
+    if (ship && !isGroupShip && !ship.isOwner) {
       ui.notifications?.warn?.(
         localize(
           "sta-utils.shipAssignment.permissionChanged",
@@ -743,7 +779,13 @@ export function installShipAssignmentControl(root, actor) {
 
     const previousUuid = getAssignmentUuid(actor);
     try {
-      if (ship) {
+      if (isGroupShip) {
+        await actor.setFlag(
+          MODULE_ID,
+          SHIP_ASSIGNMENT_FLAG,
+          GROUP_SHIP_SENTINEL,
+        );
+      } else if (ship) {
         await actor.setFlag(MODULE_ID, SHIP_ASSIGNMENT_FLAG, ship.uuid);
       } else {
         await actor.unsetFlag(MODULE_ID, SHIP_ASSIGNMENT_FLAG);
@@ -793,18 +835,56 @@ function onShipUpdated(ship, changes) {
   knownShipNames.set(ship.uuid, ship.name);
   if (!previousName || previousName === ship.name) return;
 
+  const isGroupShip = getGroupShipActor()?.uuid === ship.uuid;
   for (const actor of game.actors ?? []) {
-    if (
-      actor.type === "character" &&
-      getAssignmentUuid(actor) === ship.uuid &&
-      actor.system?.assignment !== ship.name
-    ) {
+    if (actor.type !== "character") continue;
+    const assignedUuid = getAssignmentUuid(actor);
+    const linkedToThisShip =
+      assignedUuid === ship.uuid ||
+      (isGroupShip && assignedUuid === GROUP_SHIP_SENTINEL);
+    if (linkedToThisShip && actor.system?.assignment !== ship.name) {
       actor.update({ "system.assignment": ship.name }).catch((error) => {
         console.warn(
           `${MODULE_ID} | Unable to sync renamed ship assignment`,
           error,
         );
       });
+    }
+  }
+  if (isGroupShip) refreshOpenCharacterSheets();
+}
+
+/**
+ * Keep every character assigned to the sentinel "Group Ship" entry in sync
+ * with whichever starship is currently configured as the party's Group Ship.
+ */
+function syncGroupShipAssignments() {
+  if (!game.user?.isGM) return;
+  const groupShip = getGroupShipActor();
+  const name = groupShip?.name ?? "";
+  for (const actor of game.actors ?? []) {
+    if (actor.type !== "character") continue;
+    if (getAssignmentUuid(actor) !== GROUP_SHIP_SENTINEL) continue;
+    if (actor.system?.assignment === name) continue;
+    actor.update({ "system.assignment": name }).catch((error) => {
+      console.warn(
+        `${MODULE_ID} | Unable to sync group ship assignment`,
+        error,
+      );
+    });
+  }
+  refreshOpenStarshipSheets();
+  refreshOpenCharacterSheets();
+}
+
+function refreshOpenCharacterSheets() {
+  for (const actor of game.actors ?? []) {
+    if (
+      actor.type === "character" &&
+      getAssignmentUuid(actor) === GROUP_SHIP_SENTINEL &&
+      actor.sheet?.rendered
+    ) {
+      actor.sheet.render(true);
     }
   }
 }
@@ -832,9 +912,19 @@ export function installShipAssignmentHooks() {
   Hooks.once("ready", async () => {
     for (const ship of allStarships()) knownShipNames.set(ship.uuid, ship.name);
     await migrateLegacyAssignments();
+    syncGroupShipAssignments();
   });
   Hooks.on("createActor", (actor) => {
     if (actor.type === "starship") knownShipNames.set(actor.uuid, actor.name);
+  });
+  Hooks.on("updateSetting", (setting) => {
+    if (
+      setting.key !== `${MODULE_ID}.groupShipActorId` &&
+      setting.key !== "sta-officers-log.groupShipActorId"
+    ) {
+      return;
+    }
+    syncGroupShipAssignments();
   });
   Hooks.on("updateActor", (actor, changes) => {
     if (actor.type !== "character") return;

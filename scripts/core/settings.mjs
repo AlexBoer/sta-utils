@@ -1470,6 +1470,20 @@ export function getGroupShipActor() {
   return game.actors?.get?.(id) ?? null;
 }
 
+/**
+ * Sets the configured Group Ship actor ID.
+ * If sta-officers-log is active, delegates to its (authoritative) setting instead.
+ * @param {string} actorId - Actor ID, or "" to clear.
+ */
+export async function setGroupShipActorId(actorId) {
+  const id = String(actorId ?? "");
+  if (game.modules.get(OFFICERS_LOG_MODULE_ID)?.active) {
+    await game.settings.set(OFFICERS_LOG_MODULE_ID, "groupShipActorId", id);
+  } else {
+    await game.settings.set(MODULE_ID, GROUP_SHIP_ACTOR_SETTING, id);
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /*  Settings group headers (renderSettingsConfig hook)                 */
 /* ------------------------------------------------------------------ */
