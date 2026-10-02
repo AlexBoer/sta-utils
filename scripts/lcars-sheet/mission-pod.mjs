@@ -5,10 +5,12 @@
  * starship actors representing pre-built loadout variants (one physical ship,
  * multiple mission-pod configurations). The "Sync Variants" button copies,
  * from the ship whose dialog is open to every other variant:
- *   - Systems ratings (system.systems.*)
- *   - Departments ratings (system.departments.*)
+ *   - Systems/Departments base + advancement ratings. Each ship's rating is
+ *     base + advancements + the bonus flags on its own Mission Pod talent;
+ *     only the first two are shared, each variant re-applies its own pod bonus.
  *   - Talent, Trait, and Equipment items, unless individually flagged
- *     "Pod-Specific" (exempt) on the item's own sheet
+ *     "Pod-Specific" (exempt) on the item's own sheet. Mission Pod talents
+ *     themselves are never copied.
  * Nothing is synced automatically.
  *
  * A starship can belong to at most one variant group at a time.
@@ -25,6 +27,25 @@ const GROUP_FLAG = "missionPodGroupId";
 const CURRENT_VARIANT_FLAG = "missionPodCurrentVariantId";
 const TALENT_SYNC_FLAG = "missionPodSyncId";
 const TALENT_EXEMPT_FLAG = "missionPodExempt";
+const POD_BONUS_FLAG = "missionPodBonus";
+const STAT_KEYS = {
+  systems: [
+    "communications",
+    "computers",
+    "engines",
+    "sensors",
+    "structure",
+    "weapons",
+  ],
+  departments: [
+    "command",
+    "conn",
+    "engineering",
+    "medicine",
+    "science",
+    "security",
+  ],
+};
 const ASSIGNED_SHIP_FLAG = "assignedShipUuid";
 const MISSION_POD_TALENT_NAME = "mission pod";
 
@@ -308,7 +329,11 @@ export async function removeMissionPodVariant(ship) {
 /* ------------------------------------------------------------------ */
 
 export function isTalentMissionPodExempt(item) {
-  return Boolean(item?.getFlag?.(MODULE_ID, TALENT_EXEMPT_FLAG));
+  // Mission Pod talents are always Pod-Specific.
+  return (
+    isMissionPodItem(item) ||
+    Boolean(item?.getFlag?.(MODULE_ID, TALENT_EXEMPT_FLAG))
+  );
 }
 
 /** Whether `actor` has a talent named "Mission Pod" (the trigger for pod-specific UI). */
@@ -341,38 +366,100 @@ function buildPreviewTooltip(actor) {
   return `<p>${description}</p><p>${escapeHtml(localize("podSpecificItemsTitle", "Pod-Specific items"))}:</p><ul>${items}</ul>`;
 }
 
-/**
- * Pull out only the `.value` rating from a systems/departments object,
- * ignoring transient per-session fields like `.selected` (power routing) and
- * `.breaches` (combat damage) that should NOT be shared across variants.
- */
-function extractValueChanges(changeGroup) {
-  if (!changeGroup) return null;
-  const result = {};
-  for (const [key, entry] of Object.entries(changeGroup)) {
-    if (entry && Object.prototype.hasOwnProperty.call(entry, "value")) {
-      result[key] = { value: entry.value };
+/* ------------------------------------------------------------------ */
+/*  Mission Pod stat bonuses                                           */
+/*  A ship's rating = base + advancements + its pod's bonus. Only the  */
+/*  first two are shared between variants; the bonus lives in flags on */
+/*  the Mission Pod talent and is applied per ship.                    */
+/* ------------------------------------------------------------------ */
+
+function isMissionPodItem(item) {
+  return TALENT_TYPES.includes(item?.type) && isMissionPodName(item.name);
+}
+
+/** Read a Mission Pod talent's bonus flags as `{ systems: {key: n}, departments: {key: n} }`. */
+function getPodBonusOf(item) {
+  const raw = item?.getFlag?.(MODULE_ID, POD_BONUS_FLAG) ?? {};
+  const bonus = {};
+  for (const [group, keys] of Object.entries(STAT_KEYS)) {
+    bonus[group] = {};
+    for (const key of keys) {
+      bonus[group][key] = Math.trunc(Number(raw?.[group]?.[key])) || 0;
     }
   }
-  return Object.keys(result).length ? result : null;
+  return bonus;
+}
+
+/** Total bonus from every Mission Pod talent on `actor`. */
+function getShipPodBonus(actor) {
+  const total = getPodBonusOf(null);
+  for (const item of actor?.items ?? []) {
+    if (!isMissionPodItem(item)) continue;
+    const bonus = getPodBonusOf(item);
+    for (const [group, keys] of Object.entries(STAT_KEYS)) {
+      for (const key of keys) total[group][key] += bonus[group][key];
+    }
+  }
+  return total;
+}
+
+/** `ship`'s Systems/Departments ratings with its own pod bonus removed. */
+function getCoreStats(ship) {
+  const bonus = getShipPodBonus(ship);
+  const core = {};
+  for (const [group, keys] of Object.entries(STAT_KEYS)) {
+    core[group] = {};
+    for (const key of keys) {
+      const value = Number(ship.system?.[group]?.[key]?.value);
+      core[group][key] =
+        (Number.isFinite(value) ? value : 0) - bonus[group][key];
+    }
+  }
+  return core;
+}
+
+/** Update payload setting `target` to `core` plus the target's own pod bonus. */
+function buildStatsUpdate(core, target) {
+  const bonus = getShipPodBonus(target);
+  const update = {};
+  for (const [group, keys] of Object.entries(STAT_KEYS)) {
+    for (const key of keys) {
+      update[`system.${group}.${key}.value`] =
+        core[group][key] + bonus[group][key];
+    }
+  }
+  return update;
+}
+
+/** Add `sign` times `bonus` to `actor`'s ratings (pod talent added, removed, or its bonus edited). */
+async function applyPodBonus(actor, bonus, sign = 1) {
+  const update = {};
+  for (const [group, keys] of Object.entries(STAT_KEYS)) {
+    for (const key of keys) {
+      const amount = (bonus?.[group]?.[key] ?? 0) * sign;
+      if (!amount) continue;
+      const current = Number(actor.system?.[group]?.[key]?.value) || 0;
+      update[`system.${group}.${key}.value`] = current + amount;
+    }
+  }
+  if (Object.keys(update).length) await actor.update(update);
 }
 
 /**
  * One-way, on-demand sync from `source` to each target: Systems/Departments
- * ratings plus non-Pod-Specific Talent/Trait/Equipment items. With `prune`,
- * target copies that no longer exist on the source (or became Pod-Specific
- * there) are deleted. Nothing syncs automatically.
+ * base + advancement ratings (each target then adds its own Mission Pod
+ * bonus) plus non-Pod-Specific Talent/Trait/Equipment items. Mission Pod
+ * talents are never copied or pruned. With `prune`, target copies that no
+ * longer exist on the source (or became Pod-Specific there) are deleted.
+ * Nothing syncs automatically.
  */
 async function syncShipToVariants(source, targets, { prune = false } = {}) {
-  const statsPayload = {};
-  const systems = extractValueChanges(source.system?.systems);
-  const departments = extractValueChanges(source.system?.departments);
-  if (systems) statsPayload.systems = systems;
-  if (departments) statsPayload.departments = departments;
+  const coreStats = getCoreStats(source);
 
   const shared = [];
   for (const item of source.items) {
     if (!SYNCED_ITEM_TYPES.includes(item.type)) continue;
+    if (isMissionPodItem(item)) continue;
     let syncId = item.getFlag(MODULE_ID, TALENT_SYNC_FLAG);
     if (isTalentMissionPodExempt(item)) {
       // Drop the stale link so copies made before it became Pod-Specific get pruned.
@@ -391,12 +478,11 @@ async function syncShipToVariants(source, targets, { prune = false } = {}) {
 
   for (const target of targets) {
     try {
-      if (Object.keys(statsPayload).length) {
-        await target.update({ system: statsPayload });
-      }
+      await target.update(buildStatsUpdate(coreStats, target));
 
-      const targetItems = target.items.filter((item) =>
-        SYNCED_ITEM_TYPES.includes(item.type),
+      const targetItems = target.items.filter(
+        (item) =>
+          SYNCED_ITEM_TYPES.includes(item.type) && !isMissionPodItem(item),
       );
       const bySyncId = new Map();
       const byTypeAndName = new Map();
@@ -458,8 +544,9 @@ async function syncShipToVariants(source, targets, { prune = false } = {}) {
 
 /**
  * Duplicate `ship` into a brand-new starship actor for use as another Mission
- * Pod loadout: strips any items flagged "Pod-Specific" (those are meant to be
- * unique per variant) and joins the new actor to the same variant group.
+ * Pod loadout. The copy gets base + advancement ratings only (the source's pod
+ * bonus is removed), no Mission Pod talent, and no Pod-Specific items; it
+ * joins the same variant group.
  */
 async function createShipVariant(ship) {
   const data = ship.toObject();
@@ -474,8 +561,18 @@ async function createShipVariant(ship) {
       !foundry.utils.getProperty(
         item,
         `flags.${MODULE_ID}.${TALENT_EXEMPT_FLAG}`,
-      ),
+      ) && !(TALENT_TYPES.includes(item.type) && isMissionPodName(item.name)),
   );
+  const core = getCoreStats(ship);
+  for (const [group, keys] of Object.entries(STAT_KEYS)) {
+    for (const key of keys) {
+      foundry.utils.setProperty(
+        data,
+        `system.${group}.${key}.value`,
+        core[group][key],
+      );
+    }
+  }
   foundry.utils.setProperty(data, `flags.${MODULE_ID}.${GROUP_FLAG}`, null);
 
   const created = await Actor.create(data);
@@ -820,6 +917,78 @@ export function installMissionPodTalentButton(root, actor) {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Item sheet — Mission Pod bonus fields (on the Mission Pod talent)    */
+/* ------------------------------------------------------------------ */
+
+function installPodBonusFields(root, item) {
+  if (root.querySelector(".mission-pod-bonus-fields")) return;
+
+  const bonus = getPodBonusOf(item);
+  const groupTitles = {
+    systems: localize("bonusSystems", "Systems"),
+    departments: localize("bonusDepartments", "Departments"),
+  };
+  const labelKeys = {
+    systems: "sta.actor.starship.system.",
+    departments: "sta.actor.starship.department.",
+  };
+
+  const groupsHtml = Object.entries(STAT_KEYS)
+    .map(([group, keys]) => {
+      const rows = keys
+        .map((key) => {
+          const label = escapeHtml(
+            game.i18n.localize(`${labelKeys[group]}${key}`),
+          );
+          return `<label class="mission-pod-bonus-row">
+            <span>${label}</span>
+            <input type="number" step="1" value="${bonus[group][key]}" data-group="${group}" data-key="${key}" />
+          </label>`;
+        })
+        .join("");
+      return `<div class="mission-pod-bonus-group">
+        <div class="title">${escapeHtml(groupTitles[group])}</div>
+        ${rows}
+      </div>`;
+    })
+    .join("");
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "mission-pod-bonus-fields";
+  wrapper.innerHTML = `
+    <div class="title">${escapeHtml(localize("bonusTitle", "Mission Pod Bonuses"))}</div>
+    <p class="hint">${escapeHtml(localize("bonusHint", "Added to the ship's ratings when this talent is added to a ship. Not copied to other variants."))}</p>
+    <div class="mission-pod-bonus-groups">${groupsHtml}</div>
+  `;
+
+  // Not named inputs on purpose: the sheet's own form must not submit these.
+  wrapper.addEventListener("change", async (event) => {
+    const input = event.target.closest("input[data-group][data-key]");
+    if (!input) return;
+    const { group, key } = input.dataset;
+    const next = Math.trunc(Number(input.value)) || 0;
+    input.value = next;
+
+    const current = getPodBonusOf(item);
+    const delta = next - current[group][key];
+    if (!delta) return;
+    current[group][key] = next;
+    await item.setFlag(MODULE_ID, POD_BONUS_FLAG, current);
+
+    const ship = item.parent;
+    if (ship?.type === "starship") {
+      await applyPodBonus(ship, { [group]: { [key]: delta } });
+    }
+  });
+
+  const sheetBody =
+    root.querySelector(".item-sheet") ??
+    root.querySelector("[data-application-part='itemsheet']") ??
+    root;
+  sheetBody.appendChild(wrapper);
+}
+
+/* ------------------------------------------------------------------ */
 /*  Item sheet — "Pod-Specific" exemption checkbox                      */
 /*  Shown on Talent/Trait/Equipment item sheets, but only when the item */
 /*  is embedded on a starship that has a "Mission Pod" talent.           */
@@ -828,11 +997,15 @@ export function installMissionPodTalentButton(root, actor) {
 function installPodExemptCheckbox(root, item) {
   if (root.querySelector(".mission-pod-exempt-field")) return;
 
+  const locked = isMissionPodItem(item);
+  const lockedTooltip = locked
+    ? ` data-tooltip-text="${escapeHtml(localize("podAlwaysSpecific", "Mission Pod talents are always Pod-Specific."))}"`
+    : "";
   const wrapper = document.createElement("div");
   wrapper.className = "row mission-pod-exempt-field";
   wrapper.innerHTML = `
-    <label class="mission-pod-exempt-label">
-      <input type="checkbox" class="mission-pod-exempt-toggle"${isTalentMissionPodExempt(item) ? " checked" : ""} />
+    <label class="mission-pod-exempt-label"${lockedTooltip}>
+      <input type="checkbox" class="mission-pod-exempt-toggle"${isTalentMissionPodExempt(item) ? " checked" : ""}${locked ? " disabled" : ""} />
       ${localize("podSpecificLabel", "Pod-Specific (don't sync across Mission Pod variants)")}
     </label>
   `;
@@ -861,9 +1034,37 @@ export function installMissionPodHooks() {
   Hooks.on("renderApplicationV2", (app, html) => {
     const item = app.document;
     if (!item || item.documentName !== "Item") return;
+    if (isMissionPodItem(item)) {
+      installPodExemptCheckbox(html, item);
+      installPodBonusFields(html, item);
+      return;
+    }
     if (!SYNCED_ITEM_TYPES.includes(item.type)) return;
     if (item.parent?.type !== "starship") return;
     if (!actorHasMissionPodTalent(item.parent)) return;
     installPodExemptCheckbox(html, item);
+  });
+
+  // createX / deleteX fire as (document, options, userId); only the acting client applies the change.
+  Hooks.on("createItem", async (item, _options, userId) => {
+    if (userId !== game.user?.id) return;
+    const ship = item.parent;
+    if (ship?.type !== "starship" || !isMissionPodItem(item)) return;
+    try {
+      await applyPodBonus(ship, getPodBonusOf(item), 1);
+    } catch (error) {
+      console.warn(`${MODULE_ID} | Unable to apply Mission Pod bonus`, error);
+    }
+  });
+
+  Hooks.on("deleteItem", async (item, _options, userId) => {
+    if (userId !== game.user?.id) return;
+    const ship = item.parent;
+    if (ship?.type !== "starship" || !isMissionPodItem(item)) return;
+    try {
+      await applyPodBonus(ship, getPodBonusOf(item), -1);
+    } catch (error) {
+      console.warn(`${MODULE_ID} | Unable to remove Mission Pod bonus`, error);
+    }
   });
 }

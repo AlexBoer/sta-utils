@@ -10334,6 +10334,35 @@ a.mission-pod-variants {
   margin-top: 0.5rem;
 }
 
+.mission-pod-bonus-fields {
+  margin-top: 0.75rem;
+}
+
+.mission-pod-bonus-fields .hint {
+  margin: 0.25rem 0 0.5rem;
+  font-size: 0.85em;
+  opacity: 0.85;
+}
+
+.mission-pod-bonus-groups {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.mission-pod-bonus-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.mission-pod-bonus-row input {
+  width: 3.5rem;
+  text-align: center;
+}
+
 .sta-utils-group-ship-select {
   position: relative;
   display: block;
