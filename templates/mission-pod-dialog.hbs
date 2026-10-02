@@ -6,11 +6,11 @@
     <div class="sta-mission-pod-member sta-mission-pod-member-self">
       <img src="{{ship.img}}" alt="{{ship.name}}" />
       <span class="name">{{ship.name}}</span>
-      {{#if groupShipInThisGroup}}
-        {{#if ship.isGroupShip}}
-          <button type="button" class="sta-mission-pod-btn swap-pod" disabled title="{{currentPodLabel}}">{{currentPodLabel}}</button>
+      {{#if hasVariants}}
+        {{#if ship.isCurrentVariant}}
+          <button type="button" class="sta-mission-pod-btn swap-pod" disabled title="{{currentVariantLabel}}">{{currentVariantLabel}}</button>
         {{else}}
-          <button type="button" class="sta-mission-pod-btn swap-pod" data-action="makeGroupShip" data-actor-id="{{ship.id}}" title="{{swapPodTooltip}}">{{swapPodLabel}}</button>
+          <button type="button" class="sta-mission-pod-btn swap-pod" data-action="selectCurrentVariant" data-actor-id="{{ship.id}}" title="{{swapPodTooltip}}">{{swapPodLabel}}</button>
         {{/if}}
       {{/if}}
     </div>
@@ -19,11 +19,11 @@
       <div class="sta-mission-pod-member" data-actor-id="{{variant.id}}">
         <img src="{{variant.img}}" alt="{{variant.name}}" />
         <span class="name">{{variant.name}}</span>
-        {{#if ../groupShipInThisGroup}}
-          {{#if variant.isGroupShip}}
-            <button type="button" class="sta-mission-pod-btn swap-pod" disabled title="{{../currentPodLabel}}">{{../currentPodLabel}}</button>
+        {{#if ../hasVariants}}
+          {{#if variant.isCurrentVariant}}
+            <button type="button" class="sta-mission-pod-btn swap-pod" disabled title="{{../currentVariantLabel}}">{{../currentVariantLabel}}</button>
           {{else}}
-            <button type="button" class="sta-mission-pod-btn swap-pod" data-action="makeGroupShip" data-actor-id="{{variant.id}}" title="{{../swapPodTooltip}}">{{../swapPodLabel}}</button>
+            <button type="button" class="sta-mission-pod-btn swap-pod" data-action="selectCurrentVariant" data-actor-id="{{variant.id}}" title="{{../swapPodTooltip}}">{{../swapPodLabel}}</button>
           {{/if}}
         {{/if}}
         <a class="preview" data-action="previewVariant" data-actor-id="{{variant.id}}" data-tooltip-html="{{variant.previewTooltip}}">

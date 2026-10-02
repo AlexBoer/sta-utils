@@ -22,8 +22,10 @@ const Base = foundry.applications.api.HandlebarsApplicationMixin(
 );
 
 const GROUP_FLAG = "missionPodGroupId";
+const CURRENT_VARIANT_FLAG = "missionPodCurrentVariantId";
 const TALENT_SYNC_FLAG = "missionPodSyncId";
 const TALENT_EXEMPT_FLAG = "missionPodExempt";
+const ASSIGNED_SHIP_FLAG = "assignedShipUuid";
 const MISSION_POD_TALENT_NAME = "mission pod";
 
 /** Case-insensitive: any name containing "mission pod". */
@@ -86,6 +88,170 @@ export function getMissionPodVariants(ship) {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
+function getMissionPodGroupMembers(ship) {
+  return ship ? [ship, ...getMissionPodVariants(ship)] : [];
+}
+
+export function getMissionPodCurrentVariant(ship) {
+  const members = getMissionPodGroupMembers(ship);
+  if (!members.length) return null;
+  const memberIds = new Set(members.map((member) => member.id));
+  const configuredGroupShip = game.actors?.get?.(getGroupShipActorId());
+  if (configuredGroupShip && memberIds.has(configuredGroupShip.id)) {
+    return configuredGroupShip;
+  }
+
+  for (const member of members) {
+    const currentId = String(
+      member.getFlag?.(MODULE_ID, CURRENT_VARIANT_FLAG) ?? "",
+    );
+    if (memberIds.has(currentId)) {
+      return members.find((candidate) => candidate.id === currentId) ?? null;
+    }
+  }
+
+  return [...members].sort(
+    (a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id),
+  )[0];
+}
+
+async function setMissionPodCurrentVariant(ship, currentVariant) {
+  const groupId = getMissionPodGroupId(ship);
+  const members = getMissionPodGroupMembers(ship);
+  if (
+    !groupId ||
+    !currentVariant ||
+    !members.some((member) => member.id === currentVariant.id)
+  ) {
+    return false;
+  }
+  await Promise.all(
+    members.map((member) =>
+      member.setFlag(MODULE_ID, CURRENT_VARIANT_FLAG, currentVariant.id),
+    ),
+  );
+  return true;
+}
+
+function getCanvasTokenDocument(app, actor) {
+  return app?.token?.document ?? (actor?.isToken ? actor.token : null);
+}
+
+function getMissionPodTokenSwapContext(app, actor) {
+  if (!game.user?.isGM || actor?.type !== "starship") return null;
+  const token = getCanvasTokenDocument(app, actor);
+  const scene = canvas.scene;
+  const representedShip = token?.actorId
+    ? game.actors?.get?.(token.actorId)
+    : null;
+  const groupId = getMissionPodGroupId(representedShip);
+  const currentVariant = getMissionPodCurrentVariant(representedShip);
+
+  if (
+    !token ||
+    !scene ||
+    token.parent?.id !== scene.id ||
+    !representedShip ||
+    !groupId ||
+    !currentVariant ||
+    representedShip.id === currentVariant.id
+  ) {
+    return null;
+  }
+  return { currentVariant, groupId, scene };
+}
+
+async function reassignCanvasVariantTokens(app, actor) {
+  const context = getMissionPodTokenSwapContext(app, actor);
+  if (!context) return;
+
+  const variantIds = new Set(
+    allStarships()
+      .filter((ship) => getMissionPodGroupId(ship) === context.groupId)
+      .map((ship) => ship.id),
+  );
+  const updates = context.scene.tokens
+    .filter(
+      (token) =>
+        variantIds.has(token.actorId) &&
+        token.actorId !== context.currentVariant.id,
+    )
+    .map((token) => ({
+      _id: token.id,
+      actorId: context.currentVariant.id,
+      actorLink: true,
+      delta: null,
+    }));
+
+  if (!updates.length) {
+    ui.notifications?.info?.(
+      localize(
+        "noVariantTokens",
+        "No other Mission Pod variant tokens on this scene.",
+      ),
+    );
+  } else {
+    try {
+      await context.scene.updateEmbeddedDocuments("Token", updates);
+      ui.notifications?.info?.(
+        localizeFormat(
+          "tokensReassigned",
+          { count: updates.length, name: context.currentVariant.name },
+          `Reassigned ${updates.length} token(s) to ${context.currentVariant.name}.`,
+        ),
+      );
+    } catch (error) {
+      console.error(`${MODULE_ID} | Failed to reassign variant tokens`, error);
+      ui.notifications?.error?.(
+        localize("tokenReassignFailed", "Unable to reassign variant tokens."),
+      );
+      return;
+    }
+  }
+
+  await app.close();
+  await context.currentVariant.sheet?.render(true);
+}
+
+export function installMissionPodTokenSwapButton(app, root, actor) {
+  const nameRow = root?.querySelector?.(
+    ".top-right-column .name-row, .right-column .name-row",
+  );
+  if (!nameRow) return;
+
+  const existing = nameRow.querySelector(".sta-lcars-mission-pod-token-swap");
+  const context = getMissionPodTokenSwapContext(app, actor);
+  if (!context) {
+    existing?.remove();
+    return;
+  }
+  if (existing) return;
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "sta-lcars-theme-btn sta-lcars-mission-pod-token-swap";
+  button.title = localize(
+    "reassignVariantTokens",
+    "Reassign all Mission Pod variant tokens on this scene to this group's Current Variant",
+  );
+  button.setAttribute("aria-label", button.title);
+  button.innerHTML = '<i class="fa-solid fa-shuffle" aria-hidden="true"></i>';
+  button.addEventListener("click", async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    button.disabled = true;
+    try {
+      await reassignCanvasVariantTokens(app, actor);
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  const linkButton = nameRow.querySelector(".sta-lcars-token-link-btn");
+  if (linkButton) linkButton.insertAdjacentElement("afterend", button);
+  else nameRow.appendChild(button);
+}
+
 /** Unset the group flag on any member left alone once a group shrinks to size 1. */
 async function disbandIfLonely(groupId) {
   if (!groupId) return;
@@ -95,6 +261,7 @@ async function disbandIfLonely(groupId) {
   if (members.length <= 1) {
     for (const member of members) {
       await member.unsetFlag(MODULE_ID, GROUP_FLAG).catch(() => {});
+      await member.unsetFlag(MODULE_ID, CURRENT_VARIANT_FLAG).catch(() => {});
     }
   }
 }
@@ -102,23 +269,38 @@ async function disbandIfLonely(groupId) {
 export async function addMissionPodVariant(ship, candidate) {
   if (!ship || !candidate || ship.id === candidate.id) return;
   let groupId = getMissionPodGroupId(ship);
+  const currentVariant = getMissionPodCurrentVariant(ship) ?? ship;
   const previousGroupId = getMissionPodGroupId(candidate);
+  if (previousGroupId && previousGroupId !== groupId) {
+    await removeMissionPodVariant(candidate);
+  }
   if (!groupId) {
     groupId = foundry.utils.randomID();
     await ship.setFlag(MODULE_ID, GROUP_FLAG, groupId);
   }
   await candidate.setFlag(MODULE_ID, GROUP_FLAG, groupId);
-  if (previousGroupId && previousGroupId !== groupId) {
-    await disbandIfLonely(previousGroupId);
-  }
+  await setMissionPodCurrentVariant(ship, currentVariant);
   await syncShipToVariants(ship, [candidate]);
 }
 
 export async function removeMissionPodVariant(ship) {
   const groupId = getMissionPodGroupId(ship);
   if (!groupId) return;
+  const previousCurrent = getMissionPodCurrentVariant(ship);
+  const remaining = getMissionPodVariants(ship);
   await ship.unsetFlag(MODULE_ID, GROUP_FLAG);
+  await ship.unsetFlag(MODULE_ID, CURRENT_VARIANT_FLAG);
   await disbandIfLonely(groupId);
+  if (remaining.length > 1) {
+    const nextCurrent =
+      previousCurrent?.id === ship.id
+        ? [...remaining].sort(
+            (a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id),
+          )[0]
+        : previousCurrent;
+    if (nextCurrent)
+      await setMissionPodCurrentVariant(remaining[0], nextCurrent);
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -132,8 +314,7 @@ export function isTalentMissionPodExempt(item) {
 /** Whether `actor` has a talent named "Mission Pod" (the trigger for pod-specific UI). */
 export function actorHasMissionPodTalent(actor) {
   return (actor?.items ?? []).some(
-    (i) =>
-      TALENT_TYPES.includes(i.type) && isMissionPodName(i.name),
+    (i) => TALENT_TYPES.includes(i.type) && isMissionPodName(i.name),
   );
 }
 
@@ -303,14 +484,46 @@ async function createShipVariant(ship) {
   return created;
 }
 
-/**
- * Point the Group Ship setting at `newShip`, close every other member's open
- * sheet in the group, and open the new Group Ship's sheet.
- */
-async function selectAsGroupShip(groupMembers, newShip) {
+/** Select a group's current variant, keeping the Group Ship setting in sync when applicable. */
+async function selectAsCurrentVariant(groupMembers, newShip) {
   if (!newShip) return;
-  const alreadyGroupShip = getGroupShipActorId() === newShip.id;
-  if (!alreadyGroupShip) await setGroupShipActorId(newShip.id);
+  const previousVariant = getMissionPodCurrentVariant(newShip);
+  if (previousVariant?.id !== newShip.id) {
+    await setMissionPodCurrentVariant(newShip, newShip);
+
+    const groupShipId = getGroupShipActorId();
+    if (groupMembers.some((member) => member.id === groupShipId)) {
+      await setGroupShipActorId(newShip.id);
+    }
+
+    if (previousVariant) {
+      const legacyNameIsUnique =
+        allStarships().filter((ship) => ship.name === previousVariant.name)
+          .length === 1;
+      for (const character of game.actors ?? []) {
+        if (character.type !== "character") continue;
+        const assignedShipId = character.getFlag(MODULE_ID, ASSIGNED_SHIP_FLAG);
+        const assignedById =
+          assignedShipId === previousVariant.uuid ||
+          assignedShipId === previousVariant.id;
+        const assignedByLegacyName =
+          !assignedShipId &&
+          legacyNameIsUnique &&
+          character.system?.assignment === previousVariant.name;
+        if (!assignedById && !assignedByLegacyName) continue;
+
+        try {
+          await character.setFlag(MODULE_ID, ASSIGNED_SHIP_FLAG, newShip.uuid);
+          await character.update({ "system.assignment": newShip.name });
+        } catch (error) {
+          console.warn(
+            `${MODULE_ID} | Unable to reassign "${character.name}" to "${newShip.name}"`,
+            error,
+          );
+        }
+      }
+    }
+  }
 
   for (const member of groupMembers) {
     if (member.id === newShip.id) continue;
@@ -357,8 +570,7 @@ class MissionPodVariantsDialog extends Base {
     const groupId = getMissionPodGroupId(ship);
     const variants = getMissionPodVariants(ship);
     const memberIds = new Set([ship.id, ...variants.map((v) => v.id)]);
-    const currentGroupShipId = getGroupShipActorId();
-    const groupShipInThisGroup = memberIds.has(currentGroupShipId);
+    const currentVariantId = getMissionPodCurrentVariant(ship)?.id;
 
     const candidates = allStarships()
       .filter((s) => !memberIds.has(s.id))
@@ -383,16 +595,15 @@ class MissionPodVariantsDialog extends Base {
         id: ship.id,
         img: ship.img,
         name: ship.name,
-        isGroupShip: ship.id === currentGroupShipId,
+        isCurrentVariant: ship.id === currentVariantId,
       },
       variants: variants.map((v) => ({
         id: v.id,
         img: v.img,
         name: v.name,
-        isGroupShip: v.id === currentGroupShipId,
+        isCurrentVariant: v.id === currentVariantId,
         previewTooltip: buildPreviewTooltip(v),
       })),
-      groupShipInThisGroup,
       candidates,
       hint: localize(
         "hint",
@@ -412,9 +623,9 @@ class MissionPodVariantsDialog extends Base {
       swapPodLabel: localize("swapPod", "Swap Pod"),
       swapPodTooltip: localize(
         "swapPodTooltip",
-        "Closes all other open variant sheets and this dialog, then opens this one.",
+        "Make this the Current Variant. Closes other variant sheets and opens this one.",
       ),
-      currentPodLabel: localize("currentPod", "Current Pod"),
+      currentVariantLabel: localize("currentVariant", "Current Variant"),
     };
   }
 
@@ -476,16 +687,18 @@ class MissionPodVariantsDialog extends Base {
         return;
       }
 
-      const makeGroupShipButton = event.target.closest(
-        "[data-action='makeGroupShip']",
+      const selectCurrentVariantButton = event.target.closest(
+        "[data-action='selectCurrentVariant']",
       );
-      if (makeGroupShipButton) {
+      if (selectCurrentVariantButton) {
         event.preventDefault();
-        if (makeGroupShipButton.disabled) return;
-        const newShip = game.actors?.get?.(makeGroupShipButton.dataset.actorId);
+        if (selectCurrentVariantButton.disabled) return;
+        const newShip = game.actors?.get?.(
+          selectCurrentVariantButton.dataset.actorId,
+        );
         if (!newShip) return;
         const groupMembers = [this.ship, ...getMissionPodVariants(this.ship)];
-        await selectAsGroupShip(groupMembers, newShip);
+        await selectAsCurrentVariant(groupMembers, newShip);
         await this.close();
         return;
       }
@@ -495,9 +708,13 @@ class MissionPodVariantsDialog extends Base {
         event.preventDefault();
         syncButton.disabled = true;
         try {
-          await syncShipToVariants(this.ship, getMissionPodVariants(this.ship), {
-            prune: true,
-          });
+          await syncShipToVariants(
+            this.ship,
+            getMissionPodVariants(this.ship),
+            {
+              prune: true,
+            },
+          );
           ui.notifications?.info?.(
             localizeFormat(
               "synced",

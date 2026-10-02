@@ -43,6 +43,7 @@ import { installCharacterDivisionControl } from "../lcars-sheet/division-control
 import {
   installMissionPodHooks,
   installMissionPodTalentButton,
+  installMissionPodTokenSwapButton,
 } from "../lcars-sheet/mission-pod.mjs";
 
 import { installMobileMode } from "../mobile-sheet/mobile-mode.mjs";
@@ -228,6 +229,7 @@ function handleLcarsSheetRender(app, root) {
   if (game.user?.isGM && actor) {
     try {
       installLcarsTokenLinkToggleButton(app, root, actor);
+      installMissionPodTokenSwapButton(app, root, actor);
     } catch (_) {
       // ignore
     }

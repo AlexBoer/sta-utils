@@ -50,6 +50,20 @@ function groupShipOptionLabel() {
       );
 }
 
+function refreshGroupShipAssignmentLabels() {
+  const ship = getGroupShipActor();
+  for (const wrapper of document.querySelectorAll(
+    ".sta-utils-group-ship-select",
+  )) {
+    const option = wrapper.querySelector(
+      `option[value="${GROUP_SHIP_SENTINEL}"]`,
+    );
+    const label = wrapper.querySelector(".sta-utils-group-ship-label");
+    if (option) option.textContent = groupShipOptionLabel();
+    if (label) label.textContent = ship?.name ?? groupShipOptionLabel();
+  }
+}
+
 function getCrewDivision(actor) {
   const division = String(actor.system?.division ?? "").trim();
   if (division === "Custom") {
@@ -809,7 +823,18 @@ export function installShipAssignmentControl(root, actor) {
     }
   });
 
-  input.replaceWith(select);
+  if (isGroupShipSelected) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "sta-utils-group-ship-select";
+    const label = document.createElement("span");
+    label.className = "sta-utils-group-ship-label";
+    label.setAttribute("aria-hidden", "true");
+    label.textContent = getGroupShipActor()?.name ?? groupShipOptionLabel();
+    wrapper.append(select, label);
+    input.replaceWith(wrapper);
+  } else {
+    input.replaceWith(select);
+  }
 }
 
 async function migrateLegacyAssignments() {
@@ -924,6 +949,7 @@ export function installShipAssignmentHooks() {
     ) {
       return;
     }
+    refreshGroupShipAssignmentLabels();
     syncGroupShipAssignments();
   });
   Hooks.on("updateActor", (actor, changes) => {

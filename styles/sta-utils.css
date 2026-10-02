@@ -10334,6 +10334,42 @@ a.mission-pod-variants {
   margin-top: 0.5rem;
 }
 
+.sta-utils-group-ship-select {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.sta-utils-group-ship-select > select {
+  width: 100%;
+}
+
+.sta-utils-group-ship-select > select:not(:open) {
+  color: transparent !important;
+}
+
+.sta-utils-group-ship-select > select:open {
+  color: var(--lcars-text-body, var(--color-text-primary, #f7f3e8)) !important;
+}
+
+.sta-utils-group-ship-label {
+  position: absolute;
+  inset: 0 1.75rem 0 0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  padding: 0 0.5rem;
+  pointer-events: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--lcars-text-body, var(--color-text-primary, #f7f3e8));
+}
+
+.sta-utils-group-ship-select > select:open + .sta-utils-group-ship-label {
+  display: none;
+}
+
 .sta-pod-specific-icon {
   display: inline-flex;
   align-items: center;
