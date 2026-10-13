@@ -42,6 +42,8 @@ const GROUP_SHIP_ACTOR_SETTING = "groupShipActorId";
 const ENABLE_EXTENDED_TASK_TRACKER_SETTING = "enableExtendedTaskTracker";
 const NPC_BUILDER_SPECIAL_RULES_PACK_SETTING = "npcBuilderSpecialRulesPack";
 const NPC_BUILDER_EQUIPMENT_PACKS_SETTING = "npcBuilderEquipmentPacks";
+export const NPC_BUILDER_EQUIPMENT_PRESETS_SETTING =
+  "npcBuilderEquipmentPresets";
 const NPC_BUILDER_SPECIES_ABILITY_PACKS_SETTING =
   "npcBuilderSpeciesAbilityPacks";
 const NPC_BUILDER_FOCUS_PACKS_SETTING = "npcBuilderFocusPacks";
@@ -83,6 +85,8 @@ const ITEM_IMAGE_PICKER_TYPE_FOLDER_SETTINGS = {
   npc: "itemImagePickerFolderNpc",
 };
 const TOKEN_INTERACTION_DIAGNOSTICS_SETTING = "tokenInteractionDiagnostics";
+const SHEET_RENDER_DIAGNOSTICS_SETTING = "sheetRenderDiagnostics";
+const SHEET_RENDER_RELOAD_PROMPT_SETTING = "sheetRenderReloadPrompt";
 
 /** Localized group labels for the settings menu. */
 const GROUP_WORLD = "sta-utils.settings.groups.world";
@@ -384,6 +388,27 @@ export function registerSettings() {
     group: GROUP_WORLD,
   });
 
+  game.settings.register(MODULE_ID, SHEET_RENDER_DIAGNOSTICS_SETTING, {
+    name: t("sta-utils.settings.sheetRenderDiagnostics.name"),
+    hint: t("sta-utils.settings.sheetRenderDiagnostics.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, SHEET_RENDER_RELOAD_PROMPT_SETTING, {
+    name: t("sta-utils.settings.sheetRenderReloadPrompt.name"),
+    hint: t("sta-utils.settings.sheetRenderReloadPrompt.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    group: GROUP_WORLD,
+  });
+
   // ----- Group Ship -----
 
   const officersLogActive = game.modules.get(OFFICERS_LOG_MODULE_ID)?.active;
@@ -668,6 +693,14 @@ export function registerSettings() {
     type: String,
     default: "sta.items-2e",
     group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, NPC_BUILDER_EQUIPMENT_PRESETS_SETTING, {
+    name: "NPC Builder Equipment Presets",
+    scope: "world",
+    config: false,
+    type: Object,
+    default: [],
   });
 
   game.settings.register(MODULE_ID, NPC_BUILDER_SPECIES_ABILITY_PACKS_SETTING, {
@@ -998,6 +1031,28 @@ export function isTokenInteractionDiagnosticsEnabled() {
   try {
     return Boolean(
       game.settings.get(MODULE_ID, TOKEN_INTERACTION_DIAGNOSTICS_SETTING),
+    );
+  } catch (_) {
+    return false;
+  }
+}
+
+/** @returns {boolean} */
+export function isSheetRenderReloadPromptEnabled() {
+  try {
+    return Boolean(
+      game.settings.get(MODULE_ID, SHEET_RENDER_RELOAD_PROMPT_SETTING),
+    );
+  } catch (_) {
+    return true;
+  }
+}
+
+/** @returns {boolean} */
+export function isSheetRenderDiagnosticsEnabled() {
+  try {
+    return Boolean(
+      game.settings.get(MODULE_ID, SHEET_RENDER_DIAGNOSTICS_SETTING),
     );
   } catch (_) {
     return false;
@@ -1535,6 +1590,7 @@ export function installSettingsHeaderHook() {
 
     _upgradeNpcBuilderCompendiumField(tab);
     _addTokenDiagnosticsButton(tab);
+    _addSheetRenderDiagnosticsButtons(tab);
 
     // Avoid double-injection if the hook fires again
     if (!tab.querySelector(".sta-utils-settings-section")) {
@@ -1664,6 +1720,66 @@ function _addTokenDiagnosticsButton(tab) {
     : t("sta-utils.settings.tokenInteractionDiagnostics.reloadRequired");
 
   fields.appendChild(button);
+  actionGroup.append(label, fields, hint);
+  settingGroup.after(actionGroup);
+}
+
+function _addSheetRenderDiagnosticsButtons(tab) {
+  if (tab.querySelector(".sta-utils-sheet-render-diagnostics-action")) return;
+
+  const settingGroup = _findSettingFormGroup(
+    tab,
+    SHEET_RENDER_DIAGNOSTICS_SETTING,
+  );
+  if (!settingGroup) return;
+
+  const keyBase = "sta-utils.settings.sheetRenderDiagnostics";
+  const diagnostics = game.staUtils?.sheetRenderDiagnostics;
+
+  const actionGroup = document.createElement("div");
+  actionGroup.className =
+    "form-group sta-utils-sheet-render-diagnostics-action";
+
+  const label = document.createElement("label");
+  label.textContent = t(`${keyBase}.reportLabel`);
+
+  const fields = document.createElement("div");
+  fields.className = "form-fields";
+
+  const makeButton = (icon, text, onClick) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.innerHTML = `<i class="fas ${icon}"></i> ${text}`;
+    if (!diagnostics) {
+      button.disabled = true;
+      button.title = t(`${keyBase}.reloadRequired`);
+    } else {
+      button.addEventListener("click", onClick);
+    }
+    return button;
+  };
+
+  fields.append(
+    makeButton("fa-copy", t(`${keyBase}.copyButton`), async () => {
+      try {
+        await diagnostics.copy();
+      } catch (error) {
+        console.error(`${MODULE_ID} | Failed to copy render report`, error);
+        ui.notifications?.error?.(t(`${keyBase}.copyFailed`));
+      }
+    }),
+    makeButton("fa-eraser", t(`${keyBase}.clearButton`), () => {
+      diagnostics.clear();
+      ui.notifications?.info?.(t(`${keyBase}.cleared`));
+    }),
+  );
+
+  const hint = document.createElement("p");
+  hint.className = "hint";
+  hint.textContent = diagnostics
+    ? t(`${keyBase}.reportHint`)
+    : t(`${keyBase}.reloadRequired`);
+
   actionGroup.append(label, fields, hint);
   settingGroup.after(actionGroup);
 }

@@ -2,6 +2,7 @@
   <section class="sta-compendium-browser__content">
     <header class="sta-compendium-browser__header sta-talent-picker__header">
       <span class="sta-talent-picker__count">{{countText}}</span>
+      {{#if multiple}}<span class="sta-talent-picker__selection-count">{{selectedCountText}}</span>{{/if}}
       <span class="spacer"></span>
       {{#each toggles as |tg|}}
       <label class="sta-compendium-browser__viewall">
@@ -110,7 +111,7 @@
 
       {{#if hasTalents}}
       {{#each talents as |talent|}}
-      <div class="sta-compendium-browser__row sta-talent-picker__row{{#unless talent.eligible}} is-ineligible{{/unless}}" data-uuid="{{talent.uuid}}">
+      <div class="sta-compendium-browser__row sta-talent-picker__row{{#unless talent.eligible}} is-ineligible{{/unless}}{{#if talent.selected}} is-selected{{/if}}" data-uuid="{{talent.uuid}}">
         <div class="sta-compendium-browser__name sta-compendium-browser__cell--left">
           {{#if ../showEligibility}}<span class="sta-compendium-browser__eligible-dot" title="{{#if talent.eligible}}{{../labels.qualifies}}{{else}}{{../labels.notQualified}}{{/if}}"></span>{{/if}}
           {{#if talent.img}}<img src="{{talent.img}}" alt="" />{{/if}}
@@ -137,10 +138,16 @@
         </div>
 
         <div class="sta-compendium-browser__cell--right">
+          {{#if ../multiple}}
+          <button type="button" class="sta-compendium-browser__choose" data-action="toggle-selection" data-uuid="{{talent.uuid}}" aria-pressed="{{talent.selected}}">
+            {{#if talent.selected}}<i class="fa-solid fa-check"></i>{{../labels.selected}}{{else}}<i class="fa-solid fa-plus"></i>{{../labels.select}}{{/if}}
+          </button>
+          {{else}}
           <button type="button" class="sta-compendium-browser__choose" data-action="choose" data-uuid="{{talent.uuid}}">
             {{#if talent.eligible}}<i class="fa-solid fa-check"></i>{{else}}<i class="fa-solid fa-triangle-exclamation"></i>{{/if}}
             {{../labels.choose}}
           </button>
+          {{/if}}
         </div>
       </div>
       {{/each}}
@@ -150,10 +157,16 @@
     </div>
 
     <footer class="sta-compendium-browser__footer">
+      {{#if multiple}}
+      <button type="button" class="primary" data-action="choose-selected">
+        <i class="fa-solid fa-check"></i> {{labels.addSelected}}
+      </button>
+      {{else}}
       {{#if allowCustom}}
       <button type="button" class="primary" data-action="custom">
         <i class="fa-solid fa-plus"></i> {{labels.createCustom}}
       </button>
+      {{/if}}
       {{/if}}
       <span class="spacer"></span>
       <button type="button" data-action="cancel">{{labels.cancel}}</button>

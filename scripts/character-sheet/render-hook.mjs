@@ -205,7 +205,7 @@ function handleMobileSheetRender(app, root) {
 
 /**
  * Handle LcarsCharacterSheet2e rendering.
- * Installs collapsible listeners, context menus, and LCARS theme picker.
+ * Installs collapsible listeners, context menus, and LCARS sheet controls.
  *
  * @param {Application} app - The application being rendered.
  * @param {HTMLElement} root - The root element.
@@ -438,7 +438,7 @@ function installLcarsTokenLinkToggleButton(app, root, actor) {
   if (!button) {
     button = document.createElement("button");
     button.type = "button";
-    button.className = "sta-lcars-theme-btn sta-lcars-token-link-btn";
+    button.className = "sta-lcars-header-btn sta-lcars-token-link-btn";
     button.setAttribute(
       "aria-label",
       t("sta-utils.lcarsTokenLinkToggle.ariaLabel"),
@@ -473,9 +473,9 @@ function installLcarsTokenLinkToggleButton(app, root, actor) {
   if (switcherButton?.parentElement === nameRow) {
     switcherButton.insertAdjacentElement("afterend", button);
   } else {
-    const themeButton = nameRow.querySelector(".sta-lcars-theme-btn");
-    if (themeButton?.parentElement === nameRow) {
-      themeButton.insertAdjacentElement("afterend", button);
+    const paletteButton = nameRow.querySelector(".sta-lcars-header-btn");
+    if (paletteButton?.parentElement === nameRow) {
+      paletteButton.insertAdjacentElement("afterend", button);
     } else {
       nameRow.appendChild(button);
     }
@@ -498,7 +498,7 @@ function installLcarsSheetSwitcherButton(app, root, actor) {
 
   const button = document.createElement("button");
   button.type = "button";
-  button.className = "sta-lcars-theme-btn sta-lcars-sheet-switch-btn";
+  button.className = "sta-lcars-header-btn sta-lcars-sheet-switch-btn";
   button.title = t("sta-utils.lcarsSheetSwitcher.buttonTitle");
   button.innerHTML = '<i class="fa-solid fa-users-gear"></i>';
 
@@ -565,9 +565,9 @@ function installLcarsSheetSwitcherButton(app, root, actor) {
     actor.sheet?.render(true);
   });
 
-  const themeButton = nameRow.querySelector(".sta-lcars-theme-btn");
-  if (themeButton?.parentElement === nameRow) {
-    themeButton.insertAdjacentElement("afterend", button);
+  const paletteButton = nameRow.querySelector(".sta-lcars-header-btn");
+  if (paletteButton?.parentElement === nameRow) {
+    paletteButton.insertAdjacentElement("afterend", button);
   } else {
     nameRow.appendChild(button);
   }

@@ -23,8 +23,8 @@ body.sta-officers-lcars-active.lcars-scheme-sta {
   --lcars-titlebar-injuries: #660000; /* dark red — danger context */
   --lcars-chrome-hover:    #3366cc;
   --lcars-input-border:    #003399;
-  --lcars-text-body:       #e7d1b1;
-  --lcars-text-item:       #e7d1b1;
+  --lcars-text-body:       var(--color-text-primary, #efe6d8);
+  --lcars-text-item:       var(--color-text-primary, #efe6d8);
   --lcars-text-title:      #efe6d8;
   --lcars-text-header:     #efe6d8;
   /* Raw palette aliases */

@@ -430,26 +430,6 @@ export const EQUIPMENT_LOADOUTS = [
   },
 ];
 
-const STANDARD_EQUIPMENT_NAMES = [
-  "Communicator",
-  "Tricorder",
-  "Uniform",
-  "Uniform Blue",
-  "Uniform Red",
-  "Uniform Gold",
-  "Phaser Type-1",
-  "Phaser Type-2",
-  "Engineering Toolkit",
-  "Medkit",
-  "Knife",
-  "Prosthesis",
-];
-
-const STANDARD_EQUIPMENT_ALIASES = new Map([
-  ["engineering kit", "Engineering Toolkit"],
-  ["medical kit", "Medkit"],
-]);
-
 const EXCLUDED_EQUIPMENT_NAME_PARTS = [
   "runabout module",
   "grappler cable",
@@ -468,15 +448,6 @@ function _getEquipmentCategory(type) {
   if (type === "characterweapon" || type === "characterweapon2e")
     return "weapon";
   return "equipment";
-}
-
-function _getStandardEquipmentOrder(name) {
-  const normalizedName =
-    STANDARD_EQUIPMENT_ALIASES.get(_normalizeEquipmentName(name)) ??
-    _normalizeEquipmentName(name);
-  return STANDARD_EQUIPMENT_NAMES.findIndex(
-    (standardName) => _normalizeEquipmentName(standardName) === normalizedName,
-  );
 }
 
 // ── Talent templates ──────────────────────────────────────────────────────────
@@ -522,6 +493,7 @@ const REQUIREMENT_TYPE_LABELS = {
   attribute: "Attribute",
   discipline: "Department",
   species: "Species",
+  house: "House",
   type: "Type",
   npc: "NPC Species",
 };
@@ -709,6 +681,17 @@ function _getGroupedRequirementsFromDoc(doc) {
     ];
   }
 
+  if (requirementType === "house") {
+    if (!requirementDescriptionRaw) return [];
+    return [
+      {
+        category: "house",
+        operator: "OR",
+        clauses: [{ value: requirementDescriptionRaw }],
+      },
+    ];
+  }
+
   if (requirementType === "npc") {
     const species =
       _getNpcSpeciesRequirementFromDoc(doc) || requirementDescriptionRaw;
@@ -807,6 +790,34 @@ export function getSpecialRulesPackConfigured() {
   return _getSpecialRulesPackIds().length > 0;
 }
 
+function _getPackSourceLabel(pack) {
+  const { packageName = "world", packageType = "world" } =
+    pack.metadata ?? {};
+  if (packageType === "system") return game.system.title;
+  if (packageType === "module") {
+    return game.modules.get(packageName)?.title ?? packageName;
+  }
+  return game.i18n.localize("PACKAGE.Type.world");
+}
+
+function _getPackSourceId(pack) {
+  const { packageName = "world", packageType = "world" } =
+    pack.metadata ?? {};
+  return `${packageType}.${packageName}`;
+}
+
+function _getPlainDescription(doc) {
+  let description =
+    foundry.utils.getProperty(doc, "system.description.value") ??
+    foundry.utils.getProperty(doc, "system.description") ??
+    "";
+  if (typeof description !== "string") description = description?.value ?? "";
+  return new DOMParser()
+    .parseFromString(String(description ?? ""), "text/html")
+    .body.textContent.replace(/\s+/g, " ")
+    .trim();
+}
+
 export async function loadSpecialRulesItems() {
   const packIds = _getSpecialRulesPackIds();
   if (!packIds.length) return [];
@@ -864,6 +875,13 @@ export async function loadSpecialRulesItems() {
           name: doc.name,
           img: doc.img || "icons/svg/item-bag.svg",
           talentType: requirementType,
+          source: _getPackSourceId(pack),
+          sourceLabel: _getPackSourceLabel(pack),
+          compendium: pack.collection,
+          compendiumLabel: String(
+            pack.title ?? pack.metadata?.label ?? pack.collection,
+          ),
+          descriptionText: _getPlainDescription(doc),
           isNpcType: requirements.some(
             (entry) =>
               entry.category === "type" &&
@@ -930,13 +948,18 @@ export async function loadEquipmentItems() {
         }
         if (seenUuids.has(entry.uuid)) continue;
         seenUuids.add(entry.uuid);
-        const standardOrder = _getStandardEquipmentOrder(entry.name);
         results.push({
           uuid: entry.uuid,
           name: entry.name,
           img: entry.img || "icons/svg/item-bag.svg",
           category: _getEquipmentCategory(entry.type),
-          standardOrder,
+          source: _getPackSourceId(pack),
+          sourceLabel: _getPackSourceLabel(pack),
+          compendium: pack.collection,
+          compendiumLabel: String(
+            pack.title ?? pack.metadata?.label ?? pack.collection,
+          ),
+          type: String(entry.type ?? ""),
         });
       }
     } catch (err) {

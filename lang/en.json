@@ -8,6 +8,10 @@
     "lcars": {
       "belongings": {
         "armor": "Armor"
+      },
+      "houseSheet": {
+        "label": "House (LCARS)",
+        "title": "{name} - House (LCARS)"
       }
     },
     "starshipTabs": {
@@ -83,7 +87,7 @@
     "missionPod": {
       "manageVariants": "Manage Mission Pod Variants",
       "dialogTitle": "Mission Pod Variants",
-      "hint": "Nothing syncs automatically. Use Sync Variants to copy this ship's Systems, Departments, Equipment, Traits, and Talents to the other variants (items marked Pod-Specific are skipped). Mark an item \u201cPod-Specific\u201d on its sheet to keep it unique per ship.",
+      "hint": "Click Sync Variants to copy this ship's Systems, Departments, Equipment, Traits, and Talents to the other variants. Items marked as “Pod-Specific” are not copied.",
       "remove": "Remove from group",
       "noVariants": "No other variants yet.",
       "choosePrompt": "Choose a starship...",
@@ -109,8 +113,9 @@
       "noVariantTokens": "No other Mission Pod variant tokens are on this scene.",
       "tokensReassigned": "Reassigned {count} token(s) to {name}.",
       "tokenReassignFailed": "Unable to reassign Mission Pod variant tokens.",
-      "preview": "Preview (open sheet without changing the Current Variant)",
+      "preview": "Module Preview:",
       "podSpecificItemsTitle": "Pod-Specific items",
+      "podBonusesTitle": "Mission Pod bonuses",
       "noPodSpecificItems": "No Pod-Specific items."
     },
     "characterDivision": {
@@ -127,6 +132,12 @@
     "quickInsert": {
       "npcTalent": "NPC Talent",
       "starshipTalent": "Starship Talent"
+    },
+    "sheetRenderLoop": {
+      "title": "Sheet Needs a Refresh",
+      "message": "The sheet for <strong>{name}</strong> appears to be stuck refreshing, which can make buttons flicker and become unclickable. Reloading the page fixes it.",
+      "reload": "Reload Now",
+      "dismiss": "Not Now"
     },
     "settings": {
       "groups": {
@@ -183,14 +194,14 @@
         "name": "Delete Scene Traits Actor with Scene",
         "hint": "When a scene is deleted, ask whether to delete its automatically created Scene Traits actor. Manually assigned and campaign-level actors are never deleted by this setting."
       },
-        "enableTraitStickers": {
-          "name": "Enable Trait Stickers",
-          "hint": "Show trait stickers on the canvas for quick visual reference."
-        },
-        "enableDrawingsLayerHotkey": {
-          "name": "Enable Drawings Layer Hotkey",
-          "hint": "Allow the configured keyboard shortcut to switch directly to the Drawings layer."
-        },
+      "enableTraitStickers": {
+        "name": "Enable Trait Stickers",
+        "hint": "Show trait stickers on the canvas for quick visual reference."
+      },
+      "enableDrawingsLayerHotkey": {
+        "name": "Enable Drawings Layer Hotkey",
+        "hint": "Allow the configured keyboard shortcut to switch directly to the Drawings layer."
+      },
       "tokenInteractionDiagnostics": {
         "name": "Enable GM Token Interaction Diagnostics",
         "hint": "Record a bounded history of token and canvas interaction state for troubleshooting. Data is kept only in the GM's browser memory and is reported only when the GM explicitly requests it. Requires a world reload when changed.",
@@ -199,6 +210,21 @@
         "copyHint": "Copies the current token interaction report to the clipboard and prints it in the browser console.",
         "reloadRequired": "Enable diagnostics and reload the world before copying a report.",
         "copyFailed": "The report was printed in the browser console, but could not be copied to the clipboard."
+      },
+      "sheetRenderReloadPrompt": {
+        "name": "Suggest Reload When a Sheet Gets Stuck",
+        "hint": "If a character or item sheet re-renders rapidly (flickering buttons that can't be clicked), show the player a prompt offering to reload the page. Applies immediately to all users."
+      },
+      "sheetRenderDiagnostics": {
+        "name": "Enable Sheet Render Diagnostics",
+        "hint": "Records which code triggers each actor/item sheet re-render and which document updates happened around it. Warns automatically when a sheet re-renders rapidly (flickering or unclickable sheets). GM only: data stays in the GM's browser memory until copied, and players are never shown it. Players instead get an automatic prompt to reload if a sheet gets stuck. Requires a world reload when changed.",
+        "reportLabel": "Sheet Render Report",
+        "copyButton": "Copy Report",
+        "clearButton": "Clear Log",
+        "reportHint": "Run this on the GM client that sees the problem, before reloading. Copies the report to the clipboard and prints it in the browser console.",
+        "reloadRequired": "Enable sheet render diagnostics and reload the world first.",
+        "copyFailed": "The report was printed in the browser console, but could not be copied to the clipboard.",
+        "cleared": "Sheet render log cleared."
       },
       "showInfoButtons": {
         "name": "Show Info Buttons",
@@ -739,18 +765,18 @@
       "warnNoActiveScene": "No active scene.",
       "warnActorUnavailable": "The scene traits actor is not available."
     },
-      "sceneTraitCleanup": {
-        "title": "Clean Up Scene Traits Actors",
-        "cleanupPrompt": "These automatically created Scene Traits actors no longer belong to an existing scene:",
-        "noneFound": "No orphaned Scene Traits actors were found.",
-        "deleted": "Deleted {count} orphaned Scene Traits actor(s).",
-        "deleteSceneTitle": "Delete Scene Traits Actor?",
-        "deleteScenePrompt": "The deleted scene had an automatically created Scene Traits actor named \"{name}\". Delete that actor too?"
-      },
-      "traitDrawing": {
-        "deleteTraitTitle": "Delete Scene Trait?",
-        "deleteTraitConfirm": "The drawing for \"{name}\" was deleted. Also delete this trait from the scene traits actor? Cancel to keep the trait for future use."
-      },
+    "sceneTraitCleanup": {
+      "title": "Clean Up Scene Traits Actors",
+      "cleanupPrompt": "These automatically created Scene Traits actors no longer belong to an existing scene:",
+      "noneFound": "No orphaned Scene Traits actors were found.",
+      "deleted": "Deleted {count} orphaned Scene Traits actor(s).",
+      "deleteSceneTitle": "Delete Scene Traits Actor?",
+      "deleteScenePrompt": "The deleted scene had an automatically created Scene Traits actor named \"{name}\". Delete that actor too?"
+    },
+    "traitDrawing": {
+      "deleteTraitTitle": "Delete Scene Trait?",
+      "deleteTraitConfirm": "The drawing for \"{name}\" was deleted. Also delete this trait from the scene traits actor? Cancel to keep the trait for future use."
+    },
     "traitDrawingSettings": {
       "title": "Trait Drawing Style",
       "fontSize": "Font Size",
@@ -1854,7 +1880,7 @@
         },
         "newScene": {
           "title": "New Scene",
-          "hint": "Advance to a new scene: Momentum \u22121 and NPC Personal Threat refreshed.",
+          "hint": "Advance to a new scene: Momentum −1 and NPC Personal Threat refreshed.",
           "button": "Start New Scene",
           "missing": "New Scene is unavailable. Ensure STA Officers Log is active."
         },
@@ -1928,6 +1954,10 @@
       "name": "Name",
       "description": "Description",
       "choose": "Choose",
+      "select": "Select",
+      "selected": "Selected",
+      "selectedCount": "{count} selected",
+      "addSelected": "Add Selected ({count})",
       "showMore": "Show more",
       "showLess": "Show less",
       "openSheet": "Open talent sheet",
@@ -1936,7 +1966,7 @@
       "createCustomFocus": "Create Custom Focus",
       "cancel": "Cancel",
       "empty": "No talents match your filters.",
-      "count": "{visible} / {total} talents",
+      "count": "{visible} / {total} {label}",
       "qualifies": "You qualify",
       "notQualified": "Requirement not met",
       "thisCharacter": "This character",
@@ -1948,7 +1978,8 @@
         "species": "Species",
         "house": "House",
         "systems": "Ship systems",
-        "condition": "Condition"
+        "condition": "Condition",
+        "npc": "NPC"
       },
       "ineligible": {
         "title": "Requirements Not Met",
@@ -2157,5 +2188,7 @@
         "rollrepnotdis": "Roll Reputation as Department"
       }
     }
-  }
+  },
+  "preview": "Module Preview:",
+  "hint": "Click Sync Variants to copy this ship's Systems, Departments, Equipment, Traits, and Talents to the other variants. Items marked as \\u201cPod-Specific\\u201d are not copied."
 }

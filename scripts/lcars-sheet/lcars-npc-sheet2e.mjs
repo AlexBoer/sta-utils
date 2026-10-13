@@ -3,15 +3,14 @@
  *
  * Registered as "NPC (2e) LCARS" in the Configure Sheet menu.
  * Extends STANPCSheet2e to inherit all roll logic, track computation,
- * and item management. Only the template, default window size, and context
- * data (LCARS color scheme class) are overridden.
+ * and item management. The template, default window size, and LCARS-specific
+ * context data are overridden.
  *
  * @module lcars-sheet/lcars-npc-sheet2e
  */
 
 import { STANPCSheet2e } from "/systems/sta/module/actors/npc-sheet2e.mjs";
 
-import { LCARS_THEMES } from "./lcars-mode.mjs";
 import { performAssistRoll } from "./lcars-assist.mjs";
 import { getDivisionContext } from "./division-control.mjs";
 
@@ -48,30 +47,11 @@ export class LcarsNPCSheet2e extends STANPCSheet2e {
   }
 
   /**
-   * Resolve the active LCARS color scheme for this actor.
-   * Per-actor flag takes priority, then global client setting, then "tng" default.
-   *
-   * @returns {string} Scheme key, e.g. "tng", "voyager", "ds9".
-   */
-  getLcarsScheme() {
-    return this.actor.getFlag(MODULE_ID, "lcarsSheetScheme") || "tng";
-  }
-
-  /**
-   * Extend the base context with the LCARS scheme CSS class so the template
-   * can apply it directly to the root element.
+   * Extend the base context with LCARS division data.
    */
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
-    const scheme = this.getLcarsScheme();
     Object.assign(context, getDivisionContext(this.actor));
-    context.lcarsSchemeClass = scheme
-      ? `lcars-scheme-${scheme}`
-      : "lcars-scheme-tng";
-    context.lcarsThemes = LCARS_THEMES.map((t) => ({
-      ...t,
-      isActive: t.key === scheme,
-    }));
     return context;
   }
 }

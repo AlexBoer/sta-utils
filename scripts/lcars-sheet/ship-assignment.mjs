@@ -509,8 +509,7 @@ export async function installStarshipTabs(root, app, ship) {
     return;
 
   const nameRow = rightColumn.querySelector(".name-row");
-  const themePicker = rightColumn.querySelector(".sta-lcars-theme-picker");
-  if (!nameRow || !themePicker) return;
+  if (!nameRow) return;
   root.dataset.staLcarsStarshipTabsLoading = "1";
 
   const nav = document.createElement("nav");
@@ -544,13 +543,13 @@ export async function installStarshipTabs(root, app, ship) {
   );
   manifestInfo.appendChild(manifestInfoTitle);
 
-  let foundThemePicker = false;
+  let foundNameRow = false;
   for (const child of [...rightColumn.children]) {
-    if (child === themePicker) {
-      foundThemePicker = true;
+    if (child === nameRow) {
+      foundNameRow = true;
       continue;
     }
-    if (!foundThemePicker) continue;
+    if (!foundNameRow) continue;
 
     const isPropertyRow =
       child.matches?.(".row") &&
@@ -662,7 +661,7 @@ export async function installStarshipTabs(root, app, ship) {
   );
 
   panelHost.append(detailPanel, crewPanel, advancementsPanel);
-  themePicker.insertAdjacentElement("afterend", nav);
+  nameRow.insertAdjacentElement("afterend", nav);
   nav.insertAdjacentElement("afterend", panelHost);
 
   const activate = (tabId) => {

@@ -99,6 +99,8 @@ import {
   installSta257DisciplineCompatPatch,
   installQuickInsertItemTypeTaglinePatch,
   installTokenInteractionDiagnostics,
+  installSheetRenderDiagnostics,
+  installSheetRenderLoopGuard,
   installShipRosterSheetClassificationPatch,
 } from "./misc/index.mjs";
 
@@ -189,6 +191,7 @@ import {
   isAlertStatusEnabled,
   isQuickInsertItemTypePatchEnabled,
   isTokenInteractionDiagnosticsEnabled,
+  isSheetRenderDiagnosticsEnabled,
   isStaToolsSidebarGmOnly,
 } from "./core/settings.mjs";
 
@@ -197,6 +200,7 @@ import { LcarsSupportingSheet2e } from "./lcars-sheet/lcars-supporting-sheet2e.m
 import { LcarsNPCSheet2e } from "./lcars-sheet/lcars-npc-sheet2e.mjs";
 import { LcarsStarshipSheet2e } from "./lcars-sheet/lcars-starship-sheet2e.mjs";
 import { LcarsSmallCraftSheet2e } from "./lcars-sheet/lcars-smallcraft-sheet2e.mjs";
+import { registerLcarsPalettes } from "./lcars-sheet/lcars-palettes.mjs";
 import { recordShipAdvancement } from "./lcars-sheet/ship-assignment.mjs";
 import { registerLcarsHouseSheet } from "./lcars-sheet/lcars-house-sheet.mjs";
 import { t } from "./core/i18n.mjs";
@@ -204,6 +208,7 @@ import { t } from "./core/i18n.mjs";
 const MODULE_ID = "sta-utils";
 let _sceneTraitsSceneSyncInstalled = false;
 let tokenDiagnostics = null;
+let sheetRenderDiagnostics = null;
 
 const STRESS_REST_TYPES = {
   breather: { recover: 4 },
@@ -454,6 +459,11 @@ Hooks.once("init", () => {
   console.log(`${MODULE_ID} | Initializing STA Utilities`);
 
   registerStaShowNotesInLimitedCompatibilitySetting();
+  try {
+    registerLcarsPalettes();
+  } catch (err) {
+    console.error(`${MODULE_ID} | Failed to register LCARS palettes`, err);
+  }
 
   try {
     foundry.utils.setProperty(
@@ -677,6 +687,13 @@ Hooks.once("ready", async () => {
     ? installTokenInteractionDiagnostics()
     : null;
 
+  // Players only get the reload prompt; the debug log is GM-only.
+  installSheetRenderLoopGuard();
+  sheetRenderDiagnostics =
+    game.user?.isGM && isSheetRenderDiagnosticsEnabled()
+    ? installSheetRenderDiagnostics()
+    : null;
+
   // --- Socket (requires socketlib, available at ready) ---
   initSocket();
 
@@ -794,6 +811,7 @@ Hooks.once("ready", async () => {
     calendarDateToStardate: calendarDateToStardateTng,
     resetTalentUses: resetActorTalentUses,
     ...(tokenDiagnostics ? { tokenDiagnostics } : {}),
+    ...(sheetRenderDiagnostics ? { sheetRenderDiagnostics } : {}),
   };
   console.log(`${MODULE_ID} | Public API exposed at game.staUtils`);
 

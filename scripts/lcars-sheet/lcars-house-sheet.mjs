@@ -1,6 +1,7 @@
 /** LCARS House sheet integration for the STA Officers Log House actor. */
 
-import { LCARS_THEMES } from "./lcars-mode.mjs";
+import { STAActors } from "/systems/sta/module/actors/sta-actors.mjs";
+import { applyLcarsPaletteHeaders } from "./lcars-mode.mjs";
 
 const MODULE_ID = "sta-utils";
 const HOUSE_TYPE = "sta-officers-log.house";
@@ -17,20 +18,73 @@ export async function registerLcarsHouseSheet() {
   }
 
   class LcarsHouseSheet extends HouseSheet {
+    static DEFAULT_OPTIONS = {
+      actions: {
+        onColourPalette: function (ev) {
+          return this._onColourPalette(ev);
+        },
+      },
+    };
+
+    async _onColourPalette(event, target) {
+      if (typeof super._onColourPalette === "function") {
+        return super._onColourPalette(event, target);
+      }
+      return STAActors.prototype._onColourPalette.call(this, event, target);
+    }
+
+    _applyPalette() {
+      if (typeof super._applyPalette === "function") {
+        super._applyPalette();
+      } else {
+        const palettes = STAActors.PALETTES;
+        if (!Array.isArray(palettes) || !this.element) return;
+        const id = this.document.system?.palette || "klingon";
+        const palette =
+          palettes.find((p) => p.id === id) ??
+          palettes.find((p) => p.id === "klingon") ??
+          palettes[0];
+        const style = this.element.style;
+
+        for (const p of palettes) {
+          for (const key of Object.keys(p.colors)) {
+            style.removeProperty(`--sta-${key}`);
+          }
+        }
+        for (const [key, value] of Object.entries(palette.colors)) {
+          style.setProperty(`--sta-${key}`, value);
+        }
+      }
+
+      if (this.element) {
+        const id = this.document.system?.palette || "klingon";
+        this.element.dataset.palette = id;
+        const shortId = id.replace(/^sta-utils-lcars-/, "");
+        this.element.dataset.paletteShort = shortId;
+        for (const cls of [...this.element.classList]) {
+          if (cls.startsWith("palette-")) this.element.classList.remove(cls);
+        }
+        this.element.classList.add(`palette-${id}`);
+        if (shortId !== id) this.element.classList.add(`palette-${shortId}`);
+        applyLcarsPaletteHeaders(this.element, id);
+      }
+    }
+
     async _prepareContext(options) {
       const context = await super._prepareContext(options);
-      const scheme = this.actor.getFlag(MODULE_ID, "lcarsSheetScheme") || "tng";
       context.isLcars = true;
-      context.lcarsSchemeClass = `lcars-scheme-${scheme}`;
-      context.lcarsThemes = LCARS_THEMES.map((theme) => ({
-        ...theme,
-        isActive: theme.key === scheme,
-      }));
       return context;
     }
 
+    async _onRender(context, options) {
+      await super._onRender(context, options);
+      this._applyPalette();
+    }
+
     get title() {
-      return `${this.actor.name} - House (LCARS)`;
+      return game.i18n.format("sta-utils.lcars.houseSheet.title", {
+        name: this.actor.name,
+      });
     }
   }
 
@@ -40,7 +94,7 @@ export async function registerLcarsHouseSheet() {
     LcarsHouseSheet,
     {
       types: [HOUSE_TYPE],
-      label: "House (LCARS)",
+      label: game.i18n.localize("sta-utils.lcars.houseSheet.label"),
       makeDefault: true,
     },
   );

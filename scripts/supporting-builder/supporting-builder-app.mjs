@@ -5,6 +5,7 @@ import {
   ATTRIBUTE_LABELS,
   DISCIPLINE_LABELS,
   EQUIPMENT_LOADOUTS,
+  loadSpecialRulesItems,
   RANDOM_NAMES,
   RANDOM_ROLES,
   RANDOM_FOCUSES_FALLBACK,
@@ -15,6 +16,11 @@ import {
   loadFocusNames,
   loadValueNames,
 } from "../npc-builder/npc-builder-data.mjs";
+import {
+  openCompendiumItemPicker,
+  openTalentPicker,
+} from "../compendium-browser/talent-picker-app.mjs";
+import { NPC_BUILDER_EQUIPMENT_PRESETS_SETTING } from "../core/settings.mjs";
 
 // ── Stat arrays ───────────────────────────────────────────────────────────────
 const SUPP_ATTR_CHIPS = [10, 9, 9, 8, 8, 7];
@@ -59,7 +65,14 @@ const RANK_GROUPS = [
 
 const ALL_RANKS = RANK_GROUPS.flatMap((g) => g.ranks);
 
-const STEPS = ["info", "attributes", "departments", "focuses", "finishing"];
+const STEPS = [
+  "info",
+  "attributes",
+  "departments",
+  "focuses",
+  "talents",
+  "finishing",
+];
 
 const fapi = foundry.applications.api;
 
@@ -121,6 +134,10 @@ function _sanitizeRequirementEntry(entry) {
 }
 
 function _getTalentRequirementsFromDoc(doc) {
+  if (Array.isArray(doc?.requirements) && doc.requirements.length) {
+    return doc.requirements.map(_sanitizeRequirementEntry).filter(Boolean);
+  }
+
   const stored =
     foundry.utils.getProperty(doc, "flags.sta-officers-log.requirements") ??
     foundry.utils.getProperty(doc, `flags.${MODULE_ID}.requirements`);
@@ -175,6 +192,16 @@ function _getTalentRequirementsFromDoc(doc) {
     ];
   }
 
+  if (type === "house" && description) {
+    return [
+      {
+        category: "house",
+        operator: "OR",
+        clauses: [{ value: description }],
+      },
+    ];
+  }
+
   if (type === "npc") {
     const npcSpecies = String(
       foundry.utils.getProperty(
@@ -202,10 +229,16 @@ function _meetsTalentRequirementsForSupporting(talentDoc, context) {
   const requirements = _getTalentRequirementsFromDoc(talentDoc);
   if (!requirements.length) return true;
 
-  const speciesNorm = _normalizeRequirementString(context.species);
-
   const evalCategory = (entry) => {
-    const category = _normalizeRequirementString(entry?.category);
+    const rawCategory = _normalizeRequirementString(entry?.category);
+    const category =
+      rawCategory === "department" ? "discipline" : rawCategory;
+    const speciesTraits = (context.speciesTraits ?? [context.species])
+      .map(_normalizeRequirementString)
+      .filter(Boolean);
+    const traits = (context.traits ?? [...speciesTraits])
+      .map(_normalizeRequirementString)
+      .filter(Boolean);
     const clauses = Array.isArray(entry?.clauses)
       ? entry.clauses.filter((clause) => String(clause?.value ?? "").trim())
       : [];
@@ -240,28 +273,46 @@ function _meetsTalentRequirementsForSupporting(talentDoc, context) {
       }
 
       if (category === "species") {
-        if (!speciesNorm) return false;
-        // A species requirement may list several qualifying species separated by
-        // commas; any match qualifies.
         const opts = String(required)
           .split(",")
           .map((s) => _normalizeRequirementString(s))
           .filter(Boolean);
         return opts.some(
-          (opt) => speciesNorm === opt || speciesNorm.includes(opt),
+          (opt) =>
+            speciesTraits.some(
+              (species) => species === opt || species.includes(opt),
+            ),
         );
       }
 
       if (category === "type") {
-        if (required === "character") return true;
-        if (required === "npc") return false;
-        if (required === "starship") return false;
+        return required === "character" && context.kind !== "npc";
       }
 
-      // Ship-system requirement — a supporting character can never meet it.
+      if (category === "npc") return false;
+      if (category === "house") {
+        const houses = String(required)
+          .split(",")
+          .map((house) => _normalizeRequirementString(house))
+          .filter(Boolean);
+        return houses.some((house) =>
+          (context.houses ?? []).some(
+            (selected) =>
+              _normalizeRequirementString(selected) === house ||
+              _normalizeRequirementString(selected).includes(house),
+          ),
+        );
+      }
+      if (category === "condition") {
+        return traits.some(
+          (trait) => trait === required || trait.includes(required),
+        );
+      }
+
+      // Ship-system requirement — a supporting character cannot meet it.
       if (category === "systems") return false;
 
-      return true;
+      return false;
     });
 
     return opIsAnd ? checks.every(Boolean) : checks.some(Boolean);
@@ -277,6 +328,7 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
     super(options);
     this._currentStep = "info";
     this._equipmentCacheLoaded = false;
+    this._specialRulesCacheLoaded = false;
     this._speciesCatalogLoaded = false;
     this._focusCacheLoaded = false;
     this._valueCacheLoaded = false;
@@ -296,8 +348,8 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
       selectedAttributeBonuses: [],
       selectedEquipment: [],
       equipmentItems: [],
-      equipmentSearch: "",
-      equipmentType: "all",
+      talents: [],
+      specialRulesItems: [],
       focusNames: [],
       valueNames: [],
     };
@@ -399,6 +451,13 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
           this._equipmentCacheLoaded = true;
         }),
       );
+    if (this._currentStep === "talents" && !this._specialRulesCacheLoaded)
+      loads.push(
+        loadSpecialRulesItems().then((v) => {
+          this._wizardState.specialRulesItems = v;
+          this._specialRulesCacheLoaded = true;
+        }),
+      );
     if (!this._speciesCatalogLoaded)
       loads.push(
         loadSpeciesCatalog().then((v) => {
@@ -433,6 +492,22 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
     const needsAttributeBonusSelection = !!(
       selectedSpeciesEntry && selectedSpeciesEntry.attributeBonuses === null
     );
+    const talents =
+      this._currentStep === "talents"
+        ? await Promise.all(
+            state.talents.map(async (talent) => ({
+              ...talent,
+              img: talent.img || "icons/svg/item-bag.svg",
+              descriptionPreview: talent.description?.trim()
+                ? await foundry.applications.ux.TextEditor.implementation.enrichHTML(
+                    talent.description,
+                    { async: true },
+                  )
+                : "",
+            })),
+          )
+        : state.talents;
+    const equipmentLoadouts = this._getEquipmentLoadouts();
 
     return {
       currentStep: this._currentStep,
@@ -495,36 +570,35 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
       value: state.value,
       hasValueSuggestions: state.valueNames.length > 0,
       valueSuggestions: state.valueNames,
+      // Talents
+      talentsAvailable: state.specialRulesItems.length > 0,
+      talents,
       // Finishing
       rank: state.rank,
       rankGroups: RANK_GROUPS.map((g) => ({
         label: g.label,
         ranks: g.ranks.map((r) => ({ value: r, selected: r === state.rank })),
       })),
-      equipmentLoadouts: EQUIPMENT_LOADOUTS.map((loadout, i) => ({
+      equipmentLoadouts: equipmentLoadouts.map((loadout, i) => ({
         name: loadout.name,
         index: i,
+        customIndex: loadout.customIndex,
+        canDelete: Boolean(game.user?.isGM && loadout.customIndex !== undefined),
         active: this._isLoadoutActive(
           loadout,
           state.equipmentItems,
           state.selectedEquipment,
         ),
       })),
-      standardEquipmentItems: state.equipmentItems
-        .filter((item) => item.standardOrder >= 0)
-        .sort((a, b) => a.standardOrder - b.standardOrder)
-        .map((item) => ({
-          ...item,
-          checked: state.selectedEquipment.includes(item.uuid),
-        })),
-      equipmentItems: state.equipmentItems
-        .filter((item) => item.standardOrder < 0)
-        .map((item) => ({
-          ...item,
-          checked: state.selectedEquipment.includes(item.uuid),
-        })),
-      equipmentSearch: state.equipmentSearch,
-      equipmentType: state.equipmentType,
+      selectedEquipmentItems: state.equipmentItems.filter((item) =>
+        state.selectedEquipment.includes(item.uuid),
+      ),
+      canSaveEquipmentPreset:
+        Boolean(game.user?.isGM) &&
+        state.equipmentItems.some((item) =>
+          state.selectedEquipment.includes(item.uuid),
+        ),
+      equipmentAvailable: true,
     };
   }
 
@@ -560,6 +634,9 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
         break;
       case "focuses":
         this._setupFocusesStep(html);
+        break;
+      case "talents":
+        this._setupTalentsStep(html);
         break;
       case "finishing":
         this._setupFinishingStep(html);
@@ -880,13 +957,18 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
   }
 
   _isLoadoutActive(loadout, equipmentItems, selectedEquipment) {
-    const itemIds = (loadout.itemIds ?? [])
-      .map((id) => String(id ?? "").trim())
-      .filter(Boolean);
+    const itemIds = Array.isArray(loadout.itemIds) ? loadout.itemIds : [];
+    const itemUuids = Array.isArray(loadout.itemUuids)
+      ? loadout.itemUuids
+      : [];
     const uuids = equipmentItems
-      .filter((item) =>
-        itemIds.some((id) => String(item?.uuid ?? "").endsWith(id)),
-      )
+      .filter((item) => {
+        const uuid = String(item?.uuid ?? "");
+        return (
+          itemUuids.includes(uuid) ||
+          itemIds.some((id) => uuid.endsWith(String(id ?? "").trim()))
+        );
+      })
       .map((item) => String(item?.uuid ?? ""))
       .filter(Boolean);
     return (
@@ -895,69 +977,478 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
     );
   }
 
+  _getEquipmentLoadouts() {
+    const configured = game.settings.get(
+      MODULE_ID,
+      NPC_BUILDER_EQUIPMENT_PRESETS_SETTING,
+    );
+    const custom = Array.isArray(configured)
+      ? configured.flatMap((preset, customIndex) => {
+          if (
+            typeof preset?.name !== "string" ||
+            !preset.name.trim() ||
+            !Array.isArray(preset.itemUuids)
+          ) {
+            return [];
+          }
+          const itemUuids = [
+            ...new Set(
+              preset.itemUuids
+                .map((uuid) => String(uuid ?? "").trim())
+                .filter(Boolean),
+            ),
+          ];
+          return itemUuids.length
+            ? [{ name: preset.name.trim(), itemUuids, customIndex }]
+            : [];
+        })
+      : [];
+    return [...EQUIPMENT_LOADOUTS, ...custom];
+  }
+
   _setupFinishingStep(html) {
     html.querySelector("[name='rank']")?.addEventListener("change", (e) => {
       this._wizardState.rank = e.target.value;
     });
-    this._setupEquipmentFilters(html);
-
-    for (const cb of html.querySelectorAll(".npc-equip-checkbox")) {
-      cb.addEventListener("change", () => {
-        const uuid = cb.value;
-        const set = new Set(this._wizardState.selectedEquipment);
-        if (cb.checked) set.add(uuid);
-        else set.delete(uuid);
-        this._wizardState.selectedEquipment = [...set];
-        this.render();
-      });
-    }
+    html
+      .querySelector("[data-action='browse-equipment']")
+      ?.addEventListener("click", () => void this._openEquipmentPicker());
 
     for (const btn of html.querySelectorAll(".npc-loadout-btn")) {
       btn.addEventListener("click", () => {
-        const loadout = EQUIPMENT_LOADOUTS[parseInt(btn.dataset.loadout)];
+        const loadout = this._getEquipmentLoadouts()[
+          Number(btn.dataset.loadout)
+        ];
         if (!loadout) return;
         const itemIds = (loadout.itemIds ?? [])
           .map((id) => String(id ?? "").trim())
           .filter(Boolean);
         const items = this._wizardState.equipmentItems;
         const uuids = items
-          .filter((item) =>
-            itemIds.some((id) => String(item?.uuid ?? "").endsWith(id)),
-          )
-          .map((item) => item.uuid);
+          .filter((item) => {
+            const uuid = String(item?.uuid ?? "");
+            return (
+              (loadout.itemUuids ?? []).includes(uuid) ||
+              itemIds.some((id) => uuid.endsWith(id))
+            );
+          })
+          .map((item) => String(item?.uuid ?? ""))
+          .filter(Boolean);
         const set = new Set(this._wizardState.selectedEquipment);
-        const allSelected = uuids.every((uuid) => set.has(uuid));
-        if (allSelected) {
-          for (const uuid of uuids) set.delete(uuid);
-        } else {
-          for (const uuid of uuids) set.add(uuid);
-        }
+        for (const uuid of uuids) set.add(uuid);
         this._wizardState.selectedEquipment = [...set];
+        this.render();
+      });
+    }
+
+    html
+      .querySelector("[data-action='save-equipment-preset']")
+      ?.addEventListener("click", () => void this._saveEquipmentPreset());
+    for (const btn of html.querySelectorAll(
+      "[data-action='remove-equipment-preset']",
+    )) {
+      btn.addEventListener("click", () =>
+        void this._deleteEquipmentPreset(btn.dataset.presetIndex),
+      );
+    }
+    for (const btn of html.querySelectorAll("[data-action='remove-equipment']")) {
+      btn.addEventListener("click", () => {
+        const uuid = btn.dataset.uuid;
+        this._wizardState.selectedEquipment =
+          this._wizardState.selectedEquipment.filter((item) => item !== uuid);
         this.render();
       });
     }
   }
 
-  _setupEquipmentFilters(html) {
-    const search = html.querySelector(".npc-equipment-search");
-    const type = html.querySelector(".npc-equipment-type-filter");
-    const applyFilter = () => {
-      this._wizardState.equipmentSearch = search?.value ?? "";
-      this._wizardState.equipmentType = type?.value ?? "all";
-      const query = this._wizardState.equipmentSearch.trim().toLowerCase();
-      const category = this._wizardState.equipmentType;
-      for (const row of html.querySelectorAll(".npc-equip-item")) {
-        const name = row.dataset.equipmentName ?? "";
-        const matchesName = !query || name.includes(query);
-        const matchesType =
-          category === "all" || row.dataset.equipmentType === category;
-        row.hidden = !matchesName || !matchesType;
-      }
-    };
+  async _openEquipmentPicker() {
+    try {
+      const result = await openCompendiumItemPicker({
+        title: "Choose Equipment",
+        heading: "Choose Equipment",
+        countLabel: "items",
+        searchPlaceholder: "Search equipment...",
+        emptyLabel: "No equipment matches your filters.",
+        descriptionLabel: "Category",
+        talents: this._wizardState.equipmentItems.map((item) => ({
+          uuid: item.uuid,
+          name: item.name,
+          img: item.img,
+          source: item.source,
+          sourceLabel: item.sourceLabel,
+          compendium: item.compendium,
+          compendiumLabel: item.compendiumLabel,
+          type: item.type || item.category,
+          group: {
+            key: item.category,
+            label: item.category.charAt(0).toUpperCase() + item.category.slice(1),
+          },
+          data: item,
+        })),
+        selectedUuids: this._wizardState.selectedEquipment,
+        categoryLabel: "Category",
+      });
+      if (!result?.talents) return;
+      this._wizardState.selectedEquipment = result.talents
+        .map((item) => String(item?.uuid ?? ""))
+        .filter(Boolean);
+      this.render();
+    } catch (err) {
+      console.error(`${MODULE_ID} | Supporting Builder: equipment picker failed`, err);
+      ui.notifications?.error?.("Could not open the equipment picker.");
+    }
+  }
 
-    search?.addEventListener("input", applyFilter);
-    type?.addEventListener("change", applyFilter);
-    applyFilter();
+  async _saveEquipmentPreset() {
+    if (!game.user?.isGM) {
+      ui.notifications?.warn?.("Only a GM can save shared equipment presets.");
+      return;
+    }
+    const selectedUuids = this._wizardState.equipmentItems
+      .filter((item) =>
+        this._wizardState.selectedEquipment.includes(item.uuid),
+      )
+      .map((item) => item.uuid);
+    if (!selectedUuids.length) {
+      ui.notifications?.warn?.("Select equipment before saving a preset.");
+      return;
+    }
+
+    const result = await foundry.applications.api.DialogV2.wait({
+      window: { title: "Save Equipment Preset" },
+      position: { width: 420, height: "auto" },
+      content:
+        '<div class="form-group"><label for="supp-equipment-preset-name">Preset Name</label><div class="form-fields"><input id="supp-equipment-preset-name" name="name" type="text" required></div></div>',
+      buttons: [
+        {
+          action: "save",
+          label: game.i18n.localize("Save"),
+          default: true,
+          callback: (_event, button) => ({
+            action: "save",
+            name: String(button.form?.elements?.name?.value ?? "").trim(),
+          }),
+        },
+        { action: "cancel", label: game.i18n.localize("Cancel") },
+      ],
+      rejectClose: false,
+      modal: true,
+    });
+    if (!result || result.action !== "save") return;
+    if (!result.name) {
+      ui.notifications?.warn?.("Enter a name for the equipment preset.");
+      return;
+    }
+
+    const loadouts = this._getEquipmentLoadouts();
+    const normalizedName = result.name.toLocaleLowerCase();
+    if (
+      loadouts.some(
+        (preset) => preset.name.toLocaleLowerCase() === normalizedName,
+      )
+    ) {
+      ui.notifications?.warn?.("An equipment preset with that name already exists.");
+      return;
+    }
+
+    const customPresets = loadouts
+      .slice(EQUIPMENT_LOADOUTS.length)
+      .map(({ name, itemUuids }) => ({ name, itemUuids }));
+    try {
+      await game.settings.set(MODULE_ID, NPC_BUILDER_EQUIPMENT_PRESETS_SETTING, [
+        ...customPresets,
+        { name: result.name, itemUuids: selectedUuids },
+      ]);
+    } catch (err) {
+      console.error(`${MODULE_ID} | Supporting Builder: failed saving equipment preset`, err);
+      ui.notifications?.error?.("Could not save the equipment preset.");
+      return;
+    }
+    this.render();
+  }
+
+  async _deleteEquipmentPreset(index) {
+    if (!game.user?.isGM) {
+      ui.notifications?.warn?.("Only a GM can delete shared equipment presets.");
+      return;
+    }
+    const customIndex = Number(index);
+    const presets = game.settings.get(
+      MODULE_ID,
+      NPC_BUILDER_EQUIPMENT_PRESETS_SETTING,
+    );
+    const preset = Number.isInteger(customIndex) ? presets?.[customIndex] : null;
+    if (!Array.isArray(presets) || !preset) return;
+
+    const confirmed = await foundry.applications.api.DialogV2.confirm({
+      window: { title: "Delete Equipment Preset" },
+      content: `<p>Delete the equipment preset <strong>${foundry.utils.escapeHTML(
+        String(preset.name ?? ""),
+      )}</strong>?</p>`,
+    });
+    if (!confirmed) return;
+
+    const updatedPresets = [...presets];
+    updatedPresets.splice(customIndex, 1);
+    try {
+      await game.settings.set(
+        MODULE_ID,
+        NPC_BUILDER_EQUIPMENT_PRESETS_SETTING,
+        updatedPresets,
+      );
+    } catch (err) {
+      console.error(`${MODULE_ID} | Supporting Builder: failed deleting equipment preset`, err);
+      ui.notifications?.error?.("Could not delete the equipment preset.");
+      return;
+    }
+    this.render();
+  }
+
+  _getTalentRequirementContext() {
+    const state = this._wizardState;
+    const speciesEntry = state.speciesCatalog.find(
+      (entry) =>
+        entry.name.toLowerCase() === state.species?.trim().toLowerCase(),
+    );
+    const bonuses =
+      speciesEntry?.attributeBonuses ??
+      (state.selectedAttributeBonuses.length
+        ? Object.fromEntries(state.selectedAttributeBonuses.map((key) => [key, 1]))
+        : null);
+    const speciesTraits = [state.species];
+    if (state.isHybrid) speciesTraits.push(state.hybridSpecies);
+    const traits = [...speciesTraits, state.purpose];
+    return {
+      kind: "character",
+      species: state.species,
+      speciesTraits,
+      traits,
+      houses: [],
+      attributes: Object.fromEntries(
+        ATTRIBUTE_KEYS.map((key) => [
+          key,
+          { value: (state.attributes[key] ?? 7) + (bonuses?.[key] ?? 0) },
+        ]),
+      ),
+      disciplines: Object.fromEntries(
+        DISCIPLINE_KEYS.map((key) => [
+          key,
+          { value: state.disciplines[key] ?? 0 },
+        ]),
+      ),
+    };
+  }
+
+  _setupTalentsStep(html) {
+    html
+      .querySelector("[data-action='browse-talents']")
+      ?.addEventListener("click", () => void this._openTalentPicker());
+    html
+      .querySelector(".npc-custom-talent-add")
+      ?.addEventListener("click", () => void this._addTalent());
+    for (const btn of html.querySelectorAll(".npc-custom-talent-edit")) {
+      btn.addEventListener("click", () => {
+        const index = Number(btn.dataset.talentIndex);
+        if (Number.isInteger(index)) void this._editTalent(index);
+      });
+    }
+    for (const btn of html.querySelectorAll(".npc-custom-talent-remove")) {
+      btn.addEventListener("click", () => {
+        const index = Number(btn.dataset.talentIndex);
+        if (!Number.isInteger(index)) return;
+        this._wizardState.talents = this._wizardState.talents.filter(
+          (_talent, rowIndex) => rowIndex !== index,
+        );
+        this.render();
+      });
+    }
+  }
+
+  async _openTalentPicker() {
+    const context = this._getTalentRequirementContext();
+    const pickerTalents = this._wizardState.specialRulesItems.map((item) => {
+      const requirements = Array.isArray(item.requirements)
+        ? item.requirements
+        : [];
+      const clauses = requirements.flatMap((entry) =>
+        (Array.isArray(entry?.clauses) ? entry.clauses : [])
+          .filter((clause) => String(clause?.value ?? "").trim())
+          .map((clause) => {
+            const category = String(entry.category ?? "").toLowerCase();
+            const value = clause.value;
+            return {
+              category:
+                category === "type" &&
+                String(value ?? "").toLowerCase() === "npc"
+                  ? "npc"
+                  : category,
+              value,
+              minimum: clause.minimum,
+            };
+          }),
+      );
+      return {
+        uuid: item.uuid,
+        name: item.name,
+        img: item.img,
+        source: item.source,
+        sourceLabel: item.sourceLabel,
+        compendium: item.compendium,
+        compendiumLabel: item.compendiumLabel,
+        type: item.talentType,
+        descriptionText: item.descriptionText,
+        requirementLines: item.requirementLabel
+          ? [{ text: item.requirementLabel }]
+          : [],
+        filter: {
+          categories: [...new Set(clauses.map((clause) => clause.category))],
+          clauses,
+        },
+        eligible: _meetsTalentRequirementsForSupporting(item, context),
+        data: item,
+      };
+    });
+
+    try {
+      const result = await openTalentPicker({
+        title: "Choose Character Talents",
+        heading: "Choose Character Talents",
+        actorName: this._wizardState.name || "Supporting Character",
+        talents: pickerTalents,
+        multiple: true,
+        selectedUuids: this._wizardState.talents
+          .map((talent) => talent.uuid)
+          .filter(Boolean),
+        allowCustom: false,
+      });
+      if (!result?.talents) return;
+
+      const currentByUuid = new Map(
+        this._wizardState.talents
+          .filter((talent) => talent.uuid)
+          .map((talent) => [talent.uuid, talent]),
+      );
+      const chosen = [];
+      for (const item of result.talents) {
+        const existing = currentByUuid.get(item.uuid);
+        if (existing) {
+          chosen.push(existing);
+          continue;
+        }
+        try {
+          const doc = await fromUuid(item.uuid);
+          chosen.push({
+            uuid: item.uuid,
+            name: item.name,
+            img: item.img,
+            description: doc ? this._extractTalentDescription(doc) : item.descriptionText,
+          });
+        } catch (err) {
+          console.warn(
+            `${MODULE_ID} | Supporting Builder: could not load talent ${item.uuid}`,
+            err,
+          );
+          chosen.push({
+            uuid: item.uuid,
+            name: item.name,
+            img: item.img,
+            description: item.descriptionText,
+          });
+        }
+      }
+      const customTalents = this._wizardState.talents.filter(
+        (talent) => !talent.uuid,
+      );
+      this._wizardState.talents = [...chosen, ...customTalents];
+      if (
+        result.talents.some(
+          (item) =>
+            !pickerTalents.find((talent) => talent.uuid === item.uuid)?.eligible,
+        )
+      ) {
+        ui.notifications?.warn?.(
+          "One or more selected talents have requirements this character does not meet.",
+        );
+      }
+      this.render();
+    } catch (err) {
+      console.error(`${MODULE_ID} | Supporting Builder: talent picker failed`, err);
+      ui.notifications?.error?.("Could not open the talent picker.");
+    }
+  }
+
+  _extractTalentDescription(doc) {
+    let description =
+      foundry.utils.getProperty(doc, "system.description.value") ??
+      foundry.utils.getProperty(doc, "system.description") ??
+      doc.description ??
+      "";
+    if (typeof description !== "string") description = description?.value ?? "";
+    return String(description ?? "").trim();
+  }
+
+  async _editTalent(index) {
+    const talent = this._wizardState.talents[index];
+    if (!talent) return;
+    const result = await this._showTalentEditor({
+      title: "Edit Talent",
+      name: talent.name,
+      description: talent.description,
+    });
+    if (!result || result.action !== "save") return;
+    const current = this._wizardState.talents[index];
+    if (!current) return;
+    this._wizardState.talents[index] = {
+      ...current,
+      name: result.name,
+      description: result.description,
+    };
+    this.render();
+  }
+
+  async _addTalent() {
+    const result = await this._showTalentEditor({ title: "Add Custom Talent" });
+    if (!result || result.action !== "save") return;
+    this._wizardState.talents = [
+      ...this._wizardState.talents,
+      {
+        name: result.name,
+        description: result.description,
+        img: "icons/svg/item-bag.svg",
+      },
+    ];
+    this.render();
+  }
+
+  async _showTalentEditor({ title, name = "", description = "" }) {
+    const enrichedDescription = description
+      ? await foundry.applications.ux.TextEditor.implementation.enrichHTML(
+          description,
+          { async: true },
+        )
+      : "";
+    return foundry.applications.api.DialogV2.wait({
+      window: { title },
+      position: { width: 720, height: "auto" },
+      content: `<div class="form-group"><label for="supp-talent-name">Name</label><div class="form-fields"><input id="supp-talent-name" name="name" type="text" value="${foundry.utils.escapeHTML(name)}"></div></div><div class="form-group"><label for="supp-talent-description">Description</label><div class="form-fields"><prose-mirror id="supp-talent-description" name="description" value="${foundry.utils.escapeHTML(description)}" toggled="true">${enrichedDescription}</prose-mirror></div></div>`,
+      buttons: [
+        {
+          action: "save",
+          label: game.i18n.localize("Save"),
+          default: true,
+          callback: (_event, button) => ({
+            action: "save",
+            name: String(button.form?.elements?.name?.value ?? "").trim(),
+            description: String(
+              button.form?.elements?.description?.value ?? "",
+            ).trim(),
+          }),
+        },
+        { action: "cancel", label: game.i18n.localize("Cancel") },
+      ],
+      rejectClose: false,
+      modal: true,
+    });
   }
 
   // ── Drag and drop ─────────────────────────────────────────────────────────
@@ -1148,6 +1639,7 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
       disciplines: state.disciplines,
       focuses: state.focuses,
       value: state.value,
+      talents: state.talents,
       selectedEquipmentUuids: state.selectedEquipment,
       speciesCatalog: state.speciesCatalog,
       selectedAttributeBonuses: state.selectedAttributeBonuses,
@@ -1170,6 +1662,7 @@ async function createSupportingActor({
   disciplines,
   focuses,
   value,
+  talents = [],
   selectedEquipmentUuids,
   speciesCatalog = [],
   selectedAttributeBonuses = [],
@@ -1206,6 +1699,7 @@ async function createSupportingActor({
     name: actorName,
     type: "character",
     system: {
+      npcType: isSupervisory ? "supervising" : "supporting",
       species: species ?? "",
       rank: rank ?? "",
       stress: { value: stressVal, max: stressVal },
@@ -1266,6 +1760,41 @@ async function createSupportingActor({
 
   if (isSupervisory && value?.trim()) {
     embeddedItems.push({ name: value.trim(), type: "value" });
+  }
+
+  for (const talent of talents) {
+    if (!talent?.name?.trim()) continue;
+    if (!talent.uuid) {
+      embeddedItems.push({
+        name: talent.name.trim(),
+        type: "talent",
+        system: { description: talent.description?.trim() ?? "" },
+      });
+      continue;
+    }
+    try {
+      const doc = await fromUuid(talent.uuid);
+      if (!doc) continue;
+      const item = doc.toObject();
+      item.name = talent.name.trim();
+      if (
+        item.system?.description &&
+        typeof item.system.description === "object"
+      ) {
+        item.system.description.value = talent.description?.trim() ?? "";
+      } else {
+        item.system = {
+          ...item.system,
+          description: talent.description?.trim() ?? "",
+        };
+      }
+      embeddedItems.push(item);
+    } catch (err) {
+      console.warn(
+        `${MODULE_ID} | Supporting Builder: could not load talent ${talent.uuid}`,
+        err,
+      );
+    }
   }
 
   for (const uuid of selectedEquipmentUuids ?? []) {

@@ -4,7 +4,6 @@
  * Installs after each render of LcarsCharacterSheet2e:
  *  - Collapsible sections with chevron toggles (traits + development tabs)
  *  - Right-click context menu for all item rows
- *  - Per-actor LCARS color scheme picker (palette button in header)
  *  - Officers Log LCARS body-class sync
  *
  * Unlike the old overlay lcars-mode.mjs, the structural DOM changes (chevrons,
@@ -20,149 +19,13 @@ import {
   injectSheetVariantCss,
   isLcarsTalentPickerEnabled,
 } from "../core/settings.mjs";
+import { STAActors } from "/systems/sta/module/actors/sta-actors.mjs";
 
 const MODULE_ID = "sta-utils";
 const LCARS_CSS_LINK_ID = "sta-utils-lcars";
 const LCARS_CSS_PATH = "styles/sheet-variants/sta-lcars.css";
 const CSS_PREFIX = "sta-lcars";
 const _COLLAPSE_KEY_PREFIX = "sta-compact-collapse:";
-
-// ── LCARS color scheme swatches for the per-actor theme picker ──────────
-// Label + CSS class key + representative accent color for the dot swatch.
-export const LCARS_THEMES = [
-  {
-    key: "tng",
-    color: "#f1a43c",
-    secondaryColor: "#c5a3d9",
-    label: "TNG — The Next Generation",
-  },
-  {
-    key: "sta",
-    color: "#003399",
-    secondaryColor: "#003399",
-    label: "STA System",
-  },
-  {
-    key: "voyager",
-    color: "#3D9494",
-    secondaryColor: "#D49A44",
-    label: "Voyager",
-  },
-  {
-    key: "ds9",
-    color: "#7A6050",
-    secondaryColor: "#8090B0",
-    label: "Deep Space Nine",
-  },
-  {
-    key: "tos",
-    color: "#c8a818",
-    secondaryColor: "#b82a18",
-    label: "TOS — The Original Series",
-  },
-  {
-    key: "enterprise",
-    color: "#4A6282",
-    secondaryColor: "#887050",
-    label: "Enterprise NX-01",
-  },
-  {
-    key: "kelvin",
-    color: "#1E4A88",
-    secondaryColor: "#9A7018",
-    label: "Kelvin Timeline",
-  },
-  {
-    key: "picard",
-    color: "#4E5872",
-    secondaryColor: "#7A3A4C",
-    label: "Picard",
-  },
-  {
-    key: "lowerDecks",
-    color: "#1e60c8",
-    secondaryColor: "#c43030",
-    label: "Lower Decks",
-  },
-  {
-    key: "prodigy",
-    color: "#3838c0",
-    secondaryColor: "#1860d8",
-    label: "Prodigy",
-  },
-  {
-    key: "academy",
-    color: "#6a6860",
-    secondaryColor: "#c03028",
-    label: "Starfleet Academy",
-  },
-  {
-    key: "romulan",
-    color: "#2d8040",
-    secondaryColor: "#3ecc58",
-    label: "Romulan Star Empire",
-  },
-  {
-    key: "klingon",
-    color: "#8a2c22",
-    secondaryColor: "#c87818",
-    label: "Klingon Empire",
-  },
-  {
-    key: "dominion",
-    color: "#787880",
-    secondaryColor: "#3a1870",
-    label: "The Dominion",
-  },
-  {
-    key: "cardassian",
-    color: "#a07840",
-    secondaryColor: "#7a4820",
-    label: "Cardassian Union",
-  },
-  {
-    key: "borg",
-    color: "#303030",
-    secondaryColor: "#c03030",
-    label: "Borg Collective",
-  },
-  {
-    key: "ferengi",
-    color: "#c09020",
-    secondaryColor: "#4a6018",
-    label: "Ferengi Alliance",
-  },
-  {
-    key: "orion",
-    color: "#287858",
-    secondaryColor: "#5c2880",
-    label: "Orion Syndicate",
-  },
-  {
-    key: "sfCommand",
-    color: "#8c1c2a",
-    secondaryColor: "#c0b080",
-    label: "SF — Command Division",
-  },
-  {
-    key: "sfSciences",
-    color: "#1e5c98",
-    secondaryColor: "#4ab0e8",
-    label: "SF — Sciences Division",
-  },
-  {
-    key: "sfOperations",
-    color: "#a07c10",
-    secondaryColor: "#d8b020",
-    label: "SF — Operations Division",
-  },
-  {
-    key: "redAlert",
-    color: "#8a1c1c",
-    secondaryColor: "#b82020",
-    label: "Red Alert",
-  },
-];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Collapse-state persistence
@@ -302,92 +165,85 @@ function _installCollapsibleListeners(sheet, actorId) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * The LCARS color-scheme class lives on the inner `.character-sheet`/
- * `.starship-sheet` element, but the window border and native title bar are
- * styled on `.sta-lcars-window.application`, which is an ANCESTOR of that
- * element — CSS custom properties don't cascade upward, so the window chrome
- * would otherwise stay stuck on the default scheme color. Copy the resolved
- * scheme colors onto the window root as inline custom properties so the
- * border/header follow whichever scheme is active.
+ * All configurable header keys that can have per-theme bar and text overrides.
+ */
+const _CONFIGURABLE_HEADER_KEYS = [
+  "values",
+  "talents",
+  "focuses",
+  "traits",
+  "belongings",
+  "belongings-colheader",
+  "injuries",
+  "milestones",
+  "attributes",
+  "biography",
+  "development",
+  "arc-starship",
+  "systems",
+  "bio-fields",
+  "launchbay",
+];
+
+/**
+ * Apply selective per-palette header styling overrides to a sheet element,
+ * removing any previous header overrides when switching themes.
+ *
+ * @param {HTMLElement} sheet - The `.sta-lcars` sheet element.
+ * @param {string} paletteId  - The ID of the currently selected palette.
+ */
+export function applyLcarsPaletteHeaders(sheet, paletteId) {
+  if (!sheet) return;
+
+  // Clear any existing inline header overrides
+  for (const key of _CONFIGURABLE_HEADER_KEYS) {
+    sheet.style.removeProperty(`--lcars-titlebar-${key}`);
+    sheet.style.removeProperty(`--lcars-text-on-${key}`);
+  }
+
+  const palettes = STAActors.PALETTES;
+  if (!Array.isArray(palettes)) return;
+
+  const palette = palettes.find((p) => p.id === paletteId);
+  if (!palette?.headers || typeof palette.headers !== "object") return;
+
+  for (const [key, val] of Object.entries(palette.headers)) {
+    if (val === "secondary") {
+      sheet.style.setProperty(`--lcars-titlebar-${key}`, "var(--lcars-secondary-color)");
+      sheet.style.setProperty(`--lcars-text-on-${key}`, "var(--lcars-text-on-secondary)");
+    } else if (val === "primary") {
+      sheet.style.setProperty(`--lcars-titlebar-${key}`, "var(--lcars-primary-color)");
+      sheet.style.setProperty(`--lcars-text-on-${key}`, "var(--lcars-text-on-primary)");
+    } else if (val === "talents") {
+      sheet.style.setProperty(`--lcars-titlebar-${key}`, "var(--lcars-titlebar-talents, var(--lcars-primary-color))");
+      sheet.style.setProperty(`--lcars-text-on-${key}`, "var(--lcars-text-on-talents, var(--lcars-text-on-primary))");
+    } else if (val === "tertiary") {
+      sheet.style.setProperty(`--lcars-titlebar-${key}`, "var(--lcars-tertiary-color)");
+      sheet.style.setProperty(`--lcars-text-on-${key}`, "var(--lcars-text-on-tertiary)");
+    } else if (typeof val === "object" && val !== null) {
+      if (val.bar) sheet.style.setProperty(`--lcars-titlebar-${key}`, val.bar);
+      if (val.text) sheet.style.setProperty(`--lcars-text-on-${key}`, val.text);
+    } else if (typeof val === "string") {
+      sheet.style.setProperty(`--lcars-titlebar-${key}`, val);
+    }
+  }
+}
+
+/**
+ * The STA palette is applied to the sheet window, while LCARS semantic colors
+ * are resolved on the inner sheet. Copy the computed LCARS chrome colors to
+ * the window root so its border and title bar use the same palette.
  *
  * @param {HTMLElement} root  - The `.application` window root.
  * @param {HTMLElement} sheet - The `.character-sheet`/`.starship-sheet.sta-lcars` element.
  */
-function _syncWindowChromeToScheme(root, sheet) {
+function _syncWindowChromeToPalette(root, sheet) {
   if (!root || !sheet) return;
   const style = getComputedStyle(sheet);
   const chrome = style.getPropertyValue("--lcars-primary-color").trim();
   const textHeader = style.getPropertyValue("--lcars-text-header").trim();
   if (chrome) root.style.setProperty("--lcars-chrome", chrome);
   if (textHeader) root.style.setProperty("--lcars-text-header", textHeader);
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Per-actor LCARS scheme picker
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Inject a palette-icon button into the header area. Clicking it reveals a
- * popover row of colored scheme swatches; choosing one stores the selection
- * as an actor flag and triggers a sheet re-render.
- *
- * @param {Application} sheetApp - The LcarsCharacterSheet2e instance.
- * @param {HTMLElement} sheet    - The `.character-sheet.sta-lcars` root.
- */
-function _installThemePicker(sheetApp, sheet) {
-  const header =
-    sheet.querySelector(".top-right-column") ||
-    sheet.querySelector(".right-column");
-  if (!header) return;
-
-  // The button is baked into the template; just find it.
-  const btn = header.querySelector(".sta-lcars-theme-btn");
-  if (!btn) return;
-
-  // Skip if already wired up this render cycle
-  if (btn.dataset.staLcarsThemeInit) return;
-  btn.dataset.staLcarsThemeInit = "1";
-
-  const picker = header.querySelector(".sta-lcars-theme-picker");
-  if (!picker) return;
-
-  // Toggle picker open/closed on button click
-  btn.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const isOpen = picker.classList.toggle("open");
-    if (isOpen) {
-      function outsideClose(ev) {
-        if (!picker.isConnected) {
-          document.removeEventListener("pointerdown", outsideClose, true);
-          return;
-        }
-        if (!picker.contains(ev.target) && ev.target !== btn) {
-          picker.classList.remove("open");
-          document.removeEventListener("pointerdown", outsideClose, true);
-        }
-      }
-      setTimeout(
-        () => document.addEventListener("pointerdown", outsideClose, true),
-        50,
-      );
-    }
-  });
-
-  // Swatch clicks — save the chosen scheme and close the picker
-  for (const dot of picker.querySelectorAll(".sta-lcars-theme-dot")) {
-    dot.addEventListener("click", async (ev) => {
-      ev.preventDefault();
-      ev.stopPropagation();
-      picker.classList.remove("open");
-      await sheetApp.document.setFlag(
-        MODULE_ID,
-        "lcarsSheetScheme",
-        dot.dataset.theme,
-      );
-    });
-  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -499,7 +355,29 @@ export async function installLcarsSheetMode(sheetApp, root) {
   await injectSheetVariantCss(LCARS_CSS_LINK_ID, LCARS_CSS_PATH, true);
 
   root?.classList.add("sta-lcars-window");
-  _syncWindowChromeToScheme(root, sheet);
+  if (typeof sheetApp?._applyPalette === "function") {
+    sheetApp._applyPalette();
+  }
+
+  const paletteId = sheetApp?.document?.system?.palette ?? "default";
+  sheet.dataset.palette = paletteId;
+  const shortId = paletteId.replace(/^sta-utils-lcars-/, "");
+  sheet.dataset.paletteShort = shortId;
+  if (root) {
+    root.dataset.palette = paletteId;
+    root.dataset.paletteShort = shortId;
+  }
+
+  for (const target of [sheet, root].filter(Boolean)) {
+    for (const cls of [...target.classList]) {
+      if (cls.startsWith("palette-")) target.classList.remove(cls);
+    }
+    target.classList.add(`palette-${paletteId}`);
+    if (shortId !== paletteId) target.classList.add(`palette-${shortId}`);
+  }
+
+  applyLcarsPaletteHeaders(sheet, paletteId);
+  _syncWindowChromeToPalette(root, sheet);
 
   const actorId = sheetApp?.document?.id ?? "unknown";
 
@@ -511,9 +389,6 @@ export async function installLcarsSheetMode(sheetApp, root) {
 
   // ── Right-click context menu on item rows ─────────────────────────────
   _installItemContextMenu(sheetApp, root);
-
-  // ── Per-actor LCARS scheme picker ─────────────────────────────────────
-  _installThemePicker(sheetApp, sheet);
 
   // ── Talents "+" → requirement-aware talent picker (optional) ──────────
   _installTalentPickerButton(sheetApp, sheet);

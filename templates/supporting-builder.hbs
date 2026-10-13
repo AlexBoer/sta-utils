@@ -214,6 +214,52 @@
     {{/if}}
   </div>
 
+  {{!-- ── Step: Talents ────────────────────────────────────────── --}}
+  <div class="npc-builder-panel{{#if stepPanels.talents}} active{{/if}}" data-panel="talents">
+    <h3 class="npc-builder-panel-title">Talents</h3>
+    {{#if talentsAvailable}}
+    <p class="npc-builder-hint">Choose talents from the configured compendiums.</p>
+    <button class="npc-builder-btn npc-builder-btn--ghost" type="button" data-action="browse-talents">
+      <i class="fa-solid fa-magnifying-glass"></i> Browse Talents...
+    </button>
+    {{else}}
+    <p class="npc-builder-hint">No talent compendium configured. You can still add talents manually.</p>
+    {{/if}}
+
+    <div class="npc-builder-section-label npc-section-gap">Selected Talents</div>
+    {{#if talents.length}}
+    {{#each talents}}
+    <article class="npc-custom-talent npc-custom-talent-item">
+      <img class="npc-custom-talent-item__image" src="{{img}}" alt="">
+      <div class="npc-custom-talent-item__body">
+        <h4 class="npc-custom-talent-item__name">{{#if name}}{{name}}{{else}}Untitled Talent{{/if}}</h4>
+        {{#if descriptionPreview}}
+        <div class="npc-custom-talent-item__description">{{{descriptionPreview}}}</div>
+        {{else}}
+        <p class="npc-custom-talent-item__empty">No description.</p>
+        {{/if}}
+      </div>
+      <div class="npc-custom-talent-item__controls">
+        <button class="npc-builder-btn npc-builder-btn--ghost npc-custom-talent-edit" type="button"
+          data-talent-index="{{@index}}" title="Edit talent" aria-label="Edit {{name}}">
+          <i class="fa-solid fa-pen-to-square"></i>
+        </button>
+        <button class="npc-builder-btn npc-builder-btn--ghost npc-custom-talent-remove" type="button"
+          data-talent-index="{{@index}}" title="Remove talent" aria-label="Remove {{name}}">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    </article>
+    {{/each}}
+    {{else}}
+    <p class="npc-builder-hint">No talents selected.</p>
+    {{/if}}
+
+    <button class="npc-builder-btn npc-builder-btn--ghost npc-custom-talent-add" type="button">
+      <i class="fa-solid fa-plus"></i> Add Custom Talent
+    </button>
+  </div>
+
   {{!-- ── Step: Finishing Up ────────────────────────────────────── --}}
   <div class="npc-builder-panel{{#if stepPanels.finishing}} active{{/if}}" data-panel="finishing">
     <h3 class="npc-builder-panel-title">Finishing Up</h3>
@@ -234,57 +280,57 @@
       </select>
     </div>
 
-    {{#if equipmentItems.length}}
     <div class="npc-builder-section-label npc-section-gap">Equipment</div>
-    <p class="npc-builder-hint">Select standard issue items to add to the character.</p>
+    <p class="npc-builder-hint">Add a ready-made loadout or browse for individual items.</p>
     {{#if equipmentLoadouts.length}}
     <div class="npc-loadout-presets">
       {{#each equipmentLoadouts}}
-      <button class="npc-loadout-btn{{#if active}} active{{/if}}"
-        data-loadout="{{@index}}" type="button">{{name}}</button>
+      <div class="npc-loadout-preset">
+        <button class="npc-loadout-btn{{#if active}} active{{/if}}"
+          data-loadout="{{@index}}" type="button">{{name}}</button>
+        {{#if canDelete}}
+        <button class="npc-loadout-delete" type="button"
+          data-action="remove-equipment-preset" data-preset-index="{{customIndex}}"
+          title="Delete {{name}}" aria-label="Delete equipment preset {{name}}">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+        {{/if}}
+      </div>
       {{/each}}
     </div>
     {{/if}}
-    <div class="npc-builder-field-row" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0.4rem;margin-top:0.75rem;">
-      <input class="npc-builder-input npc-equipment-search" type="search" value="{{equipmentSearch}}" placeholder="Search equipment...">
-      <select class="npc-builder-input npc-equipment-type-filter" style="width:auto;">
-        <option value="all" {{#if (eq equipmentType "all")}}selected{{/if}}>All types</option>
-        <option value="equipment" {{#if (eq equipmentType "equipment")}}selected{{/if}}>Equipment</option>
-        <option value="weapon" {{#if (eq equipmentType "weapon")}}selected{{/if}}>Weapons</option>
-        <option value="armor" {{#if (eq equipmentType "armor")}}selected{{/if}}>Armor</option>
-      </select>
-    </div>
-    {{#if standardEquipmentItems.length}}
-    <div class="npc-builder-section-label npc-section-gap">Standard Options</div>
-    <div class="npc-equipment-section">
-      <ul class="npc-equip-list">
-        {{#each standardEquipmentItems}}
-        <li class="npc-equip-item" data-equipment-name="{{name}}" data-equipment-type="{{category}}">
-          <label class="npc-equip-label">
-            <input class="npc-equip-checkbox" type="checkbox" value="{{uuid}}" {{#if checked}}checked{{/if}}>
-            <img class="npc-equip-img" src="{{img}}" alt="">
-            <span class="npc-equip-name">{{name}}</span>
-          </label>
-        </li>
-        {{/each}}
-      </ul>
-    </div>
+    {{#if canSaveEquipmentPreset}}
+    <button class="npc-builder-btn npc-builder-btn--ghost npc-equipment-save-preset"
+      type="button" data-action="save-equipment-preset">
+      <i class="fa-solid fa-bookmark"></i> Save Selection as Preset
+    </button>
     {{/if}}
-    <div class="npc-builder-section-label npc-section-gap">Extras</div>
+    <button class="npc-builder-btn npc-builder-btn--ghost npc-equipment-browse" type="button"
+      data-action="browse-equipment">
+      <i class="fa-solid fa-magnifying-glass"></i> Browse Equipment...
+    </button>
+
+    <div class="npc-builder-section-label npc-section-gap">Selected Equipment</div>
+    {{#if selectedEquipmentItems.length}}
     <div class="npc-equipment-section">
       <ul class="npc-equip-list">
-        {{#each equipmentItems}}
-        <li class="npc-equip-item" data-equipment-name="{{name}}" data-equipment-type="{{category}}">
-          <label class="npc-equip-label">
-            <input class="npc-equip-checkbox" type="checkbox" value="{{uuid}}"
-              {{#if checked}}checked{{/if}}>
-            <img class="npc-equip-img" src="{{img}}" alt="">
+        {{#each selectedEquipmentItems}}
+        <li class="npc-equip-item npc-selected-equipment-item">
+          <div class="npc-equip-label">
+            {{#if img}}<img class="npc-equip-img" src="{{img}}" alt="">{{/if}}
             <span class="npc-equip-name">{{name}}</span>
-          </label>
+          </div>
+          <button class="npc-builder-btn npc-builder-btn--ghost npc-selected-equipment-remove"
+            type="button" data-action="remove-equipment" data-uuid="{{uuid}}"
+            title="Remove equipment" aria-label="Remove {{name}}">
+            <i class="fa-solid fa-trash"></i>
+          </button>
         </li>
         {{/each}}
       </ul>
     </div>
+    {{else}}
+    <p class="npc-builder-hint">No equipment selected.</p>
     {{/if}}
   </div>
 

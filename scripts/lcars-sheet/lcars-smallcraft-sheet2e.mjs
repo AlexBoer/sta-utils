@@ -3,8 +3,7 @@
  *
  * Registered as "Small Craft (2e) LCARS" in the Configure Sheet menu.
  * Extends STASmallCraftSheet2e to inherit all track computation and weapon
- * roll logic. Only the template, default window size, and context data
- * (LCARS color scheme class) are overridden.
+ * roll logic. The template and default window size are overridden.
  *
  * Small craft differ from starships: no crew track, no crwmod input.
  *
@@ -17,7 +16,6 @@
 
 import { STASmallCraftSheet2e } from "/systems/sta/module/actors/smallcraft-sheet2e.mjs";
 
-import { LCARS_THEMES } from "./lcars-mode.mjs";
 import { performShipAssistRoll } from "./lcars-assist.mjs";
 import { updateGuardedTrack } from "./guarded-track-update.mjs";
 
@@ -63,30 +61,4 @@ export class LcarsSmallCraftSheet2e extends STASmallCraftSheet2e {
     });
   }
 
-  /**
-   * Resolve the active LCARS color scheme for this actor.
-   * Per-actor flag takes priority, then global client setting, then "tng" default.
-   *
-   * @returns {string} Scheme key, e.g. "tng", "voyager", "ds9".
-   */
-  getLcarsScheme() {
-    return this.actor.getFlag(MODULE_ID, "lcarsSheetScheme") || "tng";
-  }
-
-  /**
-   * Extend the base context with the LCARS scheme CSS class so the template
-   * can apply it directly to the root element.
-   */
-  async _prepareContext(options) {
-    const context = await super._prepareContext(options);
-    const scheme = this.getLcarsScheme();
-    context.lcarsSchemeClass = scheme
-      ? `lcars-scheme-${scheme}`
-      : "lcars-scheme-tng";
-    context.lcarsThemes = LCARS_THEMES.map((t) => ({
-      ...t,
-      isActive: t.key === scheme,
-    }));
-    return context;
-  }
 }

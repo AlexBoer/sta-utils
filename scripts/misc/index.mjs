@@ -9,4 +9,6 @@ export { installSta257DisciplineCompatPatch } from "./sta-2-5-7-discipline-compa
 export { installMacroActorImageHook } from "./macro-actor-image.mjs";
 export { installQuickInsertItemTypeTaglinePatch } from "./quick-insert-item-type-tagline.mjs";
 export { installTokenInteractionDiagnostics } from "./token-interaction-diagnostics.mjs";
+export { installSheetRenderLoopGuard } from "./sheet-render-loop-guard.mjs";
+export { installSheetRenderDiagnostics } from "./sheet-render-diagnostics.mjs";
 export { installShipRosterSheetClassificationPatch } from "./ship-roster-sheet-classification-patch.mjs";

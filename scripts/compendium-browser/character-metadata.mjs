@@ -59,6 +59,13 @@ function matchSpecies(value, matchers, { fallback = false } = {}) {
 }
 
 function getCharacterCategory(row) {
+  const npcType = String(
+    foundry.utils.getProperty(row, "system.npcType") ?? "",
+  ).toLowerCase();
+  if (["supporting", "supervising"].includes(npcType)) {
+    return "supporting";
+  }
+
   const sheetClass = String(
     foundry.utils.getProperty(row, "flags.core.sheetClass") ?? "",
   );
@@ -72,9 +79,6 @@ function getCharacterCategory(row) {
     sheetClass === "sta.STANPCSheet2e" ||
     sheetClass === "sta-utils.LcarsNPCSheet2e"
   ) {
-    const npcType = String(
-      foundry.utils.getProperty(row, "system.npcType") ?? "minor",
-    ).toLowerCase();
     return ["major", "notable", "minor"].includes(npcType)
       ? `npc-${npcType}`
       : "npc-minor";

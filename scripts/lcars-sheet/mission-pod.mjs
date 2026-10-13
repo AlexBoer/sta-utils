@@ -67,16 +67,16 @@ const SYNCED_ITEM_TYPES = [
 
 let hooksInstalled = false;
 
+// `key` must be the full dotted locale key (e.g. "sta-utils.missionPod.hint"),
+// not a local suffix, so i18n Ally's regex-based key detection can resolve it.
 function localize(key, fallback) {
-  const fullKey = `${MODULE_ID}.missionPod.${key}`;
-  const value = game.i18n?.localize?.(fullKey);
-  return value && value !== fullKey ? value : fallback;
+  const value = game.i18n?.localize?.(key);
+  return value && value !== key ? value : fallback;
 }
 
 function localizeFormat(key, data, fallback) {
-  const fullKey = `${MODULE_ID}.missionPod.${key}`;
-  const value = game.i18n?.format?.(fullKey, data);
-  return value && value !== fullKey ? value : fallback;
+  const value = game.i18n?.format?.(key, data);
+  return value && value !== key ? value : fallback;
 }
 
 function escapeHtml(value) {
@@ -207,7 +207,7 @@ async function reassignCanvasVariantTokens(app, actor) {
   if (!updates.length) {
     ui.notifications?.info?.(
       localize(
-        "noVariantTokens",
+        "sta-utils.missionPod.noVariantTokens",
         "No other Mission Pod variant tokens on this scene.",
       ),
     );
@@ -216,7 +216,7 @@ async function reassignCanvasVariantTokens(app, actor) {
       await context.scene.updateEmbeddedDocuments("Token", updates);
       ui.notifications?.info?.(
         localizeFormat(
-          "tokensReassigned",
+          "sta-utils.missionPod.tokensReassigned",
           { count: updates.length, name: context.currentVariant.name },
           `Reassigned ${updates.length} token(s) to ${context.currentVariant.name}.`,
         ),
@@ -224,7 +224,10 @@ async function reassignCanvasVariantTokens(app, actor) {
     } catch (error) {
       console.error(`${MODULE_ID} | Failed to reassign variant tokens`, error);
       ui.notifications?.error?.(
-        localize("tokenReassignFailed", "Unable to reassign variant tokens."),
+        localize(
+          "sta-utils.missionPod.tokenReassignFailed",
+          "Unable to reassign variant tokens.",
+        ),
       );
       return;
     }
@@ -250,9 +253,9 @@ export function installMissionPodTokenSwapButton(app, root, actor) {
 
   const button = document.createElement("button");
   button.type = "button";
-  button.className = "sta-lcars-theme-btn sta-lcars-mission-pod-token-swap";
+  button.className = "sta-lcars-header-btn sta-lcars-mission-pod-token-swap";
   button.title = localize(
-    "reassignVariantTokens",
+    "sta-utils.missionPod.reassignVariantTokens",
     "Reassign all Mission Pod variant tokens on this scene to this group's Current Variant",
   );
   button.setAttribute("aria-label", button.title);
@@ -354,16 +357,45 @@ function getPodSpecificItems(actor) {
 /** Build the `data-tooltip-html` content for a variant's preview button. */
 function buildPreviewTooltip(actor) {
   const description = escapeHtml(
-    localize("preview", "Preview (open sheet without changing the Group Ship)"),
+    localize("sta-utils.missionPod.preview", "Module Preview:"),
   );
+  const sections = [`<p>${description}</p>`];
+
+  const bonus = getShipPodBonus(actor);
+  const labelKeys = {
+    systems: "sta.actor.starship.system.",
+    departments: "sta.actor.starship.department.",
+  };
+  const bonusLines = [];
+  for (const [group, keys] of Object.entries(STAT_KEYS)) {
+    for (const key of keys) {
+      const amount = bonus[group][key];
+      if (!amount) continue;
+      const sign = amount > 0 ? "+" : "";
+      const label = game.i18n.localize(`${labelKeys[group]}${key}`);
+      bonusLines.push(`<li>${escapeHtml(`${sign}${amount} ${label}`)}</li>`);
+    }
+  }
+  if (bonusLines.length) {
+    sections.push(
+      `<p>${escapeHtml(localize("sta-utils.missionPod.podBonusesTitle", "Mission Pod bonuses"))}:</p><ul>${bonusLines.join("")}</ul>`,
+    );
+  }
+
   const podSpecific = getPodSpecificItems(actor);
   if (!podSpecific.length) {
-    return `<p>${description}</p><p>${escapeHtml(localize("noPodSpecificItems", "No Pod-Specific items."))}</p>`;
+    sections.push(
+      `<p>${escapeHtml(localize("sta-utils.missionPod.noPodSpecificItems", "No Pod-Specific items."))}</p>`,
+    );
+  } else {
+    const items = podSpecific
+      .map((item) => `<li>${escapeHtml(item.name)}</li>`)
+      .join("");
+    sections.push(
+      `<p>${escapeHtml(localize("sta-utils.missionPod.podSpecificItemsTitle", "Pod-Specific items"))}:</p><ul>${items}</ul>`,
+    );
   }
-  const items = podSpecific
-    .map((item) => `<li>${escapeHtml(item.name)}</li>`)
-    .join("");
-  return `<p>${description}</p><p>${escapeHtml(localize("podSpecificItemsTitle", "Pod-Specific items"))}:</p><ul>${items}</ul>`;
+  return sections.join("");
 }
 
 /* ------------------------------------------------------------------ */
@@ -552,7 +584,7 @@ async function createShipVariant(ship) {
   const data = ship.toObject();
   delete data._id;
   data.name = localizeFormat(
-    "variantName",
+    "sta-utils.missionPod.variantName",
     { name: ship.name },
     `${ship.name} (Variant)`,
   );
@@ -659,7 +691,7 @@ class MissionPodVariantsDialog extends Base {
   };
 
   get title() {
-    return `${localize("dialogTitle", "Mission Pod Variants")} — ${this.ship?.name ?? ""}`;
+    return `${localize("sta-utils.missionPod.dialogTitle", "Mission Pod Variants")} — ${this.ship?.name ?? ""}`;
   }
 
   async _prepareContext() {
@@ -679,7 +711,7 @@ class MissionPodVariantsDialog extends Base {
           id: s.id,
           label: inOtherGroup
             ? localizeFormat(
-                "candidateInOtherGroup",
+                "sta-utils.missionPod.candidateInOtherGroup",
                 { name: s.name },
                 `${s.name} (currently in another group)`,
               )
@@ -703,26 +735,38 @@ class MissionPodVariantsDialog extends Base {
       })),
       candidates,
       hint: localize(
-        "hint",
-        "Nothing syncs automatically. Use Sync Variants to copy this ship's Systems, Departments, Equipment, Traits, and Talents to the other variants (items marked Pod-Specific are skipped). Mark an item \u201cPod-Specific\u201d on its sheet to keep it unique per ship.",
+        "sta-utils.missionPod.hint",
+        "Click Sync Variants to copy this ship's Systems, Departments, Equipment, Traits, and Talents to the other variants. Items marked as \u201cPod-Specific\u201d are not copied.",
       ),
-      removeLabel: localize("remove", "Remove from group"),
-      noVariantsLabel: localize("noVariants", "No other variants yet."),
-      choosePrompt: localize("choosePrompt", "Choose a starship..."),
-      addLabel: localize("add", "Add Variant"),
-      createVariantLabel: localize("createVariant", "Create New Ship Variant"),
-      syncLabel: localize("sync", "Sync Variants"),
+      removeLabel: localize("sta-utils.missionPod.remove", "Remove from group"),
+      noVariantsLabel: localize(
+        "sta-utils.missionPod.noVariants",
+        "No other variants yet.",
+      ),
+      choosePrompt: localize(
+        "sta-utils.missionPod.choosePrompt",
+        "Choose a starship...",
+      ),
+      addLabel: localize("sta-utils.missionPod.add", "Add Variant"),
+      createVariantLabel: localize(
+        "sta-utils.missionPod.createVariant",
+        "Create New Ship Variant",
+      ),
+      syncLabel: localize("sta-utils.missionPod.sync", "Sync Variants"),
       syncTooltip: localize(
-        "syncTooltip",
+        "sta-utils.missionPod.syncTooltip",
         "Copies this ship's Systems, Departments, and non-Pod-Specific Talents, Traits, and Equipment to every other variant. Items removed or marked Pod-Specific here are removed from the variants.",
       ),
       hasVariants: variants.length > 0,
-      swapPodLabel: localize("swapPod", "Swap Pod"),
+      swapPodLabel: localize("sta-utils.missionPod.swapPod", "Swap Pod"),
       swapPodTooltip: localize(
-        "swapPodTooltip",
+        "sta-utils.missionPod.swapPodTooltip",
         "Make this the Current Variant. Closes other variant sheets and opens this one.",
       ),
-      currentVariantLabel: localize("currentVariant", "Current Variant"),
+      currentVariantLabel: localize(
+        "sta-utils.missionPod.currentVariant",
+        "Current Variant",
+      ),
     };
   }
 
@@ -765,7 +809,7 @@ class MissionPodVariantsDialog extends Base {
         await addMissionPodVariant(this.ship, candidate);
         ui.notifications?.info?.(
           localizeFormat(
-            "copiedAdvancements",
+            "sta-utils.missionPod.copiedAdvancements",
             { name: candidate.name },
             `Copied existing advancements to ${candidate.name}.`,
           ),
@@ -814,7 +858,7 @@ class MissionPodVariantsDialog extends Base {
           );
           ui.notifications?.info?.(
             localizeFormat(
-              "synced",
+              "sta-utils.missionPod.synced",
               { name: this.ship.name },
               `Synced variants from ${this.ship.name}.`,
             ),
@@ -836,7 +880,7 @@ class MissionPodVariantsDialog extends Base {
           if (created) {
             ui.notifications?.info?.(
               localizeFormat(
-                "variantCreated",
+                "sta-utils.missionPod.variantCreated",
                 { name: created.name },
                 `Created new variant "${created.name}".`,
               ),
@@ -906,7 +950,10 @@ export function installMissionPodTalentButton(root, actor) {
     const button = document.createElement("a");
     button.dataset.staMissionPodButton = "1";
     button.className = "mission-pod-variants control toggle";
-    button.title = localize("manageVariants", "Manage Mission Pod Variants");
+    button.title = localize(
+      "sta-utils.missionPod.manageVariants",
+      "Manage Mission Pod Variants",
+    );
     button.innerHTML = '<i class="fas fa-shuffle"></i>';
     button.addEventListener("click", (event) => {
       event.preventDefault();
@@ -925,8 +972,11 @@ function installPodBonusFields(root, item) {
 
   const bonus = getPodBonusOf(item);
   const groupTitles = {
-    systems: localize("bonusSystems", "Systems"),
-    departments: localize("bonusDepartments", "Departments"),
+    systems: localize("sta-utils.missionPod.bonusSystems", "Systems"),
+    departments: localize(
+      "sta-utils.missionPod.bonusDepartments",
+      "Departments",
+    ),
   };
   const labelKeys = {
     systems: "sta.actor.starship.system.",
@@ -956,8 +1006,8 @@ function installPodBonusFields(root, item) {
   const wrapper = document.createElement("div");
   wrapper.className = "mission-pod-bonus-fields";
   wrapper.innerHTML = `
-    <div class="title">${escapeHtml(localize("bonusTitle", "Mission Pod Bonuses"))}</div>
-    <p class="hint">${escapeHtml(localize("bonusHint", "Added to the ship's ratings when this talent is added to a ship. Not copied to other variants."))}</p>
+    <div class="title">${escapeHtml(localize("sta-utils.missionPod.bonusTitle", "Mission Pod Bonuses"))}</div>
+    <p class="hint">${escapeHtml(localize("sta-utils.missionPod.bonusHint", "Added to the ship's ratings when this talent is added to a ship. Not copied to other variants."))}</p>
     <div class="mission-pod-bonus-groups">${groupsHtml}</div>
   `;
 
@@ -999,14 +1049,14 @@ function installPodExemptCheckbox(root, item) {
 
   const locked = isMissionPodItem(item);
   const lockedTooltip = locked
-    ? ` data-tooltip-text="${escapeHtml(localize("podAlwaysSpecific", "Mission Pod talents are always Pod-Specific."))}"`
+    ? ` data-tooltip-text="${escapeHtml(localize("sta-utils.missionPod.podAlwaysSpecific", "Mission Pod talents are always Pod-Specific."))}"`
     : "";
   const wrapper = document.createElement("div");
   wrapper.className = "row mission-pod-exempt-field";
   wrapper.innerHTML = `
     <label class="mission-pod-exempt-label"${lockedTooltip}>
       <input type="checkbox" class="mission-pod-exempt-toggle"${isTalentMissionPodExempt(item) ? " checked" : ""}${locked ? " disabled" : ""} />
-      ${localize("podSpecificLabel", "Pod-Specific (don't sync across Mission Pod variants)")}
+      ${localize("sta-utils.missionPod.podSpecificLabel", "Pod-Specific (don't sync across Mission Pod variants)")}
     </label>
   `;
 

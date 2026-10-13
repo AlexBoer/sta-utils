@@ -21,6 +21,7 @@ const REQ_CATEGORY_LABEL_KEYS = {
   house: "sta-utils.talentPicker.category.house",
   systems: "sta-utils.talentPicker.category.systems",
   condition: "sta-utils.talentPicker.category.condition",
+  npc: "sta-utils.talentPicker.category.npc",
 };
 const REQ_CATEGORY_ORDER = [
   "none",
@@ -31,6 +32,7 @@ const REQ_CATEGORY_ORDER = [
   "house",
   "systems",
   "condition",
+  "npc",
 ];
 
 const normalize = (value) =>
@@ -84,7 +86,11 @@ function normalizeTalent(raw) {
     name,
     img: raw?.img ? String(raw.img) : null,
     source: String(raw?.source ?? ""),
+    sourceLabel: String(raw?.sourceLabel ?? raw?.source ?? ""),
     compendium: String(raw?.compendium ?? ""),
+    compendiumLabel: String(
+      raw?.compendiumLabel ?? raw?.compendium ?? "",
+    ),
     type,
     eligible: raw?.eligible !== false,
     requirementLines,
@@ -102,7 +108,9 @@ function normalizeTalent(raw) {
         requirementLines.map((l) => l.text).join(" "),
         tag,
         raw?.source,
+        raw?.sourceLabel,
         raw?.compendium,
+        raw?.compendiumLabel,
         type,
       ]
         .filter(Boolean)
@@ -118,6 +126,12 @@ export class TalentPickerApp extends Base {
       heading = "",
       actorName = "",
       talents = [],
+      multiple = false,
+      selectedUuids = [],
+      countLabel = "talents",
+      searchPlaceholder = "",
+      emptyLabel = "",
+      descriptionLabel = "",
       allowCustom = true,
       onIneligibleChosen = null,
       onFlaggedChosen = null,
@@ -134,6 +148,20 @@ export class TalentPickerApp extends Base {
     this._actorName = actorName;
     this._talents = (Array.isArray(talents) ? talents : []).map(
       normalizeTalent,
+    );
+    this._multiple = multiple === true;
+    this._countLabel = String(countLabel || "talents");
+    this._searchPlaceholder = String(searchPlaceholder ?? "");
+    this._emptyLabel = String(emptyLabel ?? "");
+    this._descriptionLabel = String(descriptionLabel ?? "");
+    this._selectedUuids = new Set(
+      Array.isArray(selectedUuids)
+        ? selectedUuids
+            .map((uuid) => String(uuid ?? ""))
+            .filter((uuid) =>
+              this._talents.some((talent) => talent.uuid === uuid),
+            )
+        : [],
     );
     this._allowCustom = allowCustom !== false;
     this._createCustomLabel =
@@ -194,7 +222,7 @@ export class TalentPickerApp extends Base {
     return this._title;
   }
 
-  // Renders the picker and resolves with { talent } | { custom: true } | null.
+  // Resolves with { talent }, { talents }, { custom: true }, or null.
   pick() {
     return new Promise((resolve) => {
       this._resolve = resolve;
@@ -286,9 +314,17 @@ export class TalentPickerApp extends Base {
   async _prepareContext(_options) {
     const visible = this._visibleTalents();
 
+    const sourceLabels = new Map(
+      this._talents.map((tt) => [tt.source, tt.sourceLabel]),
+    );
     const sourceValues = Array.from(
       new Set(this._talents.map((tt) => tt.source).filter(Boolean)),
-    ).sort((a, b) => a.localeCompare(b, game.i18n?.lang));
+    ).sort((a, b) =>
+      (sourceLabels.get(a) || a).localeCompare(
+        sourceLabels.get(b) || b,
+        game.i18n?.lang,
+      ),
+    );
     const sources = [
       {
         id: "all",
@@ -297,13 +333,21 @@ export class TalentPickerApp extends Base {
       },
       ...sourceValues.map((id) => ({
         id,
-        label: id,
+        label: sourceLabels.get(id) || id,
         selected: this._source === id,
       })),
     ];
+    const compendiumLabels = new Map(
+      this._talents.map((tt) => [tt.compendium, tt.compendiumLabel]),
+    );
     const compendiumValues = Array.from(
       new Set(this._talents.map((tt) => tt.compendium).filter(Boolean)),
-    ).sort((a, b) => a.localeCompare(b, game.i18n?.lang));
+    ).sort((a, b) =>
+      (compendiumLabels.get(a) || a).localeCompare(
+        compendiumLabels.get(b) || b,
+        game.i18n?.lang,
+      ),
+    );
     const compendiums = [
       {
         id: "all",
@@ -312,7 +356,7 @@ export class TalentPickerApp extends Base {
       },
       ...compendiumValues.map((id) => ({
         id,
-        label: id,
+        label: compendiumLabels.get(id) || id,
         selected: this._compendium === id,
       })),
     ];
@@ -405,6 +449,7 @@ export class TalentPickerApp extends Base {
       uuid: tt.uuid,
       name: tt.name,
       img: tt.img,
+      selected: this._selectedUuids.has(tt.uuid),
       eligible: tt.eligible,
       hasRequirements: tt.hasRequirements,
       requirementLines: tt.requirementLines,
@@ -418,7 +463,9 @@ export class TalentPickerApp extends Base {
       labels: {
         heading: this._heading,
         search: t("sta-utils.talentPicker.search"),
-        searchPlaceholder: t("sta-utils.talentPicker.searchPlaceholder"),
+        searchPlaceholder:
+          this._searchPlaceholder ||
+          t("sta-utils.talentPicker.searchPlaceholder"),
         source: t("sta-utils.talentPicker.source"),
         compendium: t("sta-utils.talentPicker.compendium"),
         type: t("sta-utils.talentPicker.type"),
@@ -429,23 +476,37 @@ export class TalentPickerApp extends Base {
         reset: t("sta-utils.talentPicker.resetFilters"),
         viewAll: t("sta-utils.talentPicker.viewAll"),
         name: t("sta-utils.talentPicker.name"),
-        description: t("sta-utils.talentPicker.description"),
+        description:
+          this._descriptionLabel || t("sta-utils.talentPicker.description"),
         choose: t("sta-utils.talentPicker.choose"),
+        select: t("sta-utils.talentPicker.select"),
+        selected: t("sta-utils.talentPicker.selected"),
+        addSelected: tf("sta-utils.talentPicker.addSelected", {
+          count: this._selectedUuids.size,
+        }),
         showMore: t("sta-utils.talentPicker.showMore"),
         showLess: t("sta-utils.talentPicker.showLess"),
         openSheet: t("sta-utils.talentPicker.openSheet"),
         noRequirements: t("sta-utils.talentPicker.noRequirements"),
         createCustom: this._createCustomLabel,
         cancel: t("sta-utils.talentPicker.cancel"),
-        empty: t("sta-utils.talentPicker.empty"),
+        empty: this._emptyLabel || t("sta-utils.talentPicker.empty"),
         qualifies: t("sta-utils.talentPicker.qualifies"),
         notQualified: t("sta-utils.talentPicker.notQualified"),
       },
       countText: tf("sta-utils.talentPicker.count", {
         visible: visible.length,
         total: this._talents.length,
+        label: this._countLabel,
       }),
       showEligibility: this._showEligibility,
+      multiple: this._multiple,
+      selectedCount: this._selectedUuids.size,
+      selectedCountText: this._multiple
+        ? tf("sta-utils.talentPicker.selectedCount", {
+            count: this._selectedUuids.size,
+          })
+        : "",
       categoryLabel: this._categoryLabel,
       groups,
       toggles: this._toggleDefs.map((tg) => ({
@@ -639,6 +700,27 @@ export class TalentPickerApp extends Base {
       btn.addEventListener("click", () => void this._choose(btn.dataset.uuid));
     });
     root
+      .querySelectorAll('[data-action="toggle-selection"]')
+      .forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const uuid = btn.dataset.uuid;
+          if (!uuid) return;
+          if (this._selectedUuids.has(uuid)) this._selectedUuids.delete(uuid);
+          else this._selectedUuids.add(uuid);
+          rerender();
+        });
+      });
+    root
+      .querySelector('[data-action="choose-selected"]')
+      ?.addEventListener("click", () => {
+        const selected = [...this._selectedUuids]
+          .map((uuid) => this._talents.find((talent) => talent.uuid === uuid))
+          .filter(Boolean)
+          .map((talent) => talent.data ?? talent);
+        this._resolveOnce({ talents: selected });
+        void this.close();
+      });
+    root
       .querySelector('[data-action="custom"]')
       ?.addEventListener("click", () => {
         this._resolveOnce({ custom: true });
@@ -728,8 +810,18 @@ export class TalentPickerApp extends Base {
   }
 }
 
-// Opens the talent picker with a caller-prepared talent list.
-// Resolves with { talent } | { custom: true } | null.
+// Opens the picker with caller-prepared records.
+// `multiple` enables multi-selection, initialized from `selectedUuids`.
+// Resolves with { talent }, { talents }, { custom: true }, or null.
 export function openTalentPicker(config = {}) {
   return new TalentPickerApp(config).pick();
+}
+
+export function openCompendiumItemPicker(config = {}) {
+  return new TalentPickerApp({
+    ...config,
+    multiple: true,
+    allowCustom: false,
+    eligibility: false,
+  }).pick();
 }
