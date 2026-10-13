@@ -2,6 +2,7 @@
 
 import { STAActors } from "/systems/sta/module/actors/sta-actors.mjs";
 import { applyLcarsPaletteHeaders } from "./lcars-mode.mjs";
+import { getStaPalettes, getCanonicalStaActors } from "./lcars-palettes.mjs";
 
 const MODULE_ID = "sta-utils";
 const HOUSE_TYPE = "sta-officers-log.house";
@@ -30,14 +31,15 @@ export async function registerLcarsHouseSheet() {
       if (typeof super._onColourPalette === "function") {
         return super._onColourPalette(event, target);
       }
-      return STAActors.prototype._onColourPalette.call(this, event, target);
+      const canonical = getCanonicalStaActors();
+      return (canonical?.prototype?._onColourPalette ?? STAActors.prototype._onColourPalette).call(this, event, target);
     }
 
     _applyPalette() {
       if (typeof super._applyPalette === "function") {
         super._applyPalette();
       } else {
-        const palettes = STAActors.PALETTES;
+        const palettes = getStaPalettes();
         if (!Array.isArray(palettes) || !this.element) return;
         const id = this.document.system?.palette || "klingon";
         const palette =

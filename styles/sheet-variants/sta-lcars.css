@@ -771,6 +771,8 @@ body {
 
   .sheet-body .tab {
     color: var(--lcars-text-body, var(--lcars-text-light));
+    box-sizing: border-box;
+    padding-right: 5px;
   }
 
   .sta-lcars-crew-division {
@@ -1408,7 +1410,8 @@ body {
   }
 
   /* Show header rows under belongings (needed for quantity columns) */
-  .section.belongings .header.row {
+  .section.belongings .header.row,
+  .section.talents .header.row.belongings-row {
     display: flex !important;
   }
 
@@ -1680,6 +1683,22 @@ body {
     grid-column: 1;
   }
 
+  .section.belongings .header.row.belongings-row .image i,
+  .section.talents .header.row.belongings-row .image i {
+    font-size: 0.85rem;
+  }
+
+  /* Center header icons over the item thumbnails; entry rows are inset by
+     4px of padding, so the belongings header rows get the same inset. */
+  .section.belongings .header.row.belongings-row {
+    padding-left: 4px;
+  }
+
+  .section.belongings .header.row.belongings-row .image,
+  .section.talents .header.row.belongings-row .image {
+    text-align: center;
+  }
+
   .section.belongings .header.row.belongings-row .two-column-with-roll-primary,
   .section.belongings .row.entry.belongings-row .item-name {
     grid-column: 2;
@@ -1754,6 +1773,11 @@ body {
   .section.belongings .header.row {
     background: var(--lcars-titlebar-belongings-colheader, var(--lcars-titlebar-belongings, var(--lcars-peach))) !important;
     color: var(--lcars-text-on-belongings-colheader, var(--lcars-text-on-belongings, var(--lcars-text-on-primary, var(--lcars-text-header, var(--lcars-text-dark))))) !important;
+  }
+
+  .section.talents .header.row.belongings-row {
+    background: var(--lcars-titlebar-talents-subheaders, var(--lcars-titlebar-belongings-colheader, var(--lcars-titlebar-belongings, var(--lcars-titlebar-talents, var(--lcars-lilac))))) !important;
+    color: var(--lcars-text-on-talents-subheaders, var(--lcars-text-on-belongings-colheader, var(--lcars-text-on-belongings, var(--lcars-text-on-primary, var(--lcars-text-header, var(--lcars-text-dark)))))) !important;
   }
 
   /* NPC/supporting templates do not use .belongings-row hooks; apply the same
@@ -2410,7 +2434,8 @@ body {
   }
 
   /* Keep the equipment / weapons / cargo column-label rows (styled for LCARS) */
-  .section.belongings .header.row {
+  .section.belongings .header.row,
+  .section.talents .header.row.belongings-row {
     display: flex !important;
     font-family: var(--lcars-font-heading);
     color: var(--lcars-text-on-belongings-colheader, var(--lcars-text-on-belongings, var(--lcars-text-on-primary, var(--lcars-text-title, var(--lcars-text-dark)))));
@@ -2419,6 +2444,19 @@ body {
     font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+  }
+
+  .section.talents .header.row.belongings-awards,
+  .section.talents .header.row.belongings-species-ability,
+  .section.talents .header.row.belongings-talents {
+    color: var(--lcars-text-on-belongings-colheader, var(--lcars-text-on-belongings, var(--lcars-text-on-primary, var(--lcars-text-title, var(--lcars-text-dark))))) !important;
+    background: var(--lcars-titlebar-belongings-colheader, var(--lcars-titlebar-belongings, var(--lcars-titlebar-talents, var(--lcars-lilac)))) !important;
+  }
+
+  .section.talents .header.row.belongings-awards *,
+  .section.talents .header.row.belongings-species-ability *,
+  .section.talents .header.row.belongings-talents * {
+    color: inherit !important;
   }
 
   /* Keep the systems block Name – Mod – Breaches header row */
@@ -4870,4 +4908,20 @@ body.sta-lcars-opaque-bg .officers-log-sheet {
 .sta-lcars-sheet .track .bar .box.extendedtask.selected {
   background-color: #F2CC0D !important;
   color: #191813 !important;
+}
+
+.character-sheet.sta-lcars-sheet
+  .section.talents
+  .sta-lcars-items
+  > .header.row.belongings-row {
+  border-radius: 4px !important;
+  box-sizing: border-box;
+  margin-inline: 4px !important;
+  width: calc(100% - 8px) !important;
+}
+
+/* Let the lower section grow with its tab content instead of shrinking to the
+   window height, so the sidebar chrome (left border) runs the full length. */
+.character-sheet.sta-lcars-sheet > .split-section:last-child {
+  min-height: min-content;
 }

@@ -20,6 +20,7 @@ import {
   isLcarsTalentPickerEnabled,
 } from "../core/settings.mjs";
 import { STAActors } from "/systems/sta/module/actors/sta-actors.mjs";
+import { getStaPalettes } from "./lcars-palettes.mjs";
 
 const MODULE_ID = "sta-utils";
 const LCARS_CSS_LINK_ID = "sta-utils-lcars";
@@ -174,6 +175,7 @@ const _CONFIGURABLE_HEADER_KEYS = [
   "traits",
   "belongings",
   "belongings-colheader",
+  "talents-subheaders",
   "injuries",
   "milestones",
   "attributes",
@@ -185,9 +187,18 @@ const _CONFIGURABLE_HEADER_KEYS = [
   "launchbay",
 ];
 
+const _TEXT_ROLES = ["primary", "secondary", "tertiary"];
+
 /**
  * Apply selective per-palette header styling overrides to a sheet element,
  * removing any previous header overrides when switching themes.
+ *
+ * Palette options (all optional):
+ *  - `headerText: { primary, secondary, tertiary }` sets the text color used on
+ *    every header bar of that color role.
+ *  - `headers: { key: "primary"|"secondary"|"tertiary"|"talents" | { bar, text } }`
+ *    picks a bar color per header. `belongings` also drives the
+ *    `belongings-colheader` subheaders unless that key is given explicitly.
  *
  * @param {HTMLElement} sheet - The `.sta-lcars` sheet element.
  * @param {string} paletteId  - The ID of the currently selected palette.
@@ -200,14 +211,28 @@ export function applyLcarsPaletteHeaders(sheet, paletteId) {
     sheet.style.removeProperty(`--lcars-titlebar-${key}`);
     sheet.style.removeProperty(`--lcars-text-on-${key}`);
   }
+  for (const role of _TEXT_ROLES) sheet.style.removeProperty(`--lcars-text-on-${role}`);
 
-  const palettes = STAActors.PALETTES;
+  const palettes = getStaPalettes();
   if (!Array.isArray(palettes)) return;
 
   const palette = palettes.find((p) => p.id === paletteId);
-  if (!palette?.headers || typeof palette.headers !== "object") return;
+  if (!palette) return;
 
-  for (const [key, val] of Object.entries(palette.headers)) {
+  if (palette.headerText && typeof palette.headerText === "object") {
+    for (const role of _TEXT_ROLES) {
+      if (palette.headerText[role]) sheet.style.setProperty(`--lcars-text-on-${role}`, palette.headerText[role]);
+    }
+  }
+
+  if (!palette.headers || typeof palette.headers !== "object") return;
+
+  const headers = { ...palette.headers };
+  if (headers.belongings !== undefined && headers["belongings-colheader"] === undefined) {
+    headers["belongings-colheader"] = headers.belongings;
+  }
+
+  for (const [key, val] of Object.entries(headers)) {
     if (val === "secondary") {
       sheet.style.setProperty(`--lcars-titlebar-${key}`, "var(--lcars-secondary-color)");
       sheet.style.setProperty(`--lcars-text-on-${key}`, "var(--lcars-text-on-secondary)");

@@ -10649,3 +10649,10 @@ a.mission-pod-variants {
     grid-template-columns: 1fr;
   }
 }
+
+/* The system hides the palette radios with position:absolute. Without a
+   positioned row, focusing one scrolls the dialog's overflow:hidden content
+   area instead of the list, which shifts the list out of view. */
+.dialogue .palette-row {
+  position: relative;
+}

@@ -280,14 +280,45 @@
                   <a class="control create sta-lcars-create-btn" title="Create item" data-action="onItemCreate" data-type="talent"><i class="fas fa-plus"></i></a>
                 </div>
                 <div class="sta-lcars-items">
-                  {{#each items as |item id|}}
-                    {{#if (eq item.type "talent")}}
-                      <li class="row entry" data-item-id="{{item.id}}" data-item-type="{{item.type}}" data-item-value="{{item.name}}">
+                  {{#if hasSpeciesAbility}}
+                    <div class="header row item belongings-row belongings-species-ability">
+                      <div class="image"><i class="fas fa-dna" aria-hidden="true"></i></div>
+                      <div class="two-column-with-roll-primary">{{localize 'sta-utils.talentUses.speciesAbilityType'}}</div>
+                    </div>
+
+                    {{#each speciesAbilityItems as |item id|}}
+                      <li class="row entry belongings-row belongings-species-ability" data-item-id="{{item.id}}" data-item-type="{{item.type}}" data-item-value="{{item.name}}">
                         <div class="image"><img class="chat" src="{{item.img}}" title="{{item.name}}" data-action="onItemtoChat" /></div>
                         <input type="text" class="item-name" value="{{item.name}}" data-item-id="{{item._id}}" data-talent-name="{{item.name}}">
                       </li>
-                    {{/if}}
+                    {{/each}}
+                  {{/if}}
+
+                  <div class="header row item belongings-row belongings-talents">
+                    <div class="image"><i class="fas fa-star" aria-hidden="true"></i></div>
+                    <div class="two-column-with-roll-primary">{{localize 'sta.item.talent.title'}}</div>
+                  </div>
+
+                  {{#each talentItems as |item id|}}
+                    <li class="row entry" data-item-id="{{item.id}}" data-item-type="{{item.type}}" data-item-value="{{item.name}}">
+                      <div class="image"><img class="chat" src="{{item.img}}" title="{{item.name}}" data-action="onItemtoChat" /></div>
+                      <input type="text" class="item-name" value="{{item.name}}" data-item-id="{{item._id}}" data-talent-name="{{item.name}}">
+                    </li>
                   {{/each}}
+
+                  {{#if hasAwards}}
+                    <div class="header row item belongings-row belongings-awards">
+                      <div class="image"><i class="fas fa-medal" aria-hidden="true"></i></div>
+                      <div class="two-column-with-roll-primary">{{localize 'sta-utils.lcars.belongings.awards'}}</div>
+                    </div>
+
+                    {{#each awardItems as |item id|}}
+                      <li class="row entry belongings-row belongings-awards" data-item-id="{{item.id}}" data-item-type="{{item.type}}" data-item-value="{{item.name}}">
+                        <div class="image"><img class="chat" src="{{item.img}}" title="{{item.name}}" data-action="onItemtoChat" /></div>
+                        <input type="text" class="item-name" value="{{item.name}}" data-item-id="{{item._id}}" data-talent-name="{{item.name}}">
+                      </li>
+                    {{/each}}
+                  {{/if}}
                 </div>
               </div>
 
@@ -341,7 +372,7 @@
                 </div>
                 <div class="sta-lcars-items">
                   <div class="header row item belongings-row belongings-weapon">
-                    <div class="image"></div>
+                    <div class="image"><i class="fas fa-crosshairs" aria-hidden="true"></i></div>
                     <div class="two-column-with-roll-primary">{{localize 'sta.actor.belonging.weapon.title'}}</div>
                     <div class="two-column-with-roll-secondary">{{localize 'sta.actor.belonging.weapon.dmg'}}</div>
                     <a class="control create" title="Create item" data-action="onItemCreate" data-type="characterweapon2e"><i class="fas fa-plus"></i></a>
@@ -360,7 +391,7 @@
                   {{/each}}
 
                   <div class="header row item belongings-row belongings-armor">
-                    <div class="image"></div>
+                    <div class="image"><i class="fas fa-shield-alt" aria-hidden="true"></i></div>
                     <div class="two-column-with-roll-primary">{{localize 'sta-utils.lcars.belongings.armor'}}</div>
                     <div class="two-column-with-roll-secondary">{{localize 'sta.actor.belonging.armor.protect'}}</div>
                     <a class="control create" title="Create item" data-action="onItemCreate" data-type="armor"><i class="fas fa-plus"></i></a>
@@ -377,7 +408,7 @@
                   {{/each}}
 
                   <div class="header row item belongings-row belongings-item">
-                    <div class="image"></div>
+                    <div class="image"><i class="fas fa-cube" aria-hidden="true"></i></div>
                     <div class="two-column-with-roll-primary">{{localize 'sta.actor.belonging.other.title'}}</div>
                     <a class="control create" title="Create item" data-action="onItemCreate" data-type="item"><i class="fas fa-plus"></i></a>
                   </div>

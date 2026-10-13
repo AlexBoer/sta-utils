@@ -76,6 +76,21 @@ export class LcarsCharacterSheet2e extends STACharacterSheet2e {
    */
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
+    const isAward = (item) =>
+      ["award", "medal"].includes(item.system?.talenttype?.typeenum);
+    const isSpeciesAbility = (item) =>
+      item.system?.talenttype?.typeenum === "speciesability";
+    context.speciesAbilityItems = context.items.filter(
+      (item) => item.type === "talent" && isSpeciesAbility(item),
+    );
+    context.hasSpeciesAbility = context.speciesAbilityItems.length > 0;
+    context.talentItems = context.items.filter(
+      (item) => item.type === "talent" && !isAward(item) && !isSpeciesAbility(item),
+    );
+    context.awardItems = context.items.filter(
+      (item) => item.type === "talent" && isAward(item),
+    );
+    context.hasAwards = context.awardItems.length > 0;
     Object.assign(context, getDivisionContext(this.actor));
     return context;
   }

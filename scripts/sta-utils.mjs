@@ -679,6 +679,12 @@ Hooks.once("init", () => {
 Hooks.once("ready", async () => {
   console.log(`${MODULE_ID} | Ready`);
 
+  try {
+    registerLcarsPalettes();
+  } catch (err) {
+    console.error(`${MODULE_ID} | Failed to re-register LCARS palettes at ready`, err);
+  }
+
   installSta257DisciplineCompatPatch();
   await installShipRosterSheetClassificationPatch();
 
