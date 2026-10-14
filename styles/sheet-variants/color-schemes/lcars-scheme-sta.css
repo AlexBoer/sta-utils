@@ -81,6 +81,9 @@ body.theme-light.sta-officers-lcars-active.lcars-scheme-sta {
    body gets it too via syncOfficersLogLcars(). Both the embedded
    chooser and standalone popout are descendants of one of those. */
 .lcars-scheme-sta .sta-action-chooser.popout {
+  --ac-chrome:        var(--sta-borderblue, #89cff0);
+  --ac-chrome-fg:     var(--sta-darkestblue, #00273f);
+  --ac-header:        var(--sta-borderbluedark, #003399);
   --ac-minor:  #009dff; /* STA blue  */
   --ac-major:  #F2CC0D; /* STA gold  */
   --ac-social: #cc4444; /* bright red */

@@ -315,10 +315,12 @@ body {
  * =========================================================================== */
 .theme-dark .sta-lcars-window.application {
   --lcars-bg: var(--background, #0e0e16);
+  --lcars-shift-color: #fff;
   background: var(--lcars-bg);
 }
 .theme-light .sta-lcars-window.application {
   --lcars-bg: #faf9f6;
+  --lcars-shift-color: #000;
   background: var(--lcars-bg);
 }
 /* Per-sheet theme overrides: theme class is on the .application element itself,
@@ -326,10 +328,12 @@ body {
  * body-descendant rules above (2 classes) when a per-sheet theme is set. */
 .sta-lcars-window.application.theme-dark {
   --lcars-bg: var(--background, #0e0e16);
+  --lcars-shift-color: #fff;
   background: var(--lcars-bg);
 }
 .sta-lcars-window.application.theme-light {
   --lcars-bg: #faf9f6;
+  --lcars-shift-color: #000;
   background: var(--lcars-bg);
 }
 
@@ -391,7 +395,7 @@ body {
   --lcars-tan: #c8b070;
   --lcars-bg: rgb(14 14 22 / 94%);
   --lcars-bg-panel: rgba(0, 0, 0, 25%); /* default dark tint; overridden per-scheme */
-  --lcars-text-light: var(--color-text-primary, #EFE6D8);
+  --lcars-text-light: var(--color-text-primary, rgb(231, 209, 177));
   --lcars-text-dark: #000;
   --lcars-font-heading: "Antonio", "Helvetica Neue", sans-serif;
   --lcars-font-body: "Roboto Condensed", "Helvetica Neue", sans-serif;
@@ -421,11 +425,11 @@ body {
   --lcars-btn-reputation: var(--lcars-tan);
   --lcars-chrome: var(--lcars-orange);         /* structural accent: tab bg, left border, focus rings, scrollbar */
   --lcars-chrome-hover: var(--lcars-peach);    /* tab hover */
-  --lcars-tracktitle: var(--lcars-text-body, var(--color-text-primary, #EFE6D8));   /* track/field label text */
+  --lcars-tracktitle: var(--lcars-text-body, var(--color-text-primary, #EFE6D8));   /* track/field label text */ 
   --lcars-input-border: var(--lcars-lilac);    /* borders on numeric/text inputs */
-  --lcars-input-text: var(--color-text-primary, #EFE6D8);        /* foreground color of input values */
-  --lcars-text-body:   var(--color-text-primary, #EFE6D8);  /* general body/prose text */
-  --lcars-text-item:   var(--color-text-primary, #EFE6D8);  /* item row name text */
+  --lcars-input-text: var(--color-text-primary, rgb(231, 209, 177));        /* foreground color of input values */
+  --lcars-text-body:   var(--color-text-primary, rgb(231, 209, 177));  /* general body/prose text */
+  --lcars-text-item:   var(--color-text-primary, rgb(231, 209, 177));  /* item row name text */
   --lcars-text-title:  var(--lcars-text-dark);   /* text on colored pill/btn backgrounds */
   --lcars-text-header: var(--lcars-text-dark);   /* secondary-title column header labels */
   /* ── 3-color palette shortcuts ─────────────────────────────────────────────────── */
@@ -749,13 +753,13 @@ body {
 
   .sheet-tabs.tabs .item:hover,
   .sheet-tabs.tabs .item:focus-visible {
-    background: var(--lcars-chrome-hover, var(--lcars-peach));
-    color: var(--lcars-text-on-tertiary, var(--lcars-text-title, var(--lcars-text-dark)));
+    background: var(--lcars-titlebar-tabs-highlight, var(--lcars-chrome-hover, var(--lcars-peach)));
+    color: var(--lcars-text-on-tabs-highlight, var(--lcars-text-on-tertiary, var(--lcars-text-title, var(--lcars-text-dark))));
   }
 
   .sheet-tabs.tabs .item.active {
-    background: var(--lcars-chrome-hover, var(--lcars-peach));
-    color: var(--lcars-text-on-tertiary, var(--lcars-text-title, var(--lcars-text-dark))) !important;
+    background: var(--lcars-titlebar-tabs-highlight, var(--lcars-chrome-hover, var(--lcars-peach)));
+    color: var(--lcars-text-on-tabs-highlight, var(--lcars-text-on-tertiary, var(--lcars-text-title, var(--lcars-text-dark)))) !important;
     font-weight: bold;
   }
 
@@ -2151,13 +2155,13 @@ body {
 
   .sheet-tabs.tabs .item:hover,
   .sheet-tabs.tabs .item:focus-visible {
-    background: var(--lcars-chrome-hover, var(--lcars-peach));
-    color: var(--lcars-text-on-tertiary, var(--lcars-text-title, var(--lcars-text-dark)));
+    background: var(--lcars-titlebar-tabs-highlight, var(--lcars-chrome-hover, var(--lcars-peach)));
+    color: var(--lcars-text-on-tabs-highlight, var(--lcars-text-on-tertiary, var(--lcars-text-title, var(--lcars-text-dark))));
   }
 
   .sheet-tabs.tabs .item.active {
-    background: var(--lcars-chrome-hover, var(--lcars-peach));
-    color: var(--lcars-text-on-tertiary, var(--lcars-text-title, var(--lcars-text-dark))) !important;
+    background: var(--lcars-titlebar-tabs-highlight, var(--lcars-chrome-hover, var(--lcars-peach)));
+    color: var(--lcars-text-on-tabs-highlight, var(--lcars-text-on-tertiary, var(--lcars-text-title, var(--lcars-text-dark)))) !important;
     font-weight: bold;
   }
 
@@ -2428,6 +2432,7 @@ body {
     outline: 2px solid transparent;
   }
 
+
   /* Hide values / talents / traits / injuries header rows */
   .section .header.row {
     display: none !important;
@@ -2447,6 +2452,7 @@ body {
   }
 
   .section.talents .header.row.belongings-awards,
+  .section.talents .header.row.belongings-role,
   .section.talents .header.row.belongings-species-ability,
   .section.talents .header.row.belongings-talents {
     color: var(--lcars-text-on-belongings-colheader, var(--lcars-text-on-belongings, var(--lcars-text-on-primary, var(--lcars-text-title, var(--lcars-text-dark))))) !important;
@@ -2454,9 +2460,36 @@ body {
   }
 
   .section.talents .header.row.belongings-awards *,
+  .section.talents .header.row.belongings-role *,
   .section.talents .header.row.belongings-species-ability *,
   .section.talents .header.row.belongings-talents * {
     color: inherit !important;
+  }
+
+  .section.talents .header.row.belongings-row {
+    min-height: 0 !important;
+    height: auto !important;
+    padding-block: 0 !important;
+    line-height: 1 !important;
+    font-size: 0.6rem !important;
+  }
+
+  .section.talents .header.row.belongings-row .image {
+    height: auto !important;
+    margin-block: 0 !important;
+    line-height: 1 !important;
+  }
+
+  .section.talents .header.row.belongings-row .image i {
+    font-size: 0.6rem !important;
+    line-height: 1 !important;
+  }
+
+  .section.talents .header.row.belongings-row .two-column-with-roll-primary {
+    font-size: 0.6rem !important;
+    line-height: 1.1 !important;
+    padding-block: 1px !important;
+    margin-block: 0 !important;
   }
 
   /* Keep the systems block Name – Mod – Breaches header row */
@@ -3650,9 +3683,6 @@ body.sta-officers-lcars-active {
   .sta-action-chooser.popout {
     --ac-radius:          24px;
     --ac-font:            "Antonio", "Roboto Condensed", sans-serif;
-    --ac-chrome:          var(--sta-borderblue, #89cff0);
-    --ac-chrome-fg:       var(--sta-darkestblue, #00273f);
-    --ac-header:          var(--sta-borderbluedark, #003399);
     --ac-minor:           var(--sta-palestbluedark, #6699ff);
     --ac-major:           var(--sta-palestblue, #e2ffff);
     --ac-social:          var(--sta-borderblue, #89cff0);
@@ -4750,7 +4780,7 @@ body.sta-lcars-opaque-bg .officers-log-sheet {
   --lcars-titlebar-traits: var(--lcars-primary-color);
   --lcars-titlebar-injuries: var(--lcars-tertiary-color);
   --lcars-titlebar-belongings: var(--lcars-primary-color);
-  --lcars-titlebar-belongings-colheader: var(--lcars-primary-color);
+  --lcars-titlebar-belongings-colheader: var(--lcars-secondary-color);
   --lcars-titlebar-arc-starship: var(--lcars-secondary-color);
   --lcars-titlebar-milestones: var(--lcars-tertiary-color);
   --lcars-titlebar-systems: var(--lcars-primary-color);
@@ -4782,7 +4812,7 @@ body.sta-lcars-opaque-bg .officers-log-sheet {
   --lcars-text-on-traits: var(--lcars-text-on-primary);
   --lcars-text-on-injuries: var(--lcars-text-on-tertiary);
   --lcars-text-on-belongings: var(--lcars-text-on-primary);
-  --lcars-text-on-belongings-colheader: var(--lcars-text-on-primary);
+  --lcars-text-on-belongings-colheader: var(--lcars-text-on-secondary);
   --lcars-text-on-arc-starship: var(--lcars-text-on-secondary);
   --lcars-text-on-milestones: var(--lcars-text-on-tertiary);
   --lcars-text-on-systems: var(--lcars-text-on-primary);
@@ -4823,7 +4853,7 @@ body.sta-lcars-opaque-bg .officers-log-sheet {
   --lcars-titlebar-traits: var(--lcars-primary-color);
   --lcars-titlebar-injuries: var(--lcars-tertiary-color);
   --lcars-titlebar-belongings: var(--lcars-primary-color);
-  --lcars-titlebar-belongings-colheader: var(--lcars-primary-color);
+  --lcars-titlebar-belongings-colheader: var(--lcars-secondary-color);
   --lcars-titlebar-arc-starship: var(--lcars-secondary-color);
   --lcars-titlebar-milestones: var(--lcars-tertiary-color);
   --lcars-titlebar-systems: var(--lcars-primary-color);
@@ -4855,7 +4885,7 @@ body.sta-lcars-opaque-bg .officers-log-sheet {
   --lcars-text-on-traits: var(--lcars-text-on-primary);
   --lcars-text-on-injuries: var(--lcars-text-on-tertiary);
   --lcars-text-on-belongings: var(--lcars-text-on-primary);
-  --lcars-text-on-belongings-colheader: var(--lcars-text-on-primary);
+  --lcars-text-on-belongings-colheader: var(--lcars-text-on-secondary);
   --lcars-text-on-arc-starship: var(--lcars-text-on-secondary);
   --lcars-text-on-milestones: var(--lcars-text-on-tertiary);
   --lcars-text-on-systems: var(--lcars-text-on-primary);
@@ -4870,10 +4900,6 @@ body.sta-lcars-opaque-bg .officers-log-sheet {
  * with matching legible foreground text. */
 :is(.character-sheet, .starship-sheet).sta-lcars:is([data-palette="sta-utils-lcars-tng"], [data-palette="tng"], .palette-sta-utils-lcars-tng, .palette-tng),
 .sta-lcars-window.application:is([data-palette="sta-utils-lcars-tng"], [data-palette="tng"], .palette-sta-utils-lcars-tng, .palette-tng) {
-  --lcars-titlebar-traits: var(--lcars-secondary-color);
-  --lcars-text-on-traits: var(--lcars-text-on-secondary);
-  --lcars-titlebar-belongings: var(--lcars-secondary-color);
-  --lcars-text-on-belongings: var(--lcars-text-on-secondary);
   --lcars-titlebar-belongings-colheader: var(--lcars-secondary-color);
   --lcars-text-on-belongings-colheader: var(--lcars-text-on-secondary);
   --lcars-titlebar-biography: var(--lcars-secondary-color);

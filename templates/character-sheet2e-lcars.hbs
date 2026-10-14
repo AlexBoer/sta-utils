@@ -280,45 +280,20 @@
                   <a class="control create sta-lcars-create-btn" title="Create item" data-action="onItemCreate" data-type="talent"><i class="fas fa-plus"></i></a>
                 </div>
                 <div class="sta-lcars-items">
-                  {{#if hasSpeciesAbility}}
-                    <div class="header row item belongings-row belongings-species-ability">
-                      <div class="image"><i class="fas fa-dna" aria-hidden="true"></i></div>
-                      <div class="two-column-with-roll-primary">{{localize 'sta-utils.talentUses.speciesAbilityType'}}</div>
+                  {{#each talentGroups as |group|}}
+                    {{#if ../showTalentsSubheader}}
+                    <div class="header row item belongings-row belongings-{{group.cls}}">
+                      <div class="image"><i class="fas {{group.icon}}" aria-hidden="true"></i></div>
+                      <div class="two-column-with-roll-primary">{{group.label}}</div>
                     </div>
-
-                    {{#each speciesAbilityItems as |item id|}}
-                      <li class="row entry belongings-row belongings-species-ability" data-item-id="{{item.id}}" data-item-type="{{item.type}}" data-item-value="{{item.name}}">
-                        <div class="image"><img class="chat" src="{{item.img}}" title="{{item.name}}" data-action="onItemtoChat" /></div>
-                        <input type="text" class="item-name" value="{{item.name}}" data-item-id="{{item._id}}" data-talent-name="{{item.name}}">
-                      </li>
-                    {{/each}}
-                  {{/if}}
-
-                  <div class="header row item belongings-row belongings-talents">
-                    <div class="image"><i class="fas fa-star" aria-hidden="true"></i></div>
-                    <div class="two-column-with-roll-primary">{{localize 'sta.item.talent.title'}}</div>
-                  </div>
-
-                  {{#each talentItems as |item id|}}
+                    {{/if}}
+                    {{#each group.items as |item|}}
                     <li class="row entry" data-item-id="{{item.id}}" data-item-type="{{item.type}}" data-item-value="{{item.name}}">
                       <div class="image"><img class="chat" src="{{item.img}}" title="{{item.name}}" data-action="onItemtoChat" /></div>
                       <input type="text" class="item-name" value="{{item.name}}" data-item-id="{{item._id}}" data-talent-name="{{item.name}}">
                     </li>
-                  {{/each}}
-
-                  {{#if hasAwards}}
-                    <div class="header row item belongings-row belongings-awards">
-                      <div class="image"><i class="fas fa-medal" aria-hidden="true"></i></div>
-                      <div class="two-column-with-roll-primary">{{localize 'sta-utils.lcars.belongings.awards'}}</div>
-                    </div>
-
-                    {{#each awardItems as |item id|}}
-                      <li class="row entry belongings-row belongings-awards" data-item-id="{{item.id}}" data-item-type="{{item.type}}" data-item-value="{{item.name}}">
-                        <div class="image"><img class="chat" src="{{item.img}}" title="{{item.name}}" data-action="onItemtoChat" /></div>
-                        <input type="text" class="item-name" value="{{item.name}}" data-item-id="{{item._id}}" data-talent-name="{{item.name}}">
-                      </li>
                     {{/each}}
-                  {{/if}}
+                  {{/each}}
                 </div>
               </div>
 

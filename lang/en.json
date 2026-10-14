@@ -491,7 +491,9 @@
       "maxHint": "Maximum uses per mission. Set to 0 for unlimited (tracker hidden).",
       "awardType": "Award",
       "roleType": "Role",
-      "speciesAbilityType": "Species Ability"
+      "awardType": "Award",
+      "speciesAbilityType": "Species Ability",
+      "speciesAbilityAndRole": "Species Ability and Role"
     },
     "itemImagePicker": {
       "open": "Choose Image",

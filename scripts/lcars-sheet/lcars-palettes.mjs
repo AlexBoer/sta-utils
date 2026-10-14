@@ -17,11 +17,11 @@ import { STAActors } from "/systems/sta/module/actors/sta-actors.mjs";
  * //   id: "sta-utils-lcars-mytheme",   // unique, no spaces
  * //   label: "My Theme",               // shown in the palette dialog
  * //   colors: {
- * //     borderblue:     "#89CFF0",     // tertiary color (dark mode)
- * //     borderbluedark: "#003399",     // PRIMARY color: sidebar chrome and most header bars
- * //     darkestblue:    "#00273F",     // dark text used on light bars (secondary/tertiary text)
- * //     palestblue:     "#E2FFFF",     // light text used on primary bars
- * //     palestbluedark: "#6699FF",     // SECONDARY color: accent header bars
+ * //     primary:       "#003399",    // sidebar chrome and most header bars
+ * //     secondary:     "#6699FF",    // accent header bars (biography, etc.)
+ * //     tertiary:      "#89CFF0",    // input values, track titles, Roll Reputation, injuries bars
+ * //     textPrimary:   "#E2FFFF",    // text on primary bars
+ * //     textSecondary: "#00273F",    // text on secondary and tertiary bars
  * //   },
  * //   // Optional: text color per bar color. Affects EVERY header using that color.
  * //   headerText: { primary: "#FFFFFF", secondary: "#000000", tertiary: "#000000" },
@@ -31,6 +31,7 @@ import { STAActors } from "/systems/sta/module/actors/sta-actors.mjs";
  * //     belongings: "secondary",        // Belongings AND its Weapons/Armor/Other Items subheaders
  * //     biography: "secondary",
  * //     "talents-subheaders": { text: "#FFFFFF" },   // text-only override, bar unchanged
+ * //     "tabs-highlight": { shift: 12 }, // active/hovered tab: 12% lighter (darker in light mode)
  * //     injuries: { bar: "#CC3333", text: "#FFFFFF" }, // fully custom bar and text
  * //   },
  * // },
@@ -38,16 +39,21 @@ import { STAActors } from "/systems/sta/module/actors/sta-actors.mjs";
  * ----------------------------------------------------------------------------
  * KEY INDEX: colors  (the five base colors every theme must define)
  * ----------------------------------------------------------------------------
- *   borderblue      Tertiary color (dark mode): input values, track titles,
- *                   Roll Reputation button, injuries/milestones/launchbay bars.
- *   borderbluedark  Primary color (dark mode): sidebar chrome and most header
- *                   bars (talents, values, focuses, systems, development...).
- *   darkestblue     Dark text, used on secondary/tertiary colored bars.
- *   palestblue      Light text, used on primary colored bars.
- *   palestbluedark  Secondary color (dark mode): accent bars such as
- *                   biography, bio fields and arc/starship headers.
- *   (Light mode swaps the roles: borderblue is primary, palestblue is secondary
- *   and palestbluedark is tertiary.)
+ *   primary          Sidebar chrome and most header bars (talents, values,
+ *                    focuses, systems, development...).
+ *   secondary        Accent bars such as biography, bio fields and
+ *                    arc/starship headers.
+ *   tertiary         Input values, track titles, Roll Reputation button,
+ *                    injuries/milestones/launchbay bars.
+ *   textPrimary      Text on primary colored bars.
+ *   textSecondary    Text on secondary and tertiary colored bars.
+ *   Roles above describe dark mode. Light mode swaps them: tertiary becomes
+ *   the primary color, textPrimary's color becomes secondary, and secondary
+ *   becomes tertiary.
+ *   The STA system's own key names still work and are equivalent:
+ *   borderbluedark = primary, palestbluedark = secondary,
+ *   borderblue = tertiary, palestblue = textPrimary,
+ *   darkestblue = textSecondary. (textOnPrimary/textOnSecondary also work.)
  *
  * ----------------------------------------------------------------------------
  * KEY INDEX: headerText  (text color per bar color; affects all matching bars)
@@ -69,12 +75,13 @@ import { STAActors } from "/systems/sta/module/actors/sta-actors.mjs";
  *   values                  Values title bar
  *   talents                 Talents title bar
  *   talents-subheaders      Species Ability, Talents and Awards subheaders
- *                           (falls back to belongings-colheader)
+ *                           (falls back to subheader)
  *   focuses                 Focuses title bar
  *   traits                  Traits title bar
- *   belongings              Belongings title bar. Also sets belongings-colheader
+ *   belongings              Belongings title bar. Also sets subheader
  *                           unless you list that key yourself.
- *   belongings-colheader    Weapons, Armor and Other Items subheaders
+ *   subheader               Weapons, Armor and Other Items subheaders
+ *                           (alias of belongings-colheader)
  *   injuries                Injuries title bar
  *   milestones              Milestones bar on the Development tab
  *   attributes              Attributes bar
@@ -84,6 +91,16 @@ import { STAActors } from "/systems/sta/module/actors/sta-actors.mjs";
  *   systems                 Starship Systems headers
  *   bio-fields              Biography field label bars
  *   launchbay               Launch bay headers
+ *   tabs-highlight          Background (and text) of the active or hovered tab
+ *                           on the character, starship and house sheets.
+ *                           Defaults to the tertiary color.
+ *                           Besides the usual values, accepts an adjustment of
+ *                           the default (or of `bar`/`from`, a role or color):
+ *                             { shift: 12 }   % lighter in dark mode, darker in light mode
+ *                             { lighten: 12 } always lighter
+ *                             { darken: 12 }  always darker
+ *                             { from: "secondary", shift: 10, text: "#000" }
+ *                           The adjustment works on any header key, too.
  *
  * Precedence (most specific wins): headers[key].text, then headerText[role],
  * then the theme's built-in defaults.
@@ -95,28 +112,27 @@ export const LCARS_PALETTES = [
     id: "sta-utils-lcars-tng",
     label: "The Next Generation",
     colors: {
-      borderblue: "#F1A43C",
-      borderbluedark: "#F1A43C",
-      darkestblue: "#010105",
-      palestblue: "#190a22",
-      palestbluedark: "#C5A3D9",
+      primary: "#F1A43C",
+      secondary: "#C5A3D9",
+      tertiary: "#88aaff",
+      textPrimary: "#190a22",
+      textSecondary: "#010105",
     },
     headers: {
-      traits: "secondary",
-      belongings: "secondary",
-      "belongings-colheader": "secondary",
+            subheader: "secondary",
       biography: "secondary",
+      "tabs-highlight": { from: "primary", shift: 20 }, // adjust a role or colour instead of the default
     },
   },
   {
     id: "sta-utils-lcars-academy",
     label: "Starfleet Academy",
     colors: {
-      borderblue: "#C8A020",
-      borderbluedark: "#6A6860",
-      darkestblue: "#101010",
-      palestblue: "#F8F6F0",
-      palestbluedark: "#C03028",
+      primary: "#6A6860",
+      secondary: "#C03028",
+      tertiary: "#C8A020",
+      textPrimary: "#F8F6F0",
+      textSecondary: "#101010",
     },
     headerText: {
       primary: "#FFFFFF",
@@ -124,21 +140,20 @@ export const LCARS_PALETTES = [
       tertiary: "#FFFFFF",
     },
     headers: {
-      traits: "secondary",
-      belongings: "secondary",
-      "belongings-colheader": "secondary",
+            subheader: "secondary",
       biography: "secondary",
+      "tabs-highlight": { from: "primary", shift: 20 }, // adjust a role or colour instead of the default
     },
   },
   {
     id: "sta-utils-lcars-lower-decks",
     label: "Lower Decks",
     colors: {
-      borderblue: "#C8A010",
-      borderbluedark: "#1E60C8",
-      darkestblue: "#0A0C18",
-      palestblue: "#FFFFFF",
-      palestbluedark: "#C43030",
+      primary: "#1E60C8",
+      secondary: "#C43030",
+      tertiary: "#C8A010",
+      textPrimary: "#FFFFFF",
+      textSecondary: "#0A0C18",
     },
     headerText: {
       primary: "#FFFFFF",
@@ -146,55 +161,52 @@ export const LCARS_PALETTES = [
       tertiary: "#FFFFFF",
     },
     headers: {
-      traits: "secondary",
-      belongings: "secondary",
-      "belongings-colheader": "secondary",
+            subheader: "secondary",
       biography: "secondary",
+      "tabs-highlight": { from: "primary", shift: 20 },
     },
   },
   {
     id: "sta-utils-lcars-voyager",
     label: "Voyager",
     colors: {
-      borderblue: "#5AADBE",
-      borderbluedark: "#3D9494",
-      darkestblue: "#061214",
-      palestblue: "#0A0A14",
-      palestbluedark: "#D49A44",
+      primary: "#3D9494",
+      secondary: "#D49A44",
+      tertiary: "#5AADBE",
+      textPrimary: "#0A0A14",
+      textSecondary: "#061214",
     },
     headers: {
-      traits: "secondary",
-      belongings: "secondary",
-      "belongings-colheader": "secondary",
+            subheader: "secondary",
       biography: "secondary",
+      "tabs-highlight": { from: "primary", shift: 20 },
     },
   },
   {
     id: "sta-utils-lcars-ds9",
     label: "Deep Space Nine",
     colors: {
-      borderblue: "#C09040",
-      borderbluedark: "#7A6050",
-      darkestblue: "#0C0A08",
-      palestblue: "#F8F4EE",
-      palestbluedark: "#8090B0",
+      primary: "#7A6050",
+      secondary: "#8090B0",
+      tertiary: "#C09040",
+      textPrimary: "#F8F4EE",
+      textSecondary: "#0C0A08",
     },
     headers: {
-      traits: "secondary",
-      belongings: "secondary",
-      "belongings-colheader": "secondary",
+            subheader: "secondary",
       biography: "secondary",
+      "tabs-highlight": { from: "primary", shift: 20 },
     },
   },
   {
     id: "sta-utils-lcars-picard",
     label: "Picard",
     colors: {
-      borderblue: "#5070A0",
-      borderbluedark: "#4E5872",
-      darkestblue: "#0E1018",
-      palestblue: "#F2F4F8",
-      palestbluedark: "#7A3A4C",
+      primary: "#4E5872",
+      secondary: "#7A3A4C",
+      tertiary: "#5070A0",
+      textPrimary: "#F2F4F8",
+      textSecondary: "#0E1018",
     },
     headerText: {
       primary: "#FFFFFF",
@@ -202,13 +214,47 @@ export const LCARS_PALETTES = [
       tertiary: "#FFFFFF",
     },
     headers: {
-      traits: "secondary",
-      belongings: "secondary",
-      "belongings-colheader": "secondary",
+            subheader: "secondary",
       biography: "secondary",
+      "tabs-highlight": { from: "primary", shift: 20 },
     },
   },
 ];
+
+const _COLOR_ALIASES = {
+  primary: "borderbluedark",
+  secondary: "palestbluedark",
+  tertiary: "borderblue",
+  textPrimary: "palestblue",
+  textSecondary: "darkestblue",
+  textOnPrimary: "palestblue",
+  textOnSecondary: "darkestblue",
+};
+
+const _HEADER_ALIASES = { subheader: "belongings-colheader" };
+
+/** Translate the friendly color names into the STA system's palette keys. */
+function normalizeColors(colors = {}) {
+  const out = {};
+  for (const [key, value] of Object.entries(colors)) {
+    out[_COLOR_ALIASES[key] ?? key] = value;
+  }
+  return out;
+}
+
+function normalizeHeaders(headers) {
+  if (!headers) return headers;
+  const out = {};
+  for (const [key, value] of Object.entries(headers)) {
+    out[_HEADER_ALIASES[key] ?? key] = value;
+  }
+  return out;
+}
+
+for (const palette of LCARS_PALETTES) {
+  palette.colors = normalizeColors(palette.colors);
+  palette.headers = normalizeHeaders(palette.headers);
+}
 
 /**
  * Locate all distinct class constructors or prototype objects in the STA sheet hierarchy

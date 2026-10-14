@@ -185,9 +185,47 @@ const _CONFIGURABLE_HEADER_KEYS = [
   "systems",
   "bio-fields",
   "launchbay",
+  "tabs-highlight",
 ];
 
 const _TEXT_ROLES = ["primary", "secondary", "tertiary"];
+
+const _HEADER_DEFAULT_BASE = {
+  "tabs-highlight": "var(--lcars-chrome-hover, var(--lcars-peach))",
+};
+
+/** Resolve a `bar`/`from` value (role name, color, or undefined) to a CSS color. */
+function _resolveHeaderBase(value, key) {
+  if (value === "primary" || value === "secondary" || value === "tertiary") {
+    return `var(--lcars-${value}-color)`;
+  }
+  if (value === "talents") return "var(--lcars-titlebar-talents, var(--lcars-primary-color))";
+  return value ?? _HEADER_DEFAULT_BASE[key] ?? null;
+}
+
+/**
+ * Apply `shift` / `lighten` / `darken` (percent, 0-100) to a base color.
+ * `shift` lightens in dark mode and darkens in light mode; `lighten` and
+ * `darken` are fixed. Returns the base unchanged when no adjustment is given.
+ */
+function _adjustColor(base, spec) {
+  if (!base) return null;
+  const amount = (n) => Math.min(100, Math.max(0, Number(n)));
+  let target = null;
+  let pct = 0;
+  if (spec.shift !== undefined && Number.isFinite(Number(spec.shift))) {
+    target = "var(--lcars-shift-color, #fff)";
+    pct = amount(spec.shift);
+  } else if (spec.lighten !== undefined && Number.isFinite(Number(spec.lighten))) {
+    target = "#fff";
+    pct = amount(spec.lighten);
+  } else if (spec.darken !== undefined && Number.isFinite(Number(spec.darken))) {
+    target = "#000";
+    pct = amount(spec.darken);
+  }
+  if (!target || !pct) return base;
+  return `color-mix(in srgb, ${base}, ${target} ${pct}%)`;
+}
 
 /**
  * Apply selective per-palette header styling overrides to a sheet element,
@@ -246,7 +284,9 @@ export function applyLcarsPaletteHeaders(sheet, paletteId) {
       sheet.style.setProperty(`--lcars-titlebar-${key}`, "var(--lcars-tertiary-color)");
       sheet.style.setProperty(`--lcars-text-on-${key}`, "var(--lcars-text-on-tertiary)");
     } else if (typeof val === "object" && val !== null) {
-      if (val.bar) sheet.style.setProperty(`--lcars-titlebar-${key}`, val.bar);
+      const baseColor = _resolveHeaderBase(val.bar ?? val.from, key);
+      const mixed = _adjustColor(baseColor, val);
+      if (mixed) sheet.style.setProperty(`--lcars-titlebar-${key}`, mixed);
       if (val.text) sheet.style.setProperty(`--lcars-text-on-${key}`, val.text);
     } else if (typeof val === "string") {
       sheet.style.setProperty(`--lcars-titlebar-${key}`, val);
