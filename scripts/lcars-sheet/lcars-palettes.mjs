@@ -119,7 +119,7 @@ export const LCARS_PALETTES = [
       textSecondary: "#010105",
     },
     headers: {
-            subheader: "secondary",
+      subheader: "secondary",
       biography: "secondary",
       "tabs-highlight": { from: "primary", shift: 20 }, // adjust a role or colour instead of the default
     },
@@ -140,7 +140,7 @@ export const LCARS_PALETTES = [
       tertiary: "#FFFFFF",
     },
     headers: {
-            subheader: "secondary",
+      subheader: "secondary",
       biography: "secondary",
       "tabs-highlight": { from: "primary", shift: 20 }, // adjust a role or colour instead of the default
     },
@@ -161,7 +161,7 @@ export const LCARS_PALETTES = [
       tertiary: "#FFFFFF",
     },
     headers: {
-            subheader: "secondary",
+      subheader: "secondary",
       biography: "secondary",
       "tabs-highlight": { from: "primary", shift: 20 },
     },
@@ -177,7 +177,7 @@ export const LCARS_PALETTES = [
       textSecondary: "#061214",
     },
     headers: {
-            subheader: "secondary",
+      subheader: "secondary",
       biography: "secondary",
       "tabs-highlight": { from: "primary", shift: 20 },
     },
@@ -193,7 +193,7 @@ export const LCARS_PALETTES = [
       textSecondary: "#0C0A08",
     },
     headers: {
-            subheader: "secondary",
+      subheader: "secondary",
       biography: "secondary",
       "tabs-highlight": { from: "primary", shift: 20 },
     },
@@ -214,9 +214,32 @@ export const LCARS_PALETTES = [
       tertiary: "#FFFFFF",
     },
     headers: {
-            subheader: "secondary",
+      subheader: "secondary",
       biography: "secondary",
       "tabs-highlight": { from: "primary", shift: 20 },
+    },
+  },
+  {
+    id: "sta-utils-lcars-dominion",
+    label: "Dominion",
+    colors: {
+      primary: "#787880",
+      secondary: "#3A1870",
+      tertiary: "#4E7860",
+      textPrimary: "#F0ECFF",
+      textSecondary: "#F0ECFF",
+    },
+    headerText: {
+      primary: "#F0ECFF",
+      secondary: "#F0ECFF",
+      tertiary: "#F0ECFF",
+    },
+    headers: {
+      subheader: "secondary",
+      biography: "secondary",
+      injuries: "#8C2050",
+      launchbay: "secondary",
+      "tabs-highlight": { from: "primary", shift: 12 },
     },
   },
 ];

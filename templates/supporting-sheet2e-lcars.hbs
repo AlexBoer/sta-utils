@@ -271,8 +271,14 @@
                   <a class="control create sta-lcars-create-btn" title="Create item" data-action="onItemCreate" data-type="talent"><i class="fas fa-plus"></i></a>
                 </div>
                 <div class="sta-lcars-items">
-                  {{#each items as |item id|}}
-                    {{#if (eq item.type "talent")}}
+                  {{#each talentGroups as |group|}}
+                    {{#if ../showTalentsSubheader}}
+                    <div class="header row item belongings-row belongings-{{group.cls}}">
+                      <div class="image"><i class="fas {{group.icon}}" aria-hidden="true"></i></div>
+                      <div class="two-column-with-roll-primary">{{group.label}}</div>
+                    </div>
+                    {{/if}}
+                    {{#each group.items as |item|}}
                       <li class="row entry" data-item-id="{{item.id}}" data-item-type="{{item.type}}" data-item-value="{{item.name}}">
                         <div class="image"><img class="chat" src="{{item.img}}" title="{{item.name}}" data-action="onItemtoChat" /></div>
                         <input type="text" class="item-name" value="{{item.name}}" data-item-id="{{item._id}}" data-talent-name="{{item.name}}">
@@ -281,7 +287,7 @@
                           <a class="delete" data-action="onItemDelete" title="Delete Item"><i class="fas fa-trash"></i></a>
                         </div>
                       </li>
-                    {{/if}}
+                    {{/each}}
                   {{/each}}
                 </div>
               </div>

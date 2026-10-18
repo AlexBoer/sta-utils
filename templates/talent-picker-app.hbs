@@ -20,6 +20,16 @@
 
     <div class="sta-compendium-browser__filters-shell">
       <div class="sta-compendium-browser__filters">
+        {{#if selectionField}}
+        <label>
+          <span>{{selectionField.label}}</span>
+          <select data-role="selection-field">
+            {{#each selectionField.options as |option|}}
+            <option value="{{option.value}}" {{#if option.selected}}selected{{/if}}>{{option.label}}</option>
+            {{/each}}
+          </select>
+        </label>
+        {{/if}}
         <label>
           <span>{{labels.search}}</span>
           <input type="search" data-role="search" value="{{search}}" placeholder="{{labels.searchPlaceholder}}" />
@@ -169,6 +179,9 @@
       {{/if}}
       {{/if}}
       <span class="spacer"></span>
+      {{#if showBackButton}}
+      <button type="button" data-action="back">{{labels.back}}</button>
+      {{/if}}
       <button type="button" data-action="cancel">{{labels.cancel}}</button>
     </footer>
   </section>

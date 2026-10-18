@@ -13,6 +13,10 @@ import { STASupportingSheet2e } from "/systems/sta/module/actors/supporting-shee
 
 import { performAssistRoll } from "./lcars-assist.mjs";
 import { getDivisionContext } from "./division-control.mjs";
+import {
+  prepareLcarsTalentGroups,
+  sortTalentWithinGroup,
+} from "./lcars-talent-groups.mjs";
 
 const MODULE_ID = "sta-utils";
 
@@ -51,7 +55,13 @@ export class LcarsSupportingSheet2e extends STASupportingSheet2e {
    */
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
+    prepareLcarsTalentGroups(context);
     Object.assign(context, getDivisionContext(this.actor));
     return context;
+  }
+
+  async _onSortItem(event, item) {
+    if (item.type !== "talent") return super._onSortItem(event, item);
+    return sortTalentWithinGroup(this, event, item);
   }
 }

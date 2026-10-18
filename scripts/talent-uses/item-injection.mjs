@@ -40,12 +40,14 @@ function _injectUsesFields(root, item) {
   const used = item.system?.uses?.used ?? 0;
   const max = item.system?.uses?.max ?? 0;
   const isLimited = max > 0;
+  const isAward = item.system?.talenttype?.typeenum === "award";
 
   // The STA talent sheet uses .row / .column / .title / .text-entry layout
   // (not standard .form-group).  Mirror that structure so the injected fields
   // blend in with the rest of the sheet.
   const wrapper = document.createElement("div");
   wrapper.className = "talent-uses-fields";
+  const awardCostRow = isAward ? _buildAwardCostFields(item, root) : null;
   wrapper.innerHTML = `
     <div class="row talent-uses-toggle-row">
       <label class="talent-uses-toggle-label">
@@ -67,6 +69,40 @@ function _injectUsesFields(root, item) {
       <p class="hint">${t("sta-utils.talentUses.maxHint")}</p>
     </div>
   `;
+
+  const toggleRow = wrapper.querySelector(".talent-uses-toggle-row");
+  const existingIncrementalLabel = root.querySelector(
+    ".sta-talent-award-incremental",
+  );
+  let incrementalCheckbox;
+  if (existingIncrementalLabel instanceof HTMLElement) {
+    toggleRow.appendChild(existingIncrementalLabel);
+    incrementalCheckbox = existingIncrementalLabel.querySelector(
+      'input[name="flags.sta-officers-log.awardCost.incremental"]',
+    );
+    existingIncrementalLabel.appendChild(
+      _createAwardTooltip("awardIncrementalHint"),
+    );
+  } else if (isAward) {
+    const label = document.createElement("label");
+    label.className = "sta-talent-award-incremental";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.name = "flags.sta-officers-log.awardCost.incremental";
+    checkbox.checked =
+      item.flags?.["sta-officers-log"]?.awardCost?.incremental === true;
+    label.append(
+      checkbox,
+      document.createTextNode(
+        ` ${t("sta-officers-log.talents.awardIncrementalLabel")}`,
+      ),
+      _createAwardTooltip("awardIncrementalHint"),
+    );
+    toggleRow.appendChild(label);
+    incrementalCheckbox = checkbox;
+  }
+
+  if (awardCostRow) wrapper.insertBefore(awardCostRow, toggleRow);
 
   const toggle = wrapper.querySelector(".talent-uses-toggle");
   const inputs = wrapper.querySelector(".talent-uses-inputs");
@@ -98,12 +134,125 @@ function _injectUsesFields(root, item) {
     }
   });
 
+  if (incrementalCheckbox instanceof HTMLInputElement) {
+    const minInput =
+      wrapper.querySelector(
+        'input[name="flags.sta-officers-log.awardCost.min"]',
+      ) ??
+      root.querySelector(
+        'input[name="flags.sta-officers-log.awardCost.min"]',
+      );
+    const maxInput =
+      wrapper.querySelector(
+        'input[name="flags.sta-officers-log.awardCost.max"]',
+      ) ??
+      root.querySelector(
+        'input[name="flags.sta-officers-log.awardCost.max"]',
+      );
+    const isValid = () => {
+      const minimum = Number(minInput?.value);
+      const target = Number(maxInput?.value);
+      return (
+        Number.isInteger(minimum) &&
+        minimum > 0 &&
+        Number.isInteger(target) &&
+        target > minimum
+      );
+    };
+    const warn = () =>
+      ui.notifications?.warn?.(
+        "Set a positive minimum cost and a greater total target before enabling incremental spending.",
+      );
+
+    incrementalCheckbox.addEventListener(
+      "change",
+      (event) => {
+        if (!incrementalCheckbox.checked || isValid()) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        incrementalCheckbox.checked = false;
+        warn();
+      },
+      true,
+    );
+
+    for (const input of [minInput, maxInput]) {
+      input?.addEventListener(
+        "change",
+        (event) => {
+          if (!incrementalCheckbox.checked || isValid()) return;
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          input.value = String(
+            input.name.endsWith(".min")
+              ? (item.flags?.["sta-officers-log"]?.awardCost?.min ?? "")
+              : (item.flags?.["sta-officers-log"]?.awardCost?.max ?? ""),
+          );
+          warn();
+        },
+        true,
+      );
+    }
+  }
+
   // Append to the .item-sheet body (the STA talent sheet's content wrapper).
   const sheetBody =
     root.querySelector(".item-sheet") ??
     root.querySelector("[data-application-part='itemsheet']") ??
     root;
   sheetBody.appendChild(wrapper);
+}
+
+function _buildAwardCostFields(item, root) {
+  if (
+    root.querySelector(
+      'input[name="flags.sta-officers-log.awardCost.min"]',
+    )
+  ) return null;
+
+  const awardCost = item.flags?.["sta-officers-log"]?.awardCost ?? {};
+  const row = document.createElement("div");
+  row.className = "row talent-award-cost-row";
+  const label = document.createElement("div");
+  label.className = "title";
+  label.textContent = t("sta-officers-log.talents.awardCostLabel");
+
+  label.append(" ", _createAwardTooltip("awardCostHint"));
+
+  const fields = document.createElement("div");
+  fields.className = "inline-container";
+  for (const [field, placeholder, value] of [
+    ["min", "awardCostMinPlaceholder", awardCost.min],
+    ["max", "awardCostMaxPlaceholder", awardCost.max],
+  ]) {
+    const input = document.createElement("input");
+    input.type = "number";
+    input.name = `flags.sta-officers-log.awardCost.${field}`;
+    input.min = "0";
+    input.step = "1";
+    input.placeholder = t(`sta-officers-log.talents.${placeholder}`);
+    input.className = "text-entry";
+    input.value =
+      value != null &&
+      String(value).trim() !== "" &&
+      Number.isFinite(Number(value))
+        ? String(value)
+        : "";
+    fields.appendChild(input);
+  }
+
+  row.append(label, fields);
+  return row;
+}
+
+function _createAwardTooltip(key) {
+  const tooltip = document.createElement("span");
+  tooltip.className = "sta-talent-cost-help";
+  tooltip.title = t(`sta-officers-log.talents.${key}`);
+  tooltip.setAttribute("aria-label", tooltip.title);
+  tooltip.innerHTML =
+    '<i class="fa-solid fa-circle-question" aria-hidden="true"></i>';
+  return tooltip;
 }
 
 /**

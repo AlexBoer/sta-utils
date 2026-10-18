@@ -21,6 +21,7 @@ import {
 } from "../core/settings.mjs";
 import { STAActors } from "/systems/sta/module/actors/sta-actors.mjs";
 import { getStaPalettes } from "./lcars-palettes.mjs";
+import { applyLcarsTextOverrides } from "./lcars-palette-extra.mjs";
 
 const MODULE_ID = "sta-utils";
 const LCARS_CSS_LINK_ID = "sta-utils-lcars";
@@ -442,6 +443,7 @@ export async function installLcarsSheetMode(sheetApp, root) {
   }
 
   applyLcarsPaletteHeaders(sheet, paletteId);
+  applyLcarsTextOverrides(sheetApp?.document, sheet, root);
   _syncWindowChromeToPalette(root, sheet);
 
   const actorId = sheetApp?.document?.id ?? "unknown";

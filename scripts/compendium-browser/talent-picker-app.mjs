@@ -139,6 +139,9 @@ export class TalentPickerApp extends Base {
       eligibility = true,
       categoryLabel = "",
       createCustomLabel = "",
+      selectionField = null,
+      showBackButton = false,
+      backLabel = "",
     } = {},
     options = {},
   ) {
@@ -182,6 +185,28 @@ export class TalentPickerApp extends Base {
     // requirement filters.
     this._showEligibility = eligibility !== false;
     this._categoryLabel = String(categoryLabel ?? "");
+    this._showBackButton = showBackButton === true;
+    this._backLabel = String(backLabel ?? "");
+    this._selectionField =
+      selectionField &&
+      Array.isArray(selectionField.options) &&
+      selectionField.options.length
+        ? {
+            label: String(selectionField.label ?? ""),
+            options: selectionField.options
+              .map((option) => ({
+                value: String(option?.value ?? ""),
+                label: String(option?.label ?? ""),
+              }))
+              .filter((option) => option.value),
+          }
+        : null;
+    this._selectionValue =
+      this._selectionField?.options.some(
+        (option) => option.value === String(selectionField?.value ?? ""),
+      )
+        ? String(selectionField.value)
+        : (this._selectionField?.options[0]?.value ?? "");
 
     this._resolve = null;
     this._resolved = false;
@@ -489,6 +514,7 @@ export class TalentPickerApp extends Base {
         openSheet: t("sta-utils.talentPicker.openSheet"),
         noRequirements: t("sta-utils.talentPicker.noRequirements"),
         createCustom: this._createCustomLabel,
+        back: this._backLabel,
         cancel: t("sta-utils.talentPicker.cancel"),
         empty: this._emptyLabel || t("sta-utils.talentPicker.empty"),
         qualifies: t("sta-utils.talentPicker.qualifies"),
@@ -508,6 +534,15 @@ export class TalentPickerApp extends Base {
           })
         : "",
       categoryLabel: this._categoryLabel,
+      selectionField: this._selectionField
+        ? {
+            ...this._selectionField,
+            options: this._selectionField.options.map((option) => ({
+              ...option,
+              selected: option.value === this._selectionValue,
+            })),
+          }
+        : null,
       groups,
       toggles: this._toggleDefs.map((tg) => ({
         key: tg.key,
@@ -529,6 +564,7 @@ export class TalentPickerApp extends Base {
       showReqMin: NUMERIC_CATS.has(this._reqCategory),
       reqMin: this._reqMin,
       allowCustom: this._allowCustom,
+      showBackButton: this._showBackButton,
       hasTalents: talents.length > 0,
       talents,
     };
@@ -599,6 +635,11 @@ export class TalentPickerApp extends Base {
       ?.addEventListener("input", (event) => {
         this._search = event.currentTarget.value;
         rerender();
+      });
+    root
+      .querySelector('[data-role="selection-field"]')
+      ?.addEventListener("change", (event) => {
+        this._selectionValue = event.currentTarget.value;
       });
     root
       .querySelector('[data-role="source"]')
@@ -723,13 +764,24 @@ export class TalentPickerApp extends Base {
     root
       .querySelector('[data-action="custom"]')
       ?.addEventListener("click", () => {
-        this._resolveOnce({ custom: true });
+        this._resolveOnce({
+          custom: true,
+          ...(this._selectionField
+            ? { selectionValue: this._selectionValue }
+            : {}),
+        });
         void this.close();
       });
     root
       .querySelector('[data-action="cancel"]')
       ?.addEventListener("click", () => {
         this._resolveOnce(null);
+        void this.close();
+      });
+    root
+      .querySelector('[data-action="back"]')
+      ?.addEventListener("click", () => {
+        this._resolveOnce({ back: true });
         void this.close();
       });
 
@@ -805,7 +857,12 @@ export class TalentPickerApp extends Base {
       }
     }
 
-    this._resolveOnce({ talent: talent.data ?? talent });
+    this._resolveOnce({
+      talent: talent.data ?? talent,
+      ...(this._selectionField
+        ? { selectionValue: this._selectionValue }
+        : {}),
+    });
     await this.close();
   }
 }

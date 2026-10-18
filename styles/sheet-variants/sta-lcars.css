@@ -2471,7 +2471,7 @@ body {
     height: auto !important;
     padding-block: 0 !important;
     line-height: 1 !important;
-    font-size: 0.6rem !important;
+    font-size: 0.55rem !important;
   }
 
   .section.talents .header.row.belongings-row .image {
@@ -2481,14 +2481,14 @@ body {
   }
 
   .section.talents .header.row.belongings-row .image i {
-    font-size: 0.6rem !important;
+    font-size: 0.55rem !important;
     line-height: 1 !important;
   }
 
   .section.talents .header.row.belongings-row .two-column-with-roll-primary {
-    font-size: 0.6rem !important;
-    line-height: 1.1 !important;
-    padding-block: 1px !important;
+    font-size: 0.55rem !important;
+    line-height: 1 !important;
+    padding-block: 0 !important;
     margin-block: 0 !important;
   }
 

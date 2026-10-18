@@ -13,6 +13,10 @@ import { STACharacterSheet2e } from "/systems/sta/module/actors/character-sheet2
 
 import { performAssistRoll } from "./lcars-assist.mjs";
 import { getDivisionContext } from "./division-control.mjs";
+import {
+  prepareLcarsTalentGroups,
+  sortTalentWithinGroup,
+} from "./lcars-talent-groups.mjs";
 
 const MODULE_ID = "sta-utils";
 
@@ -76,60 +80,9 @@ export class LcarsCharacterSheet2e extends STACharacterSheet2e {
    */
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
-    const isAward = (item) =>
-      ["award", "medal"].includes(item.system?.talenttype?.typeenum);
-    const isSpeciesAbility = (item) =>
-      item.system?.talenttype?.typeenum === "speciesability";
-    context.speciesAbilityItems = context.items.filter(
-      (item) => item.type === "talent" && isSpeciesAbility(item),
-    );
-    context.hasSpeciesAbility = context.speciesAbilityItems.length > 0;
-    context.talentItems = context.items.filter(
-      (item) => item.type === "talent" && !isAward(item) && !isSpeciesAbility(item),
-    );
-    context.awardItems = context.items.filter(
-      (item) => item.type === "talent" && isAward(item),
-    );
-    context.hasAwards = context.awardItems.length > 0;
-    const L = (key) => game.i18n.localize(key);
-    const speciesLabel = L("sta-utils.talentUses.speciesAbilityType");
-    const roleLabel = L("sta-utils.talentUses.roleType");
-    const defs = [
-      { cls: "species-ability", icon: "fa-dna", label: speciesLabel, types: ["speciesability", "role"] },
-      { cls: "talents", icon: "fa-star", label: L("sta.item.talent.title"), types: null },
-      { cls: "awards", icon: "fa-medal", label: L("sta-utils.lcars.belongings.awards"), types: ["award", "medal"] },
-    ];
-    const talents = context.items.filter((item) => item.type === "talent");
-    const specific = defs.flatMap((d) => d.types ?? []);
-    const rank = (item) => (item.system?.talenttype?.typeenum === "role" ? 1 : 0);
-    const groups = defs
-      .map((d) => {
-        const items = talents.filter((item) => {
-          const type = item.system?.talenttype?.typeenum;
-          return d.types ? d.types.includes(type) : !specific.includes(type);
-        });
-        return { ...d, items };
-      })
-      .filter((g) => g.items.length > 0);
-    const merged = groups.find((g) => g.cls === "species-ability");
-    if (merged) {
-      const hasSpecies = merged.items.some((i) => rank(i) === 0);
-      const hasRole = merged.items.some((i) => rank(i) === 1);
-      merged.label = hasSpecies && hasRole ? L("sta-utils.talentUses.speciesAbilityAndRole") : hasRole ? roleLabel : speciesLabel;
-      if (!hasSpecies) merged.icon = "fa-user-tie";
-    }
-    context.talentGroups = groups;
-    context.showTalentsSubheader = groups.length >= 2;
+    prepareLcarsTalentGroups(context);
     Object.assign(context, getDivisionContext(this.actor));
     return context;
-  }
-
-  /** Talent sub-header group an item belongs to (matches _prepareContext). */
-  static #talentGroup(item) {
-    const type = item.system?.talenttype?.typeenum;
-    if (["speciesability", "role"].includes(type)) return "species-ability";
-    if (["award", "medal"].includes(type)) return "awards";
-    return "talents";
   }
 
   /**
@@ -138,22 +91,6 @@ export class LcarsCharacterSheet2e extends STACharacterSheet2e {
    */
   async _onSortItem(event, item) {
     if (item.type !== "talent") return super._onSortItem(event, item);
-
-    const group = LcarsCharacterSheet2e.#talentGroup(item);
-    const siblings = this.actor.items
-      .filter((i) => i.type === "talent" && LcarsCharacterSheet2e.#talentGroup(i) === group)
-      .sort((a, b) => a.sort - b.sort);
-
-    const li = event.target?.closest?.("li[data-item-id]");
-    const target = li ? this.actor.items.get(li.dataset.itemId) : null;
-    if (!target || target.id === item.id || !siblings.includes(target)) return false;
-
-    const before = li.dataset.dropPosition === "before";
-    const updates = foundry.utils
-      .performIntegerSort(item, { target, siblings, sortKey: "sort", sortBefore: before })
-      .map((u) => ({ _id: u.target.id ?? u.target._id, sort: u.update.sort }))
-      .filter((u) => u._id != null);
-    if (!updates.length) return false;
-    return this.actor.updateEmbeddedDocuments("Item", updates);
+    return sortTalentWithinGroup(this, event, item);
   }
 }

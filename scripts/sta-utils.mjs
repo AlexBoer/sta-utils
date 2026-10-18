@@ -201,6 +201,7 @@ import { LcarsNPCSheet2e } from "./lcars-sheet/lcars-npc-sheet2e.mjs";
 import { LcarsStarshipSheet2e } from "./lcars-sheet/lcars-starship-sheet2e.mjs";
 import { LcarsSmallCraftSheet2e } from "./lcars-sheet/lcars-smallcraft-sheet2e.mjs";
 import { registerLcarsPalettes } from "./lcars-sheet/lcars-palettes.mjs";
+import { installLcarsPaletteAccentPicker } from "./lcars-sheet/lcars-palette-extra.mjs";
 import { recordShipAdvancement } from "./lcars-sheet/ship-assignment.mjs";
 import { registerLcarsHouseSheet } from "./lcars-sheet/lcars-house-sheet.mjs";
 import { t } from "./core/i18n.mjs";
@@ -466,6 +467,12 @@ Hooks.once("init", () => {
   }
 
   try {
+    installLcarsPaletteAccentPicker();
+  } catch (err) {
+    console.error(`${MODULE_ID} | Failed to install LCARS accent picker`, err);
+  }
+
+  try {
     foundry.utils.setProperty(
       game.i18n.translations,
       "sta.actor.character.rollrepnotdis",
@@ -683,6 +690,12 @@ Hooks.once("ready", async () => {
     registerLcarsPalettes();
   } catch (err) {
     console.error(`${MODULE_ID} | Failed to re-register LCARS palettes at ready`, err);
+  }
+
+  try {
+    installLcarsPaletteAccentPicker();
+  } catch (err) {
+    console.error(`${MODULE_ID} | Failed to re-install LCARS accent picker at ready`, err);
   }
 
   installSta257DisciplineCompatPatch();

@@ -79,6 +79,33 @@ function _compatEntry({ label, icon, condition, callback }) {
 }
 
 /**
+ * The STA system binds inline item-name edits per element during _onRender,
+ * so any row whose listener is missing (or whose handler throws) silently
+ * drops the rename. Use one delegated listener on the persistent sheet root
+ * so inline renames always persist.
+ */
+function installItemNamePersistence(app, root) {
+  if (!root || root.dataset.staItemNameSaveInit === "1") return;
+  root.dataset.staItemNameSaveInit = "1";
+
+  root.addEventListener("change", async (event) => {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement)) return;
+    if (!input.classList.contains("item-name") || input.dataset.itemId == null)
+      return;
+    const item = app.actor?.items?.get(input.dataset.itemId);
+    if (!item) return;
+    const newName = input.value.trim();
+    if (!newName || newName === item.name) return;
+    try {
+      await item.update({ name: newName });
+    } catch (error) {
+      console.warn(`${MODULE_ID} | Inline item rename failed`, error);
+    }
+  });
+}
+
+/**
  * Force-close stale item description tooltips when the pointer is no longer
  * directly over an item name element.
  *
@@ -1338,6 +1365,8 @@ export function installRenderApplicationV2Hook() {
         console.warn(`${MODULE_ID} | Character Division control failed`, error);
       }
     }
+
+    if (app?.actor && isStaApp) installItemNamePersistence(app, root);
 
     // Handle dialogs (Dice Pool).
     handleDialogRender(app, root, context);

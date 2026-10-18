@@ -3,6 +3,7 @@
 import { STAActors } from "/systems/sta/module/actors/sta-actors.mjs";
 import { applyLcarsPaletteHeaders } from "./lcars-mode.mjs";
 import { getStaPalettes, getCanonicalStaActors } from "./lcars-palettes.mjs";
+import { applyLcarsTextOverrides } from "./lcars-palette-extra.mjs";
 
 const MODULE_ID = "sta-utils";
 const HOUSE_TYPE = "sta-officers-log.house";
@@ -69,6 +70,7 @@ export async function registerLcarsHouseSheet() {
         this.element.classList.add(`palette-${id}`);
         if (shortId !== id) this.element.classList.add(`palette-${shortId}`);
         applyLcarsPaletteHeaders(this.element, id);
+        applyLcarsTextOverrides(this.document, this.element, ...this.element.querySelectorAll(".sta-lcars"));
       }
     }
 
