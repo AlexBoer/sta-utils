@@ -102,12 +102,12 @@ const CATEGORY_BADGES = {
     labelKey: "sta-utils.compendiumBrowser.categoryBadge.supporting",
   },
   "npc-major": {
-    icon: "fa-solid fa-circle",
+    icon: "fa-solid fa-star",
     color: "#d9534f",
     labelKey: "sta-utils.compendiumBrowser.categoryBadge.majorNpc",
   },
   "npc-notable": {
-    icon: "fa-solid fa-circle",
+    icon: "fa-solid fa-diamond",
     color: "#e8837e",
     labelKey: "sta-utils.compendiumBrowser.categoryBadge.notableNpc",
   },

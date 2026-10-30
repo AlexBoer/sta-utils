@@ -1,6 +1,9 @@
 # All markdown files
 *.md
 
+# Local dev tooling (NPC extraction/import macros, extracted data)
+tools/
+
 # Node modules
 node_modules/
 

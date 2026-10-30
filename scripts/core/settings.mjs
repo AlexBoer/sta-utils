@@ -16,6 +16,8 @@ const TALENT_IMPORT_OVERRIDE_COMPENDIUM_SETTING =
   "talentImportOverrideCompendium";
 const FOCUS_IMPORT_OVERRIDE_COMPENDIUM_SETTING =
   "focusImportOverrideCompendium";
+const OTHER_ITEM_IMPORT_OVERRIDE_COMPENDIUM_SETTING =
+  "otherItemImportOverrideCompendium";
 const LCARS_TALENT_PICKER_SETTING = "lcarsTalentPickerButton";
 const DISABLE_TOOLTIPS_SETTING = "disableTooltips";
 const SHOW_ROW_CONTEXT_MENU_SETTING = "showRowContextMenuButtons";
@@ -311,6 +313,31 @@ export function registerSettings() {
     },
     group: GROUP_WORLD,
   });
+
+  game.settings.register(
+    MODULE_ID,
+    OTHER_ITEM_IMPORT_OVERRIDE_COMPENDIUM_SETTING,
+    {
+      name: t("sta-utils.settings.otherItemImportOverrideCompendium.name"),
+      hint: t("sta-utils.settings.otherItemImportOverrideCompendium.hint"),
+      scope: "world",
+      config: true,
+      type: String,
+      default: "",
+      choices: () => {
+        const choices = {
+          "": t("sta-utils.settings.otherItemImportOverrideCompendium.none"),
+        };
+        for (const pack of game.packs.values()) {
+          if (pack.metadata.type !== "Item") continue;
+          choices[pack.collection] =
+            `${pack.metadata.label} (${pack.collection})`;
+        }
+        return choices;
+      },
+      group: GROUP_WORLD,
+    },
+  );
 
   // ----- Warp Calculator -----
 
@@ -1175,6 +1202,20 @@ export function getFocusImportOverrideCompendium() {
     return String(
       game.settings.get(MODULE_ID, FOCUS_IMPORT_OVERRIDE_COMPENDIUM_SETTING) ??
         "",
+    ).trim();
+  } catch (_) {
+    return "";
+  }
+}
+
+/** @returns {string} */
+export function getOtherItemImportOverrideCompendium() {
+  try {
+    return String(
+      game.settings.get(
+        MODULE_ID,
+        OTHER_ITEM_IMPORT_OVERRIDE_COMPENDIUM_SETTING,
+      ) ?? "",
     ).trim();
   } catch (_) {
     return "";

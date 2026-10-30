@@ -324,6 +324,11 @@
         "hint": "When a GM imports actor JSON, replace matching focuses with versions from this compendium. If more than one matching focus is found, choose which version to use.",
         "none": "- No override compendium -"
       },
+      "otherItemImportOverrideCompendium": {
+        "name": "Other Item Import Override Compendium",
+        "hint": "When a GM imports actor JSON, replace matching items such as traits, armor, weapons, and gear with versions from this compendium. Items must have the same type and name; talents and focuses use their separate settings.",
+        "none": "- No override compendium -"
+      },
       "enableTalentUses": {
         "name": "Enable Talent Uses Tracker",
         "hint": "Track limited-use talents on character sheets with clickable pips. Open a talent to set its 'Max Uses per Mission'. A max of 0 means unlimited and hides the tracker."

@@ -1,14 +1,15 @@
 import { MODULE_ID } from "../core/constants.mjs";
 import {
   getFocusImportOverrideCompendium,
+  getOtherItemImportOverrideCompendium,
   getTalentImportOverrideCompendium,
 } from "../core/settings.mjs";
 
 let _installed = false;
 
 /**
- * Replace talents and focuses after Foundry applies an actor JSON import. Only
- * a GM can make the compendium choice; other users' imports remain untouched.
+ * Replace imported actor items from configured compendiums. Only a GM can make
+ * the compendium choice; other users' imports remain untouched.
  */
 export function installActorItemImportOverrides() {
   if (_installed) return;
@@ -21,27 +22,38 @@ export function installActorItemImportOverrides() {
       const actor = await wrapped(json);
       if (!game.user?.isGM) return actor;
 
-      for (const { type, label, getCompendium } of [
+      for (const { types, excludedTypes, label, getCompendium } of [
         {
-          type: "talent",
+          types: ["talent"],
           label: "Talent",
           getCompendium: getTalentImportOverrideCompendium,
         },
         {
-          type: "focus",
+          types: ["focus"],
           label: "Focus",
           getCompendium: getFocusImportOverrideCompendium,
         },
+        {
+          excludedTypes: ["talent", "focus"],
+          label: "Other Item",
+          getCompendium: getOtherItemImportOverrideCompendium,
+        },
       ]) {
         try {
-          await _replaceImportedItems(actor, type, label, getCompendium());
+          await _replaceImportedItems(
+            actor,
+            types,
+            excludedTypes,
+            label,
+            getCompendium(),
+          );
         } catch (error) {
           console.error(
             `${MODULE_ID} | ${label} import overrides failed`,
             error,
           );
           ui.notifications?.warn?.(
-            `${label} overrides could not be applied; imported ${label.toLowerCase()} items were kept.`,
+            `${label} overrides could not be applied; imported actor items were kept.`,
           );
         }
       }
@@ -51,7 +63,13 @@ export function installActorItemImportOverrides() {
   );
 }
 
-async function _replaceImportedItems(actor, itemType, itemLabel, packId) {
+async function _replaceImportedItems(
+  actor,
+  itemTypes,
+  excludedTypes,
+  itemLabel,
+  packId,
+) {
   if (!packId) return;
 
   const pack = game.packs.get(packId);
@@ -63,18 +81,28 @@ async function _replaceImportedItems(actor, itemType, itemLabel, packId) {
   }
 
   const index = await pack.getIndex({ fields: ["name", "type"] });
-  const entriesByName = new Map();
+  const entriesByTypeAndName = new Map();
   for (const entry of index) {
-    if (entry.type !== itemType) continue;
+    if (!_shouldReplaceType(entry.type, itemTypes, excludedTypes)) continue;
     const key = _normalizeName(entry.name);
     if (!key) continue;
+    let entriesByName = entriesByTypeAndName.get(entry.type);
+    if (!entriesByName) {
+      entriesByName = new Map();
+      entriesByTypeAndName.set(entry.type, entriesByName);
+    }
     const entries = entriesByName.get(key) ?? [];
     entries.push(entry);
     entriesByName.set(key, entries);
   }
 
-  for (const item of actor.items.filter((entry) => entry.type === itemType)) {
-    const matches = entriesByName.get(_normalizeName(item.name)) ?? [];
+  for (const item of actor.items.filter((entry) =>
+    _shouldReplaceType(entry.type, itemTypes, excludedTypes),
+  )) {
+    const matches =
+      entriesByTypeAndName
+        .get(item.type)
+        ?.get(_normalizeName(item.name)) ?? [];
     if (!matches.length) continue;
 
     const candidates =
@@ -91,7 +119,7 @@ async function _replaceImportedItems(actor, itemType, itemLabel, packId) {
         ? candidates[0]
         : await _chooseOverride(
             item.name,
-            itemType,
+            item.type,
             itemLabel,
             candidates,
             pack,
@@ -129,12 +157,15 @@ async function _chooseOverride(
           system.source ??
           "",
       ).trim();
-      const type = String(
-        system.talenttype?.typeenum ??
-          system.talenttype?.type ??
-          system.type ??
-          "",
-      ).trim();
+      const type =
+        itemType === "talent"
+          ? String(
+              system.talenttype?.typeenum ??
+                system.talenttype?.type ??
+                system.type ??
+                itemLabel,
+            ).trim()
+          : itemType;
       const name = String(document?.name ?? entry.name ?? itemName);
       const canPreview = Boolean(document?.sheet?.render);
 
@@ -221,4 +252,10 @@ function _normalizeName(name) {
   return String(name ?? "")
     .trim()
     .toLocaleLowerCase();
+}
+
+function _shouldReplaceType(itemType, itemTypes, excludedTypes) {
+  return itemTypes
+    ? itemTypes.includes(itemType)
+    : !excludedTypes?.includes(itemType);
 }
