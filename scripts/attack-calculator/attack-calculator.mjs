@@ -1,5 +1,10 @@
 import { MODULE_ID } from "../core/constants.mjs";
 import { t } from "../core/i18n.mjs";
+import {
+  getPiercingMode,
+  isPiercingFirstHitEnabled,
+  isSpreadHouseRuleEnabled,
+} from "../core/settings.mjs";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MATH EXPRESSION EVALUATOR
@@ -126,24 +131,40 @@ function updateExprSpan(span, rawValue, evaluated) {
  * @param {number}  params.baseDamage
  * @param {boolean} params.calibrateWeapons - Minor action: +1 to effective base
  * @param {boolean} params.intense          - Increase Damage costs 1 instead of 2
- * @param {boolean} params.spread           - Devastating Attack costs 1 instead of 2, repeatable up to 10
+ * @param {boolean} params.spread           - Weapon has the Spread quality
+ * @param {boolean} [params.spreadHouseRule=false] - Use the one-time Spread second-hit rule
  * @param {boolean} [params.depleting=false] - Increase Damage costs 1 instead of 2 (same effect as Intense)
- * @param {boolean} [params.piercing=false]  - Resistance of the target is ignored
+ * @param {boolean} [params.piercing=false]  - Apply the configured Piercing rule
+ * @param {boolean} [params.firstHit=false] - Only the first hit gets Piercing without an extra spend
  * @param {number}  params.increaseDamageCount
  * @param {number}  params.devastatingCount
  * @param {number}  [params.resistance=0]   - Subtracted from each hit individually (min 0)
  * @returns {{ effectiveBase, increaseCost, devastatingCost, mainHit, devastatingHitDmg, devastatingCount, totalDamage, momentumSpent, resistance, increaseDamageCount, effectiveResistance }}
  */
+function getPiercingResistance(resistance, piercingMode, scienceRating) {
+  const nonNegativeResistance = Math.max(0, resistance);
+  if (piercingMode === "raw") return 0;
+  if (piercingMode === "ignoreFive") {
+    return Math.max(0, nonNegativeResistance - 5);
+  }
+  if (piercingMode === "sciencePiercing") {
+    return Math.max(0, nonNegativeResistance - Math.ceil(scienceRating / 2));
+  }
+  return nonNegativeResistance;
+}
+
 export function computeAttack({
   baseDamage,
   calibrateWeapons,
   intense,
   spread,
+  spreadHouseRule = false,
   depleting = false,
   piercing = false,
-  piercingMode = "raw", // "raw" | "firstHit" | "sciencePiercing"
-  piercingHitsToIgnore = 0, // firstHit: extra devastating hits that also ignore resistance (2 momentum each)
-  scienceRating = 0, // sciencePiercing: vessel's Science rating
+  piercingMode = "raw",
+  firstHit = false,
+  piercingHitsToIgnore = 0,
+  scienceRating = 0,
   increaseDamageCount,
   devastatingCount,
   resistance = 0,
@@ -151,65 +172,78 @@ export function computeAttack({
   const effectiveBase = baseDamage + (calibrateWeapons ? 1 : 0);
   const increaseCost = intense || depleting ? 1 : 2;
   const devastatingCost = spread ? 1 : 2;
-
-  // Per-hit effective resistance varies by mode
-  let mainHitResistance;
-  let devHitResistance;
-  let scienceReduction = 0;
-
-  if (!piercing) {
-    mainHitResistance = resistance;
-    devHitResistance = resistance;
-  } else if (piercingMode === "sciencePiercing") {
-    scienceReduction = Math.ceil(scienceRating / 2);
-    mainHitResistance = Math.max(0, resistance - scienceReduction);
-    devHitResistance = mainHitResistance;
-  } else if (piercingMode === "firstHit") {
-    mainHitResistance = 0; // main hit always ignores resistance
-    devHitResistance = resistance; // devastating hits use full resistance by default
-  } else {
-    // "raw" — piercing ignores resistance on all hits
-    mainHitResistance = 0;
-    devHitResistance = 0;
-  }
+  const normalizedPiercingMode =
+    piercingMode === "firstHit" ? "raw" : piercingMode;
+  const useFirstHit = firstHit || piercingMode === "firstHit";
+  const effectiveResistance = Math.max(0, resistance);
+  const scienceReduction =
+    piercing && normalizedPiercingMode === "sciencePiercing"
+      ? Math.ceil(scienceRating / 2)
+      : 0;
+  const piercingResistance = getPiercingResistance(
+    effectiveResistance,
+    normalizedPiercingMode,
+    scienceRating,
+  );
+  const mainHitResistance = piercing
+    ? piercingResistance
+    : effectiveResistance;
+  const devHitPiercingResistance = piercing
+    ? piercingResistance
+    : effectiveResistance;
+  const devHitResistance =
+    piercing && !useFirstHit
+      ? devHitPiercingResistance
+      : effectiveResistance;
+  const maxDevastating = spreadHouseRule
+    ? spread
+      ? 1
+      : 0
+    : spread
+      ? 10
+      : 1;
+  const actualDevastatingCount = Math.max(
+    0,
+    Math.min(maxDevastating, Math.floor(devastatingCount || 0)),
+  );
 
   const mainHit = Math.max(
-    0,
+    1,
     effectiveBase + increaseDamageCount - mainHitResistance,
   );
 
-  // firstHit mode: each 2-momentum spend makes one more devastating hit ignore resistance
-  let piercingDevCount = 0;
-  let normalDevCount = devastatingCount;
-  let devastatingHitDmgNR = null; // dmg per piercing devastating hit (null = not split)
-
-  if (piercing && piercingMode === "firstHit" && piercingHitsToIgnore > 0) {
-    piercingDevCount = Math.min(devastatingCount, piercingHitsToIgnore);
-    normalDevCount = devastatingCount - piercingDevCount;
-    devastatingHitDmgNR = Math.max(
-      0,
-      Math.ceil((effectiveBase + increaseDamageCount) / 2),
-    );
-  }
-
-  const devastatingHitDmg = Math.max(
-    0,
-    Math.ceil((effectiveBase + increaseDamageCount) / 2) - devHitResistance,
+  const piercingDevCount =
+    piercing && !useFirstHit
+      ? actualDevastatingCount
+      : piercing && useFirstHit
+        ? Math.min(
+            actualDevastatingCount,
+            Math.max(0, Math.floor(piercingHitsToIgnore || 0)),
+          )
+        : 0;
+  const normalDevCount = actualDevastatingCount - piercingDevCount;
+  const devastatingHitBase = Math.ceil(
+    (effectiveBase + increaseDamageCount) / 2,
   );
-
-  const devDmgNR = devastatingHitDmgNR ?? devastatingHitDmg;
+  const devastatingHitDmg = Math.max(
+    1,
+    devastatingHitBase - devHitResistance,
+  );
+  const devastatingHitDmgNR = Math.max(
+    1,
+    devastatingHitBase - devHitPiercingResistance,
+  );
   const totalDevDmg =
-    piercingDevCount * devDmgNR + normalDevCount * devastatingHitDmg;
+    piercingDevCount * devastatingHitDmgNR +
+    normalDevCount * devastatingHitDmg;
   const totalDamage = mainHit + totalDevDmg;
-
-  // Piercing momentum cost: 2 per extra hit that ignores resistance (capped at actual devastating count)
   const piercingMomentumCost =
-    piercing && piercingMode === "firstHit"
-      ? Math.min(piercingHitsToIgnore, devastatingCount) * 2
+    piercing && useFirstHit
+      ? piercingDevCount
       : 0;
   const momentumSpent =
     increaseDamageCount * increaseCost +
-    devastatingCount * devastatingCost +
+    actualDevastatingCount * devastatingCost +
     piercingMomentumCost;
 
   return {
@@ -219,19 +253,22 @@ export function computeAttack({
     mainHit,
     mainHitResistance,
     devHitResistance,
+    devHitPiercingResistance,
     devastatingHitDmg,
     devastatingHitDmgNR,
     piercingDevCount,
     normalDevCount,
-    devastatingCount,
+    devastatingCount: actualDevastatingCount,
     totalDamage,
     momentumSpent,
     resistance,
     increaseDamageCount,
-    effectiveResistance: mainHitResistance, // kept for backward compat
+    effectiveResistance: mainHitResistance,
     piercingMomentumCost,
     scienceReduction,
-    piercingMode: piercing ? piercingMode : "none",
+    piercingMode: piercing ? normalizedPiercingMode : "none",
+    firstHit: useFirstHit,
+    spreadHouseRule,
   };
 }
 
@@ -252,7 +289,10 @@ export function computeAttack({
  * @param {number}  params.mainHitResistance  - Resistance applied to the main hit
  * @param {number}  params.devHitResistance   - Resistance applied to normal devastating hits
  * @param {boolean} params.piercing           - Whether the Piercing quality is active
- * @param {string}  params.piercingMode       - "raw" | "firstHit" | "sciencePiercing"
+ * @param {string}  params.piercingMode       - "raw" | "ignoreFive" | "sciencePiercing"
+ * @param {boolean} params.firstHit           - Require Momentum for Piercing on later hits
+ * @param {number}  params.piercingDevHitResistance - Resistance after Piercing on a secondary hit
+ * @param {number}  params.piercingMomentumCost - Momentum cost per additional Piercing hit
  * @returns {{ increaseDamageCount, devastatingCount, piercingHitsToIgnore, totalDamage, momentumSpent }}
  */
 function computeMaxDamageForBudget(
@@ -266,6 +306,9 @@ function computeMaxDamageForBudget(
     devHitResistance,
     piercing,
     piercingMode,
+    firstHit,
+    piercingDevHitResistance,
+    piercingMomentumCost,
   },
 ) {
   let best = null;
@@ -274,26 +317,30 @@ function computeMaxDamageForBudget(
     const devSpend = d * devastatingCost;
     if (devSpend > budget) break;
 
-    // In firstHit mode each piercing-ignore spend (2 mom) removes resistance from one dev hit.
-    const pMax = piercing && piercingMode === "firstHit" ? d : 0;
+    const pMax = piercing && firstHit ? d : 0;
 
     for (let p = 0; p <= pMax; p++) {
-      const piercingSpend = p * 2;
+      const piercingSpend = p * piercingMomentumCost;
       const totalFixed = devSpend + piercingSpend;
       if (totalFixed > budget) break;
 
       const remaining = budget - totalFixed;
       const i = Math.floor(remaining / increaseCost);
 
-      const mainHit = Math.max(0, effectiveBase + i - mainHitResistance);
+      const mainHit = Math.max(1, effectiveBase + i - mainHitResistance);
       const devHitBase = Math.ceil((effectiveBase + i) / 2);
-      const devHitNormal = Math.max(0, devHitBase - devHitResistance);
-      const devHitPierced =
-        piercing && piercingMode === "firstHit"
-          ? Math.max(0, devHitBase) // piercing dev hit ignores resistance
-          : devHitNormal;
+      const devHitNormal = Math.max(1, devHitBase - devHitResistance);
+      const devHitPierced = Math.max(
+        1,
+        devHitBase - piercingDevHitResistance,
+      );
 
-      const totalDmg = mainHit + p * devHitPierced + (d - p) * devHitNormal;
+      const piercedDevCount =
+        piercing && !firstHit ? d : firstHit ? p : 0;
+      const totalDmg =
+        mainHit +
+        piercedDevCount * devHitPierced +
+        (d - piercedDevCount) * devHitNormal;
       const momentumSpent = i * increaseCost + devSpend + piercingSpend;
 
       if (best === null || totalDmg > best.totalDamage) {
@@ -313,7 +360,7 @@ function computeMaxDamageForBudget(
       increaseDamageCount: 0,
       devastatingCount: 0,
       piercingHitsToIgnore: 0,
-      totalDamage: Math.max(0, effectiveBase - mainHitResistance),
+      totalDamage: Math.max(1, effectiveBase - mainHitResistance),
       momentumSpent: 0,
     }
   );
@@ -338,6 +385,7 @@ function buildResultsHtml(
     mainHit,
     mainHitResistance,
     devHitResistance,
+    devHitPiercingResistance,
     devastatingHitDmg,
     devastatingHitDmgNR,
     piercingDevCount,
@@ -348,6 +396,7 @@ function buildResultsHtml(
     resistance,
     increaseDamageCount,
     scienceReduction,
+    firstHit,
     piercingMode: usedPiercingMode,
   } = result;
 
@@ -363,14 +412,17 @@ function buildResultsHtml(
     if (!piercing || usedPiercingMode === "none") {
       resistanceText = `−${resistance} per hit`;
     } else if (usedPiercingMode === "raw") {
-      resistanceText = `−${resistance} per hit (${t("sta-utils.attackCalculator.piercingIgnored")})`;
-    } else if (usedPiercingMode === "firstHit") {
-      resistanceText = `−${resistance} per hit (${t("sta-utils.attackCalculator.piercingFirstHit")})`;
+      resistanceText = `${t("sta-utils.attackCalculator.piercingIgnored")}`;
+    } else if (usedPiercingMode === "ignoreFive") {
+      resistanceText = `−${resistance} → −${mainHitResistance} (${t("sta-utils.attackCalculator.piercingIgnoreFive")})`;
     } else if (usedPiercingMode === "sciencePiercing") {
       resistanceText =
         mainHitResistance === 0
-          ? `−${resistance} per hit (Piercing: fully negated by ⌈${scienceRating}/2⌉)`
-          : `−${resistance} → −${mainHitResistance} per hit (Piercing −⌈${scienceRating}/2⌉)`;
+          ? `−${resistance} → 0 (−⌈${scienceRating}/2⌉)`
+          : `−${resistance} → −${mainHitResistance} (−⌈${scienceRating}/2⌉)`;
+    }
+    if (firstHit && piercing) {
+      resistanceText += `; ${t("sta-utils.attackCalculator.piercingFirstHit")}`;
     }
   }
   const resistanceRow = resistanceText
@@ -398,6 +450,10 @@ function buildResultsHtml(
     devHitResistance > 0
       ? `${devFormulaNR} − ${devHitResistance}`
       : devFormulaNR;
+  const devFormulaPiercing =
+    devHitPiercingResistance > 0
+      ? `${devFormulaNR} − ${devHitPiercingResistance}`
+      : devFormulaNR;
 
   let devastatingRow = "";
   if (devastatingCount > 0) {
@@ -416,7 +472,7 @@ function buildResultsHtml(
         <span class="sta-attack-result-value-group">
           <span class="sta-attack-result-value">${totalDevDmg}</span>
           <span class="sta-attack-formula">${piercingDevCount} hits &times; ${devastatingHitDmgNR} dmg (piercing) + ${normalDevCount} &times; ${devastatingHitDmg} dmg</span>
-          <span class="sta-attack-formula">${devFormulaNR} (piercing) / ${devFormulaR} per devastating attack</span>
+          <span class="sta-attack-formula">${devFormulaPiercing} (piercing) / ${devFormulaR} per devastating attack</span>
         </span>
       </div>`;
     } else {
@@ -425,7 +481,8 @@ function buildResultsHtml(
           ? devastatingHitDmgNR
           : devastatingHitDmg;
       const devTotalDmg = devastatingCount * dmgPerHit;
-      const devFormula = piercingDevCount > 0 ? devFormulaNR : devFormulaR;
+      const devFormula =
+        piercingDevCount > 0 ? devFormulaPiercing : devFormulaR;
       devastatingRow = `<div class="sta-attack-result-row">
         <span class="sta-attack-result-label">${devLabel}:</span>
         <span class="sta-attack-result-value-group">
@@ -507,8 +564,9 @@ class AttackCalculatorApp extends Base {
     super(options);
     this._resolve = typeof resolve === "function" ? resolve : null;
     this._resolved = false;
-    this._piercingMode =
-      game?.settings?.get(MODULE_ID, "piercingMode") ?? "raw";
+    this._piercingMode = getPiercingMode();
+    this._firstHit = isPiercingFirstHitEnabled();
+    this._spreadHouseRule = isSpreadHouseRuleEnabled();
     this._state = {
       weaponName: "",
       baseDamage: "",
@@ -561,8 +619,9 @@ class AttackCalculatorApp extends Base {
     const qi18n = (key) => t(`sta-utils.attackCalculator.${key}`);
     const piercingMode = this._piercingMode;
     return {
-      piercingModeFirstHit: piercingMode === "firstHit",
+      piercingModeFirstHit: this._firstHit,
       piercingModeSciencePiercing: piercingMode === "sciencePiercing",
+      spreadHouseRule: this._spreadHouseRule,
       isGM: game?.user?.isGM ?? false,
       labels: {
         weaponName: qi18n("weaponName"),
@@ -577,6 +636,7 @@ class AttackCalculatorApp extends Base {
         momentumSpends: qi18n("momentumSpends"),
         increaseDamage: qi18n("increaseDamage"),
         devastatingAttack: qi18n("devastatingAttack"),
+        spreadSecondHit: qi18n("spreadSecondHit"),
         maximizeDamage: qi18n("maximizeDamage"),
         momentumBudget: qi18n("momentumBudget"),
         maximize: qi18n("maximize"),
@@ -588,16 +648,22 @@ class AttackCalculatorApp extends Base {
           intense: qi18n("qualities.intense"),
           intenseHint: qi18n("qualities.intenseHint"),
           spread: qi18n("qualities.spread"),
-          spreadHint: qi18n("qualities.spreadHint"),
+          spreadHint: qi18n(
+            this._spreadHouseRule
+              ? "qualities.spreadHintHouseRule"
+              : "qualities.spreadHint",
+          ),
           depleting: qi18n("qualities.depleting"),
           depletingHint: qi18n("qualities.depletingHint"),
           piercing: qi18n("qualities.piercing"),
           piercingHint: qi18n(
-            piercingMode === "firstHit"
+            this._firstHit
               ? "qualities.piercingHintFirstHit"
               : piercingMode === "sciencePiercing"
                 ? "qualities.piercingHintSciencePiercing"
-                : "qualities.piercingHintRaw",
+                : piercingMode === "ignoreFive"
+                  ? "qualities.piercingHintIgnoreFive"
+                  : "qualities.piercingHintRaw",
           ),
           area: qi18n("qualities.area"),
           areaHint: qi18n("qualities.areaHint"),
@@ -743,7 +809,8 @@ class AttackCalculatorApp extends Base {
       }
       // Show/hide the firstHit piercing counter based on whether piercing quality is active
       if (piercingIgnoreRow) {
-        const isPiercingActive = !!this._state.piercing;
+        const isPiercingActive =
+          !!this._state.piercing && this._firstHit;
         piercingIgnoreRow.hidden = !isPiercingActive;
         if (!isPiercingActive && this._state.piercingHitsToIgnore > 0) {
           this._state.piercingHitsToIgnore = 0;
@@ -762,8 +829,15 @@ class AttackCalculatorApp extends Base {
       const depleting = this._state.depleting;
       const piercing = this._state.piercing;
       const calibrate = calibrateCb?.checked ?? false;
-      const maxDevastating = spread ? 10 : 1;
+      const maxDevastating = this._spreadHouseRule
+        ? spread
+          ? 1
+          : 0
+        : spread
+          ? 10
+          : 1;
       const piercingMode = this._piercingMode;
+      const firstHit = this._firstHit;
       const scienceRating = parseField(scienceRatingInput?.value);
 
       // Keep state in sync (for potential re-render)
@@ -814,7 +888,21 @@ class AttackCalculatorApp extends Base {
       if (increaseCostBadge)
         increaseCostBadge.textContent = `${intense || depleting ? 1 : 2} Momentum`;
       if (devastatingCostBadge)
-        devastatingCostBadge.textContent = `${spread ? 1 : 2} Momentum`;
+        devastatingCostBadge.textContent = `${this._spreadHouseRule || spread ? 1 : 2} Momentum`;
+      const devastatingRow = root.querySelector(
+        '[data-hook="devastating-row"]',
+      );
+      if (devastatingRow) {
+        devastatingRow.hidden = this._spreadHouseRule && !spread;
+        const label = devastatingRow.querySelector(
+          '[data-hook="devastating-label"]',
+        );
+        if (label) {
+          label.textContent = this._spreadHouseRule
+            ? qi18n("spreadSecondHit")
+            : qi18n("devastatingAttack");
+        }
+      }
 
       if (baseDamage <= 0) {
         if (resultsDiv)
@@ -830,9 +918,11 @@ class AttackCalculatorApp extends Base {
         calibrateWeapons: calibrate,
         intense,
         spread,
+        spreadHouseRule: this._spreadHouseRule,
         depleting,
         piercing,
         piercingMode,
+        firstHit,
         piercingHitsToIgnore: this._state.piercingHitsToIgnore,
         scienceRating,
         increaseDamageCount: this._state.increaseDamageCount,
@@ -858,7 +948,13 @@ class AttackCalculatorApp extends Base {
       const spend = btn.dataset.spend;
       const action = btn.dataset.action;
       const spread = this._state.spread;
-      const maxDevastating = spread ? 10 : 1;
+      const maxDevastating = this._spreadHouseRule
+        ? spread
+          ? 1
+          : 0
+        : spread
+          ? 10
+          : 1;
 
       if (spend === "increase") {
         if (action === "increase") this._state.increaseDamageCount++;
@@ -938,9 +1034,11 @@ class AttackCalculatorApp extends Base {
         calibrateWeapons: calibrate,
         intense,
         spread,
+        spreadHouseRule: this._spreadHouseRule,
         depleting,
         piercing,
         piercingMode: this._piercingMode,
+        firstHit: this._firstHit,
         piercingHitsToIgnore: this._state.piercingHitsToIgnore,
         scienceRating,
         increaseDamageCount: this._state.increaseDamageCount,
@@ -972,15 +1070,23 @@ class AttackCalculatorApp extends Base {
       const calibrate = calibrateCb?.checked ?? false;
       const piercingMode = this._piercingMode;
       const spread = this._state.spread;
-      const maxDevastating = spread ? 10 : 1;
+      const maxDevastating = this._spreadHouseRule
+        ? spread
+          ? 1
+          : 0
+        : spread
+          ? 10
+          : 1;
       const baseResult = computeAttack({
         baseDamage: bd,
         calibrateWeapons: calibrate,
         intense: this._state.intense,
         spread,
+        spreadHouseRule: this._spreadHouseRule,
         depleting: this._state.depleting,
         piercing: this._state.piercing,
         piercingMode,
+        firstHit: this._firstHit,
         piercingHitsToIgnore: 0,
         scienceRating: parseField(scienceRatingInput?.value),
         increaseDamageCount: 0,
@@ -994,8 +1100,11 @@ class AttackCalculatorApp extends Base {
         maxDevastating,
         mainHitResistance: baseResult.mainHitResistance,
         devHitResistance: baseResult.devHitResistance,
+        piercingDevHitResistance: baseResult.devHitPiercingResistance,
         piercing: this._state.piercing,
         piercingMode,
+        firstHit: this._firstHit,
+        piercingMomentumCost: 1,
       };
     };
 

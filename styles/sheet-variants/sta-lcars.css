@@ -1887,9 +1887,47 @@ body {
       justify-self: end;
   }
 
-  /* ===========================================================================
-   * STRIKE-THROUGH (used values/logs)
-   * =========================================================================== */
+  .section.belongings .row.entry.belongings-row.sta-lcars-has-attack-calculator {
+    grid-template-columns: 28px minmax(0, 1fr) var(--sta-lcars-belongings-value-width) 22px 40px;
+  }
+
+  .sta-lcars-sheet .section.belongings .row.entry.belongings-row > .sta-lcars-attack-calculator {
+    align-items: center;
+    align-self: center;
+    color: var(--lcars-text-title, var(--lcars-text-dark));
+    cursor: pointer;
+    display: flex;
+    font-size: 0.945rem;
+    grid-column: 4;
+    grid-row: 1;
+    height: 22px;
+    justify-content: center;
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+    text-decoration: none;
+    transition: color 0.15s ease;
+    width: 22px;
+  }
+
+  .section.belongings .row.entry.belongings-row.sta-lcars-has-attack-calculator > .control {
+    grid-column: 5;
+    grid-row: 1;
+    width: 40px !important;
+  }
+
+  .sta-lcars-sheet .section.belongings .row.entry.belongings-row > .sta-lcars-attack-calculator i {
+    line-height: 1;
+  }
+
+  .sta-lcars-sheet .section.belongings .row.entry.belongings-row > .sta-lcars-attack-calculator:hover,
+  .sta-lcars-sheet .section.belongings .row.entry.belongings-row > .sta-lcars-attack-calculator:focus-visible {
+    color: var(--lcars-chrome, var(--lcars-orange));
+  }
+
+    /* ===========================================================================
+     * STRIKE-THROUGH (used values/logs)
+     * =========================================================================== */
 
   .strike-through {
     color: color-mix(in srgb, var(--lcars-peach) 40%, transparent);
@@ -2170,18 +2208,64 @@ body {
    * =========================================================================== */
 
   .systems-block .stat.header.row {
-    background-color: var(--lcars-titlebar-systems, var(--lcars-lavender)) !important;
-    color: var(--lcars-text-on-systems, var(--lcars-text-on-primary, var(--lcars-text-title, var(--lcars-text-dark))));
+    background: var(--lcars-titlebar-belongings-colheader, var(--lcars-titlebar-belongings, var(--lcars-peach))) !important;
+    color: var(--lcars-text-on-belongings-colheader, var(--lcars-text-on-belongings, var(--lcars-text-on-primary, var(--lcars-text-title, var(--lcars-text-dark)))));
     font-family: var(--lcars-font-heading);
+    font-size: 0.7rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     border-radius: 4px;
   }
 
   .systems-block .stat.header.row .text.secondary-title,
   .systems-block .stat.header.row .field.secondary-title {
-    color: var(--lcars-text-on-systems, var(--lcars-text-on-primary, var(--lcars-text-header, var(--lcars-text-dark))));
+    color: inherit !important;
     font-family: var(--lcars-font-heading);
+  }
+
+  .systems-block .stat.header.row .text.secondary-title {
+    padding-left: 6px;
+  }
+
+  .systems-block .stat.row .numeric-entry {
+    box-sizing: border-box;
+    flex: 0 0 40px;
+    width: 40px;
+  }
+
+  .systems-block .stat.row .field.breaches {
+    width: 40px;
+    margin-left: 0;
+    margin-right: 4px;
+  }
+
+  .systems-block .stat.row,
+  .departments-block .stat.row,
+  .systems-block .stat.header.row {
+    column-gap: 4px;
+  }
+
+  .systems-block .stat.header.row {
+    justify-content: flex-start;
+  }
+
+  .systems-block .selector.system,
+  .departments-block .selector.department {
+    box-sizing: border-box;
+    flex: 0 0 19px;
+    width: 19px;
+    margin: 0;
+  }
+
+  .departments-block .stat.row .numeric-entry {
+    box-sizing: border-box;
+    flex: 0 0 40px;
+    width: 40px;
+  }
+
+  .departments-block .stat.row::after {
+    content: "";
+    flex: 0 0 44px;
   }
 
   .systems-block .stat.row {
@@ -2495,6 +2579,22 @@ body {
   /* Keep the systems block Name – Mod – Breaches header row */
   .systems-block .stat.header.row {
     display: flex !important;
+  }
+
+  .systems-block .stat.header.row .selector-header-spacer {
+    flex: 0 0 19px;
+  }
+
+  .systems-block .stat.header.row .field.secondary-title {
+    flex: 0 0 40px;
+    width: 40px;
+    text-align: center;
+  }
+
+  .systems-block .stat.header.row .field.secondary-title:last-child {
+    box-sizing: border-box;
+    flex-basis: 44px;
+    padding-right: 4px;
   }
 
   /* Create buttons inherit the foreground chosen for their title bar. */

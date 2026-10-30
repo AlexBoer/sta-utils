@@ -9,7 +9,10 @@
 
 import { MODULE_ID } from "../core/constants.mjs";
 import { t } from "../core/i18n.mjs";
-import { showAdvancedCalculatorButton } from "../core/settings.mjs";
+import {
+  isSpreadHouseRuleEnabled,
+  showAdvancedCalculatorButton,
+} from "../core/settings.mjs";
 import { openAttackCalculator } from "./attack-calculator.mjs";
 
 const { HandlebarsApplicationMixin, ApplicationV2 } = foundry.applications.api;
@@ -78,6 +81,7 @@ class AttackPresetDialog extends HandlebarsApplicationMixin(ApplicationV2) {
       dmg: baseDamage,
       budget,
       calibrate: false,
+      spreadHouseRule: isSpreadHouseRuleEnabled(),
     };
   }
 
@@ -128,6 +132,11 @@ class AttackPresetDialog extends HandlebarsApplicationMixin(ApplicationV2) {
     return this._dlg.base;
   }
 
+  _maxHits() {
+    if (!this._dlg.spreadHouseRule) return Infinity;
+    return this._dlg.qualityFlags.spread ? 2 : 1;
+  }
+
   _availableQualityKeys() {
     return QUALITY_KEYS.filter((k) => !this._dlg.qualityFlags[k]);
   }
@@ -154,7 +163,7 @@ class AttackPresetDialog extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     const menu = document.createElement("div");
-    menu.className = "sad-quality-menu sta-utils sta-utils-ms-lcars";
+    menu.className = "sad-quality-menu";
     menu.innerHTML = availableKeys
       .map(
         (k) =>
@@ -165,10 +174,29 @@ class AttackPresetDialog extends HandlebarsApplicationMixin(ApplicationV2) {
       .join("");
     document.body.appendChild(menu);
 
-    // Position beneath the anchor, keeping the menu on-screen.
+    // Keep the full menu visible when possible, and scroll when the viewport is short.
     const rect = anchorBtn.getBoundingClientRect();
-    const left = Math.min(rect.left, window.innerWidth - menu.offsetWidth - 8);
-    menu.style.top = `${rect.bottom + 2}px`;
+    const viewportPadding = 8;
+    const availableHeight = window.innerHeight - viewportPadding * 2;
+    menu.style.maxHeight = `${availableHeight}px`;
+    const menuHeight = Math.min(menu.scrollHeight, availableHeight);
+    const spaceBelow = window.innerHeight - rect.bottom - viewportPadding;
+    const spaceAbove = rect.top - viewportPadding;
+    let top;
+
+    if (menuHeight <= spaceBelow || spaceBelow >= spaceAbove) {
+      top = rect.bottom + 2;
+      menu.style.maxHeight = `${Math.max(0, spaceBelow - 2)}px`;
+    } else {
+      menu.style.maxHeight = `${Math.max(0, spaceAbove - 2)}px`;
+      top = rect.top - menu.offsetHeight - 2;
+    }
+
+    const left = Math.min(
+      rect.left,
+      window.innerWidth - menu.offsetWidth - viewportPadding,
+    );
+    menu.style.top = `${Math.max(viewportPadding, top)}px`;
     menu.style.left = `${Math.max(8, left)}px`;
 
     menu.addEventListener("click", (e) => {
@@ -240,10 +268,11 @@ class AttackPresetDialog extends HandlebarsApplicationMixin(ApplicationV2) {
    * method never adds listeners.
    */
   _updateSentences(root) {
+    this._dlg.hits = Math.min(this._dlg.hits, this._maxHits());
     const { weaponName, hits, dmg, budget, calibrate, base, publicApi } =
       this._dlg;
-    const firstHitDmg = dmg + (calibrate ? 1 : 0);
-    const devHit = Math.ceil(dmg / 2);
+    const firstHitDmg = Math.max(1, dmg + (calibrate ? 1 : 0));
+    const devHit = Math.max(1, Math.ceil(dmg / 2));
     const spent = this._calcMomentum();
     const over = spent > budget;
 
@@ -265,7 +294,7 @@ class AttackPresetDialog extends HandlebarsApplicationMixin(ApplicationV2) {
       <div class="dlg-sentence dlg-sentence--intro">
         ${introText}
         <span class="spin spin--blue">
-          <button class="spin-btn" data-spin="hits-up" type="button">▲</button>
+          <button class="spin-btn" data-spin="hits-up" type="button" ${hits >= this._maxHits() ? "disabled" : ""}>▲</button>
           <span class="spin-val">${hits}</span>
           <button class="spin-btn" data-spin="hits-down" type="button">▼</button>
         </span>
@@ -347,7 +376,7 @@ class AttackPresetDialog extends HandlebarsApplicationMixin(ApplicationV2) {
       if (!spin) return;
       const { dmg: curDmg, hits: curHits } = this._dlg;
       if (spin === "hits-up") {
-        this._dlg.hits = curHits + 1;
+        this._dlg.hits = Math.min(this._maxHits(), curHits + 1);
       } else if (spin === "hits-down") {
         this._dlg.hits = Math.max(1, curHits - 1);
       } else if (spin === "dmg-up") {
@@ -377,8 +406,8 @@ class AttackPresetDialog extends HandlebarsApplicationMixin(ApplicationV2) {
   async _onConfirm() {
     const { weaponName, hits, dmg, budget, calibrate, qualityFlags } =
       this._dlg;
-    const firstHitDmg = dmg + (calibrate ? 1 : 0);
-    const devHit = Math.ceil(dmg / 2);
+    const firstHitDmg = Math.max(1, dmg + (calibrate ? 1 : 0));
+    const devHit = Math.max(1, Math.ceil(dmg / 2));
     const spent = this._calcMomentum();
     const qualityNames = QUALITY_KEYS.filter((k) => qualityFlags[k]).map((k) =>
       t(`sta-utils.attackCalculator.qualities.${k}`),

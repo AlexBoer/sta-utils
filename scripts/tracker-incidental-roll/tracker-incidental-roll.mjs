@@ -1,6 +1,16 @@
 import { MODULE_ID } from "../core/constants.mjs";
-import { getGroupShipActorId } from "../core/settings.mjs";
-import { INCIDENTAL_QUALITIES } from "../npc-builder/npc-builder-data.mjs";
+import {
+  getGroupShipActorId,
+  INCIDENTAL_NPC_ROLL_TAB_SETTING,
+} from "../core/settings.mjs";
+import {
+  ATTRIBUTE_KEYS,
+  DISCIPLINE_KEYS,
+  INCIDENTAL_QUALITIES,
+  QUICK_ROLES,
+  QUICK_TEMPERAMENTS,
+  loadSpeciesCatalog,
+} from "../npc-builder/npc-builder-data.mjs";
 import { showDicePoolDialog } from "../dice-pool-override/dice-pool-dialog.mjs";
 import {
   executeTaskRoll,
@@ -93,10 +103,166 @@ function qualityByKey(key) {
   );
 }
 
+async function executeIncidentalNpcRoll(
+  formData,
+  automationStates,
+  { calculatedComplicationRange, defaultQuality, speciesCatalog },
+) {
+  const selectedAttributeValue =
+    parseInt(formData.get("incidentalAttributeValue"), 10) ||
+    defaultQuality.attribute;
+  const selectedDepartmentValue =
+    parseInt(formData.get("incidentalDepartmentValue"), 10) ||
+    defaultQuality.department;
+
+  const dicePool = parseInt(formData.get("dicePoolSlider"), 10) || 2;
+  const complicationRange =
+    parseInt(formData.get("complicationRange"), 10) ||
+    calculatedComplicationRange;
+  const usingFocus = formData.get("usingFocus") === "on";
+  const usingDedicatedFocus = formData.get("usingDedicatedFocus") === "on";
+  const usingDetermination = formData.get("usingDetermination") === "on";
+  const usingReservePower = formData.get("usingReservePower") === "on";
+  const isQuickNpc = formData.get("rollMode") === "quick";
+
+  const isShipAssist = formData.get("starshipAssisting") === "on";
+  let selectedSystem = "none";
+  let selectedSystemValue = 0;
+  let selectedDepartment = "none";
+  let selectedShipDepartmentValue = 0;
+  let starshipName = "";
+  let starship = null;
+
+  if (isShipAssist) {
+    const starshipId = formData.get("starship");
+    starship = starshipId ? game.actors.get(starshipId) : null;
+    selectedSystem = formData.get("system") || "none";
+    selectedDepartment = formData.get("department") || "none";
+    if (starship) {
+      starshipName = starship.name;
+      selectedSystemValue =
+        starship.system?.systems?.[selectedSystem]?.value ?? 0;
+      selectedShipDepartmentValue =
+        starship.system?.departments?.[selectedDepartment]?.value ?? 0;
+    }
+  }
+
+  const quickTemperament =
+    QUICK_TEMPERAMENTS.find(
+      (entry) => entry.key === formData.get("quickTemperament"),
+    ) ?? QUICK_TEMPERAMENTS[0];
+  const quickRole =
+    QUICK_ROLES.find((entry) => entry.key === formData.get("quickRole")) ??
+    QUICK_ROLES[0];
+  const selectedAttribute = isQuickNpc
+    ? ATTRIBUTE_KEYS.includes(formData.get("quickAttribute"))
+      ? formData.get("quickAttribute")
+      : "control"
+    : "control";
+  const selectedDiscipline = isQuickNpc
+    ? DISCIPLINE_KEYS.includes(formData.get("quickDiscipline"))
+      ? formData.get("quickDiscipline")
+      : "command"
+    : "command";
+  const quickSpecies = String(formData.get("quickSpecies") ?? "").trim();
+  const quickSpeciesKey = quickSpecies.toLocaleLowerCase();
+  const quickSpeciesEntry = speciesCatalog.find(
+    (entry) =>
+      entry.name.toLocaleLowerCase() === quickSpeciesKey ||
+      (entry.aliases ?? []).some(
+        (alias) => alias.toLocaleLowerCase() === quickSpeciesKey,
+      ),
+  );
+  const selectedQuickAttributeBonuses = formData
+    .getAll("quickAttributeBonus")
+    .filter((key) => ATTRIBUTE_KEYS.includes(key));
+  const needsQuickAttributeBonuses =
+    quickSpecies.length > 0 &&
+    (!quickSpeciesEntry || quickSpeciesEntry.attributeBonuses === null);
+  if (
+    isQuickNpc &&
+    needsQuickAttributeBonuses &&
+    selectedQuickAttributeBonuses.length !== 3
+  ) {
+    ui.notifications.error(
+      game.i18n.localize(
+        "sta-utils.incidentalRoll.speciesBonusSelectionRequired",
+      ),
+    );
+    return;
+  }
+  const quickAttributeValue =
+    quickTemperament.attributes[selectedAttribute] +
+    (quickSpeciesEntry?.attributeBonuses?.[selectedAttribute] ??
+      (selectedQuickAttributeBonuses.includes(selectedAttribute) ? 1 : 0));
+  const quickDepartmentValue = quickRole.disciplines[selectedDiscipline];
+
+  const taskData = {
+    speakerName: isQuickNpc
+      ? [
+          quickSpecies,
+          quickRole.label,
+          `(${quickTemperament.label})`,
+        ]
+          .filter(Boolean)
+          .join(" ")
+      : "NPC Crew",
+    starshipName,
+    reputationValue: 0,
+    useReputationInstead: false,
+    selectedAttribute,
+    selectedAttributeValue: isQuickNpc
+      ? quickAttributeValue
+      : selectedAttributeValue,
+    selectedDiscipline,
+    selectedDisciplineValue: isQuickNpc
+      ? quickDepartmentValue
+      : selectedDepartmentValue,
+    selectedSystem,
+    selectedSystemValue,
+    selectedDepartment,
+    selectedDepartmentValue: selectedShipDepartmentValue,
+    rolltype: isQuickNpc ? "character2e" : INCIDENTAL_NPC_ROLLTYPE,
+    dicePool,
+    usingFocus,
+    usingDedicatedFocus,
+    usingDetermination,
+    usingReservePower,
+    complicationRange,
+    skillLevel: isQuickNpc
+      ? ""
+      : formData.get("incidentalQuality") || defaultQuality.key,
+  };
+
+  const middlewareContext = {
+    actor: isShipAssist ? starship : null,
+    starship: isShipAssist ? starship : null,
+    formData,
+    isShipAssist,
+    baseComplicationRange: calculatedComplicationRange,
+  };
+
+  await runMiddleware(taskData, middlewareContext, automationStates);
+
+  await executeTaskRoll(taskData, {
+    isShipAssist,
+    actor: isShipAssist ? starship : null,
+    starship,
+  });
+}
+
 export async function openIncidentalNpcRollDialog() {
   const STARoll = window.STARoll;
   const staRoll = new STARoll();
   const calculatedComplicationRange = await staRoll._sceneComplications();
+  const speciesCatalog = await loadSpeciesCatalog();
+  const savedTab = game.settings.get(
+    MODULE_ID,
+    INCIDENTAL_NPC_ROLL_TAB_SETTING,
+  );
+  const initialTab = ["incidental", "quick"].includes(savedTab)
+    ? savedTab
+    : "incidental";
 
   const visibleStarships = getVisibleStarships();
   const defaultStarshipId = resolveDefaultShipId(visibleStarships);
@@ -129,6 +295,21 @@ export async function openIncidentalNpcRollDialog() {
         "sta.actor.starship.department.",
       ),
       systems: buildOptions(STARSHIP_SYSTEM_KEYS, "sta.actor.starship.system."),
+      quickTemperaments: QUICK_TEMPERAMENTS,
+      quickRoles: QUICK_ROLES,
+      species: speciesCatalog.map((entry) => entry.name),
+      quickAttributes: ATTRIBUTE_KEYS.map((key) => ({
+        key,
+        label: game.i18n.localize(
+          `sta.actor.character.attribute.${key}`,
+        ),
+      })),
+      quickDisciplines: DISCIPLINE_KEYS.map((key) => ({
+        key,
+        label: game.i18n.localize(
+          `sta.actor.character.discipline.${key}`,
+        ),
+      })),
     },
   );
 
@@ -144,6 +325,15 @@ export async function openIncidentalNpcRollDialog() {
     defaultStarshipId,
     dialogWidth: 460,
     title: game.i18n.localize("sta-utils.incidentalRoll.dialogTitle"),
+    keepOpenCheckboxLabel: game.i18n.localize(
+      "sta-utils.incidentalRoll.keepOpenAfterRoll",
+    ),
+    onRollWhileOpen: (formData, automationStates) =>
+      executeIncidentalNpcRoll(formData, automationStates, {
+        calculatedComplicationRange,
+        defaultQuality,
+        speciesCatalog,
+      }),
     onRender: (el, dialog) => {
       const focusCheckbox = el.querySelector("#usingFocus");
       const attrValueInput = el.querySelector("#incidental-attribute-value");
@@ -169,89 +359,155 @@ export async function openIncidentalNpcRollDialog() {
           });
         },
       );
+
+      const tabButtons = el.querySelectorAll("[data-npc-roll-tab]");
+      const tabPanels = el.querySelectorAll("[data-npc-roll-panel]");
+      const setTab = (tabName, persist = true) => {
+        if (!["incidental", "quick"].includes(tabName)) return;
+        el.querySelector("#npc-roll-mode").value = tabName;
+        tabButtons.forEach((button) => {
+          const active = button.dataset.npcRollTab === tabName;
+          button.classList.toggle("active", active);
+          button.setAttribute("aria-selected", String(active));
+        });
+        tabPanels.forEach((panel) => {
+          panel.hidden = panel.dataset.npcRollPanel !== tabName;
+        });
+        if (persist) {
+          void game.settings
+            .set(MODULE_ID, INCIDENTAL_NPC_ROLL_TAB_SETTING, tabName)
+            .catch((err) => {
+              console.error(
+                `${MODULE_ID} | Failed to save incidental NPC roller tab`,
+                err,
+              );
+            });
+        }
+        dialog.setPosition({ height: "auto" });
+      };
+
+      setTab(initialTab, false);
+      tabButtons.forEach((button) => {
+        button.addEventListener("click", () =>
+          setTab(button.dataset.npcRollTab),
+        );
+      });
+
+      const temperamentRadios = el.querySelectorAll(
+        'input[name="quickTemperament"]',
+      );
+      const roleRadios = el.querySelectorAll('input[name="quickRole"]');
+      const attributeSelect = el.querySelector("#quick-attribute");
+      const disciplineSelect = el.querySelector("#quick-discipline");
+      const speciesInput = el.querySelector("#quick-species");
+      const attributeValue = el.querySelector("#quick-attribute-value");
+      const departmentValue = el.querySelector("#quick-department-value");
+      const bonusRow = el.querySelector("#quick-attribute-bonus-row");
+      const bonusCheckboxes = [
+        ...el.querySelectorAll('input[name="quickAttributeBonus"]'),
+      ];
+      const rollButton = el.querySelector('button[data-action="roll"]');
+
+      const getSpeciesEntry = () => {
+        const speciesName = String(speciesInput?.value ?? "")
+          .trim()
+          .toLocaleLowerCase();
+        return speciesCatalog.find(
+          (entry) =>
+            entry.name.toLocaleLowerCase() === speciesName ||
+            (entry.aliases ?? []).some(
+              (alias) => alias.toLocaleLowerCase() === speciesName,
+            ),
+        );
+      };
+
+      const updateQuickValues = () => {
+        const selectedTemperament = el.querySelector(
+          'input[name="quickTemperament"]:checked',
+        )?.value;
+        const selectedRole = el.querySelector(
+          'input[name="quickRole"]:checked',
+        )?.value;
+        const temperament =
+          QUICK_TEMPERAMENTS.find(
+            (entry) => entry.key === selectedTemperament,
+          ) ?? QUICK_TEMPERAMENTS[0];
+        const role =
+          QUICK_ROLES.find((entry) => entry.key === selectedRole) ??
+          QUICK_ROLES[0];
+        const speciesName = String(speciesInput?.value ?? "")
+          .trim()
+          .toLocaleLowerCase();
+        const speciesEntry = getSpeciesEntry();
+        const needsChoiceBonuses =
+          speciesName.length > 0 &&
+          (!speciesEntry || speciesEntry.attributeBonuses === null);
+        if (bonusRow) bonusRow.hidden = !needsChoiceBonuses;
+        if (!needsChoiceBonuses) {
+          bonusCheckboxes.forEach((checkbox) => {
+            checkbox.checked = false;
+            checkbox.disabled = false;
+          });
+        }
+
+        const selectedBonusKeys = bonusCheckboxes
+          .filter((checkbox) => checkbox.checked)
+          .map((checkbox) => checkbox.value);
+        const bonusCount = selectedBonusKeys.length;
+        bonusCheckboxes.forEach((checkbox) => {
+          checkbox.disabled =
+            needsChoiceBonuses &&
+            !checkbox.checked &&
+            bonusCount >= 3;
+        });
+        const isQuickMode =
+          el.querySelector("#npc-roll-mode")?.value === "quick";
+        if (rollButton) {
+          rollButton.disabled =
+            isQuickMode && needsChoiceBonuses && bonusCount !== 3;
+        }
+
+        const attribute = attributeSelect?.value ?? "control";
+        const discipline = disciplineSelect?.value ?? "command";
+        const speciesBonus =
+          speciesEntry?.attributeBonuses?.[attribute] ??
+          (selectedBonusKeys.includes(attribute) ? 1 : 0);
+        if (attributeValue) {
+          attributeValue.value = String(
+            temperament.attributes[attribute] + speciesBonus,
+          );
+        }
+        if (departmentValue) {
+          departmentValue.value = String(role.disciplines[discipline]);
+        }
+      };
+
+      [...temperamentRadios, ...roleRadios].forEach((input) =>
+        input.addEventListener("change", updateQuickValues),
+      );
+      [attributeSelect, disciplineSelect, speciesInput].forEach((input) =>
+        input?.addEventListener("input", updateQuickValues),
+      );
+      bonusCheckboxes.forEach((checkbox) =>
+        checkbox.addEventListener("change", updateQuickValues),
+      );
+      [attributeSelect, disciplineSelect].forEach((input) =>
+        input?.addEventListener("change", updateQuickValues),
+      );
+      tabButtons.forEach((button) => {
+        button.addEventListener("click", updateQuickValues);
+      });
+      updateQuickValues();
     },
   });
 
   if (!dialogResult) return;
-
-  const { formData, automationStates } = dialogResult;
-
-  const selectedAttributeValue =
-    parseInt(formData.get("incidentalAttributeValue"), 10) ||
-    defaultQuality.attribute;
-  const selectedDepartmentValue =
-    parseInt(formData.get("incidentalDepartmentValue"), 10) ||
-    defaultQuality.department;
-
-  const dicePool = parseInt(formData.get("dicePoolSlider"), 10) || 2;
-  const complicationRange =
-    parseInt(formData.get("complicationRange"), 10) ||
-    calculatedComplicationRange;
-  const usingFocus = formData.get("usingFocus") === "on";
-  const usingDedicatedFocus = formData.get("usingDedicatedFocus") === "on";
-  const usingDetermination = formData.get("usingDetermination") === "on";
-  const usingReservePower = formData.get("usingReservePower") === "on";
-
-  const isShipAssist = formData.get("starshipAssisting") === "on";
-  let selectedSystem = "none";
-  let selectedSystemValue = 0;
-  let selectedDepartment = "none";
-  let selectedShipDepartmentValue = 0;
-  let starshipName = "";
-  let starship = null;
-
-  if (isShipAssist) {
-    const starshipId = formData.get("starship");
-    starship = starshipId ? game.actors.get(starshipId) : null;
-    selectedSystem = formData.get("system") || "none";
-    selectedDepartment = formData.get("department") || "none";
-    if (starship) {
-      starshipName = starship.name;
-      selectedSystemValue =
-        starship.system?.systems?.[selectedSystem]?.value ?? 0;
-      selectedShipDepartmentValue =
-        starship.system?.departments?.[selectedDepartment]?.value ?? 0;
-    }
-  }
-
-  const taskData = {
-    speakerName: "NPC Crew",
-    starshipName,
-    reputationValue: 0,
-    useReputationInstead: false,
-    selectedAttribute: "control",
-    selectedAttributeValue,
-    selectedDiscipline: "command",
-    selectedDisciplineValue: selectedDepartmentValue,
-    selectedSystem,
-    selectedSystemValue,
-    selectedDepartment,
-    selectedDepartmentValue: selectedShipDepartmentValue,
-    rolltype: INCIDENTAL_NPC_ROLLTYPE,
-    dicePool,
-    usingFocus,
-    usingDedicatedFocus,
-    usingDetermination,
-    usingReservePower,
-    complicationRange,
-    skillLevel: formData.get("incidentalQuality") || defaultQuality.key,
-  };
-
-  const middlewareContext = {
-    actor: isShipAssist ? starship : null,
-    starship: isShipAssist ? starship : null,
-    formData,
-    isShipAssist,
-    baseComplicationRange: calculatedComplicationRange,
-  };
-
-  await runMiddleware(taskData, middlewareContext, automationStates);
-
-  await executeTaskRoll(taskData, {
-    isShipAssist,
-    actor: isShipAssist ? starship : null,
-    starship,
-  });
+  if (dialogResult.keepOpen) return;
+  await executeIncidentalNpcRoll(
+    dialogResult.formData,
+    dialogResult.automationStates,
+    { calculatedComplicationRange, defaultQuality, speciesCatalog },
+  );
 }
 
 function bindNpcButton(root) {

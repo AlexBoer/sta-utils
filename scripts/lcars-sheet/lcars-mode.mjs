@@ -411,9 +411,11 @@ function _installStrictItemTooltipHover(root) {
  * @param {HTMLElement} root - The root element of the character sheet window.
  */
 export async function installLcarsSheetMode(sheetApp, root) {
-  const sheet =
-    root?.querySelector?.(".character-sheet.sta-lcars") ||
-    root?.querySelector?.(".starship-sheet.sta-lcars");
+  const sheetSelector =
+    ".character-sheet.sta-lcars, .starship-sheet.sta-lcars, .smallcraft-sheet.sta-lcars";
+  const sheet = root?.matches?.(sheetSelector)
+    ? root
+    : root?.querySelector?.(sheetSelector);
   if (!sheet) return;
 
   // Load the LCARS CSS before the sheet renders so CSS variables are

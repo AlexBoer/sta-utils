@@ -14,6 +14,8 @@ const ENABLE_STYLE_ENHANCE_SETTING = "enableStyleEnhance";
 const ENABLE_TALENT_AUTOMATIONS_SETTING = "enableTalentAutomations";
 const TALENT_IMPORT_OVERRIDE_COMPENDIUM_SETTING =
   "talentImportOverrideCompendium";
+const FOCUS_IMPORT_OVERRIDE_COMPENDIUM_SETTING =
+  "focusImportOverrideCompendium";
 const LCARS_TALENT_PICKER_SETTING = "lcarsTalentPickerButton";
 const DISABLE_TOOLTIPS_SETTING = "disableTooltips";
 const SHOW_ROW_CONTEXT_MENU_SETTING = "showRowContextMenuButtons";
@@ -39,6 +41,7 @@ export const SCENE_TRAIT_ACTOR_CLEANUP_SETTING =
 const SETTING_TRACKER_MACRO_MENU = "trackerMacroButtonsConfig";
 const TRACKER_MACRO_DEBUG_LOGS_SETTING = "trackerMacroDebugLogs";
 const GROUP_SHIP_ACTOR_SETTING = "groupShipActorId";
+export const INCIDENTAL_NPC_ROLL_TAB_SETTING = "incidentalNpcRollTab";
 const ENABLE_EXTENDED_TASK_TRACKER_SETTING = "enableExtendedTaskTracker";
 const NPC_BUILDER_SPECIAL_RULES_PACK_SETTING = "npcBuilderSpecialRulesPack";
 const NPC_BUILDER_EQUIPMENT_PACKS_SETTING = "npcBuilderEquipmentPacks";
@@ -53,6 +56,9 @@ const ENABLE_PERSONAL_THREAT_SETTING = "enablePersonalThreat";
 const ENABLE_ROLL_REQUEST_SETTING = "enableRollRequest";
 const LCARS_OPAQUE_BACKGROUNDS_SETTING = "lcarsOpaqueBackgrounds";
 const PIERCING_MODE_SETTING = "piercingMode";
+const PIERCING_FIRST_HIT_SETTING = "piercingFirstHit";
+const ENABLE_SPREAD_HOUSE_RULE_SETTING = "enableSpreadHouseRule";
+const ENABLE_SHAKEN_HOUSE_RULE_SETTING = "enableShakenHouseRule";
 const SHOW_ADVANCED_CALCULATOR_SETTING = "showAdvancedCalculator";
 const DEFAULT_WARP_FORMULA_SETTING = "defaultWarpFormula";
 const STA_TOOLS_GM_ONLY_SETTING = "staToolsGmOnly";
@@ -155,6 +161,10 @@ const SUBGROUPS = [
   },
   {
     firstKey: PIERCING_MODE_SETTING,
+    label: "sta-utils.settings.subgroups.houseRules",
+  },
+  {
+    firstKey: SHOW_ADVANCED_CALCULATOR_SETTING,
     label: "sta-utils.settings.subgroups.attackCalculator",
   },
   {
@@ -258,7 +268,7 @@ export function registerSettings() {
     group: GROUP_WORLD,
   });
 
-  // ----- Talent import overrides -----
+  // ----- Actor item import overrides -----
 
   game.settings.register(MODULE_ID, TALENT_IMPORT_OVERRIDE_COMPENDIUM_SETTING, {
     name: t("sta-utils.settings.talentImportOverrideCompendium.name"),
@@ -270,6 +280,27 @@ export function registerSettings() {
     choices: () => {
       const choices = {
         "": t("sta-utils.settings.talentImportOverrideCompendium.none"),
+      };
+      for (const pack of game.packs.values()) {
+        if (pack.metadata.type !== "Item") continue;
+        choices[pack.collection] =
+          `${pack.metadata.label} (${pack.collection})`;
+      }
+      return choices;
+    },
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, FOCUS_IMPORT_OVERRIDE_COMPENDIUM_SETTING, {
+    name: t("sta-utils.settings.focusImportOverrideCompendium.name"),
+    hint: t("sta-utils.settings.focusImportOverrideCompendium.hint"),
+    scope: "world",
+    config: true,
+    type: String,
+    default: "",
+    choices: () => {
+      const choices = {
+        "": t("sta-utils.settings.focusImportOverrideCompendium.none"),
       };
       for (const pack of game.packs.values()) {
         if (pack.metadata.type !== "Item") continue;
@@ -458,6 +489,13 @@ export function registerSettings() {
       firstColumn: ["actionChooser", "perform-task", "sta-utils"],
       secondColumn: [],
     },
+  });
+
+  game.settings.register(MODULE_ID, INCIDENTAL_NPC_ROLL_TAB_SETTING, {
+    scope: "client",
+    config: false,
+    type: String,
+    default: "incidental",
   });
 
   // Hidden world setting used only for staging diagnostics.
@@ -765,11 +803,42 @@ export function registerSettings() {
     default: "raw",
     choices: {
       raw: t("sta-utils.settings.piercingMode.choices.raw"),
-      firstHit: t("sta-utils.settings.piercingMode.choices.firstHit"),
+      ignoreFive: t("sta-utils.settings.piercingMode.choices.ignoreFive"),
       sciencePiercing: t(
         "sta-utils.settings.piercingMode.choices.sciencePiercing",
       ),
     },
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, PIERCING_FIRST_HIT_SETTING, {
+    name: t("sta-utils.settings.piercingFirstHit.name"),
+    hint: t("sta-utils.settings.piercingFirstHit.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, ENABLE_SPREAD_HOUSE_RULE_SETTING, {
+    name: t("sta-utils.settings.enableSpreadHouseRule.name"),
+    hint: t("sta-utils.settings.enableSpreadHouseRule.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    group: GROUP_WORLD,
+  });
+
+  game.settings.register(MODULE_ID, ENABLE_SHAKEN_HOUSE_RULE_SETTING, {
+    name: t("sta-utils.settings.enableShakenHouseRule.name"),
+    hint: t("sta-utils.settings.enableShakenHouseRule.hint"),
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
     group: GROUP_WORLD,
   });
 
@@ -1093,6 +1162,18 @@ export function getTalentImportOverrideCompendium() {
   try {
     return String(
       game.settings.get(MODULE_ID, TALENT_IMPORT_OVERRIDE_COMPENDIUM_SETTING) ??
+        "",
+    ).trim();
+  } catch (_) {
+    return "";
+  }
+}
+
+/** @returns {string} */
+export function getFocusImportOverrideCompendium() {
+  try {
+    return String(
+      game.settings.get(MODULE_ID, FOCUS_IMPORT_OVERRIDE_COMPENDIUM_SETTING) ??
         "",
     ).trim();
   } catch (_) {
@@ -1512,6 +1593,48 @@ export function getGroupShipActorId() {
     return String(game.settings.get(MODULE_ID, GROUP_SHIP_ACTOR_SETTING) ?? "");
   } catch (_) {
     return "";
+  }
+}
+
+/** @returns {string} */
+export function getPiercingMode() {
+  try {
+    const mode = String(
+      game.settings.get(MODULE_ID, PIERCING_MODE_SETTING) ?? "raw",
+    );
+    return mode === "ignoreFive" || mode === "sciencePiercing" ? mode : "raw";
+  } catch (_) {
+    return "raw";
+  }
+}
+
+/** @returns {boolean} */
+export function isPiercingFirstHitEnabled() {
+  try {
+    return (
+      Boolean(game.settings.get(MODULE_ID, PIERCING_FIRST_HIT_SETTING)) ||
+      game.settings.get(MODULE_ID, PIERCING_MODE_SETTING) === "firstHit"
+    );
+  } catch (_) {
+    return false;
+  }
+}
+
+/** @returns {boolean} */
+export function isSpreadHouseRuleEnabled() {
+  try {
+    return Boolean(game.settings.get(MODULE_ID, ENABLE_SPREAD_HOUSE_RULE_SETTING));
+  } catch (_) {
+    return false;
+  }
+}
+
+/** @returns {boolean} */
+export function isShakenHouseRuleEnabled() {
+  try {
+    return Boolean(game.settings.get(MODULE_ID, ENABLE_SHAKEN_HOUSE_RULE_SETTING));
+  } catch (_) {
+    return false;
   }
 }
 

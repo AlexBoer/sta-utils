@@ -1433,7 +1433,7 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
       content: `<div class="form-group"><label for="supp-talent-name">Name</label><div class="form-fields"><input id="supp-talent-name" name="name" type="text" value="${foundry.utils.escapeHTML(name)}"></div></div><div class="form-group"><label for="supp-talent-description">Description</label><div class="form-fields"><prose-mirror id="supp-talent-description" name="description" value="${foundry.utils.escapeHTML(description)}" toggled="true">${enrichedDescription}</prose-mirror></div></div>`,
       buttons: [
         {
-          action: "save",
+          action: "confirm",
           label: game.i18n.localize("Save"),
           default: true,
           callback: (_event, button) => ({

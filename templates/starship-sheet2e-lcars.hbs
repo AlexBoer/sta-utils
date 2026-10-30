@@ -14,13 +14,14 @@
       <div class="systems-block">
         <div class="title">{{localize 'sta.actor.starship.system.title'}}</div>
         <div class="stat header row">
-          <div class="text secondary-title">{{localize 'sta.actor.starship.system.name'}}</div>
+          <div class="text secondary-title">System</div>
+          <div class="selector-header-spacer" aria-hidden="true"></div>
           <div class="field secondary-title">{{localize 'sta.actor.attdis.mod'}}</div>
           <div class="field secondary-title">{{localize 'sta.actor.starship.system.breaches'}}</div>
         </div>
         {{#each systems as |system key|}}
           <div class="stat row">
-            <label class="text list-entry" for="{{key}}">{{localize system.label}}</label>
+            <label class="text list-entry" for="{{key}}">{{#if (eq key "communications")}}Comms{{else}}{{localize system.label}}{{/if}}</label>
             <input class="selector system" id="{{key}}.selector" type="checkbox" name="system.systems.{{key}}.selected" data-action="onSelectSystem" data-dtype="Boolean" {{checked system.selected}} aria-label="{{localize system.label}}">
             <input class="field numeric-entry" id="{{key}}" name="system.systems.{{key}}.value" type="number" value="{{system.value}}" />
             <input class="field numeric-entry breaches" id="{{key}}.breaches" name="system.systems.{{key}}.breaches" type="number" value="{{system.breaches}}" />
@@ -234,7 +235,7 @@
               {{localize 'sta.actor.starship.equipment'}}
             </div>
             <div class="sta-lcars-items">
-              <div class="header row item">
+              <div class="header row item belongings-row">
                 <div class="image"></div>
                 <div class="two-column-with-roll-primary">{{localize 'sta.actor.belonging.weapon.title'}}</div>
                 <div class="two-column-with-roll-secondary">{{localize 'sta.actor.belonging.weapon.dmg'}}</div>
@@ -242,7 +243,7 @@
               </div>
               {{#each items as |item type id|}}
                 {{#if (eq item.type "starshipweapon2e")}}
-                  <li class="row entry" id="starship-weapon-{{@index}}" data-item-id="{{item.id}}" data-item-type="{{item.type}}" data-item-value="{{item.name}}" data-item-damage="{{item.system.damage}}" data-item-includescale="{{item.system.includescale}}">
+                  <li class="row entry belongings-row" id="starship-weapon-{{@index}}" data-item-id="{{item.id}}" data-item-type="{{item.type}}" data-item-value="{{item.name}}" data-item-damage="{{item.system.damage}}" data-item-includescale="{{item.system.includescale}}">
                     <div class="image"><img class="chat" src="{{item.img}}" title="{{item.name}}" data-item-name="{{item.name}}" data-action="onItemtoChat" /></div>
                     <input type="text" class="item-name" value="{{item.name}}" data-item-id="{{item._id}}">
                     <div class="two-column-with-roll-secondary list-entry damage">{{item.system.damage}}</div>

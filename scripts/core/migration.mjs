@@ -4,6 +4,7 @@
  * v1 — copy fatigue flags from sta-officers-log → sta-utils namespace (one-time rename).
  * v2 — copy sta-utils flags → system.* fields introduced by UtilsCharacterData,
  *       UtilsStarshipData, UtilsSmallCraftData, and UtilsTraitData.
+ * v3 — migrate the legacy Piercing First Hit mode to its new independent toggle.
  *
  * @module migration
  */
@@ -50,6 +51,32 @@ export async function runMigrations() {
     await _migration2_flagsToSystemFields();
     await game.settings.set(MODULE_ID, MIGRATION_SETTING, 2);
   }
+
+  if (currentVersion < 3) {
+    await _migration3_piercingFirstHitSetting();
+    await game.settings.set(MODULE_ID, MIGRATION_SETTING, 3);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Migration 3 — split First Hit from the Piercing mode              */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Preserve worlds that used the legacy First Hit mode by selecting RAW
+ * and enabling the new independent First Hit setting.
+ *
+ * @private
+ */
+async function _migration3_piercingFirstHitSetting() {
+  const legacyMode = game.settings.get(MODULE_ID, "piercingMode");
+  if (legacyMode !== "firstHit") return;
+
+  await game.settings.set(MODULE_ID, "piercingFirstHit", true);
+  await game.settings.set(MODULE_ID, "piercingMode", "raw");
+  console.log(
+    `${MODULE_ID} | Migration v3: preserved legacy First Hit Piercing mode`,
+  );
 }
 
 /* ------------------------------------------------------------------ */

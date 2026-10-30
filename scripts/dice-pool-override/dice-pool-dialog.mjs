@@ -568,11 +568,14 @@ export async function showDicePoolDialog(opts) {
     title = null,
     onRender = null,
     dialogWidth = 350,
+    keepOpenCheckboxLabel = null,
+    onRollWhileOpen = null,
   } = opts;
 
   const api = foundry.applications.api;
   let _automationStates = {};
   let _determinationValueId = "";
+  let _keepOpenRollSession = false;
 
   const formData = await api.DialogV2.wait({
     window: {
@@ -586,6 +589,28 @@ export async function showDicePoolDialog(opts) {
     classes: ["dialogue"],
     render: (event, dialog) => {
       const el = dialog.element;
+      el.addEventListener(
+        "submit",
+        (submitEvent) => {
+          submitEvent.preventDefault();
+          submitEvent.stopImmediatePropagation();
+        },
+        true,
+      );
+      if (keepOpenCheckboxLabel) {
+        const footer = el.querySelector("footer.form-footer");
+        const rollButton = footer?.querySelector('button[data-action="roll"]');
+        if (footer && rollButton) {
+          const label = document.createElement("label");
+          label.className = "sta-utils-keep-open-control";
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.name = "keepDialogOpen";
+          checkbox.id = "keep-dialog-open";
+          label.append(checkbox, document.createTextNode(keepOpenCheckboxLabel));
+          footer.insertBefore(label, rollButton);
+        }
+      }
 
       // --- Pre-select group ship in dropdown (before anything else reads it) ---
       // Only set the select value; leave the checkbox unchecked and section
@@ -798,7 +823,7 @@ export async function showDicePoolDialog(opts) {
         action: "roll",
         default: true,
         label: game.i18n.localize("sta.apps.rolldice"),
-        callback: (event, button, dialog) => {
+        callback: async (event, button, dialog) => {
           // Capture automation checkbox states before the dialog closes
           dialog.element
             .querySelectorAll("[data-middleware-index]")
@@ -828,6 +853,19 @@ export async function showDicePoolDialog(opts) {
           // keep it tidy for any other code that inspects the DOM).
           if (rpCheckbox && rpWasDisabled) rpCheckbox.disabled = true;
 
+          const keepOpen =
+            dialog.element.querySelector("#keep-dialog-open")?.checked ??
+            false;
+          if (keepOpen || _keepOpenRollSession) {
+            if (keepOpen) _keepOpenRollSession = true;
+            dialog.options.form.closeOnSubmit = !keepOpen;
+            if (typeof onRollWhileOpen === "function" && fd) {
+              await onRollWhileOpen(fd, _automationStates, {
+                determinationValueId: _determinationValueId,
+              });
+            }
+          }
+
           return fd;
         },
       },
@@ -848,5 +886,6 @@ export async function showDicePoolDialog(opts) {
     formData,
     automationStates: _automationStates,
     determinationValueId: _determinationValueId,
+    keepOpen: Boolean(formData.get("keepDialogOpen")),
   };
 }

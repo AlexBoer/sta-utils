@@ -499,7 +499,12 @@ async function deleteShipAdvancement(ship, advancementId) {
   );
 }
 
-export async function installStarshipTabs(root, app, ship) {
+export async function installStarshipTabs(
+  root,
+  app,
+  ship,
+  { showAdvancements = true } = {},
+) {
   const rightColumn = root?.querySelector(".right-column");
   if (
     !rightColumn ||
@@ -517,7 +522,9 @@ export async function installStarshipTabs(root, app, ship) {
   nav.setAttribute("role", "tablist");
   nav.setAttribute(
     "aria-label",
-    localize("sta-utils.starshipTabs.label", "Starship"),
+    ship.type === "smallcraft"
+      ? localize("sta-utils.starshipTabs.smallcraftLabel", "Small Craft")
+      : localize("sta-utils.starshipTabs.label", "Starship"),
   );
 
   const panelHost = document.createElement("div");
@@ -528,9 +535,13 @@ export async function installStarshipTabs(root, app, ship) {
   const crewPanel = document.createElement("section");
   crewPanel.className = "tab sta-lcars-starship-panel hidden";
   crewPanel.dataset.tabContent = "manifest";
-  const advancementsPanel = document.createElement("section");
-  advancementsPanel.className = "tab sta-lcars-starship-panel hidden";
-  advancementsPanel.dataset.tabContent = "advancements";
+  const advancementsPanel = showAdvancements
+    ? document.createElement("section")
+    : null;
+  if (advancementsPanel) {
+    advancementsPanel.className = "tab sta-lcars-starship-panel hidden";
+    advancementsPanel.dataset.tabContent = "advancements";
+  }
 
   const detailNodes = [];
   const manifestInfo = document.createElement("section");
@@ -575,11 +586,13 @@ export async function installStarshipTabs(root, app, ship) {
   const tabs = [
     ["details", localize("sta-utils.starshipTabs.details", "Details")],
     ["manifest", localize("sta-utils.starshipTabs.manifest", "Manifest")],
-    [
+  ];
+  if (showAdvancements) {
+    tabs.push([
       "advancements",
       localize("sta-utils.starshipTabs.advancements", "Advancements"),
-    ],
-  ];
+    ]);
+  }
   for (const [key, label] of tabs) {
     const tab = document.createElement("a");
     tab.className = "item";
@@ -617,50 +630,53 @@ export async function installStarshipTabs(root, app, ship) {
   }
   crewPanel.appendChild(manifestInfo);
 
-  const advancementsTitle = document.createElement("div");
-  advancementsTitle.className = "title sta-lcars-tab-section-title";
-  advancementsTitle.textContent = localize(
-    "sta-utils.starshipTabs.advancementHistory",
-    "Advancement History",
-  );
-  if (ship.isOwner) {
-    const addButton = document.createElement("button");
-    addButton.type = "button";
-    addButton.className =
-      "control create sta-lcars-create-btn sta-lcars-advancement-add";
-    addButton.title = localize(
-      "sta-utils.shipAdvancement.addTitle",
-      "Add ship advancement",
+  if (advancementsPanel) {
+    const advancementsTitle = document.createElement("div");
+    advancementsTitle.className = "title sta-lcars-tab-section-title";
+    advancementsTitle.textContent = localize(
+      "sta-utils.starshipTabs.advancementHistory",
+      "Advancement History",
     );
-    addButton.setAttribute(
-      "aria-label",
-      localize("sta-utils.shipAdvancement.addTitle", "Add ship advancement"),
+    if (ship.isOwner) {
+      const addButton = document.createElement("button");
+      addButton.type = "button";
+      addButton.className =
+        "control create sta-lcars-create-btn sta-lcars-advancement-add";
+      addButton.title = localize(
+        "sta-utils.shipAdvancement.addTitle",
+        "Add ship advancement",
+      );
+      addButton.setAttribute(
+        "aria-label",
+        localize("sta-utils.shipAdvancement.addTitle", "Add ship advancement"),
+      );
+      addButton.innerHTML = '<i class="fas fa-plus" aria-hidden="true"></i>';
+      addButton.addEventListener("click", async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        await openShipAdvancementDialog(ship, recordShipAdvancement);
+      });
+      advancementsTitle.appendChild(addButton);
+    }
+    advancementsPanel.appendChild(advancementsTitle);
+    addTabRow(
+      advancementsPanel,
+      data.shipAdvancements.map((entry) => ({
+        ...entry,
+        name: entry.description,
+        img: "icons/svg/upgrade.svg",
+        linkName: false,
+      })),
+      localize(
+        "sta-utils.starshipTabs.noAdvancements",
+        "No recorded advancements.",
+      ),
+      { ship, app },
     );
-    addButton.innerHTML = '<i class="fas fa-plus" aria-hidden="true"></i>';
-    addButton.addEventListener("click", async (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      await openShipAdvancementDialog(ship, recordShipAdvancement);
-    });
-    advancementsTitle.appendChild(addButton);
   }
-  advancementsPanel.appendChild(advancementsTitle);
-  addTabRow(
-    advancementsPanel,
-    data.shipAdvancements.map((entry) => ({
-      ...entry,
-      name: entry.description,
-      img: "icons/svg/upgrade.svg",
-      linkName: false,
-    })),
-    localize(
-      "sta-utils.starshipTabs.noAdvancements",
-      "No recorded advancements.",
-    ),
-    { ship, app },
-  );
 
-  panelHost.append(detailPanel, crewPanel, advancementsPanel);
+  panelHost.append(detailPanel, crewPanel);
+  if (advancementsPanel) panelHost.append(advancementsPanel);
   nameRow.insertAdjacentElement("afterend", nav);
   nav.insertAdjacentElement("afterend", panelHost);
 

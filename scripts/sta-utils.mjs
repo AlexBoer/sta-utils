@@ -110,7 +110,7 @@ import {
   initTalentAutomations,
   registerAllMiddleware,
 } from "./talent-automations/index.mjs";
-import { installTalentImportOverrides } from "./talent-import-overrides/talent-import-overrides.mjs";
+import { installActorItemImportOverrides } from "./item-import-overrides/item-import-overrides.mjs";
 
 import {
   installDicePoolOverride,
@@ -646,7 +646,7 @@ Hooks.once("init", () => {
   installItemImagePickerHook();
   installNpcLcarsImagePickerHook();
   installSourceFieldHook();
-  installTalentImportOverrides();
+  installActorItemImportOverrides();
   installRenderApplicationV2Hook();
   installTrackerLauncherButton();
   installTrackerMacroButtonsHook();

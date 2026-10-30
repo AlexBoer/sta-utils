@@ -7,3 +7,4 @@ export {
 export { registerExperimentalVessel } from "./experimental-vessel.mjs";
 export { registerAdvancedSensorSuite } from "./advanced-sensor-suite.mjs";
 import "./veteran.mjs";
+import "./untapped-potential.mjs";

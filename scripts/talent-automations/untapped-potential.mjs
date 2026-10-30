@@ -3,11 +3,8 @@
 //  - If <= chosen attribute value: add 1 Momentum
 //  - If  > chosen attribute value: add 1 Threat
 //
-// Qualifies when ALL of:
-//  1. Actor owns a talent whose name starts with "Untapped Potential"
-//  2. The talent name contains an attribute, e.g. "Untapped Potential (Daring)"
-//  3. The roll used that same attribute (detected from the chat card flavor)
-//  4. The roll used more than 2 dice
+// Qualifies when the actor has a correctly named talent with an attribute
+// in its name and the task roll used at least 3 dice.
 
 import { MODULE_ID } from "../core/constants.mjs";
 import { t } from "../core/i18n.mjs";
@@ -19,25 +16,31 @@ import { findTalents } from "./talent-automations.mjs";
 
 const ATTRS = ["control", "daring", "fitness", "insight", "presence", "reason"];
 
-/** Return the first STA attribute name found in `text`, or null. */
+/** Return the first STA attribute name found as a separate word, or null. */
 function _extractAttribute(text) {
   if (!text) return null;
   const s = String(text).toLowerCase();
-  for (const a of ATTRS) if (s.includes(a)) return a;
+  for (const attribute of ATTRS) {
+    if (new RegExp(`(^|[^a-z])${attribute}([^a-z]|$)`, "i").test(s)) {
+      return attribute;
+    }
+  }
   return null;
 }
 
 /**
- * Find the "Untapped Potential (…)" talent on an actor.
- * Uses a starts-with match so "Untapped Potential (Daring)" is found when
- * searching for "Untapped Potential".
+ * Find a correctly named Untapped Potential talent that includes an attribute.
  * @returns {Item|undefined}
  */
 function _findUntappedTalent(actor) {
   if (!actor?.items) return undefined;
-  return findTalents(actor).find((i) =>
-    i.name.trim().toLowerCase().startsWith("untapped potential"),
-  );
+  return findTalents(actor).find((item) => {
+    const name = item.name.trim();
+    return (
+      /^untapped\s+potential\b/i.test(name) &&
+      _extractAttribute(name) !== null
+    );
+  });
 }
 
 /* ------------------------------------------------------------------ */
@@ -50,32 +53,22 @@ function _findUntappedTalent(actor) {
  *
  * @param {Actor}       actor
  * @param {ChatMessage} message
+ * @param {HTMLElement} card
  * @returns {boolean}
  */
-function _qualifiesForUntapped(actor, message) {
+function _qualifiesForUntapped(actor, message, card) {
   if (!actor) return false;
 
   // 1. Actor must have the talent
   const talentItem = _findUntappedTalent(actor);
   if (!talentItem) return false;
 
-  // 2. Extract the chosen attribute from the talent name / description
-  const chosen =
-    _extractAttribute(talentItem.name) ||
-    _extractAttribute(talentItem.system?.description);
-  if (!chosen) return false;
+  // The number of results is the actual number of dice rolled.
+  const diceOutcome = message.flags?.sta?.diceOutcome;
+  if (!Array.isArray(diceOutcome) || diceOutcome.length < 3) return false;
 
-  // 3. The roll must have used that attribute (check flavor text)
-  const staFlags = message.flags?.sta ?? {};
-  const flavor =
-    staFlags.flavor ?? message.flavor ?? message.data?.flavor ?? "";
-  const rollAttr = _extractAttribute(flavor);
-  if (rollAttr !== chosen) return false;
-
-  // 4. More than 2 dice in the pool
-  const diceOutcome = staFlags.diceOutcome ?? [];
-  if (diceOutcome.length <= 2) return false;
-
+  // Only task roll cards contain the task controls the talent applies to.
+  if (!card.querySelector(".flavor.task")) return false;
   return true;
 }
 
@@ -117,13 +110,15 @@ function _appendButtonToCard(message, root) {
         message.actor ??
         game.actors.get(message.data?.speaker?.actor ?? message.speaker?.actor);
       const talentItem = _findUntappedTalent(actor);
-      const chosen =
-        _extractAttribute(talentItem?.name) ||
-        _extractAttribute(talentItem?.system?.description);
-      const attrValue = actor?.system?.attributes?.[chosen]?.value ?? 0;
-      const attrLabel = chosen
-        ? chosen.charAt(0).toUpperCase() + chosen.slice(1)
-        : "???";
+      const chosen = _extractAttribute(talentItem?.name);
+      if (!actor || !chosen) {
+        throw new Error("Actor or labeled Untapped Potential talent is missing.");
+      }
+      const attrValue = actor.system?.attributes?.[chosen]?.value;
+      if (!Number.isFinite(Number(attrValue))) {
+        throw new Error(`The ${chosen} attribute value is unavailable.`);
+      }
+      const attrLabel = chosen.charAt(0).toUpperCase() + chosen.slice(1);
 
       // Roll 1d20
       const d20 = new Roll("1d20");
@@ -132,21 +127,10 @@ function _appendButtonToCard(message, root) {
 
       let outcome;
       if (rolled <= attrValue) {
-        // Success — gain 1 Momentum
-        const cur = Number(game.settings.get("sta", "momentum") ?? 0);
-        await game.settings.set("sta", "momentum", cur + 1);
-        outcome = `<span class="greentext">Rolled ${rolled} vs ${attrLabel} ${attrValue} — Gained 1 Momentum</span>`;
+        outcome = `<span class="greentext">Rolled ${rolled} vs ${attrLabel} ${attrValue} — 1 Momentum should be added to the pool.</span>`;
       } else {
-        // Failure — add 1 Threat
-        const cur = Number(game.settings.get("sta", "threat") ?? 0);
-        await game.settings.set("sta", "threat", cur + 1);
-        outcome = `<span class="redtext">Rolled ${rolled} vs ${attrLabel} ${attrValue} — Added 1 Threat</span>`;
+        outcome = `<span class="redtext">Rolled ${rolled} vs ${attrLabel} ${attrValue} — Increase Threat by 1 instead.</span>`;
       }
-
-      // Re-render the tracker
-      try {
-        game.STATracker?.render(true);
-      } catch (_) {}
 
       // Post result to chat so everyone sees it
       await ChatMessage.create({
@@ -188,13 +172,10 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
       root.querySelector(".sta.roll.chat.card");
     if (!card) return;
 
-    // Only task rolls (not item/weapon stat cards)
-    if (!card.querySelector(".flavor.task")) return;
-
     const actor =
       message.actor ??
       game.actors.get(message.data?.speaker?.actor ?? message.speaker?.actor);
-    if (!_qualifiesForUntapped(actor, message)) return;
+    if (!_qualifiesForUntapped(actor, message, card)) return;
 
     _appendButtonToCard(message, root);
   } catch (err) {

@@ -25,6 +25,9 @@ const _COLLAPSE_KEY_PREFIX = "sta-compact-collapse:";
 /** Tracks per-sheet ContextMenu instances so we can tear them down on re-render. */
 export const _compactContextMenus = new WeakMap();
 
+/** Tracks per-sheet row observers so they can be replaced on re-render. */
+const _compactRowMenuObservers = new WeakMap();
+
 /**
  * Read whether a section is collapsed from `sessionStorage`.
  * @param {string} actorId
@@ -197,10 +200,10 @@ function _compatEntry({ label, icon, condition, callback }) {
 export function _installItemContextMenu(sheetApp, root) {
   // Character sheets use .sheet-body; starship/small-craft sheets use
   // .starship-sheet directly (no .sheet-body wrapper).
-  const sheetBody =
-    root?.querySelector?.(".sheet-body") ??
-    root?.querySelector?.(".starship-sheet") ??
-    root?.querySelector?.(".smallcraft-sheet");
+  const sheetBodySelector = ".sheet-body, .starship-sheet, .smallcraft-sheet";
+  const sheetBody = root?.matches?.(sheetBodySelector)
+    ? root
+    : root?.querySelector?.(sheetBodySelector);
   if (!sheetBody) return;
 
   console.debug(
@@ -391,6 +394,8 @@ export function _installItemContextMenu(sheetApp, root) {
     { fixed: true, jQuery: false },
   );
 
+  _compactRowMenuObservers.get(sheetApp)?.disconnect();
+
   const showRowMenu = shouldShowRowContextMenuButtons();
   const sheetSelector = ".character-sheet, .starship-sheet, .smallcraft-sheet";
   const sheetEls = [];
@@ -401,7 +406,7 @@ export function _installItemContextMenu(sheetApp, root) {
     el.classList.toggle("sta-utils-show-row-menu", showRowMenu);
   }
 
-  matchingRows.forEach((row) => {
+  const installRowMenuButton = (row) => {
     row.querySelector(".sta-utils-row-menu")?.remove();
     if (!showRowMenu) return;
     const button = document.createElement("button");
@@ -423,7 +428,21 @@ export function _installItemContextMenu(sheetApp, root) {
       );
     });
     row.appendChild(button);
+  };
+
+  const rowObserver = new MutationObserver((records) => {
+    for (const record of records) {
+      for (const node of record.addedNodes) {
+        if (!(node instanceof HTMLElement)) continue;
+        if (node.matches(rowSelector)) installRowMenuButton(node);
+        node.querySelectorAll(rowSelector).forEach(installRowMenuButton);
+      }
+    }
   });
+  rowObserver.observe(sheetBody, { childList: true, subtree: true });
+  _compactRowMenuObservers.set(sheetApp, rowObserver);
+
+  matchingRows.forEach(installRowMenuButton);
 
   _compactContextMenus.set(sheetApp, menu);
 

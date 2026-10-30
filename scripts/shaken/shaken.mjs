@@ -14,11 +14,17 @@
  *
  * If the result of "Roll for it!" is 19–20 ("Roll Again"), the module
  * re-rolls automatically until a concrete result is obtained.
+ *
+ * When the manual Shaken house rule is enabled, threshold automation is
+ * suppressed and ship-sheet buttons perform independent Structure checks.
  */
 
 import { MODULE_ID } from "../core/constants.mjs";
-import { t } from "../core/i18n.mjs";
-import { getGroupShipActorId } from "../core/settings.mjs";
+import { t, tf } from "../core/i18n.mjs";
+import {
+  getGroupShipActorId,
+  isShakenHouseRuleEnabled,
+} from "../core/settings.mjs";
 import { getModuleSocket } from "../core/socket.mjs";
 
 /* ------------------------------------------------------------------ */
@@ -154,6 +160,8 @@ const _lastKnownShieldsForBreach = new Map();
  *  - Only one client (GM-primary) creates the message to avoid duplicates
  */
 function _onActorUpdate(actor, changes) {
+  if (isShakenHouseRuleEnabled()) return;
+
   // Must be the Group Ship
   const groupShipId = getGroupShipActorId();
   if (!groupShipId || actor.id !== groupShipId) return;
@@ -204,6 +212,8 @@ function _onActorUpdate(actor, changes) {
  * don't interfere with each other.
  */
 function _onActorUpdateBreach(actor, changes) {
+  if (isShakenHouseRuleEnabled()) return;
+
   const groupShipId = getGroupShipActorId();
   if (!groupShipId || actor.id !== groupShipId) return;
 
@@ -268,11 +278,18 @@ async function _postBreachWarning(ship) {
  */
 async function _postShakenMessage(ship) {
   try {
-    const content = _buildChoiceHTML();
+    const houseRule = isShakenHouseRuleEnabled();
+    const content = _buildChoiceHTML({ houseRule });
     await ChatMessage.create({
       content,
       speaker: ChatMessage.getSpeaker({ actor: ship }),
-      flags: { [MODULE_ID]: { isShaken: true } },
+      flags: {
+        [MODULE_ID]: {
+          isShaken: true,
+          actorId: ship.id,
+          ...(houseRule ? { houseRuleShaken: true } : {}),
+        },
+      },
     });
   } catch (err) {
     console.error(`${MODULE_ID} | Shaken: failed to create chat message`, err);
@@ -283,11 +300,12 @@ async function _postShakenMessage(ship) {
  * Build the HTML for the initial SHAKEN! card with all four buttons.
  * @returns {string}
  */
-function _buildChoiceHTML() {
+function _buildChoiceHTML({ houseRule = false, rollHTML = "" } = {}) {
   return `
 <div class="sta-utils-chat-card sta-utils-chat-card--red sta-utils-shaken-card">
   <h3><i class="fas fa-burst"></i> ${t("sta-utils.shaken.title")}</h3>
-  <p>${t("sta-utils.shaken.flavour")}</p>
+  <p>${t(houseRule ? "sta-utils.shaken.flavourHouseRule" : "sta-utils.shaken.flavour")}</p>
+  ${rollHTML}
   <div class="sta-utils-shaken-buttons">
     <button type="button" class="sta-utils-shaken-btn" data-shaken-choice="brace" title="${RESULTS.brace.description()}">
       <i class="${RESULTS.brace.icon}"></i> ${RESULTS.brace.label()}
@@ -303,6 +321,64 @@ function _buildChoiceHTML() {
     </button>
   </div>
 </div>`;
+}
+
+/**
+ * Roll the optional manual Shaken check for a ship owned by the current user.
+ * The owner creates the roll message directly; no actor state is changed.
+ *
+ * @param {Actor} ship
+ * @returns {Promise<ChatMessage>}
+ */
+export async function rollShakenHouseRule(ship) {
+  if (!isShakenHouseRuleEnabled()) {
+    throw new Error("The manual Shaken house rule is disabled.");
+  }
+  if (!ship?.isOwner) {
+    throw new Error("You do not have permission to roll Shaken for this ship.");
+  }
+  if (ship.type !== "starship" && ship.type !== "smallcraft") {
+    throw new Error("The Shaken check requires a starship or small craft.");
+  }
+
+  const structure = Number(ship.system?.systems?.structure?.value);
+  if (!Number.isFinite(structure)) {
+    throw new Error(`Structure is unavailable for "${ship.name}".`);
+  }
+
+  const roll = await new Roll("1d20").evaluate();
+  const rollHTML = _buildD20Rolls([{ total: roll.total }]);
+  const flags = {
+    [MODULE_ID]: {
+      isShaken: true,
+      actorId: ship.id,
+      houseRuleShaken: true,
+    },
+  };
+  const content =
+    roll.total > structure
+      ? _buildChoiceHTML({
+          houseRule: true,
+          rollHTML: `<p class="sta-utils-shaken-roll-summary">${tf("sta-utils.shaken.structureCheck", {
+            roll: roll.total,
+            structure,
+          })}</p>${rollHTML}`,
+        })
+      : `
+<div class="sta-utils-chat-card sta-utils-chat-card--blue sta-utils-shaken-check-result">
+  <h3>${t("sta-utils.shaken.structureHoldsTitle")}</h3>
+  <p>${tf("sta-utils.shaken.structureHolds", {
+    roll: roll.total,
+    structure,
+  })}</p>
+  ${rollHTML}
+</div>`;
+
+  return roll.toMessage({
+    content,
+    speaker: ChatMessage.getSpeaker({ actor: ship }),
+    flags,
+  });
 }
 
 /* ------------------------------------------------------------------ */
@@ -379,6 +455,9 @@ async function _resolveChoice(message, choice) {
  * @param {string} choice     One of "brace", "losingPower", "casualties", "rollForIt".
  */
 export async function performShakenResolve(messageId, choice) {
+  const message = game.messages?.get(messageId);
+  if (!message) return;
+
   let resultKey = choice;
   let rollHTML = "";
 
@@ -391,19 +470,22 @@ export async function performShakenResolve(messageId, choice) {
   const res = RESULTS[resultKey];
   if (!res) return;
 
-  // Mark the Group Ship as shaken so it cannot be shaken again
-  const shipId = getGroupShipActorId();
-  const ship = shipId ? game.actors?.get?.(shipId) : null;
-  if (ship) {
-    try {
-      await ship.update({ "system.shaken": true });
-    } catch (err) {
-      console.warn(`${MODULE_ID} | Shaken: failed to set system.shaken`, err);
+  const isHouseRuleCard = Boolean(
+    message.getFlag?.(MODULE_ID, "houseRuleShaken"),
+  );
+  if (!isHouseRuleCard && !isShakenHouseRuleEnabled()) {
+    const actorId = message.getFlag?.(MODULE_ID, "actorId");
+    const ship =
+      (actorId ? game.actors?.get?.(actorId) : null) ??
+      game.actors?.get?.(getGroupShipActorId());
+    if (ship) {
+      try {
+        await ship.update({ "system.shaken": true });
+      } catch (err) {
+        console.warn(`${MODULE_ID} | Shaken: failed to set system.shaken`, err);
+      }
     }
   }
-
-  const message = game.messages?.get(messageId);
-  if (!message) return;
 
   const content = `
 <div class="sta-utils-chat-card sta-utils-chat-card--red sta-utils-shaken-card sta-utils-shaken-card--resolved">
@@ -475,12 +557,25 @@ async function _rollMinorDamage() {
 function _buildRollSummary(rolls) {
   if (!rolls.length) return "";
 
+  return _buildD20Rolls(rolls);
+}
+
+/**
+ * Render d20 results with the STA system's die markup.
+ * @param {{total: number, label?: string}[]} rolls
+ * @returns {string}
+ */
+function _buildD20Rolls(rolls) {
   const items = rolls
     .map(
-      (r, i) =>
-        `<span class="sta-utils-shaken-roll-item">${t("sta-utils.shaken.rollPrefix")} ${r.total} — ${r.label}${i < rolls.length - 1 ? "," : ""}</span>`,
+      ({ total, label }) => `
+        <li class="sta-utils-shaken-die">
+          <div class="die-image"><span class="roll die d20" aria-hidden="true"></span></div>
+          <div class="sta-utils-shaken-die-total">${total}</div>
+          ${label ? `<div class="sta-utils-shaken-die-label">${label}</div>` : ""}
+        </li>`,
     )
-    .join(" ");
+    .join("");
 
-  return `<p class="sta-utils-shaken-roll-summary"><i class="fas fa-dice-d20"></i> ${items}</p>`;
+  return `<ol class="dice-rolls sta-utils-shaken-dice-rolls">${items}</ol>`;
 }

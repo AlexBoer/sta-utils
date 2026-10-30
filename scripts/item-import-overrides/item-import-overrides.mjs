@@ -1,30 +1,49 @@
 import { MODULE_ID } from "../core/constants.mjs";
-import { getTalentImportOverrideCompendium } from "../core/settings.mjs";
+import {
+  getFocusImportOverrideCompendium,
+  getTalentImportOverrideCompendium,
+} from "../core/settings.mjs";
 
 let _installed = false;
 
 /**
- * Replace talents after Foundry has applied an actor JSON import. Only a GM
- * can make the compendium choice; imports by other users remain untouched.
+ * Replace talents and focuses after Foundry applies an actor JSON import. Only
+ * a GM can make the compendium choice; other users' imports remain untouched.
  */
-export function installTalentImportOverrides() {
+export function installActorItemImportOverrides() {
   if (_installed) return;
   _installed = true;
 
   libWrapper.register(
     MODULE_ID,
     "Actor.prototype.importFromJSON",
-    async function talentImportOverrideWrapper(wrapped, json) {
+    async function actorItemImportOverrideWrapper(wrapped, json) {
       const actor = await wrapped(json);
       if (!game.user?.isGM) return actor;
 
-      try {
-        await _replaceImportedTalents(actor);
-      } catch (error) {
-        console.error(`${MODULE_ID} | Talent import overrides failed`, error);
-        ui.notifications?.warn?.(
-          "Talent overrides could not be applied; imported talents were kept.",
-        );
+      for (const { type, label, getCompendium } of [
+        {
+          type: "talent",
+          label: "Talent",
+          getCompendium: getTalentImportOverrideCompendium,
+        },
+        {
+          type: "focus",
+          label: "Focus",
+          getCompendium: getFocusImportOverrideCompendium,
+        },
+      ]) {
+        try {
+          await _replaceImportedItems(actor, type, label, getCompendium());
+        } catch (error) {
+          console.error(
+            `${MODULE_ID} | ${label} import overrides failed`,
+            error,
+          );
+          ui.notifications?.warn?.(
+            `${label} overrides could not be applied; imported ${label.toLowerCase()} items were kept.`,
+          );
+        }
       }
       return actor;
     },
@@ -32,14 +51,13 @@ export function installTalentImportOverrides() {
   );
 }
 
-async function _replaceImportedTalents(actor) {
-  const packId = getTalentImportOverrideCompendium();
+async function _replaceImportedItems(actor, itemType, itemLabel, packId) {
   if (!packId) return;
 
   const pack = game.packs.get(packId);
   if (!pack || pack.metadata.type !== "Item") {
     ui.notifications?.warn?.(
-      `The configured talent override compendium "${packId}" is unavailable.`,
+      `The configured ${itemLabel.toLowerCase()} override compendium "${packId}" is unavailable.`,
     );
     return;
   }
@@ -47,7 +65,7 @@ async function _replaceImportedTalents(actor) {
   const index = await pack.getIndex({ fields: ["name", "type"] });
   const entriesByName = new Map();
   for (const entry of index) {
-    if (entry.type !== "talent") continue;
+    if (entry.type !== itemType) continue;
     const key = _normalizeName(entry.name);
     if (!key) continue;
     const entries = entriesByName.get(key) ?? [];
@@ -55,8 +73,8 @@ async function _replaceImportedTalents(actor) {
     entriesByName.set(key, entries);
   }
 
-  for (const talent of actor.items.filter((item) => item.type === "talent")) {
-    const matches = entriesByName.get(_normalizeName(talent.name)) ?? [];
+  for (const item of actor.items.filter((entry) => entry.type === itemType)) {
+    const matches = entriesByName.get(_normalizeName(item.name)) ?? [];
     if (!matches.length) continue;
 
     const candidates =
@@ -71,7 +89,13 @@ async function _replaceImportedTalents(actor) {
     const selected =
       candidates.length === 1
         ? candidates[0]
-        : await _chooseOverride(talent.name, candidates, pack);
+        : await _chooseOverride(
+            item.name,
+            itemType,
+            itemLabel,
+            candidates,
+            pack,
+          );
     if (!selected) continue;
 
     const source =
@@ -79,12 +103,18 @@ async function _replaceImportedTalents(actor) {
     if (!source) continue;
     const replacement = source.toObject();
     delete replacement._id;
-    await talent.delete();
+    await item.delete();
     await actor.createEmbeddedDocuments("Item", [replacement]);
   }
 }
 
-async function _chooseOverride(talentName, candidates, pack) {
+async function _chooseOverride(
+  itemName,
+  itemType,
+  itemLabel,
+  candidates,
+  pack,
+) {
   const escape = foundry.utils.escapeHTML;
   const packLabel = String(
     pack.title ?? pack.metadata.label ?? pack.collection ?? "",
@@ -105,21 +135,21 @@ async function _chooseOverride(talentName, candidates, pack) {
           system.type ??
           "",
       ).trim();
-      const name = String(document?.name ?? entry.name ?? talentName);
+      const name = String(document?.name ?? entry.name ?? itemName);
       const canPreview = Boolean(document?.sheet?.render);
 
       return `
-        <article class="sta-talent-override-option">
-          <label class="sta-talent-override-choice">
-            <input type="radio" name="talent" value="${index}"${index === 0 ? " checked" : ""}>
-            <span class="sta-talent-override-name">${escape(name)}</span>
+        <article class="sta-item-override-option">
+          <label class="sta-item-override-choice">
+            <input type="radio" name="${itemType}" value="${index}"${index === 0 ? " checked" : ""}>
+            <span class="sta-item-override-name">${escape(name)}</span>
           </label>
-          <dl class="sta-talent-override-details">
+          <dl class="sta-item-override-details">
             <div><dt>Compendium</dt><dd>${escape(String(packLabel))}</dd></div>
             <div><dt>Source</dt><dd>${escape(source || "Not specified")}</dd></div>
-            <div><dt>Type</dt><dd>${escape(type || "Talent")}</dd></div>
+            <div><dt>Type</dt><dd>${escape(type || itemLabel)}</dd></div>
           </dl>
-          <button type="button" class="sta-talent-override-preview" data-preview-index="${index}"${canPreview ? "" : " disabled"}>
+          <button type="button" class="sta-item-override-preview" data-preview-index="${index}"${canPreview ? "" : " disabled"}>
             <i class="fa-solid fa-eye" aria-hidden="true"></i> Preview
           </button>
         </article>
@@ -131,14 +161,14 @@ async function _chooseOverride(talentName, candidates, pack) {
     classes: [
       "sta-lcars-dialogue-app",
       "lcars-scheme-tng",
-      "sta-talent-import-override-dialog",
+      "sta-item-import-override-dialog",
     ],
     window: {
-      title: "Choose Talent Override",
+      title: `Choose ${itemLabel} Override`,
       icon: "fa-solid fa-book-open",
       resizable: true,
     },
-    content: `<form class="sta-talent-override-form"><p>Choose the compendium talent to use for <strong>${escape(talentName)}</strong>.</p><div class="sta-talent-override-list">${cards}</div></form>`,
+    content: `<form class="sta-item-override-form"><p>Choose the compendium ${itemLabel.toLowerCase()} to use for <strong>${escape(itemName)}</strong>.</p><div class="sta-item-override-list">${cards}</div></form>`,
     render: (_event, dialog) => {
       const root = dialog.element;
       if (root.dataset.previewHandlersBound) return;
@@ -155,27 +185,32 @@ async function _chooseOverride(talentName, candidates, pack) {
         try {
           await candidate.document.sheet.render(true);
         } catch (error) {
-          console.error(`${MODULE_ID} | Talent override preview failed`, error);
-          ui.notifications?.error?.("The talent preview could not be opened.");
+          console.error(
+            `${MODULE_ID} | ${itemLabel} override preview failed`,
+            error,
+          );
+          ui.notifications?.error?.(
+            `The ${itemLabel.toLowerCase()} preview could not be opened.`,
+          );
         }
       });
     },
     buttons: [
       {
         action: "choose",
-        label: "Use Selected Talent",
+        label: `Use Selected ${itemLabel}`,
         default: true,
         callback: (_event, _button, dialog) => {
           const form = dialog.element.querySelector("form");
           const selectedIndex = form
-            ? Number(new FormData(form).get("talent"))
+            ? Number(new FormData(form).get(itemType))
             : Number.NaN;
           return Number.isInteger(selectedIndex)
             ? candidates[selectedIndex] ?? null
             : null;
         },
       },
-      { action: "keep", label: "Keep Imported Talent" },
+      { action: "keep", label: `Keep Imported ${itemLabel}` },
     ],
     default: "keep",
   });

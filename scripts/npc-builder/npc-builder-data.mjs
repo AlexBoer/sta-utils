@@ -55,7 +55,8 @@ export const QUICK_TEMPERAMENTS = [
   {
     key: "choleric",
     label: "Choleric",
-    description: "Passionate, direct, and decisive, but also quick-tempered.",
+    description:
+      "The character is passionate, direct, and decisive, but also quick-tempered",
     attributes: {
       control: 8,
       daring: 9,
@@ -69,7 +70,7 @@ export const QUICK_TEMPERAMENTS = [
     key: "phlegmatic",
     label: "Phlegmatic",
     description:
-      "Quiet, empathetic, and thoughtful, but sometimes avoidant or timid.",
+      "The character is quiet, empathetic, and thoughtful, but sometimes avoidant or timid",
     attributes: {
       control: 9,
       daring: 7,
@@ -83,7 +84,7 @@ export const QUICK_TEMPERAMENTS = [
     key: "melancholic",
     label: "Melancholic",
     description:
-      "Detail-oriented, organized, and introspective, but sometimes blunt or brooding.",
+      "The character is detail-oriented, organized, and introspective, but sometimes blunt or brooding",
     attributes: {
       control: 9,
       daring: 8,
@@ -97,7 +98,7 @@ export const QUICK_TEMPERAMENTS = [
     key: "sanguine",
     label: "Sanguine",
     description:
-      "Cheerful, confident, and energetic, but often reckless and unpredictable.",
+      "The character is cheerful, confident, and energetic, but often reckless and unpredictable",
     attributes: {
       control: 7,
       daring: 8,
@@ -115,7 +116,7 @@ export const QUICK_ROLES = [
     key: "mediator",
     label: "Mediator",
     description:
-      "Skilled at working with people, mediating disputes, and facilitating positive outcomes.",
+      "The character is skilled at working with people, mediating disputes, and facilitating positive outcomes",
     disciplines: {
       command: 2,
       conn: 1,
@@ -129,7 +130,7 @@ export const QUICK_ROLES = [
     key: "engineer",
     label: "Engineer",
     description:
-      "Highly adept at technical tasks and often found tinkering with machines.",
+      "The character is highly adept at technical tasks and often found tinkering with machines",
     disciplines: {
       command: 0,
       conn: 1,
@@ -142,7 +143,7 @@ export const QUICK_ROLES = [
   {
     key: "pilot",
     label: "Pilot",
-    description: "Well-versed in flying spacecraft.",
+    description: "The character is well-versed in flying spacecraft",
     disciplines: {
       command: 0,
       conn: 2,
@@ -155,7 +156,7 @@ export const QUICK_ROLES = [
   {
     key: "expert",
     label: "Expert",
-    description: "Well studied and knowledgeable.",
+    description: "The character is well studied and knowledgeable",
     disciplines: {
       command: 1,
       conn: 0,
@@ -168,7 +169,7 @@ export const QUICK_ROLES = [
   {
     key: "warrior",
     label: "Warrior",
-    description: "An effective combatant, trained to face danger.",
+    description: "The character is an effective combatant, trained to face danger",
     disciplines: {
       command: 1,
       conn: 0,
@@ -182,7 +183,7 @@ export const QUICK_ROLES = [
     key: "medic",
     label: "Medic",
     description:
-      "A healer, skilled at saving lives and patching up the injured.",
+      "The character is a healer, skilled at saving lives and patching up the injured",
     disciplines: {
       command: 1,
       conn: 0,

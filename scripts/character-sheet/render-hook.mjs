@@ -15,6 +15,7 @@ import {
   isActionChooserEnabled,
   isActionChooserAsTabEnabled,
   isPersonalThreatEnabled,
+  isShakenHouseRuleEnabled,
 } from "../core/settings.mjs";
 import { MODULE_ID } from "../core/constants.mjs";
 import {
@@ -49,6 +50,8 @@ import {
 import { installMobileMode } from "../mobile-sheet/mobile-mode.mjs";
 import { installLcarsSheetMode } from "../lcars-sheet/lcars-mode.mjs";
 import { installConfigureStressBarButton } from "../personal-threat/index.mjs";
+import { rollShakenHouseRule } from "../shaken/index.mjs";
+import { installLcarsAttackCalculatorButtons } from "../attack-calculator/sheet-hook.mjs";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Utilities
@@ -252,6 +255,7 @@ function handleLcarsSheetRender(app, root) {
   });
 
   const actor = app.actor;
+  installLcarsAttackCalculatorButtons(app, root);
 
   if (game.user?.isGM && actor) {
     try {
@@ -1040,6 +1044,8 @@ function handleStarshipSheetRender(app, root) {
   if (!actor) return;
   if (actor.type !== "starship" && actor.type !== "smallcraft") return;
 
+  installShakenHouseRuleControl(root, actor);
+
   const installMissionPodButtonSafely = () => {
     if (actor.type !== "starship") return;
     try {
@@ -1060,6 +1066,15 @@ function handleStarshipSheetRender(app, root) {
         console.error(`${MODULE_ID} | LCARS starship tabs failed`, error);
       })
       .finally(() => installMissionPodButtonSafely());
+  } else if (
+    actor.type === "smallcraft" &&
+    app?.id?.startsWith("LcarsSmallCraftSheet2e")
+  ) {
+    void installStarshipTabs(root, app, actor, {
+      showAdvancements: false,
+    }).catch((error) => {
+      console.error(`${MODULE_ID} | LCARS small craft tabs failed`, error);
+    });
   } else {
     installMissionPodButtonSafely();
   }
@@ -1105,6 +1120,53 @@ function handleStarshipSheetRender(app, root) {
   if (root.querySelector?.(".starship-sheet.sta-lcars-sheet")) {
     _injectShieldBreakthroughMarkers(root);
   }
+}
+
+function installShakenHouseRuleControl(root, actor) {
+  const enabled = isShakenHouseRuleEnabled();
+  const shakenInput = root.querySelector(
+    'input[name="system.shaken"]',
+  );
+  const shakenField =
+    shakenInput?.closest(".big-row-column") ?? shakenInput?.parentElement;
+  const shakenLabel = shakenField?.querySelector(".tracktitle");
+  if (shakenInput) {
+    shakenInput.hidden = enabled;
+    shakenInput.disabled = enabled;
+  }
+  if (shakenLabel) shakenLabel.hidden = enabled;
+
+  const existingButton = root.querySelector(
+    ".sta-utils-shaken-house-rule-button",
+  );
+  if (!enabled || !actor.isOwner || !shakenField) {
+    existingButton?.remove();
+    return;
+  }
+  if (existingButton) return;
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className =
+    "check-button btn attribute sta-utils-shaken-house-rule-button";
+  button.textContent = t("sta-utils.shaken.checkButton");
+  button.title = t("sta-utils.shaken.checkTooltip");
+  button.setAttribute("aria-label", button.title);
+
+  button.addEventListener("click", async (event) => {
+    event.preventDefault();
+    button.disabled = true;
+    try {
+      await rollShakenHouseRule(actor);
+    } catch (error) {
+      console.error(`${MODULE_ID} | Shaken house-rule check failed`, error);
+      ui.notifications?.error(t("sta-utils.shaken.checkFailed"));
+    } finally {
+      if (button.isConnected) button.disabled = false;
+    }
+  });
+
+  shakenField.appendChild(button);
 }
 
 /**

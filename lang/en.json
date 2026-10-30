@@ -17,6 +17,7 @@
     },
     "starshipTabs": {
       "label": "Starship tabs",
+      "smallcraftLabel": "Small craft tabs",
       "details": "Details",
       "crew": "Crew",
       "manifest": "Manifest",
@@ -160,6 +161,7 @@
         "trackerButtons": "Tracker Buttons",
         "personalThreat": "Personal Threat",
         "rollRequest": "Roll Request",
+        "houseRules": "House Rules",
         "attackCalculator": "Attack Calculator",
         "warpCalculator": "Warp Calculator",
         "officersLog": "Officers Log Integration",
@@ -277,12 +279,24 @@
       },
       "piercingMode": {
         "name": "Piercing Quality Mode",
-        "hint": "Controls how the Piercing weapon quality interacts with resistance in the Attack Calculator.",
+        "hint": "Choose how the Piercing weapon quality reduces resistance in the Attack Calculator.",
         "choices": {
           "raw": "RAW - Piercing ignores resistance on all hits",
-          "firstHit": "First Hit - Piercing ignores resistance on the first hit only; spend 2 momentum (repeatable) to ignore resistance on additional hits",
+          "ignoreFive": "Piercing ignores up to 5 resistance",
           "sciencePiercing": "Science Piercing - Piercing reduces resistance by ⌈Science/2⌉ on all hits"
         }
+      },
+      "piercingFirstHit": {
+        "name": "Piercing Applies to First Hit Only",
+        "hint": "Piercing applies to the first hit. Each additional hit costs 1 extra Momentum to apply the selected Piercing rule."
+      },
+      "enableSpreadHouseRule": {
+        "name": "Enable Spread House Rule",
+        "hint": "Replace Devastating Attack with one optional Spread second hit for 1 Momentum. This hit deals half damage, rounded up. Requires the Spread quality."
+      },
+      "enableShakenHouseRule": {
+        "name": "Enable Manual Shaken House Rule",
+        "hint": "Disable automatic 50% Shaken and 25% breach alerts. Owners and the GM can use a ship sheet button to roll after the ship takes 5 or more damage in a turn. Requires a world reload when changed."
       },
       "showAdvancedCalculator": {
         "name": "Show Advanced Calculator Button",
@@ -303,6 +317,11 @@
       "talentImportOverrideCompendium": {
         "name": "Talent Import Override Compendium",
         "hint": "When a GM imports actor JSON, replace matching talents with versions from this compendium. If more than one matching talent is found, choose which version to use.",
+        "none": "- No override compendium -"
+      },
+      "focusImportOverrideCompendium": {
+        "name": "Focus Import Override Compendium",
+        "hint": "When a GM imports actor JSON, replace matching focuses with versions from this compendium. If more than one matching focus is found, choose which version to use.",
         "none": "- No override compendium -"
       },
       "enableTalentUses": {
@@ -598,10 +617,20 @@
     },
     "incidentalRoll": {
       "buttonTitle": "Incidental NPC Roll",
-      "dialogTitle": "Incidental NPC Roll",
+      "dialogTitle": "NPC Roller",
       "sectionTitle": "Incidental NPC",
       "qualityLabel": "NPC Quality",
-      "shipAssistLabel": "Ship Assist"
+      "shipAssistLabel": "Ship Assist",
+      "quickNpcTab": "Quick NPC",
+      "quickNpcTitle": "Quick NPC",
+      "temperamentLabel": "Temperament",
+      "roleLabel": "Role",
+      "speciesLabel": "Species",
+      "speciesPlaceholder": "Start typing to search for a species",
+      "speciesBonusLabel": "Species bonuses",
+      "speciesBonusHint": "Choose 3 attributes to receive +1 each",
+      "speciesBonusSelectionRequired": "Choose exactly 3 attributes for this species before rolling.",
+      "keepOpenAfterRoll": "Keep dialog open after rolling"
     },
     "reservePowerMenu": {
       "routeHere": "Route Reserve Power Here",
@@ -662,9 +691,11 @@
       "scienceRating": "Science Rating (Piercing)",
       "piercingIgnoreHits": "Ignore Resistance (Piercing)",
       "piercingFirstHit": "first hit only",
+      "piercingIgnoreFive": "Piercing ignores up to 5 resistance",
       "momentumSpends": "Momentum Spends",
       "increaseDamage": "Increase Damage",
       "devastatingAttack": "Devastating Attack",
+      "spreadSecondHit": "Spread Second Hit",
       "maximizeDamage": "Maximize Damage",
       "momentumBudget": "Momentum Budget",
       "maximize": "Maximize",
@@ -698,13 +729,15 @@
         "intenseHint": "When making an attack with this weapon, you may increase the damage by 1 by spending 1 Momentum, rather than 2. This is Repeatable.",
         "spread": "Spread",
         "spreadHint": "Attacks with this weapon reduce the cost of the Devastating Attack Momentum spend to 1. This is Repeatable.",
+        "spreadHintHouseRule": "With this house rule enabled, spend 1 Momentum to make one second hit at half damage, rounded up. This hit is not repeatable.",
         "depleting": "Depleting",
         "depletingHint": "The attack cannot cause the ship to be shaken, but the Momentum cost to increase damage is reduced to 1.",
         "piercing": "Piercing",
         "piercingHint": "When this weapon makes an attack, any Resistance the target has is ignored.",
         "piercingHintRaw": "When this weapon makes an attack, any Resistance the target has is ignored.",
-        "piercingHintFirstHit": "Resistance is ignored on the first hit of an attack. Spend 2 momentum (repeatable) to ignore resistance on additional devastating hits.",
-        "piercingHintSciencePiercing": "All hits in an attack ignore the resistance rating by half the ship's Science rating on all hits",
+        "piercingHintIgnoreFive": "When this weapon makes an attack, reduce the target's Resistance by up to 5, to a minimum of 0.",
+        "piercingHintFirstHit": "Apply the selected Piercing rule to the first hit. Each additional hit costs 1 extra Momentum to apply the selected Piercing rule.",
+        "piercingHintSciencePiercing": "Reduce the target's Resistance by half the ship's Science rating, rounded up, to a minimum of 0.",
         "area": "Area",
         "areaHint": "When you succeed at an attack, additional targets in the same zone may be hit by spending 1 Momentum for each additional target (Repeatable). This attack may Succeed at Cost.",
         "calibrationQuality": "Calibration",
@@ -1659,10 +1692,16 @@
     "shaken": {
       "title": "SHAKEN!",
       "flavour": "The ship's shields have dropped to half! Choose a minor damage effect:",
+      "flavourHouseRule": "Choose an Shaken effect:",
+      "checkButton": "Shaken",
+      "checkTooltip": "Ship may be shaken when it takes 5 or more damage in a single turn",
+      "checkFailed": "Unable to make the Shaken check. See the console for details.",
+      "structureCheck": "Rolled {roll} against Structure {structure}.",
+      "structureHoldsTitle": "STRUCTURE HOLDS",
+      "structureHolds": "Ship structure holds. Ship not shaken. (Rolled {roll} against Structure {structure}.)",
       "rollForIt": "Roll for it!",
       "rollForItHint": "Roll a d20 on the Minor Damage table to determine the effect.",
       "rollAgain": "Roll Again",
-      "rollPrefix": "Rolled",
       "breachTitle": "POSSIBLE BREACH!",
       "breachDescription": "If the ship was shaken this turn, the ship gains a breach.",
       "results": {
