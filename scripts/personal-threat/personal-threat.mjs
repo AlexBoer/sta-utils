@@ -170,6 +170,32 @@ function _drawSingleDot(bar, px, py, r, color) {
 let _installed = false;
 
 /**
+ * Draw the dot ring on a dedicated child Graphics of the token, independent
+ * of the bars container (used when Bar Brawl owns bar rendering).
+ * @param {Token} token
+ */
+function _drawRingStandalone(token) {
+  let ring = token._personalThreatRing;
+  if (!ring || ring.destroyed) {
+    ring = token._personalThreatRing = token.addChild(new PIXI.Graphics());
+    ring.name = "personalThreatRing";
+  }
+  ring.clear();
+
+  const stress = token.actor?.system?.stress;
+  const value = Math.clamp(stress?.value ?? 0, 0, MAX_VALUE);
+  const mode = token.document.displayBars;
+  const show = mode === CONST.TOKEN_DISPLAY_MODES.NONE ? false
+    : (typeof token._canViewMode === "function" ? token._canViewMode(mode) : true);
+  ring.visible = show && value > 0;
+  if (!ring.visible) return;
+
+  const { width: w, height: h } = token.document.getSize();
+  _drawDotRing(ring, value, w, h);
+  ring.alpha = token.document.alpha ?? 1;
+}
+
+/**
  * Install the libWrapper override for Token.drawBars.
  * Safe to call multiple times — only installs once.
  */
@@ -195,6 +221,13 @@ export function installPersonalThreatHook() {
       //   - handle bar2
       //   - run any other machinery that may be hooked on it
       wrapped();
+
+      // Bar Brawl replaces this.bars children asynchronously and has no bar1,
+      // so draw the ring on its own Graphics, outside the bars container.
+      if (game.modules.get("barbrawl")?.active) {
+        _drawRingStandalone(this);
+        return;
+      }
 
       // If the original hid the bars container (displayBars === NONE), honour it.
       if (!this.bars?.visible) return;
