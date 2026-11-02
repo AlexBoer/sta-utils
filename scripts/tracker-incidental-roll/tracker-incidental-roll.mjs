@@ -176,21 +176,6 @@ async function executeIncidentalNpcRoll(
   const selectedQuickAttributeBonuses = formData
     .getAll("quickAttributeBonus")
     .filter((key) => ATTRIBUTE_KEYS.includes(key));
-  const needsQuickAttributeBonuses =
-    quickSpecies.length > 0 &&
-    (!quickSpeciesEntry || quickSpeciesEntry.attributeBonuses === null);
-  if (
-    isQuickNpc &&
-    needsQuickAttributeBonuses &&
-    selectedQuickAttributeBonuses.length !== 3
-  ) {
-    ui.notifications.error(
-      game.i18n.localize(
-        "sta-utils.incidentalRoll.speciesBonusSelectionRequired",
-      ),
-    );
-    return;
-  }
   const quickAttributeValue =
     quickTemperament.attributes[selectedAttribute] +
     (quickSpeciesEntry?.attributeBonuses?.[selectedAttribute] ??
@@ -406,7 +391,6 @@ export async function openIncidentalNpcRollDialog() {
       const bonusCheckboxes = [
         ...el.querySelectorAll('input[name="quickAttributeBonus"]'),
       ];
-      const rollButton = el.querySelector('button[data-action="roll"]');
 
       const getSpeciesEntry = () => {
         const speciesName = String(speciesInput?.value ?? "")
@@ -460,12 +444,6 @@ export async function openIncidentalNpcRollDialog() {
             !checkbox.checked &&
             bonusCount >= 3;
         });
-        const isQuickMode =
-          el.querySelector("#npc-roll-mode")?.value === "quick";
-        if (rollButton) {
-          rollButton.disabled =
-            isQuickMode && needsChoiceBonuses && bonusCount !== 3;
-        }
 
         const attribute = attributeSelect?.value ?? "control";
         const discipline = disciplineSelect?.value ?? "command";

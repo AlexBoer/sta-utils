@@ -447,6 +447,10 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  [data-npc-roll-panel="quick"] > .row > .sta-utils-quick-temperament-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .sta-utils-quick-option-row .sta-utils-incidental-quality-option {
     min-width: 0;
     padding-inline: 3px;
@@ -5017,6 +5021,11 @@ input.selector.attribute.sta-fatigued-attribute {
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
+.sta-compendium-browser__rows > .sta-compendium-browser__row:not(.sta-compendium-browser__row--talent) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 42px;
+}
+
 .sta-compendium-browser__row > * {
   min-width: 0;
   padding: 6px 10px;
@@ -5114,6 +5123,9 @@ input.selector.attribute.sta-fatigued-attribute {
 .sta-compendium-browser__row--talent {
   align-items: start;
   min-width: 0;
+  /* Skip layout/paint for off-screen rows; the list can hold 1000+ talents. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 84px;
 }
 
 .sta-compendium-browser__row--talent > .sta-compendium-browser__name {

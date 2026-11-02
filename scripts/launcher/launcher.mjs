@@ -170,6 +170,14 @@ const LAUNCHER_SECTIONS = [
         call: () => game.staUtils.npcBuilder(),
       },
       {
+        id: "characterCreator",
+        labelKey: "sta-utils.launcher.characterCreator",
+        icon: "fa-user-astronaut",
+        gmOnly: false,
+        available: () => !!game.staofficerslog?.openCharacterCreator,
+        call: () => game.staofficerslog.openCharacterCreator(),
+      },
+      {
         id: "characterBrowser",
         labelKey: "sta-utils.launcher.characterBrowser",
         icon: "fa-book-atlas",

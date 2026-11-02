@@ -64,7 +64,7 @@
           <input type="search" data-role="search" value="{{search}}" placeholder="{{localize 'sta-utils.compendiumBrowser.searchPlaceholder'}}" />
         </label>
         <label>
-          <span>{{localize "sta-utils.compendiumBrowser.source"}}</span>
+          <span>{{localize "sta-utils.talentPicker.compendium"}}</span>
           <select data-role="source">
             {{#each sources as |source|}}
             <option value="{{source.id}}" {{#if source.selected}}selected{{/if}}>{{source.label}}</option>
@@ -80,6 +80,7 @@
             {{/each}}
           </select>
         </label>
+        {{#if talentShowReqValue}}
         <label>
           <span>{{talentLabels.requires}}</span>
           {{#if talentReqValueCombobox}}
@@ -97,6 +98,7 @@
           </select>
           {{/if}}
         </label>
+        {{/if}}
         {{#if talentShowReqMin}}
         <label class="sta-talent-picker__min">
           <span>{{talentLabels.minimum}}</span>

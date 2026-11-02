@@ -1,4 +1,9 @@
 const MODULE_ID = "sta-utils";
+import {
+  DEFAULT_SHIP_KIND,
+  SHIP_KIND_FLAG,
+  localizeShipKind,
+} from "../core/ship-kind.mjs";
 
 let patchInstalled = false;
 let indexHookInstalled = false;
@@ -85,7 +90,67 @@ function localizeItemType(item) {
 }
 
 function isItemResult(item) {
-  return Boolean(item && item.documentType === "Item");
+  return Boolean(
+    item &&
+    (item.documentType === "Item" ||
+      (item.documentType === "Actor" && item.subType === "starship")),
+  );
+}
+
+const shipKindLabelCache = new WeakMap();
+const pendingShipKindFetches = new WeakSet();
+
+function shipKindLabelFromDocument(document) {
+  return localizeShipKind(document?.flags?.[MODULE_ID]?.[SHIP_KIND_FLAG]);
+}
+
+// Adds the ship-kind flag to every Actor pack index so fromUuidSync can return
+// it synchronously; otherwise the first Quick Insert render has no data.
+let shipKindPrefetch = null;
+function prefetchShipKinds() {
+  if (shipKindPrefetch) return shipKindPrefetch;
+  const packs = [...(game.packs ?? [])].filter(
+    (pack) => pack.documentName === "Actor",
+  );
+  shipKindPrefetch = Promise.all(
+    packs.map((pack) =>
+      pack
+        .getIndex({ fields: [`flags.${MODULE_ID}.${SHIP_KIND_FLAG}`] })
+        .catch(() => null),
+    ),
+  );
+  return shipKindPrefetch;
+}
+
+function localizeStarshipActor(item) {
+  const cached = shipKindLabelCache.get(item);
+  if (cached) return cached;
+
+  let source = item?.flags?.[MODULE_ID] ? item : null;
+  if (!source && item?.uuid) {
+    try {
+      source = fromUuidSync(item.uuid);
+    } catch (_err) {
+      source = null;
+    }
+  }
+  if (source?.flags?.[MODULE_ID]?.[SHIP_KIND_FLAG]) {
+    return shipKindLabelFromDocument(source);
+  }
+
+  if (typeof item.get === "function" && !pendingShipKindFetches.has(item)) {
+    pendingShipKindFetches.add(item);
+    Promise.resolve()
+      .then(() => item.get())
+      .then((document) => {
+        shipKindLabelCache.set(item, shipKindLabelFromDocument(document));
+      })
+      .catch(() => {})
+      .finally(() => pendingShipKindFetches.delete(item));
+  }
+
+  // Unclassified ships default to Starship until the document has loaded.
+  return localizeShipKind(DEFAULT_SHIP_KIND);
 }
 
 function patchTaglinePrototypeForItem(item) {
@@ -103,6 +168,9 @@ function patchTaglinePrototypeForItem(item) {
     configurable: true,
     enumerable: false,
     get() {
+      if (this?.documentType === "Actor" && this.subType === "starship") {
+        return localizeStarshipActor(this);
+      }
       if (this?.documentType === "Item") {
         return localizeItemType(this);
       }
@@ -162,7 +230,30 @@ function installSearchLibWrapper() {
   return true;
 }
 
+// Quick Insert assigns searchLib and starts indexing immediately, and the first
+// open can search before IndexCompleted fires. Wrap the library on assignment
+// so no search ever runs unpatched.
+function installSearchLibAccessor() {
+  const qi = globalThis.QuickInsert;
+  if (!qi) return false;
+  const descriptor = Object.getOwnPropertyDescriptor(qi, "searchLib");
+  if (descriptor?.get) return true;
+
+  let current = descriptor?.value;
+  Object.defineProperty(qi, "searchLib", {
+    configurable: true,
+    enumerable: true,
+    get: () => current,
+    set: (value) => {
+      current = value;
+      installSearchLibWrapper();
+    },
+  });
+  return true;
+}
+
 function tryPatchQuickInsert() {
+  installSearchLibAccessor();
   const wrapped = installSearchLibWrapper();
   if (!wrapped) return false;
 
@@ -196,6 +287,7 @@ export function installQuickInsertItemTypeTaglinePatch() {
   if (!quickInsert?.active) return;
 
   patchInstalled = true;
+  prefetchShipKinds();
 
   // Keep results patched after any index refresh.
   if (!indexHookInstalled) {

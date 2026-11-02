@@ -140,6 +140,7 @@ import {
   openTalentPicker,
   installCompendiumBrowserSidebarHooks,
 } from "./compendium-browser/index.mjs";
+import * as packIndex from "./compendium-browser/pack-index.mjs";
 import { openSupportingBuilder } from "./supporting-builder/index.mjs";
 import { rollForCasualties } from "./casualties/casualties.mjs";
 
@@ -794,6 +795,11 @@ Hooks.once("ready", async () => {
     npcBuilder: openNpcBuilder,
     compendiumBrowser: openCompendiumBrowser,
     compendiumBrowserPresets: getBrowserPresets,
+    packIndex: {
+      getRows: packIndex.getPackIndexRows,
+      invalidate: packIndex.invalidatePackIndex,
+      clear: packIndex.clearPackIndex,
+    },
     talentPicker: openTalentPicker,
     focusPicker: (config = {}) =>
       openTalentPicker({

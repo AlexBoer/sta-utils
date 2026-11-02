@@ -1,4 +1,5 @@
 import { MODULE_ID } from "../core/constants.mjs";
+import { getPackIndexRows } from "../compendium-browser/pack-index.mjs";
 
 export const ATTRIBUTE_KEYS = [
   "control",
@@ -720,6 +721,15 @@ function _getSpecialRulesPackIds() {
   return _getConfiguredPackIds(NPC_BUILDER_SPECIAL_RULES_PACK_SETTING);
 }
 
+// Talent rows from the shared compendium index, with a guaranteed uuid.
+async function _getTalentRows(pack) {
+  const rows = await getPackIndexRows(pack, "Item", "talent");
+  return rows.map((row) => ({
+    ...row,
+    uuid: row.uuid ?? `Compendium.${pack.collection}.Item.${row._id}`,
+  }));
+}
+
 function _isInStarshipFolder(doc, pack) {
   let folder = doc?.folder ?? null;
   if (typeof folder === "string") {
@@ -749,8 +759,8 @@ export async function findSpeciesAbilityTalentUuid(species) {
       continue;
     }
     try {
-      const docs = await pack.getDocuments();
-      for (const doc of docs) {
+      const rows = await _getTalentRows(pack);
+      for (const doc of rows) {
         if (doc.type !== "talent") continue;
         if (
           _normalizeRequirementString(
@@ -789,6 +799,12 @@ export async function findSpeciesAbilityTalentUuid(species) {
 /** Returns true when a special-rules compendium pack is configured. */
 export function getSpecialRulesPackConfigured() {
   return _getSpecialRulesPackIds().length > 0;
+}
+
+function _getPackLabel(pack) {
+  const label = String(pack.title ?? pack.metadata?.label ?? pack.collection);
+  const folderName = pack.folder?.name;
+  return folderName ? `${folderName} - ${label}` : label;
 }
 
 function _getPackSourceLabel(pack) {
@@ -837,7 +853,7 @@ export async function loadSpecialRulesItems() {
         continue;
       }
 
-      const docs = await pack.getDocuments();
+      const docs = await _getTalentRows(pack);
       for (const doc of docs) {
         if (doc.type !== "talent") continue;
         if (_isInStarshipFolder(doc, pack)) continue;
@@ -879,9 +895,7 @@ export async function loadSpecialRulesItems() {
           source: _getPackSourceId(pack),
           sourceLabel: _getPackSourceLabel(pack),
           compendium: pack.collection,
-          compendiumLabel: String(
-            pack.title ?? pack.metadata?.label ?? pack.collection,
-          ),
+          compendiumLabel: _getPackLabel(pack),
           descriptionText: _getPlainDescription(doc),
           isNpcType: requirements.some(
             (entry) =>
@@ -957,9 +971,7 @@ export async function loadEquipmentItems() {
           source: _getPackSourceId(pack),
           sourceLabel: _getPackSourceLabel(pack),
           compendium: pack.collection,
-          compendiumLabel: String(
-            pack.title ?? pack.metadata?.label ?? pack.collection,
-          ),
+          compendiumLabel: _getPackLabel(pack),
           type: String(entry.type ?? ""),
         });
       }

@@ -1,4 +1,5 @@
 const BASE_INDEX_FIELDS = ["name", "img", "type"];
+const SHIP_KIND_KEY = "flags.sta-utils.shipKind";
 const BROWSER_PRESETS = {
   characters: {
     label: "sta-utils.compendiumBrowser.presets.characters",
@@ -119,7 +120,12 @@ const TYPE_CONFIG = {
       ],
     },
     starship: {
-      fields: ["system.designation", "system.spaceframe", "system.scale"],
+      fields: [
+        "system.designation",
+        "system.spaceframe",
+        "system.scale",
+        SHIP_KIND_KEY,
+      ],
       columns: [
         {
           key: "system.spaceframe",
@@ -132,6 +138,21 @@ const TYPE_CONFIG = {
         },
       ],
       filters: [
+        {
+          key: SHIP_KIND_KEY,
+          label: "sta-utils.shipKind.label",
+          type: "select",
+          exact: true,
+          defaultValue: "starship",
+          choices: [
+            { value: "starship", label: "sta-utils.shipKind.starship" },
+            { value: "spaceframe", label: "sta-utils.shipKind.spaceframe" },
+            {
+              value: "missionProfile",
+              label: "sta-utils.shipKind.missionProfile",
+            },
+          ],
+        },
         {
           key: "system.spaceframe",
           label: "sta-utils.compendiumBrowser.columns.spaceframe",
@@ -204,7 +225,13 @@ const TYPE_CONFIG = {
         "system.talenttype.typeenum",
         "system.talenttype.description",
         "system.talenttype.minimum",
+        "system.talenttype.type",
+        "system.type",
+        "system.source",
         "system.description",
+        "flags.sta-officers-log.requirements",
+        "flags.sta-officers-log.secondReq",
+        "flags.sta-officers-log.npcRequirement",
       ],
       // Type and requirements are rendered specially (subtext + merged
       // requirement/description column) instead of generic columns/filters.

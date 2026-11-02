@@ -1,5 +1,11 @@
 import { MODULE_ID } from "../core/constants.mjs";
 import { getGroupShipActor } from "../core/settings.mjs";
+import {
+  SHIP_KIND_FLAG,
+  SHIP_KINDS,
+  localizeShipKind,
+  normalizeShipKind,
+} from "../core/ship-kind.mjs";
 import { openShipAdvancementDialog } from "./ship-advancement-dialog.mjs";
 
 const SHIP_ASSIGNMENT_FLAG = "assignedShipUuid";
@@ -553,6 +559,30 @@ export async function installStarshipTabs(
     "Ship Information",
   );
   manifestInfo.appendChild(manifestInfoTitle);
+
+  const kindRow = document.createElement("div");
+  kindRow.className = "row sta-lcars-manifest-property-block sta-lcars-ship-kind";
+  const kindLabel = document.createElement("div");
+  kindLabel.className = "title";
+  kindLabel.textContent = localize("sta-utils.shipKind.label", "Ship Type");
+  const kindSelect = document.createElement("select");
+  kindSelect.className = "sta-utils-division-select";
+  kindSelect.disabled = !ship.isOwner;
+  const currentKind = normalizeShipKind(
+    ship.getFlag?.(MODULE_ID, SHIP_KIND_FLAG),
+  );
+  for (const kind of SHIP_KINDS) {
+    const option = document.createElement("option");
+    option.value = kind.value;
+    option.textContent = localizeShipKind(kind.value);
+    option.selected = kind.value === currentKind;
+    kindSelect.appendChild(option);
+  }
+  kindSelect.addEventListener("change", () =>
+    ship.setFlag(MODULE_ID, SHIP_KIND_FLAG, kindSelect.value),
+  );
+  kindRow.append(kindLabel, kindSelect);
+  if (ship.type === "starship") manifestInfo.appendChild(kindRow);
 
   let foundNameRow = false;
   for (const child of [...rightColumn.children]) {

@@ -21,11 +21,10 @@ import {
   isNumericTalentRequirement,
 } from "./talent-metadata.mjs";
 import { enrichWeaponIndexRow } from "./weapon-metadata.mjs";
+import { clearPackIndex, getPackRows } from "./pack-index.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 const Base = HandlebarsApplicationMixin(ApplicationV2);
-const PACK_CACHE_TTL_MS = 5 * 60 * 1000;
-const PACK_INDEX_CACHE = new Map();
 
 function normalize(value) {
   return String(value ?? "")
@@ -57,7 +56,11 @@ function buildSearchText(value, extraValues = []) {
 }
 
 function packLabel(pack) {
-  return String(pack?.title ?? pack?.metadata?.label ?? pack?.collection ?? "");
+  const label = String(
+    pack?.title ?? pack?.metadata?.label ?? pack?.collection ?? "",
+  );
+  const folderName = pack?.folder?.name;
+  return folderName ? `${folderName} - ${label}` : label;
 }
 
 function getPackSourceLabel(pack) {
@@ -79,21 +82,6 @@ function formatValue(row, key) {
   if (Array.isArray(value)) return value.join(", ");
   if (value === null || value === undefined || value === "") return "-";
   return String(value);
-}
-
-async function getPackRows(pack, type, fields) {
-  const cacheKey = `${pack.collection}:${type}:${fields.join("|")}`;
-  const cached = PACK_INDEX_CACHE.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < PACK_CACHE_TTL_MS) {
-    return cached.rows;
-  }
-
-  const index = await pack.getIndex({ fields });
-  const rows = Array.from(index?.values?.() ?? index ?? []).filter(
-    (row) => pack.documentName === "RollTable" || row?.type === type,
-  );
-  PACK_INDEX_CACHE.set(cacheKey, { rows, timestamp: Date.now() });
-  return rows;
 }
 
 export class CompendiumBrowserApp extends Base {
@@ -199,7 +187,7 @@ export class CompendiumBrowserApp extends Base {
   }
 
   refresh({ clearCache = false } = {}) {
-    if (clearCache) PACK_INDEX_CACHE.clear();
+    if (clearCache) clearPackIndex();
     this._loadedKey = "";
     return this._loadSelection();
   }
@@ -274,9 +262,9 @@ export class CompendiumBrowserApp extends Base {
         })),
         ...(isTalentView
           ? {
-              requirementLines: record.talentHasRequirements
-                ? [{ text: record.talentRequirementText }]
-                : [],
+              requirementLines: record.talentRequirementLines.map((text) => ({
+                text,
+              })),
               hasRequirements: Boolean(record.talentHasRequirements),
               descriptionText: record.talentDescriptionText ?? "",
               showToggle: (record.talentDescriptionText ?? "").length > 75,
@@ -318,6 +306,8 @@ export class CompendiumBrowserApp extends Base {
       talentLabels: isTalentView ? this._getTalentLabels() : null,
       talentReqCategories: talentContext?.reqCategories ?? [],
       talentReqValues: talentContext?.reqValues ?? [],
+      talentShowReqValue:
+        this._reqCategory !== "all" && this._reqCategory !== "none",
       talentReqValueCombobox: this._reqCategory === "species",
       talentReqValueText:
         talentContext?.reqValues.find(
@@ -493,12 +483,15 @@ export class CompendiumBrowserApp extends Base {
           event.preventDefault();
           event.stopPropagation();
           const uuid = button.dataset.uuid;
-          if (this._expandedDescriptions.has(uuid)) {
-            this._expandedDescriptions.delete(uuid);
-          } else {
-            this._expandedDescriptions.add(uuid);
-          }
-          this.render({ force: true });
+          const expanded = !this._expandedDescriptions.has(uuid);
+          if (expanded) this._expandedDescriptions.add(uuid);
+          else this._expandedDescriptions.delete(uuid);
+          // Toggle in place: a full re-render would reset the scroll position.
+          const labels = this._getTalentLabels();
+          button
+            .closest(".sta-compendium-browser__desc")
+            ?.classList.toggle("is-expanded", expanded);
+          button.textContent = expanded ? labels.showLess : labels.showMore;
         });
       });
 
@@ -662,26 +655,14 @@ export class CompendiumBrowserApp extends Base {
               enrichedRow,
               "browser.talentTypeLabel",
             ),
-            talentRequirementCategory: foundry.utils.getProperty(
-              enrichedRow,
-              "browser.requirementCategory",
-            ),
-            talentRequirementValue: foundry.utils.getProperty(
-              enrichedRow,
-              "browser.requirementValue",
-            ),
-            talentRequirementValueLabel: foundry.utils.getProperty(
-              enrichedRow,
-              "browser.requirementValueLabel",
-            ),
-            talentRequirementMinimum: foundry.utils.getProperty(
-              enrichedRow,
-              "browser.requirementMinimum",
-            ),
-            talentRequirementText: foundry.utils.getProperty(
-              enrichedRow,
-              "browser.requirementText",
-            ),
+            talentRequirements:
+              foundry.utils.getProperty(enrichedRow, "browser.requirements") ??
+              [],
+            talentRequirementLines:
+              foundry.utils.getProperty(
+                enrichedRow,
+                "browser.requirementLines",
+              ) ?? [],
             talentHasRequirements: foundry.utils.getProperty(
               enrichedRow,
               "browser.hasRequirements",
@@ -780,9 +761,15 @@ export class CompendiumBrowserApp extends Base {
 
   _matchesFieldFilters(record, filters) {
     for (const filter of filters) {
-      const raw = foundry.utils.getProperty(record.row, filter.key);
+      const raw =
+        foundry.utils.getProperty(record.row, filter.key) ??
+        filter.defaultValue;
       if (["select", "combobox"].includes(filter.type)) {
         const selected = this._fieldFilters[`${filter.key}:value`];
+        if (filter.exact) {
+          if (selected && String(raw) !== selected) return false;
+          continue;
+        }
         if (selected && !normalize(raw).includes(normalize(selected))) {
           return false;
         }
@@ -827,28 +814,37 @@ export class CompendiumBrowserApp extends Base {
   }
 
   _matchesTalentRequirement(record) {
-    const category = record.talentRequirementCategory || "none";
-    if (this._reqCategory !== "all" && category !== this._reqCategory) {
-      return false;
-    }
-    if (this._reqValue !== "all" && this._reqValue !== "") {
-      if (!(record.talentRequirementValue ?? "").includes(this._reqValue)) {
-        return false;
-      }
-    }
-    if (isNumericTalentRequirement(this._reqCategory) && this._reqMin !== "") {
-      const min = Number(this._reqMin);
-      if (!(Number(record.talentRequirementMinimum ?? 0) >= min)) {
-        return false;
-      }
-    }
-    return true;
+    const requirements = record.talentRequirements ?? [];
+    if (this._reqCategory === "none") return requirements.length === 0;
+
+    const candidates = requirements.filter(
+      (req) => this._reqCategory === "all" || req.category === this._reqCategory,
+    );
+    if (this._reqCategory !== "all" && !candidates.length) return false;
+
+    const hasValue = this._reqValue !== "all" && this._reqValue !== "";
+    const minimum =
+      isNumericTalentRequirement(this._reqCategory) && this._reqMin !== ""
+        ? Number(this._reqMin)
+        : null;
+    if (!hasValue && minimum === null) return true;
+
+    return candidates.some((req) =>
+      req.clauses.some(
+        (clause) =>
+          (!hasValue || clause.value.includes(this._reqValue)) &&
+          (minimum === null || clause.minimum >= minimum),
+      ),
+    );
   }
 
   _prepareTalentFilterContext() {
-    const presentCategories = new Set(
-      this._records.map((record) => record.talentRequirementCategory || "none"),
-    );
+    const presentCategories = new Set();
+    for (const record of this._records) {
+      const requirements = record.talentRequirements ?? [];
+      if (!requirements.length) presentCategories.add("none");
+      for (const req of requirements) presentCategories.add(req.category);
+    }
     const reqCategories = [
       {
         id: "all",
@@ -873,13 +869,16 @@ export class CompendiumBrowserApp extends Base {
 
     const values = new Map();
     for (const record of this._records) {
-      const category = record.talentRequirementCategory || "none";
-      if (this._reqCategory !== "all" && category !== this._reqCategory) {
-        continue;
+      for (const req of record.talentRequirements ?? []) {
+        if (req.category === "condition") continue;
+        if (this._reqCategory !== "all" && req.category !== this._reqCategory) {
+          continue;
+        }
+        for (const clause of req.clauses) {
+          if (!clause.value || values.has(clause.value)) continue;
+          values.set(clause.value, clause.label || clause.value);
+        }
       }
-      const value = record.talentRequirementValue;
-      if (!value || values.has(value)) continue;
-      values.set(value, record.talentRequirementValueLabel || value);
     }
     const reqValues = [
       {
@@ -975,5 +974,5 @@ export function openCompendiumBrowser(preset = {}) {
 }
 
 export function clearCompendiumBrowserCache() {
-  PACK_INDEX_CACHE.clear();
+  clearPackIndex();
 }

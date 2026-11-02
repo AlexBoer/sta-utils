@@ -55,7 +55,7 @@
     <div class="title">{{localize 'sta-utils.incidentalRoll.quickNpcTitle'}}</div>
     <div class="row">
       <label class="tracktitle">{{localize 'sta-utils.incidentalRoll.temperamentLabel'}}</label>
-      <div class="sta-utils-incidental-quality-row sta-utils-quick-option-row" role="radiogroup" aria-label="{{localize 'sta-utils.incidentalRoll.temperamentLabel'}}">
+      <div class="sta-utils-incidental-quality-row sta-utils-quick-option-row sta-utils-quick-temperament-row" role="radiogroup" aria-label="{{localize 'sta-utils.incidentalRoll.temperamentLabel'}}">
         {{#each quickTemperaments}}
           <label class="sta-utils-incidental-quality-option" title="{{this.description}}">
             <input type="radio" name="quickTemperament" value="{{this.key}}" {{#if @first}}checked{{/if}}>

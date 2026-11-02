@@ -131,6 +131,12 @@
       "customLabel": "Custom Division",
       "customPlaceholder": "Enter division name"
     },
+    "shipKind": {
+      "label": "Ship Type",
+      "starship": "Starship",
+      "spaceframe": "Spaceframe",
+      "missionProfile": "Mission Profile"
+    },
     "quickInsert": {
       "npcTalent": "NPC Talent",
       "starshipTalent": "Starship Talent"
@@ -633,8 +639,7 @@
       "speciesLabel": "Species",
       "speciesPlaceholder": "Start typing to search for a species",
       "speciesBonusLabel": "Species bonuses",
-      "speciesBonusHint": "Choose 3 attributes to receive +1 each",
-      "speciesBonusSelectionRequired": "Choose exactly 3 attributes for this species before rolling.",
+      "speciesBonusHint": "Choose up to 3 attributes to receive +1 each",
       "keepOpenAfterRoll": "Keep dialog open after rolling"
     },
     "reservePowerMenu": {
@@ -2121,8 +2126,11 @@
           "systems": "Ship system",
           "species": "Species",
           "house": "House",
-          "npc": "NPC"
-        }
+          "npc": "NPC",
+          "condition": "Other condition"
+        },
+        "operatorOr": "or",
+        "operatorAnd": "and"
       },
       "settings": {
         "title": "Compendium Browser Sources",
@@ -2143,7 +2151,7 @@
       "treknobabble": "Treknobabble",
       "medicalbabble": "Medicalbabble",
       "npcBuilder": "Create NPC",
-      "characterBrowser": "Compendium Browser",
+      "characterCreator": "Create Main Character",
       "crewManifest": "Crew Manifest",
       "dicePoolMonitor": "Dice Pool Monitor",
       "noteStyler": "Note Styler",
