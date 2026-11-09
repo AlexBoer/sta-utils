@@ -1,4 +1,5 @@
 import { getTypeConfig } from "./compendium-browser-config.mjs";
+import { SOURCE_INDEX_FIELDS } from "../source-field/source-data.mjs";
 
 // One in-memory index shared by the compendium browser and the talent/focus
 // pickers. Rows are keyed by pack + type + field list, so callers that use the
@@ -22,7 +23,7 @@ export async function getPackRows(pack, type, fields) {
 }
 
 // Rows are shared and must be treated as read-only by callers.
-const FOCUS_INDEX_FIELDS = ["system.description", "system.source"];
+const FOCUS_INDEX_FIELDS = ["system.description", ...SOURCE_INDEX_FIELDS];
 
 export async function getPackIndexRows(pack, documentName, type) {
   const fields =

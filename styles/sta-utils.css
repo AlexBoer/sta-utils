@@ -8789,7 +8789,6 @@ input.selector.attribute.sta-fatigued-attribute {
 
 .sta-launcher-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
 }
 
@@ -9081,6 +9080,11 @@ input.selector.attribute.sta-fatigued-attribute {
     border-color: #f1a43c;
     background: rgba(241, 164, 60, 0.1);
   }
+
+  &.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
 }
 
 .npc-selection-card-title {
@@ -9103,6 +9107,97 @@ input.selector.attribute.sta-fatigued-attribute {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 0.1rem 0.5rem;
+}
+
+/* Starship creator: option list on the left, stats on the right */
+.starship-creator-split {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(0, 2fr);
+  gap: 0.75rem;
+}
+
+.starship-creator-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.starship-creator-spaceframe-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.starship-creator-spaceframe-image {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.starship-creator-spaceframe-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.starship-creator-future-year {
+  color: #e88989;
+}
+
+.starship-creator-detail {
+  max-height: 420px;
+  overflow-y: auto;
+  padding-left: 0.25rem;
+}
+
+.sta-starship-creator .sta-bt-tabs,
+.sta-npc-builder .sta-bt-tabs,
+.sta-supporting-builder .sta-bt-tabs {
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+/* These windows zero the content padding; the supporting builder keeps Foundry's. */
+.sta-npc-builder .sta-bt-tabs {
+  margin: var(--window-content-padding, 8px) var(--window-content-padding, 8px) 10px;
+}
+
+.sta-starship-creator .sta-bt-tab,
+.sta-npc-builder .sta-bt-tab,
+.sta-supporting-builder .sta-bt-tab {
+  flex: 1 1 auto;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  letter-spacing: 0.5px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.sta-starship-creator .sta-bt-tab:disabled,
+.sta-npc-builder .sta-bt-tab:disabled,
+.sta-supporting-builder .sta-bt-tab:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.starship-creator-filters {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.starship-creator-filters .npc-builder-input {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.starship-creator-list [hidden] {
+  display: none !important;
 }
 
 .npc-stat-label {
@@ -9204,6 +9299,15 @@ input.selector.attribute.sta-fatigued-attribute {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+}
+
+.npc-major-pip {
+  cursor: default;
+}
+
+.npc-major-adjust:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 .npc-bonus-col {

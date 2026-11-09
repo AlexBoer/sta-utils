@@ -1,6 +1,16 @@
 // Flag classifying a starship actor as a Starship, Spaceframe or Mission Profile.
 export const SHIP_KIND_FLAG = "shipKind";
 export const DEFAULT_SHIP_KIND = "starship";
+// Spaceframe: year the class was first commissioned (drives refit count).
+export const FIRST_COMMISSIONED_FLAG = "firstCommissioned";
+// Spaceframe: short free-text faction (e.g. Federation); the creator sorts and filters by it.
+export const FACTION_FLAG = "faction";
+// Mission Profile: how many of its talents may be added to a ship.
+export const TALENT_CHOICES_FLAG = "talentChoices";
+// Mission Profile: how many systems the player may raise by 1 (e.g. Multirole Explorer).
+export const SYSTEM_BONUS_FLAG = "systemBonus";
+// Starship made by the creator: source UUIDs and choices.
+export const CREATED_FROM_FLAG = "createdFrom";
 
 export const SHIP_KINDS = [
   { value: "starship", label: "sta-utils.shipKind.starship", fallback: "Starship" },

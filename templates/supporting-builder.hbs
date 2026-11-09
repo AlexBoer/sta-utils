@@ -1,5 +1,12 @@
 <div class="npc-builder">
 
+  <nav class="sta-bt-tabs">
+    {{#each tabs}}
+    <button type="button" class="sta-bt-tab{{#if active}} active{{/if}}" data-step="{{step}}"
+      {{#unless enabled}}disabled{{/unless}}>{{label}}</button>
+    {{/each}}
+  </nav>
+
   {{!-- ── Step: Info ──────────────────────────────────────────────── --}}
   <div class="npc-builder-panel{{#if stepPanels.info}} active{{/if}}" data-panel="info">
     <h3 class="npc-builder-panel-title">Character Info</h3>

@@ -1,5 +1,10 @@
 import { MODULE_ID } from "../core/constants.mjs";
 import { getPackIndexRows } from "../compendium-browser/pack-index.mjs";
+import {
+  getSourceValue,
+  SOURCE_INDEX_FIELDS,
+} from "../source-field/source-data.mjs";
+import { getAllSpecies as getAllHomebrewSpecies } from "../homebrew-species/homebrew-species-manager.mjs";
 
 export const ATTRIBUTE_KEYS = [
   "control",
@@ -251,12 +256,7 @@ export const RANDOM_ROLES = [
   "Scientist",
   "Pilot",
 ];
-const NPC_BUILDER_SPECIAL_RULES_PACK_SETTING = "npcBuilderSpecialRulesPack";
-const NPC_BUILDER_EQUIPMENT_PACKS_SETTING = "npcBuilderEquipmentPacks";
-const NPC_BUILDER_SPECIES_ABILITY_PACKS_SETTING =
-  "npcBuilderSpeciesAbilityPacks";
-const NPC_BUILDER_FOCUS_PACKS_SETTING = "npcBuilderFocusPacks";
-const NPC_BUILDER_VALUE_PACKS_SETTING = "npcBuilderValuePacks";
+const NPC_BUILDER_COMPENDIUMS_SETTING = "npcBuilderCompendiums";
 
 function _parsePackIds(value) {
   return String(value ?? "")
@@ -305,7 +305,7 @@ export async function loadFocusNames() {
   _focusCacheLoaded = true;
   try {
     _focusNamesCache = await _loadNamedItemsFromPacks(
-      NPC_BUILDER_FOCUS_PACKS_SETTING,
+      NPC_BUILDER_COMPENDIUMS_SETTING,
       "focus",
     );
   } catch (e) {
@@ -325,7 +325,7 @@ export async function loadValueNames() {
   _valueCacheLoaded = true;
   try {
     _valueNamesCache = await _loadNamedItemsFromPacks(
-      NPC_BUILDER_VALUE_PACKS_SETTING,
+      NPC_BUILDER_COMPENDIUMS_SETTING,
       "value",
     );
   } catch (e) {
@@ -381,20 +381,16 @@ export const RANDOM_VALUES = [
 ];
 
 // ── Species catalog ──────────────────────────────────────────────────────────
-// Loaded from species-catalog.json. Each entry: { name, talentUuid, attributeBonuses }
+// Loaded from species-catalog.json + homebrew species. Each entry: { name, talentUuid, attributeBonuses }
 let _speciesCatalogCache = null;
 
 export async function loadSpeciesCatalog() {
   if (_speciesCatalogCache) return _speciesCatalogCache;
   try {
-    const res = await fetch(
-      `/modules/${MODULE_ID}/scripts/npc-builder/species-catalog.json`,
-    );
-    const data = await res.json();
-    _speciesCatalogCache = data.species ?? [];
+    _speciesCatalogCache = await getAllHomebrewSpecies();
   } catch (e) {
     console.warn(
-      `${MODULE_ID} | NPC Builder: could not load species-catalog.json`,
+      `${MODULE_ID} | NPC Builder: could not load species catalog`,
       e,
     );
     _speciesCatalogCache = [];
@@ -455,6 +451,9 @@ function _getEquipmentCategory(type) {
 // ── Talent templates ──────────────────────────────────────────────────────────
 // Preset templates can be inserted on the NPC Builder special-rules step and
 // then customized by the user before actor creation.
+export const NPC_TEMPLATE_TALENT_IMAGE =
+  "systems/sta/assets/compendia/icons/talents-core/talent-core.svg";
+
 export const TALENT_TEMPLATES = [
   {
     name: "Additional Threat Spent",
@@ -718,7 +717,7 @@ function _getGroupedRequirementsFromDoc(doc) {
 }
 
 function _getSpecialRulesPackIds() {
-  return _getConfiguredPackIds(NPC_BUILDER_SPECIAL_RULES_PACK_SETTING);
+  return _getConfiguredPackIds(NPC_BUILDER_COMPENDIUMS_SETTING);
 }
 
 // Talent rows from the shared compendium index, with a guaranteed uuid.
@@ -744,12 +743,38 @@ function _isInStarshipFolder(doc, pack) {
   return false;
 }
 
+function _matchesSpeciesAbility(doc, selectedSpecies, exact = false) {
+  if (
+    doc.type !== "talent" ||
+    _normalizeRequirementString(
+      foundry.utils.getProperty(doc, "system.talenttype.typeenum"),
+    ) !== "speciesability"
+  ) {
+    return false;
+  }
+  return _getGroupedRequirementsFromDoc(doc).some(
+    (entry) =>
+      entry.category === "species" &&
+      entry.clauses.some((clause) =>
+        String(clause?.value ?? "")
+          .split(",")
+          .map(_normalizeRequirementString)
+          .filter(Boolean)
+          .some(
+            (requiredSpecies) =>
+              requiredSpecies === selectedSpecies ||
+              (!exact && selectedSpecies.includes(requiredSpecies)),
+          ),
+      ),
+  );
+}
+
 export async function findSpeciesAbilityTalentUuid(species) {
   const selectedSpecies = _normalizeRequirementString(species);
   if (!selectedSpecies) return null;
 
   for (const packId of _getConfiguredPackIds(
-    NPC_BUILDER_SPECIES_ABILITY_PACKS_SETTING,
+    NPC_BUILDER_COMPENDIUMS_SETTING,
   )) {
     const pack = game.packs.get(packId);
     if (!pack) {
@@ -761,30 +786,7 @@ export async function findSpeciesAbilityTalentUuid(species) {
     try {
       const rows = await _getTalentRows(pack);
       for (const doc of rows) {
-        if (doc.type !== "talent") continue;
-        if (
-          _normalizeRequirementString(
-            foundry.utils.getProperty(doc, "system.talenttype.typeenum"),
-          ) !== "speciesability"
-        ) {
-          continue;
-        }
-        const matchesSpecies = _getGroupedRequirementsFromDoc(doc).some(
-          (entry) =>
-            entry.category === "species" &&
-            entry.clauses.some((clause) =>
-              String(clause?.value ?? "")
-                .split(",")
-                .map(_normalizeRequirementString)
-                .filter(Boolean)
-                .some(
-                  (requiredSpecies) =>
-                    requiredSpecies === selectedSpecies ||
-                    selectedSpecies.includes(requiredSpecies),
-                ),
-            ),
-        );
-        if (matchesSpecies && doc.uuid) return doc.uuid;
+        if (_matchesSpeciesAbility(doc, selectedSpecies) && doc.uuid) return doc.uuid;
       }
     } catch (err) {
       console.warn(
@@ -796,6 +798,40 @@ export async function findSpeciesAbilityTalentUuid(species) {
   return null;
 }
 
+/** Find the first configured species-ability talent for each exact species name. */
+export async function findSpeciesAbilityTalentNames(speciesNames) {
+  const pending = new Set(speciesNames.map(_normalizeRequirementString).filter(Boolean));
+  const matches = new Map();
+  if (!pending.size) return matches;
+
+  for (const packId of _getConfiguredPackIds(NPC_BUILDER_COMPENDIUMS_SETTING)) {
+    const pack = game.packs.get(packId);
+    if (!pack) {
+      console.warn(`${MODULE_ID} | NPC Builder: species ability pack "${packId}" not found`);
+      continue;
+    }
+    try {
+      const rows = await _getTalentRows(pack);
+      for (const doc of rows) {
+        const name = String(doc.name ?? "").trim();
+        if (!name) continue;
+        for (const species of pending) {
+          if (!_matchesSpeciesAbility(doc, species, true)) continue;
+          matches.set(species, name);
+          pending.delete(species);
+        }
+        if (!pending.size) return matches;
+      }
+    } catch (err) {
+      console.warn(
+        `${MODULE_ID} | NPC Builder: could not search species ability pack "${packId}"`,
+        err,
+      );
+    }
+  }
+  return matches;
+}
+
 /** Returns true when a special-rules compendium pack is configured. */
 export function getSpecialRulesPackConfigured() {
   return _getSpecialRulesPackIds().length > 0;
@@ -805,22 +841,6 @@ function _getPackLabel(pack) {
   const label = String(pack.title ?? pack.metadata?.label ?? pack.collection);
   const folderName = pack.folder?.name;
   return folderName ? `${folderName} - ${label}` : label;
-}
-
-function _getPackSourceLabel(pack) {
-  const { packageName = "world", packageType = "world" } =
-    pack.metadata ?? {};
-  if (packageType === "system") return game.system.title;
-  if (packageType === "module") {
-    return game.modules.get(packageName)?.title ?? packageName;
-  }
-  return game.i18n.localize("PACKAGE.Type.world");
-}
-
-function _getPackSourceId(pack) {
-  const { packageName = "world", packageType = "world" } =
-    pack.metadata ?? {};
-  return `${packageType}.${packageName}`;
 }
 
 function _getPlainDescription(doc) {
@@ -892,8 +912,7 @@ export async function loadSpecialRulesItems() {
           name: doc.name,
           img: doc.img || "icons/svg/item-bag.svg",
           talentType: requirementType,
-          source: _getPackSourceId(pack),
-          sourceLabel: _getPackSourceLabel(pack),
+          source: getSourceValue(doc, "Item", doc.type),
           compendium: pack.collection,
           compendiumLabel: _getPackLabel(pack),
           descriptionText: _getPlainDescription(doc),
@@ -939,7 +958,7 @@ export async function loadEquipmentItems() {
   const results = [];
   const seenUuids = new Set();
   for (const packId of _getConfiguredPackIds(
-    NPC_BUILDER_EQUIPMENT_PACKS_SETTING,
+    NPC_BUILDER_COMPENDIUMS_SETTING,
   )) {
     const pack = game.packs.get(packId);
     if (!pack) {
@@ -949,7 +968,9 @@ export async function loadEquipmentItems() {
       continue;
     }
     try {
-      const index = await pack.getIndex({ fields: ["name", "img", "type"] });
+      const index = await pack.getIndex({
+        fields: ["name", "img", "type", ...SOURCE_INDEX_FIELDS],
+      });
       for (const entry of index) {
         if (!equipmentTypes.has(entry.type) || !entry.uuid || !entry.name)
           continue;
@@ -968,8 +989,7 @@ export async function loadEquipmentItems() {
           name: entry.name,
           img: entry.img || "icons/svg/item-bag.svg",
           category: _getEquipmentCategory(entry.type),
-          source: _getPackSourceId(pack),
-          sourceLabel: _getPackSourceLabel(pack),
+          source: getSourceValue(entry, "Item", entry.type),
           compendium: pack.collection,
           compendiumLabel: _getPackLabel(pack),
           type: String(entry.type ?? ""),
@@ -997,6 +1017,7 @@ export async function createNpcActor({
   disciplines,
   focuses,
   value,
+  values,
   selectedEquipmentUuids,
   selectedSpecialRulesUuids,
   customTalents,
@@ -1004,9 +1025,13 @@ export async function createNpcActor({
   selectedAttributeBonuses = [],
 }) {
   const isNotable = npcType === "notable";
-  const stressVal = isNotable ? 3 : 0;
+  const isMajor = npcType === "major";
+  const npcValues = isMajor ? (values ?? []) : [value];
+  const stressVal = isMajor
+    ? 6 + npcValues.filter((entry) => entry?.trim()).length
+    : isNotable ? 3 : 0;
   const actorName =
-    name?.trim() || (isNotable ? "New Notable NPC" : "New Minor NPC");
+    name?.trim() || (isMajor ? "New Major NPC" : isNotable ? "New Notable NPC" : "New Minor NPC");
 
   // Resolve species attribute bonuses
   const _speciesKey = species?.trim().toLowerCase();
@@ -1039,8 +1064,8 @@ export async function createNpcActor({
         DISCIPLINE_KEYS.map((k) => [k, { value: disciplines[k] ?? 0 }]),
       ),
     },
-    // Notable NPCs have a Stress track — show it on the token for everyone.
-    prototypeToken: isNotable
+    // Notable and major NPCs have a Stress track.
+    prototypeToken: isNotable || isMajor
       ? {
           bar1: { attribute: "stress" },
           displayBars: CONST.TOKEN_DISPLAY_MODES.ALWAYS,
@@ -1082,13 +1107,15 @@ export async function createNpcActor({
     }
   }
 
-  if (isNotable) {
+  if (isNotable || isMajor) {
     for (const focusName of focuses ?? []) {
       if (focusName?.trim())
         embeddedItems.push({ name: focusName.trim(), type: "focus" });
     }
-    if (value?.trim())
-      embeddedItems.push({ name: value.trim(), type: "value" });
+    for (const npcValue of npcValues) {
+      if (npcValue?.trim())
+        embeddedItems.push({ name: npcValue.trim(), type: "value" });
+    }
   }
 
   for (const uuid of selectedEquipmentUuids ?? []) {
@@ -1120,6 +1147,7 @@ export async function createNpcActor({
       embeddedItems.push({
         name: t.name.trim(),
         type: "talent",
+        ...(t.img ? { img: t.img } : {}),
         system: { description: t.description?.trim() ?? "" },
       });
   }

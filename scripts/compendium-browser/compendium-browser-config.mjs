@@ -1,4 +1,6 @@
-const BASE_INDEX_FIELDS = ["name", "img", "type"];
+import { SOURCE_INDEX_FIELDS } from "../source-field/source-data.mjs";
+
+const BASE_INDEX_FIELDS = ["name", "img", "type", ...SOURCE_INDEX_FIELDS];
 const SHIP_KIND_KEY = "flags.sta-utils.shipKind";
 const BROWSER_PRESETS = {
   characters: {
@@ -232,6 +234,9 @@ const TYPE_CONFIG = {
         "flags.sta-officers-log.requirements",
         "flags.sta-officers-log.secondReq",
         "flags.sta-officers-log.npcRequirement",
+        "flags.sta-utils.requirements",
+        "flags.sta-utils.secondReq",
+        "flags.sta-utils.npcRequirement",
       ],
       // Type and requirements are rendered specially (subtext + merged
       // requirement/description column) instead of generic columns/filters.

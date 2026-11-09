@@ -64,10 +64,18 @@
           <input type="search" data-role="search" value="{{search}}" placeholder="{{localize 'sta-utils.compendiumBrowser.searchPlaceholder'}}" />
         </label>
         <label>
-          <span>{{localize "sta-utils.talentPicker.compendium"}}</span>
+          <span>{{localize "sta-utils.compendiumBrowser.source"}}</span>
           <select data-role="source">
             {{#each sources as |source|}}
             <option value="{{source.id}}" {{#if source.selected}}selected{{/if}}>{{source.label}}</option>
+            {{/each}}
+          </select>
+        </label>
+        <label>
+          <span>{{localize "sta-utils.talentPicker.compendium"}}</span>
+          <select data-role="compendium">
+            {{#each compendiums as |compendium|}}
+            <option value="{{compendium.id}}" {{#if compendium.selected}}selected{{/if}}>{{compendium.label}}</option>
             {{/each}}
           </select>
         </label>

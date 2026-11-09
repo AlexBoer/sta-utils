@@ -1,12 +1,17 @@
 import { MODULE_ID } from "../core/constants.mjs";
 import { getGroupShipActor } from "../core/settings.mjs";
 import {
+  FACTION_FLAG,
+  FIRST_COMMISSIONED_FLAG,
   SHIP_KIND_FLAG,
   SHIP_KINDS,
+  SYSTEM_BONUS_FLAG,
+  TALENT_CHOICES_FLAG,
   localizeShipKind,
   normalizeShipKind,
 } from "../core/ship-kind.mjs";
 import { openShipAdvancementDialog } from "./ship-advancement-dialog.mjs";
+import { openNpcShipDialog } from "../starship-creator/npc-ship-app.mjs";
 
 const SHIP_ASSIGNMENT_FLAG = "assignedShipUuid";
 const ADVANCEMENT_FLAG = "shipAdvancementHistory";
@@ -583,6 +588,99 @@ export async function installStarshipTabs(
   );
   kindRow.append(kindLabel, kindSelect);
   if (ship.type === "starship") manifestInfo.appendChild(kindRow);
+
+  // Spaceframes carry a first-commissioned year; mission profiles say how many
+  // of their talents a ship may take. Both feed the Starship Creator.
+  const numberFlagRow = (flag, labelKey, fallback, min) => {
+    const row = document.createElement("div");
+    row.className =
+      "row sta-lcars-manifest-property-block sta-lcars-ship-kind";
+    const label = document.createElement("div");
+    label.className = "title";
+    label.textContent = localize(labelKey, fallback);
+    const input = document.createElement("input");
+    input.type = "number";
+    input.min = String(min);
+    input.step = "1";
+    input.className = "sta-utils-division-select";
+    input.disabled = !ship.isOwner;
+    input.value = ship.getFlag?.(MODULE_ID, flag) ?? "";
+    input.addEventListener("change", () => {
+      const value = Math.trunc(Number(input.value));
+      if (input.value === "" || !Number.isFinite(value) || value < min) {
+        return ship.unsetFlag(MODULE_ID, flag);
+      }
+      return ship.setFlag(MODULE_ID, flag, value);
+    });
+    row.append(label, input);
+    return row;
+  };
+  if (ship.type === "starship" && currentKind === "spaceframe") {
+    const factionRow = document.createElement("div");
+    factionRow.className =
+      "row sta-lcars-manifest-property-block sta-lcars-ship-kind";
+    const factionLabel = document.createElement("div");
+    factionLabel.className = "title";
+    factionLabel.textContent = localize(
+      "sta-utils.shipKind.faction",
+      "Faction",
+    );
+    const factionInput = document.createElement("input");
+    factionInput.type = "text";
+    factionInput.maxLength = 40;
+    factionInput.className = "sta-utils-division-select";
+    factionInput.disabled = !ship.isOwner;
+    factionInput.value = ship.getFlag?.(MODULE_ID, FACTION_FLAG) ?? "";
+    factionInput.addEventListener("change", () => {
+      const value = factionInput.value.trim();
+      return value
+        ? ship.setFlag(MODULE_ID, FACTION_FLAG, value)
+        : ship.unsetFlag(MODULE_ID, FACTION_FLAG);
+    });
+    factionRow.append(factionLabel, factionInput);
+    manifestInfo.appendChild(factionRow);
+    manifestInfo.appendChild(
+      numberFlagRow(
+        FIRST_COMMISSIONED_FLAG,
+        "sta-utils.shipKind.firstCommissioned",
+        "Launch Year",
+        1,
+      ),
+    );
+    if (ship.isOwner) {
+      const npcRow = document.createElement("div");
+      npcRow.className =
+        "row sta-lcars-manifest-property-block sta-lcars-ship-kind";
+      const npcButton = document.createElement("button");
+      npcButton.type = "button";
+      npcButton.className = "sta-utils-division-select";
+      npcButton.textContent = localize(
+        "sta-utils.npcShip.button",
+        "Create NPC Ship",
+      );
+      npcButton.addEventListener("click", () => openNpcShipDialog(ship));
+      npcRow.appendChild(npcButton);
+      manifestInfo.appendChild(npcRow);
+    }
+  }
+  if (ship.type === "starship" && currentKind === "missionProfile") {
+    manifestInfo.appendChild(
+      numberFlagRow(
+        SYSTEM_BONUS_FLAG,
+        "sta-utils.shipKind.systemBonus",
+        "Free +1 System Choices",
+        1,
+      ),
+    );
+    manifestInfo.appendChild(
+      numberFlagRow(
+        TALENT_CHOICES_FLAG,
+        "sta-utils.shipKind.talentChoices",
+        "Talents to Choose",
+        1,
+      ),
+    );
+  }
 
   let foundNameRow = false;
   for (const child of [...rightColumn.children]) {

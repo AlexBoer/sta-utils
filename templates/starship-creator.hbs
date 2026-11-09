@@ -1,0 +1,360 @@
+<div class="npc-builder">
+
+  <nav class="sta-bt-tabs">
+    {{#each tabs}}
+    <button type="button" class="sta-bt-tab{{#if active}} active{{/if}}" data-action="goStep" data-step="{{step}}"
+      {{#unless enabled}}disabled{{/unless}}>{{label}}</button>
+    {{/each}}
+  </nav>
+
+  {{!-- ── Step: Timeframe ───────────────────────────────────────── --}}
+  {{#if (eq step "year")}}
+  <div class="npc-builder-panel active">
+    <h3 class="npc-builder-panel-title">{{localize "sta-utils.starshipCreator.year.title"}}</h3>
+    <p class="npc-builder-hint">{{localize "sta-utils.starshipCreator.year.hint"}}</p>
+    <div class="npc-builder-field-row">
+      <label class="npc-builder-label">{{localize "sta-utils.starshipCreator.year.label"}}</label>
+      <input class="npc-builder-input" type="number" name="year" value="{{year}}" min="1" step="1" autofocus>
+    </div>
+    <div class="npc-builder-field-row">
+      <label class="npc-builder-label">{{localize "sta-utils.starshipCreator.npc.label"}}</label>
+      <input type="checkbox" name="npc" {{#if npc}}checked{{/if}}>
+    </div>
+    <p class="npc-builder-hint">{{localize "sta-utils.starshipCreator.npc.hint"}}</p>
+  </div>
+  {{/if}}
+
+  {{!-- ── Step: Spaceframe ──────────────────────────────────────── --}}
+  {{#if (eq step "spaceframe")}}
+  <div class="npc-builder-panel active">
+    <h3 class="npc-builder-panel-title">{{localize "sta-utils.starshipCreator.spaceframe.title"}}</h3>
+    {{#if hasSpaceframes}}
+    <div class="npc-builder-field-row starship-creator-filters">
+      <input class="npc-builder-input" type="search" name="spaceframeSearch" value="{{searchText}}"
+        placeholder="{{localize 'sta-utils.starshipCreator.spaceframe.search'}}">
+      <select class="npc-builder-input" name="spaceframeFaction">
+        <option value="">{{localize "sta-utils.starshipCreator.spaceframe.allFactions"}}</option>
+        {{#each factionOptions}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{value}}</option>{{/each}}
+      </select>
+      <select class="npc-builder-input" name="spaceframeScale">
+        <option value="">{{localize "sta-utils.starshipCreator.spaceframe.allScales"}}</option>
+        {{#each scaleOptions}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{localize "sta-utils.starshipCreator.spaceframe.scale"}} {{value}}</option>{{/each}}
+      </select>
+      <input class="npc-builder-input" type="number" name="spaceframeYear" value="{{filterYear}}" min="1" step="1"
+        placeholder="{{localize 'sta-utils.starshipCreator.spaceframe.filterYear'}}"
+        title="{{localize 'sta-utils.starshipCreator.spaceframe.filterYear'}}"
+        aria-label="{{localize 'sta-utils.starshipCreator.spaceframe.filterYear'}}">
+    </div>
+    <div class="starship-creator-split">
+      <div class="starship-creator-list">
+        <p class="npc-builder-hint starship-creator-empty" hidden>{{localize "sta-utils.starshipCreator.spaceframe.noMatches"}}</p>
+        {{#each spaceframes}}
+        {{#if newGroup}}<div class="npc-builder-section-label starship-creator-group">{{factionLabel}}</div>{{/if}}
+        <div class="npc-selection-card starship-creator-spaceframe-card{{#if selected}} selected{{/if}}"
+          data-action="pickSpaceframe" data-uuid="{{uuid}}" data-faction="{{faction}}" data-scale="{{scale}}"
+          data-name="{{name}}" data-first-commissioned="{{firstCommissioned}}">
+          {{#if img}}<img class="starship-creator-spaceframe-image" src="{{img}}" alt="" loading="lazy">{{/if}}
+          <div class="starship-creator-spaceframe-info">
+            <div class="npc-selection-card-title">{{name}}</div>
+            <div class="npc-stat-grid">
+              <span class="npc-stat-label">{{localize "sta-utils.starshipCreator.spaceframe.scale"}}</span>
+              <span class="npc-stat-value">{{scale}}</span>
+              <span class="npc-stat-label">{{localize "sta-utils.starshipCreator.spaceframe.commissioned"}}</span>
+              <span class="npc-stat-value{{#if futureLaunch}} starship-creator-future-year{{/if}}">{{#if firstCommissioned}}{{firstCommissioned}}{{else}}—{{/if}}</span>
+            </div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+      <div class="starship-creator-detail">
+        {{#if spaceframeDetail}}
+        <h3 class="npc-builder-panel-title">{{spaceframeDetail.name}}</h3>
+        <button type="button" class="npc-builder-btn npc-builder-btn--ghost" data-action="openSourceSheet" data-uuid="{{spaceframeDetail.uuid}}">
+          <i class="fas fa-external-link-alt"></i> {{localize "sta-utils.starshipCreator.openSheet"}}
+        </button>
+        <p class="npc-builder-hint">{{spaceframeDetail.source}}{{#if spaceframeDetail.faction}} · {{spaceframeDetail.faction}}{{/if}}{{#if spaceframeDetail.designation}} · {{spaceframeDetail.designation}}{{/if}}</p>
+        <div class="npc-stat-grid">
+          <span class="npc-stat-label">{{localize "sta-utils.starshipCreator.spaceframe.scale"}}</span>
+          <span class="npc-stat-value">{{spaceframeDetail.scale}}</span>
+          <span class="npc-stat-label">{{localize "sta-utils.starshipCreator.spaceframe.commissioned"}}</span>
+          <span class="npc-stat-value{{#if spaceframeDetail.futureLaunch}} starship-creator-future-year{{/if}}">{{#if spaceframeDetail.firstCommissioned}}{{spaceframeDetail.firstCommissioned}}{{else}}—{{/if}}</span>
+          <span class="npc-stat-label">{{localize "sta-utils.starshipCreator.spaceframe.refits"}}</span>
+          <span class="npc-stat-value">{{spaceframeDetail.refits}}</span>
+        </div>
+        <div class="npc-card-grid">
+          <div class="npc-stat-grid">
+            {{#each spaceframeDetail.systems}}
+            <span class="npc-stat-label">{{label}}</span>
+            <span class="npc-stat-value">{{value}}</span>
+            {{/each}}
+          </div>
+          <div class="npc-stat-grid">
+            {{#each spaceframeDetail.departments}}
+            <span class="npc-stat-label">{{label}}</span>
+            <span class="npc-stat-value">{{value}}</span>
+            {{/each}}
+          </div>
+        </div>
+        {{#if spaceframeDetail.talents.length}}
+        <p class="npc-builder-hint">{{localize "sta-utils.starshipCreator.spaceframe.talents"}}: {{#each spaceframeDetail.talents}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</p>
+        {{/if}}
+        {{else}}
+        <p class="npc-builder-hint">{{localize "sta-utils.starshipCreator.pickPrompt"}}</p>
+        {{/if}}
+      </div>
+    </div>
+    {{else}}
+    <p class="npc-builder-hint">{{localize "sta-utils.starshipCreator.spaceframe.none"}}</p>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ── Step: Mission Profile ─────────────────────────────────── --}}
+  {{#if (eq step "profile")}}
+  <div class="npc-builder-panel active">
+    <h3 class="npc-builder-panel-title">{{localize "sta-utils.starshipCreator.profile.title"}}</h3>
+    {{#if hasProfiles}}
+    <div class="starship-creator-split">
+      <div class="starship-creator-list">
+        {{#each profiles}}
+        <div class="npc-selection-card{{#if selected}} selected{{/if}}" data-action="pickProfile" data-uuid="{{uuid}}">
+          <div class="npc-selection-card-title">{{name}}</div>
+        </div>
+        {{/each}}
+      </div>
+      <div class="starship-creator-detail">
+        {{#if profileDetail}}
+        <h3 class="npc-builder-panel-title">{{profileDetail.name}}</h3>
+        <button type="button" class="npc-builder-btn npc-builder-btn--ghost" data-action="openSourceSheet" data-uuid="{{profileDetail.uuid}}">
+          <i class="fas fa-external-link-alt"></i> {{localize "sta-utils.starshipCreator.openSheet"}}
+        </button>
+        <div class="npc-card-grid">
+          <div class="npc-stat-grid">
+            {{#each profileDetail.systems}}
+            <span class="npc-stat-label">{{label}}</span>
+            <span class="npc-stat-value">{{value}}</span>
+            {{/each}}
+          </div>
+          <div class="npc-stat-grid">
+            {{#each profileDetail.departments}}
+            <span class="npc-stat-label">{{label}}</span>
+            <span class="npc-stat-value">{{value}}</span>
+            {{/each}}
+          </div>
+        </div>
+        {{#each profileDetail.bonusSlots}}
+        <div class="npc-builder-field-row">
+          <label class="npc-builder-label">{{localize "sta-utils.starshipCreator.profile.systemBonus"}}</label>
+          <select class="npc-builder-input" name="systemBonus" data-index="{{index}}">
+            <option value="">—</option>
+            {{#each options}}
+            <option value="{{value}}" {{#if selected}}selected{{/if}} {{#if disabled}}disabled{{/if}}>{{label}}</option>
+            {{/each}}
+          </select>
+        </div>
+        {{/each}}
+        <h3 class="npc-builder-panel-title">{{localize "sta-utils.starshipCreator.profile.talents"}} ({{profileDetail.chosen}}/{{profileDetail.quota}})</h3>
+        <div class="npc-card-grid">
+          {{#each profileDetail.talents}}
+          <div class="npc-selection-card{{#if selected}} selected{{/if}}" data-action="toggleTalent" data-id="{{id}}">
+            <div class="npc-selection-card-title">{{name}}</div>
+            <div class="npc-selection-card-desc npc-builder-hint">{{{description}}}</div>
+          </div>
+          {{/each}}
+        </div>
+        {{else}}
+        <p class="npc-builder-hint">{{localize "sta-utils.starshipCreator.pickPrompt"}}</p>
+        {{/if}}
+      </div>
+    </div>
+    {{else}}
+    <p class="npc-builder-hint">{{localize "sta-utils.starshipCreator.profile.none"}}</p>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ── Step: Service Record ──────────────────────────────────── --}}
+  {{#if (eq step "service")}}
+  <div class="npc-builder-panel active">
+    <h3 class="npc-builder-panel-title">{{localize "sta-utils.starshipCreator.service.title"}}</h3>
+    <p class="npc-builder-hint">{{localize "sta-utils.starshipCreator.service.hint"}}</p>
+    <div class="starship-creator-split">
+      <div class="starship-creator-list">
+        <div class="npc-selection-card{{#if noRecordSelected}} selected{{/if}}" data-action="pickRecord" data-key="">
+          <div class="npc-selection-card-title">{{localize "sta-utils.starshipCreator.none"}}</div>
+        </div>
+        {{#each records}}
+        <div class="npc-selection-card{{#if selected}} selected{{/if}}" data-action="pickRecord" data-key="{{key}}">
+          <div class="npc-selection-card-title">{{name}}</div>
+        </div>
+        {{/each}}
+      </div>
+      <div class="starship-creator-detail">
+        {{#if record}}
+        <h3 class="npc-builder-panel-title">{{record.name}}</h3>
+        <p class="npc-selection-card-desc">{{record.description}}</p>
+        <p class="npc-selection-card-desc"><strong>{{record.specialName}}.</strong> {{record.specialDescription}}</p>
+        {{#if record.recommendation}}<p class="npc-builder-hint">{{record.recommendation}}</p>{{/if}}
+        {{#if record.needsBattleName}}
+        <div class="npc-builder-field-row">
+          <label class="npc-builder-label">{{localize "sta-utils.starshipCreator.service.battle"}}</label>
+          <input class="npc-builder-input" type="text" name="battleName" value="{{record.battleName}}">
+        </div>
+        {{/if}}
+        {{#if record.needsSystem}}
+        <div class="npc-builder-field-row">
+          <label class="npc-builder-label">{{localize "sta-utils.starshipCreator.service.system"}}</label>
+          <select class="npc-builder-input" name="recordSystem">
+            <option value="">—</option>
+            {{#each record.systemOptions}}
+            <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+            {{/each}}
+          </select>
+        </div>
+        {{/if}}
+        {{#if record.replacesTalent}}
+        <div class="npc-builder-field-row">
+          <label class="npc-builder-label">{{localize "sta-utils.starshipCreator.service.replaceTalent"}}</label>
+          <select class="npc-builder-input" name="removedTalent">
+            <option value="">—</option>
+            {{#each record.talentOptions}}
+            <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+            {{/each}}
+          </select>
+          <p class="npc-builder-hint">{{localize "sta-utils.starshipCreator.service.replaceTalentHint"}}</p>
+        </div>
+        {{/if}}
+        {{else}}
+        <p class="npc-builder-hint">{{localize "sta-utils.starshipCreator.pickPrompt"}}</p>
+        {{/if}}
+      </div>
+    </div>
+  </div>
+  {{/if}}
+
+  {{!-- ── Step: Refits ──────────────────────────────────────────── --}}
+  {{#if (eq step "refits")}}
+  <div class="npc-builder-panel active">
+    <h3 class="npc-builder-panel-title">{{localize "sta-utils.starshipCreator.refits.title"}}</h3>
+    <p class="npc-builder-hint">{{localize "sta-utils.starshipCreator.refits.rules"}}</p>
+    {{#unless refit.hasYear}}
+    <p class="npc-builder-hint">{{localize "sta-utils.starshipCreator.refits.noYear"}}</p>
+    {{/unless}}
+    <p class="npc-builder-hint">{{localize "sta-utils.starshipCreator.refits.summary" age=refit.age allowed=refit.allowed remaining=refit.remaining}}</p>
+
+    <div class="npc-stat-grid">
+      {{#each refit.rows}}
+      <span class="npc-stat-label">{{label}} ({{base}}{{#if added}} +{{added}}{{/if}} = {{final}})</span>
+      <span class="npc-stat-value">
+        <button type="button" class="npc-builder-btn npc-builder-btn--ghost" data-action="addRefit" data-system="{{key}}"
+          {{#unless canAdd}}disabled{{/unless}}><i class="fa-solid fa-plus"></i></button>
+      </span>
+      {{/each}}
+    </div>
+
+    <div class="npc-builder-footer-left">
+      <button type="button" class="npc-builder-btn npc-builder-btn--ghost" data-action="randomRefit"
+        {{#unless refit.remaining}}disabled{{/unless}}>
+        <i class="fa-solid fa-shuffle"></i> {{localize "sta-utils.starshipCreator.refits.random"}}
+      </button>
+      <button type="button" class="npc-builder-btn npc-builder-btn--ghost" data-action="resetRefits"
+        {{#unless refit.used}}disabled{{/unless}}>
+        <i class="fa-solid fa-rotate-left"></i> {{localize "sta-utils.starshipCreator.refits.reset"}}
+      </button>
+    </div>
+
+    {{#if refit.list.length}}
+    <div class="npc-stat-grid">
+      {{#each refit.list}}
+      <span class="npc-stat-label">{{label}}</span>
+      <span class="npc-stat-value">
+        <button type="button" class="npc-builder-btn npc-builder-btn--ghost" data-action="removeRefit" data-index="{{index}}">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </span>
+      {{/each}}
+    </div>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ── Step: Review ──────────────────────────────────────────── --}}
+  {{#if (eq step "review")}}
+  <div class="npc-builder-panel active">
+    <h3 class="npc-builder-panel-title">{{localize "sta-utils.starshipCreator.review.title"}}</h3>
+    <div class="npc-builder-field-row">
+      <label class="npc-builder-label">{{localize "sta-utils.starshipCreator.review.name"}} <span class="npc-required">*</span></label>
+      <input class="npc-builder-input" type="text" name="shipName" value="{{review.name}}" autofocus>
+    </div>
+    <div class="npc-builder-field-row">
+      <label class="npc-builder-label">{{localize "sta-utils.starshipCreator.review.designation"}}</label>
+      <input class="npc-builder-input" type="text" name="designation" value="{{review.designation}}">
+    </div>
+    {{#if review.npc}}
+    <div class="npc-builder-field-row">
+      <label class="npc-builder-label">{{localize "sta-utils.npcShip.crewQuality"}}</label>
+      <select class="npc-builder-input" name="crewQuality">
+        {{#each review.crewQualities}}
+        <option value="{{key}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+        {{/each}}
+      </select>
+    </div>
+    {{/if}}
+    <div class="npc-stat-grid">
+      <span class="npc-stat-label">{{localize "sta-utils.starshipCreator.year.label"}}</span>
+      <span class="npc-stat-value">{{review.year}}</span>
+      <span class="npc-stat-label">{{localize "sta-utils.starshipCreator.spaceframe.title"}}</span>
+      <span class="npc-stat-value">{{review.spaceframe}}</span>
+      <span class="npc-stat-label">{{localize "sta-utils.starshipCreator.profile.title"}}</span>
+      <span class="npc-stat-value">{{review.profile}}</span>
+      {{#unless review.npc}}
+      <span class="npc-stat-label">{{localize "sta-utils.starshipCreator.service.title"}}</span>
+      <span class="npc-stat-value">{{review.record}}</span>
+      {{/unless}}
+      <span class="npc-stat-label">{{localize "sta-utils.starshipCreator.review.resistance"}}</span>
+      <span class="npc-stat-value">{{review.resistance}}</span>
+    </div>
+    <div class="npc-card-grid">
+      <div class="npc-stat-grid">
+        {{#each review.systems}}
+        <span class="npc-stat-label">{{label}}</span>
+        <span class="npc-stat-value">{{value}}</span>
+        {{/each}}
+      </div>
+      <div class="npc-stat-grid">
+        {{#each review.departments}}
+        <span class="npc-stat-label">{{label}}</span>
+        <span class="npc-stat-value">{{value}}</span>
+        {{/each}}
+      </div>
+    </div>
+    <p class="npc-builder-hint">{{localize "sta-utils.starshipCreator.spaceframe.talents"}}: {{#each review.talents}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</p>
+  </div>
+  {{/if}}
+
+  {{!-- ── Footer ────────────────────────────────────────────────── --}}
+  <div class="npc-builder-footer">
+    <div class="npc-builder-footer-left">
+      {{#unless isFirstStep}}
+      <button class="npc-builder-btn npc-builder-btn--ghost" type="button" data-action="back">
+        <i class="fa-solid fa-chevron-left"></i> {{localize "sta-utils.starshipCreator.back"}}
+      </button>
+      {{/unless}}
+    </div>
+    <span class="npc-builder-step-label">{{stepLabel}}</span>
+    <div class="npc-builder-footer-right">
+      {{#if isLastStep}}
+      <button class="npc-builder-btn npc-builder-btn--primary" type="button" data-action="create"
+        {{#unless canProceed}}disabled{{/unless}}>
+        <i class="fa-solid fa-rocket"></i> {{localize "sta-utils.starshipCreator.create"}}
+      </button>
+      {{else}}
+      <button class="npc-builder-btn npc-builder-btn--primary" type="button" data-action="next"
+        {{#unless canProceed}}disabled{{/unless}}>
+        {{localize "sta-utils.starshipCreator.next"}} <i class="fa-solid fa-chevron-right"></i>
+      </button>
+      {{/if}}
+    </div>
+  </div>
+
+</div>

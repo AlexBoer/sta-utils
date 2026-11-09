@@ -71,8 +71,16 @@ const STEPS = [
   "departments",
   "focuses",
   "talents",
-  "finishing",
 ];
+
+const STEP_LABELS = {
+  info: "Info",
+  attributes: "Attributes",
+  departments: "Departments",
+  focuses: "Focuses",
+  talents: "Talents",
+  finishing: "Finishing",
+};
 
 const fapi = foundry.applications.api;
 
@@ -416,9 +424,9 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
     return pool;
   }
 
-  _canProceed() {
+  _canProceed(step = this._currentStep) {
     const state = this._wizardState;
-    switch (this._currentStep) {
+    switch (step) {
       case "info":
         return true;
       case "attributes": {
@@ -515,6 +523,12 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
       isFirstStep: stepIdx === 0,
       isLastStep: stepIdx === STEPS.length - 1,
       canProceed: this._canProceed(),
+      tabs: STEPS.map((step, index) => ({
+        step,
+        label: STEP_LABELS[step] ?? step,
+        active: step === this._currentStep,
+        enabled: STEPS.slice(0, index).every((s) => this._canProceed(s)),
+      })),
       stepPanels: Object.fromEntries(
         STEPS.map((s) => [s, s === this._currentStep]),
       ),
@@ -614,6 +628,9 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
     html.querySelector(".npc-builder-next")?.addEventListener("click", () => {
       if (this._canProceed()) this._onNext();
     });
+    for (const tab of html.querySelectorAll(".sta-bt-tab[data-step]")) {
+      tab.addEventListener("click", () => this._goStep(tab.dataset.step));
+    }
     html
       .querySelector(".supp-builder-create")
       ?.addEventListener("click", () => this._onCreate());
@@ -1606,6 +1623,14 @@ export class SupportingBuilderApp extends fapi.HandlebarsApplicationMixin(
       }
     }
 
+    this.render();
+  }
+
+  _goStep(step) {
+    const index = STEPS.indexOf(step);
+    if (index < 0 || step === this._currentStep) return;
+    if (!STEPS.slice(0, index).every((s) => this._canProceed(s))) return;
+    this._currentStep = step;
     this.render();
   }
 

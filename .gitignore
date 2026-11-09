@@ -4,6 +4,11 @@
 # Local dev tooling (NPC extraction/import macros, extracted data)
 tools/
 
+# Test files (excluded from releases)
+tests/
+*.test.mjs
+*.test.js
+
 # Node modules
 node_modules/
 

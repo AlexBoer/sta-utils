@@ -1,5 +1,12 @@
 <div class="npc-builder">
 
+  <nav class="sta-bt-tabs">
+    {{#each tabs}}
+    <button type="button" class="sta-bt-tab{{#if active}} active{{/if}}" data-step="{{step}}"
+      {{#unless enabled}}disabled{{/unless}}>{{label}}</button>
+    {{/each}}
+  </nav>
+
   {{!-- ── Step: Info ──────────────────────────────────────────────── --}}
   <div class="npc-builder-panel{{#if stepPanels.info}} active{{/if}}" data-panel="info">
     <h3 class="npc-builder-panel-title">Character Info</h3>
@@ -24,6 +31,10 @@
         <label class="npc-radio-label{{#if isNotable}} active{{/if}}">
           <input type="radio" name="npcType" value="notable" {{#if isNotable}}checked{{/if}}>
           Notable
+        </label>
+        <label class="npc-radio-label{{#if isMajor}} active{{/if}}">
+          <input type="radio" name="npcType" value="major" {{#if isMajor}}checked{{/if}}>
+          {{localize "sta-utils.npcMajor.type"}}
         </label>
         <label class="npc-radio-label{{#if isIncidental}} active{{/if}}">
           <input type="radio" name="npcType" value="incidental" {{#if isIncidental}}checked{{/if}}>
@@ -136,6 +147,15 @@
   {{!-- ── Step: Attributes ──────────────────────────────────────── --}}
   <div class="npc-builder-panel{{#if stepPanels.attributes}} active{{/if}}" data-panel="attributes">
     <h3 class="npc-builder-panel-title">Assign Attributes</h3>
+    {{#if isMajor}}
+    <p class="npc-builder-hint">{{localize "sta-utils.npcMajor.attributesHint"}} <span class="npc-major-total">{{majorAttributeTotal}}</span> / 59</p>
+    <div class="npc-chip-pool" role="status" aria-live="polite">
+      <span>{{localize "sta-utils.npcMajor.pointsRemaining"}}: <span class="npc-major-remaining">{{majorAttributes.remaining}}</span></span>
+      <span class="talent-uses-pips" aria-hidden="true">
+        {{#each majorAttributes.pips}}<span class="talent-uses-pip npc-major-pip{{#if available}} filled{{/if}}"></span>{{/each}}
+      </span>
+    </div>
+    {{else}}
     <p class="npc-builder-hint">Drag numbers from the pool onto attribute rows. Drag a placed chip back to the pool to un-assign it.</p>
 
     <div class="npc-chip-pool{{#if attrPoolEmpty}} done{{/if}}" id="npc-attr-pool">
@@ -144,10 +164,11 @@
       {{/each}}
       {{#if attrPoolEmpty}}<span class="npc-pool-done"><i class="fa-solid fa-check"></i> All assigned</span>{{/if}}
     </div>
+    {{/if}}
 
     {{#if showBonusColumn}}
     <p class="npc-builder-hint npc-bonus-hint">Species bonus:
-      {{#if needsAttributeBonusSelection}}choose 3 attributes to receive <strong>+1</strong> each{{else}}attributes marked <strong>+1</strong> include your species bonus{{/if}}
+      {{#if needsAttributeBonusSelection}}choose 3 attributes to receive <strong>+1</strong> each{{else}}{{#if isMajor}}{{localize "sta-utils.npcMajor.fixedBonuses"}}{{else}}attributes marked <strong>+1</strong> include your species bonus{{/if}}{{/if}}
     </p>
     {{/if}}
 
@@ -155,6 +176,15 @@
       {{#each attributeSlots}}
       <div class="npc-slot-row">
         <span class="npc-slot-label">{{label}}</span>
+        {{#if ../isMajor}}
+        <div class="sta-attack-counter npc-major-controls" data-key="{{key}}">
+          <button type="button" class="sta-counter-btn npc-major-adjust" data-key="{{key}}" data-delta="-1"
+            aria-label="{{localize 'sta-utils.npcMajor.decrease'}} {{label}}" {{#unless allocation.canDecrease}}disabled{{/unless}}>&minus;</button>
+          <span class="sta-counter-value npc-major-score">{{value}}</span>
+          <button type="button" class="sta-counter-btn npc-major-adjust" data-key="{{key}}" data-delta="1"
+            aria-label="{{localize 'sta-utils.npcMajor.increase'}} {{label}}" {{#unless allocation.canIncrease}}disabled{{/unless}}>+</button>
+        </div>
+        {{else}}
         <div class="npc-drop-zone{{#unless value}} empty{{/unless}}" data-key="{{key}}">
           {{#if value}}
           <div class="npc-chip npc-chip--assigned" draggable="true"
@@ -163,12 +193,14 @@
           <span class="npc-slot-placeholder">—</span>
           {{/if}}
         </div>
+        {{/if}}
         {{#if ../showBonusColumn}}
         <div class="npc-bonus-col">
           {{#if fixedBonus}}
-          <span class="npc-bonus-fixed">+1</span>
+          <span class="npc-bonus-fixed">+{{fixedBonus}}</span>
           {{else if choiceBonus}}
           <input type="checkbox" class="npc-bonus-attr-cb" value="{{key}}"
+            aria-label="{{localize 'sta-utils.npcMajor.speciesBonus'}} {{label}}"
             {{#if choiceBonus.selected}}checked{{/if}}
             {{#if choiceBonus.disabled}}disabled{{/if}}>
           {{/if}}
@@ -182,6 +214,15 @@
   {{!-- ── Step: Departments ──────────────────────────────────────── --}}
   <div class="npc-builder-panel{{#if stepPanels.departments}} active{{/if}}" data-panel="departments">
     <h3 class="npc-builder-panel-title">Assign Departments</h3>
+    {{#if isMajor}}
+    <p class="npc-builder-hint">{{localize "sta-utils.npcMajor.departmentsHint"}} <span class="npc-major-total">{{majorDisciplineTotal}}</span> / 16</p>
+    <div class="npc-chip-pool" role="status" aria-live="polite">
+      <span>{{localize "sta-utils.npcMajor.pointsRemaining"}}: <span class="npc-major-remaining">{{majorDisciplines.remaining}}</span></span>
+      <span class="talent-uses-pips" aria-hidden="true">
+        {{#each majorDisciplines.pips}}<span class="talent-uses-pip npc-major-pip{{#if available}} filled{{/if}}"></span>{{/each}}
+      </span>
+    </div>
+    {{else}}
     <p class="npc-builder-hint">Assign all chips. Departments without a chip will default to 0.</p>
 
     <div class="npc-chip-pool{{#if discPoolEmpty}} done{{/if}}" id="npc-disc-pool">
@@ -190,11 +231,21 @@
       {{/each}}
       {{#if discPoolEmpty}}<span class="npc-pool-done"><i class="fa-solid fa-check"></i> All assigned</span>{{/if}}
     </div>
+    {{/if}}
 
     <div class="npc-slot-grid">
       {{#each disciplineSlots}}
       <div class="npc-slot-row">
         <span class="npc-slot-label">{{label}}</span>
+        {{#if ../isMajor}}
+        <div class="sta-attack-counter npc-major-controls" data-key="{{key}}">
+          <button type="button" class="sta-counter-btn npc-major-adjust" data-key="{{key}}" data-delta="-1"
+            aria-label="{{localize 'sta-utils.npcMajor.decrease'}} {{label}}" {{#unless allocation.canDecrease}}disabled{{/unless}}>&minus;</button>
+          <span class="sta-counter-value npc-major-score">{{value}}</span>
+          <button type="button" class="sta-counter-btn npc-major-adjust" data-key="{{key}}" data-delta="1"
+            aria-label="{{localize 'sta-utils.npcMajor.increase'}} {{label}}" {{#unless allocation.canIncrease}}disabled{{/unless}}>+</button>
+        </div>
+        {{else}}
         <div class="npc-drop-zone{{#unless value}} empty{{/unless}}" data-key="{{key}}">
           {{#if value}}
           <div class="npc-chip npc-chip--assigned" draggable="true"
@@ -203,6 +254,7 @@
           <span class="npc-slot-placeholder">0</span>
           {{/if}}
         </div>
+        {{/if}}
       </div>
       {{/each}}
     </div>
@@ -210,10 +262,10 @@
 
   {{!-- ── Step: Details (Notable only) ────────────────────────── --}}
   <div class="npc-builder-panel{{#if stepPanels.details}} active{{/if}}" data-panel="details">
-    <h3 class="npc-builder-panel-title">Focuses &amp; Value</h3>
+    <h3 class="npc-builder-panel-title">{{#if isMajor}}{{localize "sta-utils.npcMajor.details"}}{{else}}Focuses &amp; Value{{/if}}</h3>
 
     <div class="npc-builder-section-label">
-      Focuses <span class="npc-hint">(up to 3, optional)</span>
+      Focuses <span class="npc-hint">{{#if isMajor}}{{localize "sta-utils.npcMajor.focusHint"}}{{else}}(up to 3, optional){{/if}}</span>
     </div>
     {{#each focusList}}
     <div class="npc-builder-field-row">
@@ -221,7 +273,7 @@
         {{#if ../hasFocusSuggestions}}
         <div class="npc-focus-combobox npc-species-combobox">
           <input class="npc-builder-input" type="text" value="{{value}}"
-            placeholder="Focus {{num}}" autocomplete="off">
+            placeholder="{{localize 'sta-utils.npcMajor.focus'}} {{num}}" aria-label="{{localize 'sta-utils.npcMajor.focus'}} {{num}}" autocomplete="off">
           <ul class="npc-suggestion-dropdown npc-species-dropdown" role="listbox">
             {{#each ../focusSuggestions}}
             <li class="npc-suggestion-option npc-species-option" role="option">{{this}}</li>
@@ -230,14 +282,40 @@
         </div>
         {{else}}
         <input class="npc-builder-input npc-focus-input" type="text" value="{{value}}"
-          placeholder="Focus {{num}}">
+          placeholder="{{localize 'sta-utils.npcMajor.focus'}} {{num}}" aria-label="{{localize 'sta-utils.npcMajor.focus'}} {{num}}">
         {{/if}}
         <button class="npc-field-random-btn npc-builder-btn npc-builder-btn--ghost" type="button"
-          title="Pick random" data-action="random-focus" data-index="{{@index}}"><i class="fa-solid fa-shuffle"></i></button>
+          title="{{localize 'sta-utils.npcMajor.randomFocus'}}" aria-label="{{localize 'sta-utils.npcMajor.randomFocus'}} {{num}}" data-action="random-focus" data-index="{{@index}}"><i class="fa-solid fa-shuffle" aria-hidden="true"></i></button>
       </div>
     </div>
     {{/each}}
 
+    {{#if isMajor}}
+    <div class="npc-builder-section-label npc-section-gap">{{localize "sta-utils.npcMajor.valuesHint"}}</div>
+    {{#each valueList}}
+    <div class="npc-builder-field-row">
+      <div class="npc-field-rand-wrap">
+        {{#if ../hasValueSuggestions}}
+        <div class="npc-value-combobox npc-species-combobox">
+          <input class="npc-builder-input npc-major-value" type="text" value="{{value}}"
+            placeholder="{{localize 'sta-utils.npcMajor.value'}} {{num}}" aria-label="{{localize 'sta-utils.npcMajor.value'}} {{num}}" autocomplete="off">
+          <ul class="npc-suggestion-dropdown npc-species-dropdown" role="listbox">
+            {{#each ../valueSuggestions}}
+            <li class="npc-suggestion-option npc-species-option" role="option">{{this}}</li>
+            {{/each}}
+          </ul>
+        </div>
+        {{else}}
+        <input class="npc-builder-input npc-major-value" type="text" value="{{value}}"
+          placeholder="{{localize 'sta-utils.npcMajor.value'}} {{num}}" aria-label="{{localize 'sta-utils.npcMajor.value'}} {{num}}">
+        {{/if}}
+        <button class="npc-field-random-btn npc-builder-btn npc-builder-btn--ghost" type="button"
+          title="{{localize 'sta-utils.npcMajor.randomValue'}}" aria-label="{{localize 'sta-utils.npcMajor.randomValue'}} {{num}}"
+          data-action="random-major-value" data-index="{{@index}}"><i class="fa-solid fa-shuffle" aria-hidden="true"></i></button>
+      </div>
+    </div>
+    {{/each}}
+    {{else}}
     <div class="npc-builder-section-label npc-section-gap">
       Value <span class="npc-hint">(optional)</span>
     </div>
@@ -261,11 +339,15 @@
           title="Pick random" data-action="random-value"><i class="fa-solid fa-shuffle"></i></button>
       </div>
     </div>
+    {{/if}}
   </div>
 
   {{!-- ── Step: Special Rules ────────────────────────────────── --}}
   <div class="npc-builder-panel{{#if (lookup stepPanels 'special-rules')}} active{{/if}}" data-panel="special-rules">
     <h3 class="npc-builder-panel-title">Special Rules</h3>
+    {{#if isMajor}}
+    <p class="npc-builder-hint">{{localize "sta-utils.npcMajor.talentsHint"}} {{majorTalentCount}} / 4</p>
+    {{/if}}
 
     {{#if specialRulesAvailable}}
       <p class="npc-builder-hint">Choose talents from the configured compendiums.</p>

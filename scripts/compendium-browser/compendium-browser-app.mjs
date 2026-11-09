@@ -2,6 +2,7 @@ import { MODULE_ID } from "../core/constants.mjs";
 import { t } from "../core/i18n.mjs";
 import { getCompendiumBrowserExclusions } from "../core/settings.mjs";
 import { loadSpeciesCatalog } from "../npc-builder/npc-builder-data.mjs";
+import { getSourceValue } from "../source-field/source-data.mjs";
 import {
   enrichCharacterIndexRow,
   getCharacterCategories,
@@ -94,7 +95,8 @@ export class CompendiumBrowserApp extends Base {
     this._generation = 0;
     this._loadedKey = "";
     this._search = "";
-    this._source = "all";
+    this._source = "";
+    this._compendium = "all";
     this._sort = "name";
     this._sortDirection = "asc";
     this._documentNameLock = null;
@@ -154,7 +156,8 @@ export class CompendiumBrowserApp extends Base {
     this._selection = { documentName, type };
     this._characterCategory = resolvedPreset.characterCategory ?? "all";
     this._search = resolvedPreset.search ?? "";
-    this._source = resolvedPreset.source ?? "all";
+    this._source = resolvedPreset.source ?? "";
+    this._compendium = resolvedPreset.compendium ?? "all";
     this._fieldFilters = foundry.utils.deepClone(
       resolvedPreset.fieldFilters ?? {},
     );
@@ -170,7 +173,8 @@ export class CompendiumBrowserApp extends Base {
     this._errors = [];
     this._loadedKey = "";
     this._search = "";
-    this._source = "all";
+    this._source = "";
+    this._compendium = "all";
     this._sort = "name";
     this._sortDirection = "asc";
     this._documentNameLock = null;
@@ -230,13 +234,20 @@ export class CompendiumBrowserApp extends Base {
     const isCharacterView =
       this._selection.documentName === "Actor" &&
       this._selection.type === "character";
-    const sourceLabels = new Map(
+    const compendiumLabels = new Map(
       this._records.map((record) => [record.packId, record.packLabel]),
     );
+    const sources = [
+      ...new Set(this._records.map((record) => record.source).filter(Boolean)),
+    ].sort((a, b) => a.localeCompare(b, game.i18n.lang));
     const query = normalize(this._search);
     const records = this._records
       .filter(
-        (record) => this._source === "all" || record.packId === this._source,
+        (record) => !this._source || record.source === this._source,
+      )
+      .filter(
+        (record) =>
+          this._compendium === "all" || record.packId === this._compendium,
       )
       .filter((record) => !query || record.searchText.includes(query))
       .filter(
@@ -327,14 +338,26 @@ export class CompendiumBrowserApp extends Base {
       search: this._search,
       sources: [
         {
-          id: "all",
+          id: "",
           label: t("sta-utils.compendiumBrowser.allSources"),
-          selected: this._source === "all",
+          selected: !this._source,
         },
-        ...Array.from(sourceLabels, ([id, label]) => ({
+        ...sources.map((source) => ({
+          id: source,
+          label: source,
+          selected: this._source === source,
+        })),
+      ],
+      compendiums: [
+        {
+          id: "all",
+          label: t("sta-utils.talentPicker.allCompendiums"),
+          selected: this._compendium === "all",
+        },
+        ...Array.from(compendiumLabels, ([id, label]) => ({
           id,
           label,
-          selected: this._source === id,
+          selected: this._compendium === id,
         })).sort((a, b) => a.label.localeCompare(b.label)),
       ],
     };
@@ -379,6 +402,12 @@ export class CompendiumBrowserApp extends Base {
       .querySelector("[data-role='source']")
       ?.addEventListener("change", (event) => {
         this._source = event.currentTarget.value;
+        this.render({ force: true });
+      });
+    root
+      .querySelector("[data-role='compendium']")
+      ?.addEventListener("change", (event) => {
+        this._compendium = event.currentTarget.value;
         this.render({ force: true });
       });
     root
@@ -559,7 +588,8 @@ export class CompendiumBrowserApp extends Base {
     this._selection = { documentName, type };
     this._records = [];
     this._errors = [];
-    this._source = "all";
+    this._source = "";
+    this._compendium = "all";
     this._fieldFilters = {};
     this._filtersExpanded = false;
     if (documentName !== "Actor" || type !== "character") {
@@ -645,6 +675,7 @@ export class CompendiumBrowserApp extends Base {
             img: String(row.img ?? "icons/svg/book.svg"),
             packId: pack.collection,
             packLabel: packLabel(pack),
+            source: getSourceValue(row, documentName, type),
             sourceLabel: getPackSourceLabel(pack),
             characterCategory,
             categoryBadge:

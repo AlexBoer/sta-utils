@@ -212,7 +212,7 @@ export class TalentPickerApp extends Base {
     this._resolved = false;
 
     this._search = "";
-    this._source = "all";
+    this._source = "";
     this._compendium = "all";
     this._type = "all";
     this._group = "all";
@@ -277,7 +277,7 @@ export class TalentPickerApp extends Base {
       if (talent.toggleGroup && !this._toggles.has(talent.toggleGroup)) {
         return false;
       }
-      if (this._source !== "all" && talent.source !== this._source)
+      if (this._source && talent.source !== this._source)
         return false;
       if (this._compendium !== "all" && talent.compendium !== this._compendium)
         return false;
@@ -352,9 +352,9 @@ export class TalentPickerApp extends Base {
     );
     const sources = [
       {
-        id: "all",
+        id: "",
         label: t("sta-utils.talentPicker.allSources"),
-        selected: this._source === "all",
+        selected: !this._source,
       },
       ...sourceValues.map((id) => ({
         id,

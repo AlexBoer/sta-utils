@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "source": "https://github.com/bcholmes/StarTrek2d20 (WebTools/src/i18n/locales/en/translations.json)",
+  "records": [
+    {
+      "key": "agingRelic",
+      "name": "Aging Relic",
+      "description": "The ship has been in service for decades, and has been home to many crews. Only the longest-serving crew are likely to remember when it was new.",
+      "specialRule": {
+        "name": "Larger Crew",
+        "description": "The ship’s Crew Support is increased by 1."
+      }
+    },
+    {
+      "key": "dependableWorkhorse",
+      "name": "Dependable Workhorse",
+      "description": "The ship is dependable, with a solid record of successful missions and accomplishments. While overshadowed by more famous ships, this vessel is nevertheless a mainstay of the fleet, with a competent, dedicated crew.",
+      "specialRule": {
+        "name": "Reliable",
+        "description": "Whenever the ship rolls to assist a task attempt, the group may spend 1 Momentum to ignore any complications rolled on the ship’s die."
+      }
+    },
+    {
+      "key": "legendary",
+      "name": "Legendary",
+      "description": "This ship is famous, having been at the center of one or more major events that shaped the history and politics of one or more civilizations. This comes with great prestige for those involved.",
+      "specialRule": {
+        "name": "Prestigious Posting",
+        "description": "When a new supporting character is first introduced, apply a single improvement to them immediately, like a milestone."
+      }
+    },
+    {
+      "key": "hopeShip",
+      "name": "Hope Ship",
+      "description": "This vessel’s service has been spent responding to distress calls and disasters, warping to the rescue of those in danger or subjected to great hardship. The ship is heavily refitted for disaster relief, evacuation, and medical catastrophes, and the crew often have additional emergency medical training.",
+      "specialRule": {
+        "name": "Mission of Mercy",
+        "description": "The first time in a scene when an enemy makes an attack against this ship, the gamemaster must spend 1 Threat. The hope ship must add 1 Threat the first time in any scene it makes an attack."
+      }
+    },
+    {
+      "key": "prototype",
+      "name": "Prototype",
+      "description": "The ship is brand new, first of her class, and laden with the newest technologies, assembled to be tested and studied. There are potentially a whole host of unknown problems and challenges to face, as novel systems clash or malfunction as they interact in unexpected ways.",
+      "specialRule": {
+        "name": "Experimental Vessel",
+        "description": "When the ship is created, apply two additional refits to the ship. In addition, whenever the ship assists a task attempt, the ship’s die increases its complication range by 2 (to 18–20). A milestone refit can remove this complication range increase, representing the ship’s crew working out the problems in the prototype design."
+      },
+      "extraRefits": 2
+    },
+    {
+      "key": "survivorOfX",
+      "name": "Survivor of X",
+      "description": "This ship was involved in some of the fiercest battles, surviving the fighting, though not without scars. The crew is battle-hardened and prepared for anything.",
+      "specialRule": {
+        "name": "Ready for Battle",
+        "description": "During the first round of ship combat, the gamemaster must spend 1 additional Threat to allow an enemy ship to take the first turn."
+      },
+      "needsBattleName": true
+    },
+    {
+      "key": "anomalyMagnet",
+      "name": "Anomaly Magnet",
+      "description": "There are many strange things out in the depths of space, but some ships seem to encounter these bizarre phenomena more often than others. This ship has encountered more than its fair share of spatial anomalies, temporal paradoxes, interdimensional travel, and aliens claiming to be gods.",
+      "specialRule": {
+        "name": "Encounter the Strange",
+        "description": "Each adventure, the gamemaster begins with +2 Threat. In addition, the ship always has an additional Directive for each mission: **Understand the Inexplicable**."
+      }
+    },
+    {
+      "key": "broughtOutOfMothballs",
+      "name": "Brought Out of Mothballs",
+      "description": "The ship is old, and had been partly or fully decommissioned previously, sitting dormant for long stretches of time as part of the reserve fleet. These ships can be brought back into service quickly during times of emergency.",
+      "specialRule": {
+        "name": "The Last Generation",
+        "description": "Select one of the ship’s systems. When you attempt a task assisted by that system, if the Difficulty is 2 or lower, you may reroll the ship’s assist die; If the Difficulty is 3 or higher, increase the task’s complication range by 1."
+      },
+      "needsSystem": true,
+      "recommendation": "oldShip"
+    },
+    {
+      "key": "longTermMission",
+      "name": "Long-Term Mission",
+      "description": "The ship has carried out one or more extended missions, spending years out on the frontier, with minimal support from command and minimal oversight. The crew needs to be resourceful and disciplined to thrive.",
+      "specialRule": {
+        "name": "Far from Home",
+        "description": "The ship’s Crew Support and Small Craft Capacity are each reduced by 1. New supporting characters created may increase one of their departments by 1, and all the ship’s small craft increase one system by 1 (chosen when the small craft is prepared for launch)."
+      }
+    },
+    {
+      "key": "majorRefit",
+      "name": "Major Refit",
+      "description": "The ship recently underwent extensive refits, essentially rebuilding the ship from the spaceframe up. It may as well be a brand-new ship.",
+      "specialRule": {
+        "name": "Upgraded Systems",
+        "description": "When the ship is created, you may select one ship talent granted by the ship’s spaceframe and replace it with a different talent. In addition, select one system: that system may be increased up to three times by refits rather than only twice."
+      },
+      "needsSystem": true,
+      "allowsThirdRefit": true,
+      "replacesTalent": true
+    },
+    {
+      "key": "stateOfTheArt",
+      "name": "State of the Art",
+      "description": "The ship represents a combination of the best technologies available to its creators at the time. Rather than being a prototype, this is no testbed for experimental technology, but rather a step beyond that: advanced technology that has been tested and refined.",
+      "specialRule": {
+        "name": "Peak Performance",
+        "description": "Select one of the ship’s systems. Whenever a task assisted by this system succeeds, the ship scores 1 bonus Momentum. Bonus Momentum cannot be saved."
+      },
+      "needsSystem": true,
+      "recommendation": "newClass"
+    }
+  ]
+}

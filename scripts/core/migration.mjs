@@ -5,6 +5,8 @@
  * v2 — copy sta-utils flags → system.* fields introduced by UtilsCharacterData,
  *       UtilsStarshipData, UtilsSmallCraftData, and UtilsTraitData.
  * v3 — migrate the legacy Piercing First Hit mode to its new independent toggle.
+ * v4 — combine NPC Builder compendium lists into one shared setting.
+ * v5 — combine actor-import override compendium settings.
  *
  * @module migration
  */
@@ -56,6 +58,69 @@ export async function runMigrations() {
     await _migration3_piercingFirstHitSetting();
     await game.settings.set(MODULE_ID, MIGRATION_SETTING, 3);
   }
+
+  if (currentVersion < 4) {
+    await _migration4_npcBuilderCompendiums();
+    await game.settings.set(MODULE_ID, MIGRATION_SETTING, 4);
+  }
+
+  if (currentVersion < 5) {
+    await _migration5_importOverrideCompendiums();
+    await game.settings.set(MODULE_ID, MIGRATION_SETTING, 5);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Migration 5 — combine actor-import override compendium settings    */
+/* ------------------------------------------------------------------ */
+
+async function _migration5_importOverrideCompendiums() {
+  const legacySettings = [
+    "talentImportOverrideCompendium",
+    "focusImportOverrideCompendium",
+    "otherItemImportOverrideCompendium",
+  ];
+  const packs = new Set();
+
+  for (const setting of legacySettings) {
+    const packId = String(game.settings.get(MODULE_ID, setting) ?? "").trim();
+    if (packId) packs.add(packId);
+  }
+
+  await game.settings.set(
+    MODULE_ID,
+    "importOverrideCompendiums",
+    [...packs].join(","),
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Migration 4 — combine NPC Builder compendium settings             */
+/* ------------------------------------------------------------------ */
+
+async function _migration4_npcBuilderCompendiums() {
+  const legacySettings = [
+    "npcBuilderSpecialRulesPack",
+    "npcBuilderEquipmentPacks",
+    "npcBuilderSpeciesAbilityPacks",
+    "npcBuilderFocusPacks",
+    "npcBuilderValuePacks",
+  ];
+  const packs = new Set();
+
+  for (const setting of legacySettings) {
+    const value = game.settings.get(MODULE_ID, setting);
+    for (const pack of String(value ?? "").split(/[\n,;]/)) {
+      const packId = pack.trim();
+      if (packId) packs.add(packId);
+    }
+  }
+
+  await game.settings.set(
+    MODULE_ID,
+    "npcBuilderCompendiums",
+    [...packs].join(","),
+  );
 }
 
 /* ------------------------------------------------------------------ */

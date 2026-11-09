@@ -1,0 +1,53 @@
+<div class="npc-builder">
+  <div class="npc-builder-panel active">
+    <h3 class="npc-builder-panel-title">{{actorName}}</h3>
+    <p class="npc-builder-hint">{{localize "sta-utils.npcShip.hint"}}</p>
+
+    <div class="npc-builder-field-row">
+      <label class="npc-builder-label">{{localize "sta-utils.npcShip.year"}}</label>
+      <input class="npc-builder-input" type="number" name="year" value="{{year}}" min="1" step="1">
+    </div>
+    <p class="npc-builder-hint">{{refitNote}}</p>
+
+    <div class="npc-builder-field-row">
+      <label class="npc-builder-label">{{localize "sta-utils.npcShip.profile"}}</label>
+      <select class="npc-builder-input" name="profile">
+        <option value="">—</option>
+        {{#each profiles}}
+        <option value="{{uuid}}" {{#if selected}}selected{{/if}}>{{name}}</option>
+        {{/each}}
+      </select>
+    </div>
+
+    {{#if hasTalents}}
+    <div class="npc-builder-field-row">
+      <label class="npc-builder-label">{{localize "sta-utils.npcShip.talent"}}</label>
+      <select class="npc-builder-input" name="talent">
+        <option value="">—</option>
+        {{#each talents}}
+        <option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>
+        {{/each}}
+      </select>
+    </div>
+    {{/if}}
+
+    <div class="npc-builder-field-row">
+      <label class="npc-builder-label">{{localize "sta-utils.npcShip.crewQuality"}}</label>
+      <select class="npc-builder-input" name="quality">
+        {{#each qualities}}
+        <option value="{{key}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+        {{/each}}
+      </select>
+    </div>
+  </div>
+
+  <div class="npc-builder-footer">
+    <div class="npc-builder-footer-left"></div>
+    <div class="npc-builder-footer-right">
+      <button class="npc-builder-btn npc-builder-btn--primary" type="button" data-action="apply"
+        {{#unless canApply}}disabled{{/unless}}>
+        <i class="fa-solid fa-user-astronaut"></i> {{localize "sta-utils.npcShip.apply"}}
+      </button>
+    </div>
+  </div>
+</div>

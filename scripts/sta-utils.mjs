@@ -133,6 +133,7 @@ import { triggerManualShaken } from "./shaken/index.mjs";
 import { initExtendedTaskTracker } from "./extended-task-tracker/index.mjs";
 
 import { openNpcBuilder } from "./npc-builder/index.mjs";
+import { openStarshipCreator } from "./starship-creator/index.mjs";
 import {
   getCompendiumBrowser,
   getBrowserPresets,
@@ -142,6 +143,10 @@ import {
 } from "./compendium-browser/index.mjs";
 import * as packIndex from "./compendium-browser/pack-index.mjs";
 import { openSupportingBuilder } from "./supporting-builder/index.mjs";
+import { 
+  openHomebrewSpeciesManager,
+  getAllSpecies,
+} from "./homebrew-species/index.mjs";
 import { rollForCasualties } from "./casualties/casualties.mjs";
 
 import {
@@ -521,6 +526,7 @@ Hooks.once("init", () => {
     `modules/${MODULE_ID}/templates/compendium-browser.hbs`,
     `modules/${MODULE_ID}/templates/compendium-browser-settings.hbs`,
     `modules/${MODULE_ID}/templates/sta-tools-sidebar.hbs`,
+    `modules/${MODULE_ID}/templates/homebrew-species-list.hbs`,
   ]);
 
   // --- LCARS sheet registration ---
@@ -793,6 +799,7 @@ Hooks.once("ready", async () => {
     actionChooser,
     dicePool: dicePoolApi,
     npcBuilder: openNpcBuilder,
+    starshipCreator: openStarshipCreator,
     compendiumBrowser: openCompendiumBrowser,
     compendiumBrowserPresets: getBrowserPresets,
     packIndex: {
@@ -812,6 +819,8 @@ Hooks.once("ready", async () => {
     },
     characterBrowser: openCompendiumBrowser,
     supportingBuilder: openSupportingBuilder,
+    homebrewSpeciesManager: openHomebrewSpeciesManager,
+    getAllSpecies,
     rollRequest: isRollRequestEnabled() ? openRollRequestDialog : null,
     incidentalNpcRoll: openIncidentalNpcRollDialog,
     trackerReference: openTrackerReferenceDialog,

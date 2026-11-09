@@ -1,0 +1,141 @@
+<div class="npc-builder">
+  {{#if (eq mode "list")}}
+  <div class="npc-builder-panel active">
+    <h3 class="npc-builder-panel-title">Homebrew Species</h3>
+    <div class="npc-loadout-presets">
+      <button type="button" class="npc-builder-btn npc-builder-btn--primary" data-action="new">
+        <i class="fas fa-plus"></i> New Species
+      </button>
+      <button type="button" class="npc-builder-btn npc-builder-btn--ghost" data-action="export-all">
+        <i class="fas fa-download"></i> Export Homebrew
+      </button>
+      <button type="button" class="npc-builder-btn npc-builder-btn--ghost" data-action="export-all-default">
+        <i class="fas fa-download"></i> Export All
+      </button>
+      <button type="button" class="npc-builder-btn npc-builder-btn--ghost" data-action="import">
+        <i class="fas fa-upload"></i> Import
+      </button>
+    </div>
+    <p class="npc-builder-hint">Total Species: {{allSpeciesCount}} | Custom: {{homebrewCount}}</p>
+
+    <div class="npc-builder-section-label">Custom Species</div>
+    {{#each homebrewSpecies}}
+    <article class="npc-custom-talent-item">
+      <i class="fa-solid fa-dna sta-bt-icon" aria-hidden="true"></i>
+      <div class="npc-custom-talent-item__body">
+        <h4 class="npc-custom-talent-item__name">{{this.name}}</h4>
+        <div class="npc-custom-talent-item__description">
+          {{#if this.abilityName}}<div><strong>Species Ability:</strong> {{this.abilityName}}</div>{{/if}}
+          <strong>Traits:</strong>
+          {{#each this.traits}}
+          <div><em>{{this.name}}</em> - {{this.description}}</div>
+          {{/each}}
+          <div><strong>Attribute Bonuses:</strong>
+            {{#each this.attributeBonuses}}
+            {{#if this}} +{{this}} {{@key}}{{/if}}
+            {{/each}}
+          </div>
+        </div>
+      </div>
+      <div class="npc-custom-talent-item__controls">
+        <button type="button" class="npc-builder-btn npc-builder-btn--ghost" data-action="edit"
+          data-species="{{this.name}}" title="Edit species" aria-label="Edit {{this.name}}">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button type="button" class="npc-builder-btn npc-builder-btn--ghost" data-action="delete"
+          data-species="{{this.name}}" title="Delete species" aria-label="Delete {{this.name}}">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </article>
+    {{else}}
+    <p class="npc-builder-hint">No homebrew species defined yet.</p>
+    <button type="button" class="npc-builder-btn npc-builder-btn--ghost" data-action="new">
+      <i class="fas fa-plus"></i> Create Your First Species
+    </button>
+    {{/each}}
+
+    <details class="npc-section-gap">
+      <summary class="npc-builder-panel-title">Official Species ({{officialSpecies.length}})</summary>
+      {{#each officialSpecies}}
+      <article class="npc-custom-talent-item">
+        <i class="fa-solid fa-dna sta-bt-icon" aria-hidden="true"></i>
+        <div class="npc-custom-talent-item__body">
+          <h4 class="npc-custom-talent-item__name">
+            {{this.name}}{{#if this.overridden}} <span class="npc-hint">(Custom override)</span>{{/if}}
+          </h4>
+          <div class="npc-custom-talent-item__description">
+            {{#if this.aliases}}
+            <div>Also known as: {{#each this.aliases}}{{#unless @first}}, {{/unless}}{{this}}{{/each}}</div>
+            {{/if}}
+            {{#if this.abilityName}}<div><strong>Species Ability:</strong> {{this.abilityName}}</div>{{/if}}
+            <div><strong>Attribute Bonuses:</strong>
+              {{#if this.attributeBonuses}}
+              {{#each this.attributeBonuses}}{{#if this}} +{{this}} {{@key}}{{/if}}{{/each}}
+              {{else}} Choose three attributes.{{/if}}
+            </div>
+          </div>
+        </div>
+      </article>
+      {{else}}
+      <p class="npc-builder-hint">No official species available.</p>
+      {{/each}}
+    </details>
+  </div>
+
+  {{else if (eq mode "edit")}}
+  <form>
+    <div class="npc-builder-panel active">
+      <h3 class="npc-builder-panel-title">Edit Species</h3>
+      <div class="npc-builder-field-row">
+        <label class="npc-builder-label" for="homebrew-species-name">Species Name</label>
+        <input class="npc-builder-input" type="text" id="homebrew-species-name" name="name"
+          value="{{species.name}}" placeholder="e.g., Vulcan, Klingon, etc." required>
+      </div>
+
+      <div class="npc-builder-section-label npc-section-gap">Traits (at least 1)</div>
+      {{#each species.traits}}
+      <div class="npc-builder-field-row" data-index="{{@index}}">
+        <input class="npc-builder-input" type="text" name="trait_name_{{@index}}"
+          value="{{this.name}}" placeholder="Trait name" aria-label="Trait name" required>
+        <textarea class="npc-builder-input" name="trait_desc_{{@index}}"
+          placeholder="Trait description" aria-label="Trait description" required>{{this.description}}</textarea>
+        {{#if (gt ../species.traits.length 1)}}
+        <button type="button" class="npc-builder-btn npc-builder-btn--ghost"
+          data-action="remove-trait" data-index="{{@index}}" title="Remove trait" aria-label="Remove trait">
+          <i class="fas fa-trash"></i> Remove Trait
+        </button>
+        {{/if}}
+      </div>
+      {{/each}}
+      <button type="button" class="npc-builder-btn npc-builder-btn--ghost" data-action="add-trait">
+        <i class="fas fa-plus"></i> Add Trait
+      </button>
+
+      <div class="npc-builder-section-label npc-section-gap">Attribute Bonuses (must total +3)</div>
+      <div class="npc-card-grid">
+        {{#each attributeKeys}}
+        <div class="npc-builder-field-row">
+          <label class="npc-builder-label" for="attr_{{this}}">{{lookup ../attributeLabels this}}</label>
+          <input class="npc-builder-input" type="number" id="attr_{{this}}" name="attr_{{this}}"
+            value="{{lookup ../species.attributeBonuses this}}" min="0" max="3">
+        </div>
+        {{/each}}
+      </div>
+      <p class="npc-builder-hint">Total must equal +3. Distribute as you prefer (e.g., +1, +1, +1 or +2, +1, +0, etc.)</p>
+    </div>
+    <div class="npc-builder-footer">
+      <div class="npc-builder-footer-left">
+        <button type="button" class="npc-builder-btn npc-builder-btn--ghost" data-action="cancel">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+      </div>
+      <div class="npc-builder-footer-right">
+        <button type="submit" class="npc-builder-btn npc-builder-btn--primary">
+          <i class="fas fa-save"></i> Save Species
+        </button>
+      </div>
+    </div>
+  </form>
+  {{/if}}
+</div>

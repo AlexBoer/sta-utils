@@ -1,6 +1,25 @@
 {
   "sta-utils": {
     "title": "STA Utilities",
+    "npcMajor": {
+      "type": "Major",
+      "attributesHint": "Start at 7, assign 14 points, then apply three species points. Maximum 12 after species bonuses. Total:",
+      "departmentsHint": "Start at 1 and assign 10 points. Maximum 5. Total:",
+      "pointsRemaining": "Points remaining",
+      "decrease": "Decrease",
+      "increase": "Increase",
+      "details": "Focuses & Values",
+      "focusHint": "(up to 6, optional)",
+      "focus": "Focus",
+      "valuesHint": "Values (2 to 4 required)",
+      "value": "Value",
+      "randomValue": "Pick a random value",
+      "randomFocus": "Pick a random focus",
+      "speciesBonus": "Species bonus for",
+      "fixedBonuses": "the displayed modifiers are added to the scores entered",
+      "talentsHint": "Choose or create four talents or special rules (in addition to any automatic species ability). Selected:",
+      "incomplete": "Complete the major NPC's attribute, department, value, and talent requirements before creating it."
+    },
     "source": {
       "label": "Source",
       "placeholder": "e.g. Core Rulebook p. 130"
@@ -135,7 +154,108 @@
       "label": "Ship Type",
       "starship": "Starship",
       "spaceframe": "Spaceframe",
-      "missionProfile": "Mission Profile"
+      "missionProfile": "Mission Profile",
+      "firstCommissioned": "Launch Year",
+      "faction": "Faction",
+      "talentChoices": "Talents to Choose",
+      "systemBonus": "Free +1 System Choices"
+    },
+    "npcShip": {
+      "button": "Create NPC Ship",
+      "title": "Create NPC Ship",
+      "hint": "Applies a mission profile, one talent, random refits for the year, Resistance and a crew quality directly to this actor, and changes its type to Starship.",
+      "year": "In-game year",
+      "refitNote": "Refits earned: {refits}",
+      "noYear": "No launch year set; no refits will be applied.",
+      "profile": "Mission profile",
+      "talent": "Talent",
+      "crewQuality": "Crew quality",
+      "qualityOption": "{quality} (Attribute {attribute}, Department {department})",
+      "quality": {
+        "basic": "Basic",
+        "proficient": "Proficient",
+        "talented": "Talented",
+        "exceptional": "Exceptional"
+      },
+      "crewTalentName": "Crew Quality: {quality}",
+      "crewTalentDescription": "Attribute rating {attribute}, Department rating {department}.",
+      "apply": "Apply",
+      "done": "{name} is now an NPC ship ({refits} refits applied).",
+      "failed": "Could not create the NPC ship."
+    },
+    "starshipCreator": {
+      "pickPrompt": "Select an option on the left to see its details, then press Next.",
+      "npc": {
+        "label": "NPC ship",
+        "hint": "Skips the service record and adds a crew quality talent instead."
+      },
+      "title": "Starship Creator",
+      "worldSource": "World",
+      "openSheet": "Open Original Sheet",
+      "openSheetFailed": "Could not open the original sheet. See the console for details.",
+      "stepLabel": "Step {current} of {total}",
+      "back": "Back",
+      "next": "Next",
+      "create": "Create Starship",
+      "none": "None",
+      "created": "Created starship {name}.",
+      "createFailed": "Could not create the starship. See the console for details.",
+      "talentLimit": "Only {count} talent(s) may be chosen from this mission profile.",
+      "recommendation": {
+        "oldShip": "Intended for ships several decades old.",
+        "newClass": "Intended for a recently launched ship of a new class."
+      },
+      "year": {
+        "title": "Timeframe",
+        "hint": "Choose the year. Spaceframes commissioned later than this year are unavailable, and the difference from a spaceframe's launch year determines its refits.",
+        "label": "Year"
+      },
+      "spaceframe": {
+        "title": "Spaceframe",
+        "scale": "Scale",
+        "commissioned": "Launch year",
+        "faction": "Faction",
+        "noFaction": "No Faction",
+        "allFactions": "All factions",
+        "allScales": "All scales",
+        "filterYear": "First Launch",
+        "search": "Search by name…",
+        "noMatches": "No spaceframes match the filters.",
+        "refits": "Refits",
+        "notYet": "Not yet commissioned",
+        "talents": "Talents",
+        "none": "No spaceframes found. Set a starship's Ship Type to Spaceframe on its sheet."
+      },
+      "profile": {
+        "title": "Mission Profile",
+        "talentChoices": "Talents to choose",
+        "systemBonus": "+1 to a system of your choice",
+        "departments": "Departments",
+        "talents": "Talents",
+        "none": "No mission profiles found. Set a starship's Ship Type to Mission Profile on its sheet."
+      },
+      "service": {
+        "title": "Service Record",
+        "hint": "Optional. A service record adds a trait and a special rule to the ship.",
+        "battle": "Battle or war",
+        "system": "System",
+        "replaceTalent": "Spaceframe talent to replace",
+        "replaceTalentHint": "Add the replacement talent from the ship sheet after creation."
+      },
+      "refits": {
+        "title": "Refits",
+        "rules": "One refit per 10 full years of spaceframe service. Each raises a system by 1; no system more than twice, and none above 12.",
+        "noYear": "This spaceframe has no launch year, so it earns no refits from age.",
+        "summary": "Service: {age} years. Refits: {allowed} ({remaining} left to assign).",
+        "random": "Random system",
+        "reset": "Reset"
+      },
+      "review": {
+        "title": "Review",
+        "name": "Ship name",
+        "designation": "Designation",
+        "resistance": "Resistance"
+      }
     },
     "quickInsert": {
       "npcTalent": "NPC Talent",
@@ -152,26 +272,17 @@
         "world": "World Settings (GM Only)",
         "client": "Client Settings"
       },
-      "subgroups": {
-        "dicePoolMomentum": "Dice Pool & Momentum",
-        "actionChooser": "Action Chooser",
-        "staToolsSidebar": "STA Tools Sidebar",
-        "traitTokens": "Trait Tokens",
-        "groupShip": "Group Ship",
-        "chatUi": "Chat & UI",
-        "stardateDisplay": "Stardate Display & Ship Alert Status",
-        "alertStatus": "Ship Alert Status",
-        "standalone": "Other Features",
-        "itemImagePicker": "Item Image Picker",
-        "npcBuilder": "NPC Builder",
+      "sections": {
+        "rulesAndRolls": "Rules & Rolls",
+        "homebrewRules": "Homebrew Rules",
+        "contentAndCreation": "Content & Creation",
+        "itemImageFolders": "Item Image Folder Paths",
+        "tableToolsAndPresentation": "Table Tools & Presentation",
+        "integrations": "Integrations",
+        "diagnostics": "Diagnostics",
+        "sheetAndDisplay": "Sheet & Display",
         "trackerButtons": "Tracker Buttons",
-        "personalThreat": "Personal Threat",
-        "rollRequest": "Roll Request",
-        "houseRules": "House Rules",
-        "attackCalculator": "Attack Calculator",
-        "warpCalculator": "Warp Calculator",
-        "officersLog": "Officers Log Integration",
-        "diagnostics": "Diagnostics"
+        "other": "Other Settings"
       },
       "enableAlertStatus": {
         "name": "Enable Ship Alert Status",
@@ -247,25 +358,20 @@
         "name": "Enable Extended Task Tracker",
         "hint": "Display bar-style extended task trackers on the canvas with breakthrough markers at 50% and 75%. GM can add, edit, and remove trackers. Requires a world reload when changed."
       },
-      "npcBuilderSpecialRulesPack": {
-        "name": "NPC Builder - Special Rules Compendium",
-        "hint": "Compendium pack IDs to use for special rules. Enter one per line (e.g. \"world.my-talents\" or \"module.my-module.talents\"). When empty, the NPC Builder shows manual name/description fields instead."
+      "npcBuilderCompendiums": {
+        "name": "NPC Builder Compendiums",
+        "hint": "Select item compendiums used by the NPC Builder for equipment, special rules, species abilities, focuses, and values. Add one or more packs.",
+        "select": "Select a compendium pack...",
+        "add": "Add",
+        "loading": "Loading item compendiums...",
+        "noPacks": "No item compendiums available",
+        "noneSelected": "No compendium packs selected.",
+        "remove": "x",
+        "removePack": "Remove {pack}"
       },
-      "npcBuilderEquipmentPacks": {
-        "name": "NPC Builder - Equipment Compendiums",
-        "hint": "Compendium pack IDs to search for equipment. Enter one per line (e.g. \"world.my-equipment\" or \"module.my-module.items\")."
-      },
-      "npcBuilderSpeciesAbilityPacks": {
-        "name": "NPC Builder - Species Ability Compendiums",
-        "hint": "Compendium pack IDs to search for Officers Log Species Ability talents. Enter one per line. A talent is used only when its species requirement matches the selected species."
-      },
-      "npcBuilderFocusPacks": {
-        "name": "NPC Builder - Focus Compendiums",
-        "hint": "Compendium pack IDs to search for focus suggestions. Enter one per line."
-      },
-      "npcBuilderValuePacks": {
-        "name": "NPC Builder - Value Compendiums",
-        "hint": "Compendium pack IDs to search for value suggestions. Enter one per line."
+      "homebrewSpeciesManager": {
+        "name": "Manage Custom Species",
+        "hint": "Create, edit, import, and export custom species with traits and attribute bonuses."
       },
       "compendiumBrowserExclusions": {
         "name": "Compendium Browser Sources",
@@ -320,20 +426,16 @@
         "name": "Enable Talent Automations",
         "hint": "Automatically apply effects based on talents a character possesses (e.g. modify attributes, post reminders). Requires a world reload when changed."
       },
-      "talentImportOverrideCompendium": {
-        "name": "Talent Import Override Compendium",
-        "hint": "When a GM imports actor JSON, replace matching talents with versions from this compendium. If more than one matching talent is found, choose which version to use.",
-        "none": "- No override compendium -"
-      },
-      "focusImportOverrideCompendium": {
-        "name": "Focus Import Override Compendium",
-        "hint": "When a GM imports actor JSON, replace matching focuses with versions from this compendium. If more than one matching focus is found, choose which version to use.",
-        "none": "- No override compendium -"
-      },
-      "otherItemImportOverrideCompendium": {
-        "name": "Other Item Import Override Compendium",
-        "hint": "When a GM imports actor JSON, replace matching items such as traits, armor, weapons, and gear with versions from this compendium. Items must have the same type and name; talents and focuses use their separate settings.",
-        "none": "- No override compendium -"
+      "importOverrideCompendiums": {
+        "name": "Import Override Compendiums",
+        "hint": "When a GM imports actor JSON, replace matching items from the selected compendiums. Items must have the same type and name; choose a version when multiple matches are found.",
+        "select": "Select an item compendium...",
+        "add": "Add",
+        "loading": "Loading item compendiums...",
+        "noPacks": "No item compendiums available",
+        "noneSelected": "No override compendiums selected.",
+        "remove": "x",
+        "removePack": "Remove {pack}"
       },
       "enableTalentUses": {
         "name": "Enable Talent Uses Tracker",
@@ -2151,7 +2253,9 @@
       "treknobabble": "Treknobabble",
       "medicalbabble": "Medicalbabble",
       "npcBuilder": "Create NPC",
+      "starshipCreator": "Create Starship",
       "characterCreator": "Create Main Character",
+      "characterBrowser": "Character Browser",
       "crewManifest": "Crew Manifest",
       "dicePoolMonitor": "Dice Pool Monitor",
       "noteStyler": "Note Styler",

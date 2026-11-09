@@ -13,6 +13,7 @@ import {
   QUICK_ROLES,
   EQUIPMENT_LOADOUTS,
   TALENT_TEMPLATES,
+  NPC_TEMPLATE_TALENT_IMAGE,
   getSpecialRulesPackConfigured,
   RANDOM_NAMES,
   RANDOM_ROLES,
@@ -49,6 +50,17 @@ const NOTABLE_STEPS = [
 const INCIDENTAL_STEPS = ["info"];
 const QUICK_STEPS = ["info", "temperament", "role-selection", "equipment"];
 
+const STEP_LABELS = {
+  info: "Info",
+  attributes: "Attributes",
+  departments: "Departments",
+  details: "Details",
+  "special-rules": "Special Rules",
+  equipment: "Equipment",
+  temperament: "Temperament",
+  "role-selection": "Role",
+};
+
 const fapi = foundry.applications.api;
 
 export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
@@ -77,6 +89,7 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       disciplines: Object.fromEntries(DISCIPLINE_KEYS.map((k) => [k, null])),
       focuses: ["", "", ""],
       value: "",
+      values: ["", "", "", ""],
       speciesCatalog: [],
       selectedAttributeBonuses: [],
       selectedEquipment: [],
@@ -111,6 +124,7 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
   _getSteps() {
     switch (this._wizardState.npcType) {
       case "notable":
+      case "major":
         return NOTABLE_STEPS;
       case "incidental":
         return INCIDENTAL_STEPS;
@@ -147,6 +161,82 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       }
     }
     return pool;
+  }
+
+  _getSelectedSpecies() {
+    const name = this._wizardState.species.trim().toLowerCase();
+    return this._wizardState.speciesCatalog.find(
+      (species) =>
+        species.name.toLowerCase() === name ||
+        (species.aliases ?? []).some((alias) => alias.toLowerCase() === name),
+    );
+  }
+
+  _getMajorBonuses() {
+    return this._getSelectedSpecies()?.attributeBonuses ??
+      Object.fromEntries(this._wizardState.selectedAttributeBonuses.map((key) => [key, 1]));
+  }
+
+  _majorPointsValid(stateKey, keys, base, total, maximum, bonuses = {}) {
+    const scores = keys.map((key) => this._wizardState[stateKey][key]);
+    return scores.every((score, index) =>
+      Number.isInteger(score) && score >= base &&
+      score + (bonuses[keys[index]] ?? 0) <= maximum,
+    ) && scores.reduce((sum, score) => sum + score, 0) === total;
+  }
+
+  _getMajorAllocation(stateKey) {
+    const attributes = stateKey === "attributes";
+    const keys = attributes ? ATTRIBUTE_KEYS : DISCIPLINE_KEYS;
+    const base = attributes ? 7 : 1;
+    const budget = attributes ? 14 : 10;
+    const maximum = attributes ? 12 : 5;
+    const bonuses = attributes ? this._getMajorBonuses() : {};
+    const scores = this._wizardState[stateKey];
+    const remaining = budget - keys.reduce((sum, key) => sum + scores[key] - base, 0);
+    return {
+      remaining,
+      pips: Array.from({ length: budget }, (_, i) => ({ available: i < remaining })),
+      slots: Object.fromEntries(keys.map((key) => [key, {
+        canDecrease: scores[key] > base,
+        canIncrease: remaining > 0 && scores[key] + (bonuses[key] ?? 0) < maximum,
+      }])),
+    };
+  }
+
+  _adjustMajorPoint(stateKey, key, delta) {
+    const allocation = this._getMajorAllocation(stateKey);
+    const slot = allocation.slots[key];
+    if (!slot || (delta === 1 && !slot.canIncrease) ||
+        (delta === -1 && !slot.canDecrease) || ![-1, 1].includes(delta)) return false;
+    this._wizardState[stateKey][key] += delta;
+    return true;
+  }
+
+  _resetAssignments() {
+    const major = this._wizardState.npcType === "major";
+    this._wizardState.attributes = Object.fromEntries(
+      ATTRIBUTE_KEYS.map((key) => [key, major ? 7 : null]),
+    );
+    this._wizardState.disciplines = Object.fromEntries(
+      DISCIPLINE_KEYS.map((key) => [key, major ? 1 : null]),
+    );
+    const count = major ? 6 : 3;
+    this._wizardState.focuses = Array.from(
+      { length: count }, (_, index) => this._wizardState.focuses[index] ?? "",
+    );
+    this._wizardState.quickTemperament = null;
+    this._wizardState.quickNpcRole = null;
+  }
+
+  _randomizeMajorPoints(stateKey, keys, base, points, maximum, bonuses = {}) {
+    const scores = Object.fromEntries(keys.map((key) => [key, base]));
+    for (let i = 0; i < points; i++) {
+      const available = keys.filter((key) => scores[key] + (bonuses[key] ?? 0) < maximum);
+      if (!available.length) break;
+      scores[this._pick(available)]++;
+    }
+    this._wizardState[stateKey] = scores;
   }
 
   _normalizeRequirementString(value) {
@@ -312,12 +402,17 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
     return requirements.every((entry) => evaluateCategory(entry));
   }
 
-  _canProceed() {
+  _canProceed(step = this._currentStep) {
     const state = this._wizardState;
-    switch (this._currentStep) {
+    switch (step) {
       case "info":
         return true;
       case "attributes": {
+        if (state.npcType === "major") {
+          const bonuses = this._getMajorBonuses();
+          return Object.values(bonuses).reduce((sum, value) => sum + value, 0) === 3 &&
+            this._majorPointsValid("attributes", ATTRIBUTE_KEYS, 7, 56, 12, bonuses);
+        }
         if (!ATTRIBUTE_KEYS.every((k) => state.attributes[k] !== null))
           return false;
         const _specEntry = state.speciesCatalog.find(
@@ -328,6 +423,8 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         return true;
       }
       case "departments": {
+        if (state.npcType === "major")
+          return this._majorPointsValid("disciplines", DISCIPLINE_KEYS, 1, 16, 5);
         const pool =
           state.npcType === "notable" ? NOTABLE_DISC_CHIPS : MINOR_DISC_CHIPS;
         return (
@@ -335,6 +432,14 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
           pool.length
         );
       }
+      case "details":
+        return state.npcType !== "major" ||
+          (state.values.filter((value) => value.trim()).length >= 2 &&
+            state.values.filter((value) => value.trim()).length <= 4);
+      case "special-rules":
+        return state.npcType !== "major" ||
+          state.customTalents.filter((talent) => talent.name?.trim()).length === 4 &&
+          state.customTalents.length === 4;
       case "temperament":
         return state.quickTemperament !== null;
       case "role-selection":
@@ -391,12 +496,14 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
     const availableAttrChips = this._getAvailableAttrChips();
     const availableDiscChips = this._getAvailableDiscChips();
 
-    const selectedSpeciesEntry = state.speciesCatalog.find(
-      (s) => s.name.toLowerCase() === state.species?.trim().toLowerCase(),
-    );
+    const selectedSpeciesEntry = this._getSelectedSpecies();
     const needsAttributeBonusSelection = !!(
-      selectedSpeciesEntry && selectedSpeciesEntry.attributeBonuses === null
+      (state.npcType === "major" && !selectedSpeciesEntry) ||
+      (selectedSpeciesEntry && selectedSpeciesEntry.attributeBonuses === null)
     );
+    const majorBonuses = this._getMajorBonuses();
+    const majorAttributes = state.npcType === "major" ? this._getMajorAllocation("attributes") : null;
+    const majorDisciplines = state.npcType === "major" ? this._getMajorAllocation("disciplines") : null;
 
     const specialRulesAvailable = getSpecialRulesPackConfigured();
     const customTalents =
@@ -421,6 +528,12 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       isFirstStep: stepIndex === 0,
       isLastStep: stepIndex === steps.length - 1,
       canProceed: this._canProceed(),
+      tabs: steps.map((step, index) => ({
+        step,
+        label: STEP_LABELS[step] ?? step,
+        active: step === this._currentStep,
+        enabled: steps.slice(0, index).every((s) => this._canProceed(s)),
+      })),
       stepPanels: {
         info: this._currentStep === "info",
         attributes: this._currentStep === "attributes",
@@ -436,6 +549,7 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       npcType: state.npcType,
       isMinor: state.npcType === "minor",
       isNotable: state.npcType === "notable",
+      isMajor: state.npcType === "major",
       isIncidental: state.npcType === "incidental",
       isQuick: state.npcType === "quick",
       species: state.species,
@@ -474,21 +588,31 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       // Attributes
       availableAttrChips,
       attrPoolEmpty: availableAttrChips.length === 0,
-      showBonusColumn: selectedSpeciesEntry != null,
+      showBonusColumn: selectedSpeciesEntry != null || state.npcType === "major",
       needsAttributeBonusSelection,
+      majorAttributeTotal: ATTRIBUTE_KEYS.reduce(
+        (sum, key) => sum + (state.attributes[key] ?? 0) + (majorBonuses[key] ?? 0), 0,
+      ),
+      majorDisciplineTotal: DISCIPLINE_KEYS.reduce(
+        (sum, key) => sum + (state.disciplines[key] ?? 0), 0,
+      ),
+      majorAttributes,
+      majorDisciplines,
       attributeSlots: ATTRIBUTE_KEYS.map((k) => {
         const fixedBonus = selectedSpeciesEntry?.attributeBonuses?.[k] ?? null;
         return {
           key: k,
           label: ATTRIBUTE_LABELS[k],
           value: state.attributes[k],
+          allocation: majorAttributes?.slots[k],
           fixedBonus,
           choiceBonus: needsAttributeBonusSelection
             ? {
                 selected: state.selectedAttributeBonuses.includes(k),
                 disabled:
                   !state.selectedAttributeBonuses.includes(k) &&
-                  state.selectedAttributeBonuses.length >= 3,
+                  (state.selectedAttributeBonuses.length >= 3 ||
+                    (state.npcType === "major" && state.attributes[k] >= 12)),
               }
             : null,
         };
@@ -500,10 +624,12 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         key: k,
         label: DISCIPLINE_LABELS[k],
         value: state.disciplines[k],
+        allocation: majorDisciplines?.slots[k],
       })),
       // Details (notable)
       focusList: state.focuses.map((f, i) => ({ value: f, num: i + 1 })),
       value: state.value,
+      valueList: state.values.map((value, i) => ({ value, num: i + 1 })),
       hasFocusSuggestions: state.focusNames.length > 0,
       focusSuggestions: state.focusNames,
       hasValueSuggestions: state.valueNames.length > 0,
@@ -534,6 +660,7 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       specialRulesCount: state.specialRulesItems.length,
       talentTemplates: TALENT_TEMPLATES,
       customTalents,
+      majorTalentCount: state.customTalents.filter((talent) => talent.name?.trim()).length,
     };
   }
 
@@ -608,6 +735,9 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
     html
       .querySelector(".npc-builder-back")
       ?.addEventListener("click", () => this._onBack());
+    for (const tab of html.querySelectorAll(".sta-bt-tab[data-step]")) {
+      tab.addEventListener("click", () => this._goStep(tab.dataset.step));
+    }
     html.querySelector(".npc-builder-next")?.addEventListener("click", () => {
       if (this._canProceed()) this._onNext();
     });
@@ -623,11 +753,15 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         this._setupInfoStep(html);
         break;
       case "attributes":
-        this._setupDragDrop(html, "attributes");
+        if (this._wizardState.npcType === "major")
+          this._setupMajorPoints(html, "attributes");
+        else this._setupDragDrop(html, "attributes");
         this._setupAttributeBonusCheckboxes(html);
         break;
       case "departments":
-        this._setupDragDrop(html, "disciplines");
+        if (this._wizardState.npcType === "major")
+          this._setupMajorPoints(html, "disciplines");
+        else this._setupDragDrop(html, "disciplines");
         break;
       case "details":
         this._setupDetailsStep(html);
@@ -654,6 +788,11 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       html.querySelector(".npc-builder-next") ??
       html.querySelector(".npc-builder-create");
     if (btn) btn.disabled = !this._canProceed();
+    const steps = this._getSteps();
+    for (const tab of html.querySelectorAll(".sta-bt-tab[data-step]")) {
+      const index = steps.indexOf(tab.dataset.step);
+      tab.disabled = index < 0 || !steps.slice(0, index).every((step) => this._canProceed(step));
+    }
   }
 
   // ── Step setups ───────────────────────────────────────────────────────────
@@ -673,14 +812,7 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         this._wizardState.npcType = radio.value;
         // Reset chip assignments when pool sizes change
         if (oldType !== radio.value) {
-          this._wizardState.attributes = Object.fromEntries(
-            ATTRIBUTE_KEYS.map((k) => [k, null]),
-          );
-          this._wizardState.disciplines = Object.fromEntries(
-            DISCIPLINE_KEYS.map((k) => [k, null]),
-          );
-          this._wizardState.quickTemperament = null;
-          this._wizardState.quickNpcRole = null;
+          this._resetAssignments();
         }
         // Re-render so the footer (Next vs Create NPC) and conditional
         // info fields update correctly for the new type's step count.
@@ -862,6 +994,41 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
     }
   }
 
+  _setupMajorPoints(html, stateKey) {
+    const panel = html.querySelector(`[data-panel='${this._currentStep}']`);
+    const keys = stateKey === "attributes" ? ATTRIBUTE_KEYS : DISCIPLINE_KEYS;
+    for (const button of panel.querySelectorAll(".npc-major-adjust")) {
+      button.addEventListener("click", () => {
+        const key = button.dataset.key;
+        const delta = Number(button.dataset.delta);
+        if (!this._adjustMajorPoint(stateKey, key, delta)) return;
+        const allocation = this._getMajorAllocation(stateKey);
+        const scores = this._wizardState[stateKey];
+        const bonuses = stateKey === "attributes" ? this._getMajorBonuses() : {};
+        panel.querySelector(".npc-major-total").textContent = keys.reduce(
+          (sum, item) => sum + scores[item] + (bonuses[item] ?? 0), 0,
+        );
+        panel.querySelector(".npc-major-remaining").textContent = allocation.remaining;
+        panel.querySelectorAll(".npc-major-pip").forEach((pip, index) => {
+          pip.classList.toggle("filled", index < allocation.remaining);
+        });
+        for (const row of panel.querySelectorAll(".npc-major-controls")) {
+          const rowKey = row.dataset.key;
+          row.querySelector(".npc-major-score").textContent = scores[rowKey];
+          row.querySelector("[data-delta='-1']").disabled = !allocation.slots[rowKey].canDecrease;
+          row.querySelector("[data-delta='1']").disabled = !allocation.slots[rowKey].canIncrease;
+        }
+        if (stateKey === "attributes") {
+          for (const checkbox of panel.querySelectorAll(".npc-bonus-attr-cb")) {
+            checkbox.disabled = !checkbox.checked &&
+              (this._wizardState.selectedAttributeBonuses.length >= 3 || scores[checkbox.value] >= 12);
+          }
+        }
+        this._refreshNextButton(html);
+      });
+    }
+  }
+
   _setupDetailsStep(html) {
     // Wire focus comboboxes
     html.querySelectorAll(".npc-focus-combobox").forEach((wrapper, i) => {
@@ -879,6 +1046,41 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         this._wizardState.focuses[i] = input.value;
       });
     });
+    for (const btn of html.querySelectorAll("[data-action='random-focus']")) {
+      btn.addEventListener("click", () => {
+        const i = parseInt(btn.dataset.index);
+        const pool = this._wizardState.focusNames.length > 0
+          ? this._wizardState.focusNames : RANDOM_FOCUSES_FALLBACK;
+        const used = this._wizardState.focuses.filter((_, j) => j !== i);
+        const available = pool.filter((focus) => !used.includes(focus));
+        this._wizardState.focuses[i] = this._pick(available.length > 0 ? available : pool);
+        this.render();
+      });
+    }
+
+    if (this._wizardState.npcType === "major") {
+      html.querySelectorAll(".npc-major-value").forEach((input, i) => {
+        const update = (value) => {
+          this._wizardState.values[i] = value;
+          this._refreshNextButton(html);
+        };
+        const wrapper = input.closest(".npc-value-combobox");
+        if (wrapper) this._setupSuggestionInput({
+          input, dropdown: wrapper.querySelector(".npc-suggestion-dropdown"), onChange: update,
+        });
+        else input.addEventListener("input", () => update(input.value));
+      });
+      for (const btn of html.querySelectorAll("[data-action='random-major-value']")) {
+        btn.addEventListener("click", () => {
+          const index = Number(btn.dataset.index);
+          const pool = this._wizardState.valueNames.length ? this._wizardState.valueNames : RANDOM_VALUES;
+          const available = pool.filter((value) => !this._wizardState.values.includes(value));
+          this._wizardState.values[index] = this._pick(available.length ? available : pool);
+          this.render();
+        });
+      }
+      return;
+    }
     // Wire value combobox
     const valWrapper = html.querySelector(".npc-value-combobox");
     if (valWrapper) {
@@ -892,23 +1094,6 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
     } else {
       html.querySelector(".npc-value-input")?.addEventListener("input", (e) => {
         this._wizardState.value = e.target.value;
-      });
-    }
-
-    // Per-field randomize buttons
-    for (const btn of html.querySelectorAll("[data-action='random-focus']")) {
-      btn.addEventListener("click", () => {
-        const i = parseInt(btn.dataset.index);
-        const pool =
-          this._wizardState.focusNames.length > 0
-            ? this._wizardState.focusNames
-            : RANDOM_FOCUSES_FALLBACK;
-        const used = this._wizardState.focuses.filter((_, j) => j !== i);
-        const available = pool.filter((f) => !used.includes(f));
-        this._wizardState.focuses[i] = this._pick(
-          available.length > 0 ? available : pool,
-        );
-        this.render();
       });
     }
 
@@ -1290,6 +1475,7 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
           {
             name: template.name,
             description: template.description,
+            img: NPC_TEMPLATE_TALENT_IMAGE,
           },
         ];
         this.render();
@@ -1564,18 +1750,17 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         state.selectedAttributeBonuses = [];
         state.incidentalQuality = this._pick(INCIDENTAL_QUALITIES).key;
         if (prevType !== state.npcType) {
-          state.attributes = Object.fromEntries(
-            ATTRIBUTE_KEYS.map((k) => [k, null]),
-          );
-          state.disciplines = Object.fromEntries(
-            DISCIPLINE_KEYS.map((k) => [k, null]),
-          );
-          state.quickTemperament = null;
-          state.quickNpcRole = null;
+          this._resetAssignments();
         }
         break;
       }
       case "attributes": {
+        if (state.npcType === "major") {
+          if (!this._getSelectedSpecies() || this._getSelectedSpecies().attributeBonuses === null)
+            state.selectedAttributeBonuses = this._shuffle(ATTRIBUTE_KEYS).slice(0, 3);
+          this._randomizeMajorPoints("attributes", ATTRIBUTE_KEYS, 7, 14, 12, this._getMajorBonuses());
+          break;
+        }
         const attrPool =
           state.npcType === "notable"
             ? [...NOTABLE_ATTR_CHIPS]
@@ -1595,6 +1780,10 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
         break;
       }
       case "departments": {
+        if (state.npcType === "major") {
+          this._randomizeMajorPoints("disciplines", DISCIPLINE_KEYS, 1, 10, 5);
+          break;
+        }
         const discPool =
           state.npcType === "notable"
             ? [...NOTABLE_DISC_CHIPS]
@@ -1613,19 +1802,24 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
             ? state.focusNames
             : RANDOM_FOCUSES_FALLBACK,
         );
-        state.focuses = [focusPool[0], focusPool[1], focusPool[2]];
+        state.focuses = Array.from({ length: state.npcType === "major" ? 6 : 3 },
+          (_, index) => focusPool[index] ?? "");
         const valuePool =
           state.valueNames.length > 0 ? state.valueNames : RANDOM_VALUES;
-        state.value = this._pick(valuePool);
+        if (state.npcType === "major") {
+          const values = this._shuffle([...new Set([...valuePool, ...RANDOM_VALUES])]);
+          state.values = Array.from({ length: 4 }, (_, index) => values[index] ?? "");
+        } else state.value = this._pick(valuePool);
         break;
       }
       case "special-rules": {
-        const talentCount = Math.floor(Math.random() * 3); // 0–2
+        const talentCount = state.npcType === "major" ? 4 : Math.floor(Math.random() * 3);
         state.customTalents = this._shuffle(TALENT_TEMPLATES)
           .slice(0, talentCount)
           .map((talent) => ({
             name: talent.name,
             description: talent.description,
+            img: NPC_TEMPLATE_TALENT_IMAGE,
           }));
         state.selectedSpecialRules = [];
         break;
@@ -1650,6 +1844,15 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
     this.render();
   }
 
+  _goStep(step) {
+    const steps = this._getSteps();
+    const index = steps.indexOf(step);
+    if (index < 0 || step === this._currentStep) return;
+    if (!steps.slice(0, index).every((s) => this._canProceed(s))) return;
+    this._currentStep = step;
+    this.render();
+  }
+
   _onBack() {
     const steps = this._getSteps();
     const idx = steps.indexOf(this._currentStep);
@@ -1670,6 +1873,10 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
 
   async _onCreate() {
     const state = this._wizardState;
+    if (state.npcType === "major" && !this._getSteps().every((step) => this._canProceed(step))) {
+      ui.notifications?.warn?.(game.i18n.localize("sta-utils.npcMajor.incomplete"));
+      return;
+    }
 
     // ── Incidental NPC ────────────────────────────────────────────────────
     if (state.npcType === "incidental") {
@@ -1745,6 +1952,7 @@ export class NPCBuilderApp extends fapi.HandlebarsApplicationMixin(
       disciplines: state.disciplines,
       focuses: state.focuses,
       value: state.value,
+      values: state.values,
       selectedEquipmentUuids: state.selectedEquipment,
       selectedSpecialRulesUuids: [],
       customTalents: state.customTalents,

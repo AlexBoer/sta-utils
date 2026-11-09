@@ -170,6 +170,14 @@ const LAUNCHER_SECTIONS = [
         call: () => game.staUtils.npcBuilder(),
       },
       {
+        id: "starshipCreator",
+        labelKey: "sta-utils.launcher.starshipCreator",
+        icon: "fa-rocket",
+        gmOnly: true,
+        available: () => !!game.staUtils?.starshipCreator,
+        call: () => game.staUtils.starshipCreator(),
+      },
+      {
         id: "characterCreator",
         labelKey: "sta-utils.launcher.characterCreator",
         icon: "fa-user-astronaut",

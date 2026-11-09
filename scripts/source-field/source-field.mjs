@@ -1,6 +1,11 @@
+import { getPackRows } from "../compendium-browser/pack-index.mjs";
+import {
+  getSourceFlag,
+  getSourceValue,
+  SOURCE_INDEX_FIELDS,
+} from "./source-data.mjs";
+
 const MODULE_ID = "sta-utils";
-const SOURCE_FLAG = `flags.${MODULE_ID}.source`;
-const LEGACY_TALENT_SOURCE_FLAG = "flags.sta-officers-log.source";
 
 const ACTOR_TYPES = new Set(["character", "starship", "smallcraft"]);
 const ITEM_TYPES = new Set([
@@ -45,21 +50,6 @@ function getDocumentFromApplication(app) {
   return app?.document ?? app?.object ?? app?.item ?? app?.actor ?? null;
 }
 
-function getSourceFlag(sourceDocument) {
-  return sourceDocument.documentName === "Item" &&
-    sourceDocument.type === "talent"
-    ? LEGACY_TALENT_SOURCE_FLAG
-    : SOURCE_FLAG;
-}
-
-function getSourceValue(sourceDocument) {
-  const moduleId =
-    sourceDocument.documentName === "Item" && sourceDocument.type === "talent"
-      ? "sta-officers-log"
-      : MODULE_ID;
-  return String(sourceDocument.flags?.[moduleId]?.source ?? "");
-}
-
 function getFieldAnchor(root, sourceDocument) {
   if (sourceDocument.documentName === "RollTable") {
     const formula = root.querySelector('input[name="formula"]');
@@ -83,34 +73,101 @@ function getFieldAnchor(root, sourceDocument) {
 function createSourceField(sourceDocument, sourceFlag, disabled) {
   const wrapper = window.document.createElement("div");
   wrapper.className = "sta-utils-source-field form-group";
+  const source = getSourceValue(
+    sourceDocument,
+    sourceDocument.documentName,
+    sourceDocument.type,
+  );
   wrapper.innerHTML = `
     <label>${game.i18n.localize("sta-utils.source.label")}</label>
     <input type="text" name="${sourceFlag}"
-      value="${foundry.utils.escapeHTML(getSourceValue(sourceDocument))}"
+      value="${foundry.utils.escapeHTML(source)}"
       placeholder="${game.i18n.localize("sta-utils.source.placeholder")}"${disabled ? " disabled" : ""} />
   `;
   return wrapper;
+}
+
+async function addSourceSuggestions(input, sourceDocument) {
+  const { documentName, type } = sourceDocument;
+  const list = window.document.createElement("datalist");
+  list.id = `${MODULE_ID}-source-${foundry.utils.randomID()}`;
+  input.setAttribute("list", list.id);
+  input.insertAdjacentElement("afterend", list);
+
+  const sources = new Set();
+  const add = (document) => {
+    if (document.visible === false) return;
+    if (documentName !== "RollTable" && document.type !== type) return;
+    const source = getSourceValue(document, documentName, type);
+    if (source) sources.add(source);
+  };
+  const collection =
+    documentName === "Actor"
+      ? game.actors
+      : documentName === "Item"
+        ? game.items
+        : game.tables;
+  for (const document of collection?.values?.() ?? []) add(document);
+  if (documentName === "Item") {
+    for (const actor of game.actors?.values?.() ?? []) {
+      if (actor.visible === false) continue;
+      for (const item of actor.items?.values?.() ?? []) add(item);
+    }
+    for (const item of sourceDocument.parent?.items?.values?.() ?? []) add(item);
+  }
+  add(sourceDocument);
+
+  const packs = Array.from(game.packs?.values?.() ?? []).filter(
+    (pack) => pack.documentName === documentName && pack.visible,
+  );
+  await Promise.all(
+    packs.map(async (pack) => {
+      try {
+        const rows = await getPackRows(pack, type, [
+          "type",
+          ...SOURCE_INDEX_FIELDS,
+        ]);
+        for (const row of rows) add(row);
+      } catch (error) {
+        console.warn(
+          `${MODULE_ID} | Failed to load sources from ${pack.collection}`,
+          error,
+        );
+      }
+    }),
+  );
+  if (!input.isConnected) return;
+  for (const source of [...sources].sort((a, b) =>
+    a.localeCompare(b, game.i18n.lang),
+  )) {
+    const option = window.document.createElement("option");
+    option.value = source;
+    list.append(option);
+  }
 }
 
 export function installSourceFieldHook() {
   Hooks.on("renderApplicationV2", (app, root) => {
     const sourceDocument = getDocumentFromApplication(app);
     if (!isSupportedDocument(sourceDocument)) return;
-    const sourceFlag = getSourceFlag(sourceDocument);
-    if (
-      root.querySelector(`.sta-utils-source-field, input[name="${sourceFlag}"]`)
-    ) {
-      return;
-    }
-
-    const anchor = getFieldAnchor(root, sourceDocument);
-    if (!anchor?.parentElement) return;
-
-    const field = createSourceField(
-      sourceDocument,
-      sourceFlag,
-      !app.isEditable,
+    const sourceFlag = getSourceFlag(
+      sourceDocument.documentName,
+      sourceDocument.type,
     );
-    anchor.insertAdjacentElement("afterend", field);
+    let input = root.querySelector(`input[name="${sourceFlag}"]`);
+    if (!input) {
+      const anchor = getFieldAnchor(root, sourceDocument);
+      if (!anchor?.parentElement) return;
+      const field = createSourceField(
+        sourceDocument,
+        sourceFlag,
+        !app.isEditable,
+      );
+      anchor.insertAdjacentElement("afterend", field);
+      input = field.querySelector("input");
+    }
+    if (!input.hasAttribute("list")) {
+      void addSourceSuggestions(input, sourceDocument);
+    }
   });
 }

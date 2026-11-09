@@ -1,9 +1,5 @@
 import { MODULE_ID } from "../core/constants.mjs";
-import {
-  getFocusImportOverrideCompendium,
-  getOtherItemImportOverrideCompendium,
-  getTalentImportOverrideCompendium,
-} from "../core/settings.mjs";
+import { getImportOverrideCompendiums } from "../core/settings.mjs";
 
 let _installed = false;
 
@@ -22,21 +18,41 @@ export function installActorItemImportOverrides() {
       const actor = await wrapped(json);
       if (!game.user?.isGM) return actor;
 
-      for (const { types, excludedTypes, label, getCompendium } of [
+      const overridePacks = [];
+      for (const packId of getImportOverrideCompendiums()) {
+        const pack = game.packs.get(packId);
+        if (!pack || pack.metadata.type !== "Item") {
+          ui.notifications?.warn?.(
+            `The configured import override compendium "${packId}" is unavailable.`,
+          );
+          continue;
+        }
+        try {
+          const index = await pack.getIndex({ fields: ["name", "type"] });
+          overridePacks.push({ pack, index });
+        } catch (error) {
+          console.warn(
+            `${MODULE_ID} | Could not index import override compendium "${packId}"`,
+            error,
+          );
+          ui.notifications?.warn?.(
+            `The import override compendium "${packId}" could not be searched.`,
+          );
+        }
+      }
+
+      for (const { types, excludedTypes, label } of [
         {
           types: ["talent"],
           label: "Talent",
-          getCompendium: getTalentImportOverrideCompendium,
         },
         {
           types: ["focus"],
           label: "Focus",
-          getCompendium: getFocusImportOverrideCompendium,
         },
         {
           excludedTypes: ["talent", "focus"],
           label: "Other Item",
-          getCompendium: getOtherItemImportOverrideCompendium,
         },
       ]) {
         try {
@@ -45,7 +61,7 @@ export function installActorItemImportOverrides() {
             types,
             excludedTypes,
             label,
-            getCompendium(),
+            overridePacks,
           );
         } catch (error) {
           console.error(
@@ -68,33 +84,26 @@ async function _replaceImportedItems(
   itemTypes,
   excludedTypes,
   itemLabel,
-  packId,
+  packs,
 ) {
-  if (!packId) return;
-
-  const pack = game.packs.get(packId);
-  if (!pack || pack.metadata.type !== "Item") {
-    ui.notifications?.warn?.(
-      `The configured ${itemLabel.toLowerCase()} override compendium "${packId}" is unavailable.`,
-    );
-    return;
-  }
-
-  const index = await pack.getIndex({ fields: ["name", "type"] });
   const entriesByTypeAndName = new Map();
-  for (const entry of index) {
-    if (!_shouldReplaceType(entry.type, itemTypes, excludedTypes)) continue;
-    const key = _normalizeName(entry.name);
-    if (!key) continue;
-    let entriesByName = entriesByTypeAndName.get(entry.type);
-    if (!entriesByName) {
-      entriesByName = new Map();
-      entriesByTypeAndName.set(entry.type, entriesByName);
+  for (const { pack, index } of packs) {
+    for (const entry of index) {
+      if (!_shouldReplaceType(entry.type, itemTypes, excludedTypes)) continue;
+      const key = _normalizeName(entry.name);
+      if (!key) continue;
+      let entriesByName = entriesByTypeAndName.get(entry.type);
+      if (!entriesByName) {
+        entriesByName = new Map();
+        entriesByTypeAndName.set(entry.type, entriesByName);
+      }
+      const entries = entriesByName.get(key) ?? [];
+      entries.push({ entry, pack });
+      entriesByName.set(key, entries);
     }
-    const entries = entriesByName.get(key) ?? [];
-    entries.push(entry);
-    entriesByName.set(key, entries);
   }
+
+  if (!entriesByTypeAndName.size) return;
 
   for (const item of actor.items.filter((entry) =>
     _shouldReplaceType(entry.type, itemTypes, excludedTypes),
@@ -105,15 +114,14 @@ async function _replaceImportedItems(
         ?.get(_normalizeName(item.name)) ?? [];
     if (!matches.length) continue;
 
-    const candidates =
-      matches.length === 1
-        ? [{ entry: matches[0], document: null }]
-        : await Promise.all(
-            matches.map(async (entry) => ({
-              entry,
-              document: await pack.getDocument(entry._id),
-            })),
-          );
+    const candidates = await Promise.all(
+      matches.map(async ({ entry, pack }) => ({
+        entry,
+        pack,
+        document:
+          matches.length === 1 ? null : await pack.getDocument(entry._id),
+      })),
+    );
     const selected =
       candidates.length === 1
         ? candidates[0]
@@ -122,12 +130,12 @@ async function _replaceImportedItems(
             item.type,
             itemLabel,
             candidates,
-            pack,
           );
     if (!selected) continue;
 
     const source =
-      selected.document ?? (await pack.getDocument(selected.entry._id));
+      selected.document ??
+      (await selected.pack.getDocument(selected.entry._id));
     if (!source) continue;
     const replacement = source.toObject();
     delete replacement._id;
@@ -141,14 +149,10 @@ async function _chooseOverride(
   itemType,
   itemLabel,
   candidates,
-  pack,
 ) {
   const escape = foundry.utils.escapeHTML;
-  const packLabel = String(
-    pack.title ?? pack.metadata.label ?? pack.collection ?? "",
-  );
   const cards = candidates
-    .map(({ entry, document }, index) => {
+    .map(({ entry, pack, document }, index) => {
       const system = document?.system ?? {};
       const source = String(
         document?.flags?.["sta-officers-log"]?.source ??
@@ -176,7 +180,11 @@ async function _chooseOverride(
             <span class="sta-item-override-name">${escape(name)}</span>
           </label>
           <dl class="sta-item-override-details">
-            <div><dt>Compendium</dt><dd>${escape(String(packLabel))}</dd></div>
+              <div><dt>Compendium</dt><dd>${escape(
+                String(
+                  pack.title ?? pack.metadata.label ?? pack.collection ?? "",
+                ),
+              )}</dd></div>
             <div><dt>Source</dt><dd>${escape(source || "Not specified")}</dd></div>
             <div><dt>Type</dt><dd>${escape(type || itemLabel)}</dd></div>
           </dl>
