@@ -52,7 +52,7 @@ function _normalizePath(path) {
     .replace(/(^|[^:])\/{2,}/g, "$1/");
 }
 
-function _getFilePickerClass() {
+export function getFilePickerClass() {
   // `.implementation` resolves to whatever FilePicker subclass hosts actually
   // configure (e.g. The Forge swaps in an Assets-Library-aware subclass);
   // the base class alone cannot browse those paths.
@@ -172,7 +172,7 @@ function _getStaUtilsFoldersForItemType(itemType) {
 }
 
 async function _browseFolder(folderPath) {
-  const FilePickerCls = _getFilePickerClass();
+  const FilePickerCls = getFilePickerClass();
   if (!FilePickerCls?.browse) return [];
 
   // Resolve source/target directly rather than via `new FilePicker({ current })`:

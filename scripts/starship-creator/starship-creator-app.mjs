@@ -5,6 +5,7 @@ import {
   loadServiceRecords,
   loadShipDetail,
   loadShipSources,
+  loadAllStarshipTalents,
 } from "./starship-creator-data.mjs";
 import {
   CREW_QUALITIES,
@@ -21,20 +22,32 @@ import {
   getRefitCap,
   getRefitCount,
   getSpaceframeAge,
+  countsTowardTalentLimit,
   isSpecialRuleTalent,
   isSpaceframeAvailable,
   normalizeYear,
   pickRandomRefit,
   sanitizeRefits,
 } from "./starship-creator-logic.mjs";
+import { openTalentPicker } from "../compendium-browser/talent-picker-app.mjs";
 
-const STEPS = ["year", "spaceframe", "profile", "service", "refits", "review"];
+const STEPS = ["year", "spaceframe", "profile", "service", "refits", "talents", "review"];
 const DEFAULT_YEAR = 2380;
 
 const fapi = foundry.applications.api;
 
 const systemLabel = (key) => t(`sta.actor.starship.system.${key}`);
 const departmentLabel = (key) => t(`sta.actor.starship.department.${key}`);
+
+// The world clock's calendar year is the in-game year.
+function currentGameYear() {
+  return new Date(game.time.worldTime * 1000).getUTCFullYear();
+}
+
+function getInitialYear() {
+  const gameYear = currentGameYear();
+  return gameYear || DEFAULT_YEAR;
+}
 
 export class StarshipCreatorApp extends fapi.HandlebarsApplicationMixin(
   fapi.Application,
@@ -43,8 +56,10 @@ export class StarshipCreatorApp extends fapi.HandlebarsApplicationMixin(
     super(options);
     this._step = "year";
     this._loaded = false;
+    this._talentsCacheLoaded = false;
+    const initialYear = getInitialYear();
     this._s = {
-      year: DEFAULT_YEAR,
+      year: initialYear,
       spaceframes: [],
       profiles: [],
       records: [],
@@ -59,12 +74,14 @@ export class StarshipCreatorApp extends fapi.HandlebarsApplicationMixin(
       battleName: "",
       removedTalentId: "",
       refits: [],
+      additionalTalentIds: [],
+      talentView: "",
       name: "",
       designation: "",
       creating: false,
       npc: false,
       crewQuality: "proficient",
-      filter: { faction: "", scale: "", search: "", year: DEFAULT_YEAR },
+      filter: { faction: "", scale: "", search: "", year: initialYear },
     };
   }
 
@@ -130,6 +147,9 @@ export class StarshipCreatorApp extends fapi.HandlebarsApplicationMixin(
       randomRefit: StarshipCreatorApp._onRandomRefit,
       removeRefit: StarshipCreatorApp._onRemoveRefit,
       resetRefits: StarshipCreatorApp._onResetRefits,
+      browseTalents: StarshipCreatorApp._onBrowseTalents,
+      removeTalent: StarshipCreatorApp._onRemoveTalent,
+      viewTalent: StarshipCreatorApp._onViewTalent,
     },
   };
 
@@ -170,6 +190,105 @@ export class StarshipCreatorApp extends fapi.HandlebarsApplicationMixin(
       this._s.profileRow?.talentChoices ?? 1,
       profile.talents.length,
     );
+  }
+
+  // Total talents the ship needs (based on Scale), excluding Special Rules.
+  get _shipTalentQuota() {
+    return Number(this._s.spaceframe?.data?.system?.scale ?? 0);
+  }
+
+  // Talents the ship already has from its spaceframe and chosen mission profile
+  // talents, in display order.
+  get _builtInTalents() {
+    const s = this._s;
+    const entries = [];
+    for (const talent of s.spaceframe?.talents ?? []) {
+      if (talent._id === s.removedTalentId) continue;
+      entries.push({ talent, source: "spaceframe" });
+    }
+    for (const talent of s.profile?.talents ?? []) {
+      if (!s.chosenTalentIds.includes(talent._id)) continue;
+      entries.push({ talent, source: "profile" });
+    }
+    return entries;
+  }
+
+  get _builtInTalentCount() {
+    return this._builtInTalents.filter(({ talent }) =>
+      countsTowardTalentLimit(talent),
+    ).length;
+  }
+
+  // Everything counting toward the Scale limit: built-in plus additional picks.
+  get _currentTalentCount() {
+    return this._builtInTalentCount + this._s.additionalTalentIds.length;
+  }
+
+  // Talents needed beyond current count.
+  get _talentsNeeded() {
+    return Math.max(0, this._shipTalentQuota - this._currentTalentCount);
+  }
+
+  // Additional picks still allowed, including those already picked.
+  get _maxAdditionalTalents() {
+    return Math.max(0, this._shipTalentQuota - this._builtInTalentCount);
+  }
+
+  // Earlier steps can change the built-in count; drop picks that no longer fit.
+  _trimAdditionalTalents() {
+    const max = this._maxAdditionalTalents;
+    if (this._s.additionalTalentIds.length > max) {
+      this._s.additionalTalentIds = this._s.additionalTalentIds.slice(0, max);
+    }
+  }
+
+  // Name list (built-in, then added) plus the detail pane for the viewed talent.
+  _talentListing(allTalents, record) {
+    const s = this._s;
+    const sourceLabel = (key) => t(`sta-utils.starshipCreator.talents.source.${key}`);
+    const builtIn = this._builtInTalents.map(({ talent, source }) => ({
+      key: `${source}:${talent._id}`,
+      name: talent.name,
+      description: talent.system?.description ?? "",
+      sourceLabel: sourceLabel(source),
+    }));
+    if (record) {
+      builtIn.push({
+        key: "record",
+        name: record.specialRule.name,
+        description: record.specialRule.description,
+        sourceLabel: sourceLabel("record"),
+      });
+    }
+    const added = s.additionalTalentIds.map((id) => {
+      const talent = allTalents.find((entry) => entry._id === id);
+      return {
+        key: `added:${id}`,
+        id,
+        name: talent?.name ?? id,
+        description: talent?.system?.description ?? talent?.descriptionText ?? "",
+        sourceLabel: sourceLabel("added"),
+        removable: true,
+      };
+    });
+    const all = [...builtIn, ...added];
+    const activeKey = all.some((entry) => entry.key === s.talentView)
+      ? s.talentView
+      : (all[0]?.key ?? "");
+    const mark = (entry) => ({ ...entry, selected: entry.key === activeKey });
+    return {
+      builtIn: builtIn.map(mark),
+      added: added.map(mark),
+      detail: all.find((entry) => entry.key === activeKey) ?? null,
+    };
+  }
+
+  // Load all starship-type talents from world and compendiums for the picker.
+  async _loadAllTalents() {
+    if (this._talentsCacheLoaded) return this._allTalents || [];
+    this._allTalents = await loadAllStarshipTalents();
+    this._talentsCacheLoaded = true;
+    return this._allTalents;
   }
 
   // Systems after the mission profile's free +1 choices; refit caps build on this.
@@ -245,6 +364,8 @@ export class StarshipCreatorApp extends fapi.HandlebarsApplicationMixin(
           ).length
         );
       }
+      case "talents":
+        return this._talentsNeeded === 0;
       case "review":
         return !!s.name.trim() && !s.creating;
       default:
@@ -267,6 +388,13 @@ export class StarshipCreatorApp extends fapi.HandlebarsApplicationMixin(
       s.records = records;
       this._loaded = true;
     }
+
+    // Load talents cache for resolving additional talent names
+    let allTalents = [];
+    if (this._step === "talents" || this._step === "review") {
+      allTalents = await this._loadAllTalents();
+    }
+    this._trimAdditionalTalents();
 
     const stepIndex = this._steps.indexOf(this._step);
     const year = normalizeYear(s.year);
@@ -446,6 +574,18 @@ export class StarshipCreatorApp extends fapi.HandlebarsApplicationMixin(
         })),
         maxValue: MAX_SYSTEM_VALUE,
       },
+      talents: {
+        quota: this._shipTalentQuota,
+        current: this._currentTalentCount,
+        needed: this._talentsNeeded,
+        selectedCount: s.additionalTalentIds.length,
+        complete: this._talentsNeeded === 0,
+        canBrowse: this._maxAdditionalTalents > 0,
+        percent: this._shipTalentQuota
+          ? Math.min(100, Math.round((this._currentTalentCount / this._shipTalentQuota) * 100))
+          : 0,
+        ...this._talentListing(allTalents, record),
+      },
       review: {
         npc: s.npc,
         crewQualities: CREW_QUALITIES.map((q) => ({
@@ -469,6 +609,12 @@ export class StarshipCreatorApp extends fapi.HandlebarsApplicationMixin(
             .map((talent) => talent.name),
           ...(s.profile?.talents ?? [])
             .filter((talent) => s.chosenTalentIds.includes(talent._id))
+            .map((talent) => talent.name),
+          ...(s.spaceframe?.talents ?? [])
+            .filter((talent) => s.additionalTalentIds.includes(talent._id))
+            .map((talent) => talent.name),
+          ...allTalents
+            .filter((talent) => s.additionalTalentIds.includes(talent._id))
             .map((talent) => talent.name),
           ...(record ? [record.specialRule.name] : []),
           ...(s.npc
@@ -697,6 +843,45 @@ export class StarshipCreatorApp extends fapi.HandlebarsApplicationMixin(
     this.render();
   }
 
+  static async _onBrowseTalents() {
+    const allTalents = await this._loadAllTalents();
+    const result = await openTalentPicker({
+      title: t("sta-utils.starshipCreator.talents.picker.title"),
+      heading: t("sta-utils.starshipCreator.talents.picker.heading"),
+      talents: allTalents,
+      multiple: true,
+      selectedUuids: this._s.additionalTalentIds.map((id) => {
+        const talent = allTalents.find((entry) => entry._id === id);
+        return talent?.uuid ?? id;
+      }),
+      countLabel: t("sta-utils.starshipCreator.talents.picker.countLabel"),
+      searchPlaceholder: t("sta-utils.starshipCreator.talents.picker.search"),
+      emptyLabel: t("sta-utils.starshipCreator.talents.picker.empty"),
+      descriptionLabel: t("sta-utils.starshipCreator.talents.picker.description"),
+      allowCustom: false,
+      eligibility: false,
+      maxSelectable: this._maxAdditionalTalents,
+    });
+
+    if (!result?.talents) return;
+    this._s.additionalTalentIds = result.talents
+      .map((entry) => entry._id)
+      .slice(0, this._maxAdditionalTalents);
+    this.render();
+  }
+
+  static _onViewTalent(_event, target) {
+    this._s.talentView = target.dataset.key ?? "";
+    this.render();
+  }
+
+  static _onRemoveTalent(_event, target) {
+    const talentId = target.dataset.talentId;
+    if (!talentId) return;
+    this._s.additionalTalentIds = this._s.additionalTalentIds.filter((id) => id !== talentId);
+    this.render();
+  }
+
   static _onPickRecord(_event, target) {
     const s = this._s;
     s.recordKey = target.dataset.key ?? "";
@@ -759,6 +944,7 @@ export class StarshipCreatorApp extends fapi.HandlebarsApplicationMixin(
         recordSystem: this._recordSystemLabel(),
         battleName: s.battleName,
         chosenTalentIds: s.chosenTalentIds,
+        additionalTalentIds: s.additionalTalentIds,
         systemBonuses: s.systemBonuses.filter(Boolean),
         removedTalentId: s.removedTalentId || null,
         refits: s.refits,

@@ -9153,6 +9153,26 @@ input.selector.attribute.sta-fatigued-attribute {
   padding-left: 0.25rem;
 }
 
+/* Starship creator talents step */
+.starship-creator-talent-bar {
+  height: 6px;
+  margin: 0.3rem 0 0.4rem;
+  border-radius: 3px;
+  background: rgba(155, 143, 194, 0.25);
+  overflow: hidden;
+
+  > span {
+    display: block;
+    height: 100%;
+    background: #f1a43c;
+    transition: width 0.15s;
+  }
+}
+
+.starship-creator-talent-progress.complete .starship-creator-talent-bar > span {
+  background: #9b8fc2;
+}
+
 .sta-starship-creator .sta-bt-tabs,
 .sta-npc-builder .sta-bt-tabs,
 .sta-supporting-builder .sta-bt-tabs {

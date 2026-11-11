@@ -719,6 +719,9 @@ class AttackCalculatorApp extends Base {
     if (root.dataset.staAttackCalcBound === "1") return;
     root.dataset.staAttackCalcBound = "1";
 
+    // Helper to localize attack calculator keys
+    const qi18n = (key) => t(`sta-utils.attackCalculator.${key}`);
+
     // --- DOM refs ---
     const baseDamageInput = root.querySelector('input[name="baseDamage"]');
     const resistanceInput = root.querySelector('input[name="resistance"]');

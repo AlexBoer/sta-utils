@@ -149,7 +149,7 @@
 
         <div class="sta-compendium-browser__cell--right">
           {{#if ../multiple}}
-          <button type="button" class="sta-compendium-browser__choose" data-action="toggle-selection" data-uuid="{{talent.uuid}}" aria-pressed="{{talent.selected}}">
+          <button type="button" class="sta-compendium-browser__choose" data-action="toggle-selection" data-uuid="{{talent.uuid}}" aria-pressed="{{talent.selected}}" {{#if talent.disabled}}disabled{{/if}}>
             {{#if talent.selected}}<i class="fa-solid fa-check"></i>{{../labels.selected}}{{else}}<i class="fa-solid fa-plus"></i>{{../labels.select}}{{/if}}
           </button>
           {{else}}

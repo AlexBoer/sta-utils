@@ -13,7 +13,14 @@
  */
 
 import { t } from "../core/i18n.mjs";
-import { shouldShowRowContextMenuButtons } from "../core/settings.mjs";
+import {
+  isItemImagePickerEnabled,
+  shouldShowRowContextMenuButtons,
+} from "../core/settings.mjs";
+import {
+  openItemImagePicker,
+  supportsItemImagePicker,
+} from "../item-image-picker/sheet-hook.mjs";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Collapse-state persistence
@@ -260,6 +267,26 @@ export function _installItemContextMenu(sheetApp, root) {
           '.control .edit[data-action="onItemEdit"]',
         );
         if (editBtn) editBtn.click();
+      },
+    }),
+    _compatEntry({
+      label: t("sta-utils.itemImagePicker.changeImage"),
+      icon: '<i class="fas fa-image"></i>',
+      condition: (target) => {
+        const el = target instanceof HTMLElement ? target : target?.[0];
+        const actor = sheetApp?.actor ?? sheetApp?.document;
+        const item = actor?.items?.get?.(el?.dataset?.itemId);
+        const canUpdate = typeof item?.canUserModify === "function"
+          ? item.canUserModify(game.user, "update")
+          : Boolean(item?.isOwner);
+        return isItemImagePickerEnabled() && sheetApp.isEditable &&
+          supportsItemImagePicker(item) && canUpdate;
+      },
+      callback: (target) => {
+        const el = target instanceof HTMLElement ? target : target?.[0];
+        const actor = sheetApp?.actor ?? sheetApp?.document;
+        const item = actor?.items?.get?.(el?.dataset?.itemId);
+        if (item) openItemImagePicker(item);
       },
     }),
     _compatEntry({

@@ -31,6 +31,7 @@ import {
 
 const RECORDS_PATH = `modules/${MODULE_ID}/scripts/starship-creator/service-records.json`;
 let recordsPromise = null;
+let talentsPromise = null;
 
 export function loadServiceRecords() {
   recordsPromise ??= fetch(RECORDS_PATH)
@@ -42,6 +43,91 @@ export function loadServiceRecords() {
       return [];
     });
   return recordsPromise;
+}
+
+// Get pack IDs from configured NPC builder compendiums
+function _getConfiguredPackIds(setting) {
+  try {
+    return _parsePackIds(game.settings.get(MODULE_ID, setting));
+  } catch {
+    return [];
+  }
+}
+
+function _parsePackIds(value) {
+  return String(value ?? "")
+    .split(/[\n,;]/)
+    .map((id) => id.trim())
+    .filter(Boolean);
+}
+
+// Load talent rows from a single pack
+async function _getTalentRows(pack) {
+  const { getPackIndexRows } = await import("../compendium-browser/pack-index.mjs");
+  const rows = await getPackIndexRows(pack, "Item", "talent");
+  return rows.map((row) => ({
+    ...row,
+    uuid: row.uuid ?? `Compendium.${pack.collection}.Item.${row._id}`,
+  }));
+}
+
+// Load all starship-type talents from configured compendiums, formatted for the talent picker.
+// Only includes "starship" type talents; excludes special rule talents.
+export async function loadAllStarshipTalents() {
+  if (talentsPromise) return talentsPromise;
+
+  talentsPromise = (async () => {
+    const talents = [];
+    const NPC_BUILDER_COMPENDIUMS_SETTING = "npcBuilderCompendiums";
+
+    // Load from configured NPC builder compendium packs
+    const packIds = _getConfiguredPackIds(NPC_BUILDER_COMPENDIUMS_SETTING);
+    
+    if (packIds.length === 0) {
+      console.warn(
+        `${MODULE_ID} | Starship Creator: no packs configured in "${NPC_BUILDER_COMPENDIUMS_SETTING}" setting`
+      );
+    }
+
+    for (const packId of packIds) {
+      const pack = game.packs.get(packId);
+      if (!pack) {
+        console.warn(
+          `${MODULE_ID} | Starship Creator: pack "${packId}" not found`
+        );
+        continue;
+      }
+      try {
+        const rows = await _getTalentRows(pack);
+        for (const row of rows) {
+          // Check talent type is "starship"
+          const typeEnum = foundry.utils.getProperty(
+            row,
+            "system.talenttype.typeenum"
+          );
+          if (typeEnum !== "starship") continue;
+          
+          // Skip if it has the special rule flag
+          if (row.flags?.[MODULE_ID]?.[SPECIAL_RULE_FLAG]) continue;
+          
+          talents.push(row);
+        }
+      } catch (err) {
+        console.warn(
+          `${MODULE_ID} | Starship Creator: could not load talents from pack "${packId}"`,
+          err
+        );
+      }
+    }
+
+    return talents;
+  })().catch((err) => {
+    console.error(`${MODULE_ID} | Failed to load starship talents:`, err);
+    talentsPromise = null;
+    return [];
+  });
+
+  return talentsPromise;
 }
 
 function toRow({ uuid, name, img, system, flags, source }) {
@@ -303,10 +389,21 @@ export async function createStarshipActor(state) {
     .join(", ");
   data.system.refit = refitSummary;
 
+  // Load additional talent items from compendiums
+  let additionalTalentItems = [];
+  if (state.additionalTalentIds.length > 0) {
+    const allTalents = await loadAllStarshipTalents();
+    additionalTalentItems = state.additionalTalentIds
+      .map((id) => allTalents.find((t) => t._id === id))
+      .filter(Boolean);
+  }
+
   const merged = mergeItems({
     spaceframeItems: spaceframe.items,
     profileItems: profile.items,
     chosenTalentIds: state.chosenTalentIds,
+    additionalTalentIds: state.additionalTalentIds,
+    additionalTalentItems,
     removedTalentId: state.removedTalentId,
   }).map(cleanItem);
 

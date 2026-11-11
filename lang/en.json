@@ -250,6 +250,33 @@
         "random": "Random system",
         "reset": "Reset"
       },
+      "talents": {
+        "title": "Talents",
+        "rules": "A starship should have a number of talents equal to its Scale. Some of these may be determined by the ship's spaceframe and mission profile. If the ship has fewer talents than its Scale, select additional talents until it has the required number. Starship Special Rules type talents do not count towards this limit.",
+        "quota": "Talents Required",
+        "needed": "Select {count} more talent(s) to meet the requirement.",
+        "builtIn": "Spaceframe & Mission Profile Talents",
+        "additional": "Additional Talents",
+        "noneBuiltIn": "This ship has no talents from its spaceframe or mission profile.",
+        "remove": "Remove talent",
+        "source": {
+          "spaceframe": "Spaceframe",
+          "profile": "Mission Profile",
+          "record": "Service Record",
+          "added": "Added"
+        },
+        "browse": "Browse Talents",
+        "complete": "The ship now has all required talents.",
+        "picker": {
+          "title": "Select Additional Talents",
+          "heading": "Select Additional Starship Talents",
+          "countLabel": "talents",
+          "search": "Search talents…",
+          "empty": "No talents found.",
+          "description": "Description",
+          "limitReached": "Can only select {count} more talent(s)."
+        }
+      },
       "review": {
         "title": "Review",
         "name": "Ship name",
@@ -629,6 +656,8 @@
     },
     "itemImagePicker": {
       "open": "Choose Image",
+      "changeImage": "Change Image",
+      "customImage": "Custom Image",
       "search": "Search images",
       "sourceAll": "All",
       "empty": "No images were found for this item type.",
@@ -638,6 +667,7 @@
       "selected": "Selected: {name}",
       "close": "Close",
       "warnNoPermission": "You do not have permission to edit this item image.",
+      "errorFilePicker": "Failed to open the file picker.",
       "errorUpdateFailed": "Failed to update the item image."
     },
     "npcImagePicker": {

@@ -278,6 +278,64 @@
   </div>
   {{/if}}
 
+  {{!-- ── Step: Talents ──────────────────────────────────────────── --}}
+  {{#if (eq step "talents")}}
+  <div class="npc-builder-panel active">
+    <h3 class="npc-builder-panel-title">{{localize "sta-utils.starshipCreator.talents.title"}}</h3>
+    <p class="npc-builder-hint">{{localize "sta-utils.starshipCreator.talents.rules"}}</p>
+
+    <div class="starship-creator-talent-progress{{#if talents.complete}} complete{{/if}}">
+      <div class="npc-stat-grid">
+        <span class="npc-stat-label">{{localize "sta-utils.starshipCreator.talents.quota"}}</span>
+        <span class="npc-stat-value">{{talents.current}} / {{talents.quota}}</span>
+      </div>
+      <div class="starship-creator-talent-bar"><span style="width: {{talents.percent}}%"></span></div>
+      <p class="npc-builder-hint">
+        {{#if talents.complete}}{{localize "sta-utils.starshipCreator.talents.complete"}}{{else}}{{localize "sta-utils.starshipCreator.talents.needed" count=talents.needed}}{{/if}}
+      </p>
+    </div>
+
+    <div class="npc-builder-footer-left">
+      <button type="button" class="npc-builder-btn npc-builder-btn--primary" data-action="browseTalents" {{#unless talents.canBrowse}}disabled{{/unless}}>
+        <i class="fa-solid fa-book-sparkles"></i> {{localize "sta-utils.starshipCreator.talents.browse"}}
+      </button>
+    </div>
+
+    <div class="starship-creator-split">
+      <div class="starship-creator-list">
+        <div class="npc-builder-section-label starship-creator-group">{{localize "sta-utils.starshipCreator.talents.builtIn"}}</div>
+        {{#each talents.builtIn}}
+        <div class="npc-selection-card{{#if selected}} selected{{/if}}" data-action="viewTalent" data-key="{{key}}">
+          <div class="npc-selection-card-title">{{name}}</div>
+        </div>
+        {{else}}
+        <p class="npc-builder-hint">{{localize "sta-utils.starshipCreator.talents.noneBuiltIn"}}</p>
+        {{/each}}
+        <div class="npc-builder-section-label starship-creator-group">{{localize "sta-utils.starshipCreator.talents.additional"}} ({{talents.selectedCount}})</div>
+        {{#each talents.added}}
+        <div class="npc-selection-card{{#if selected}} selected{{/if}}" data-action="viewTalent" data-key="{{key}}">
+          <div class="npc-selection-card-title">{{name}}</div>
+        </div>
+        {{/each}}
+      </div>
+      <div class="starship-creator-detail">
+        {{#if talents.detail}}
+        <h3 class="npc-builder-panel-title">{{talents.detail.name}}</h3>
+        <p class="npc-builder-hint">{{talents.detail.sourceLabel}}</p>
+        <div class="npc-selection-card-desc">{{{talents.detail.description}}}</div>
+        {{#if talents.detail.removable}}
+        <button type="button" class="npc-builder-btn npc-builder-btn--ghost" data-action="removeTalent" data-talent-id="{{talents.detail.id}}">
+          <i class="fa-solid fa-xmark"></i> {{localize "sta-utils.starshipCreator.talents.remove"}}
+        </button>
+        {{/if}}
+        {{else}}
+        <p class="npc-builder-hint">{{localize "sta-utils.starshipCreator.pickPrompt"}}</p>
+        {{/if}}
+      </div>
+    </div>
+  </div>
+  {{/if}}
+
   {{!-- ── Step: Review ──────────────────────────────────────────── --}}
   {{#if (eq step "review")}}
   <div class="npc-builder-panel active">

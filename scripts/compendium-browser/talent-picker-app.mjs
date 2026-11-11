@@ -142,6 +142,7 @@ export class TalentPickerApp extends Base {
       selectionField = null,
       showBackButton = false,
       backLabel = "",
+      maxSelectable = null,
     } = {},
     options = {},
   ) {
@@ -153,6 +154,7 @@ export class TalentPickerApp extends Base {
       normalizeTalent,
     );
     this._multiple = multiple === true;
+    this._maxSelectable = Number.isFinite(maxSelectable) ? maxSelectable : null;
     this._countLabel = String(countLabel || "talents");
     this._searchPlaceholder = String(searchPlaceholder ?? "");
     this._emptyLabel = String(emptyLabel ?? "");
@@ -482,6 +484,10 @@ export class TalentPickerApp extends Base {
       descriptionText: tt.descriptionText,
       showToggle: tt.descriptionText.length > 75,
       expanded: this._expanded.has(tt.uuid),
+      disabled:
+        this._maxSelectable !== null &&
+        this._selectedUuids.size >= this._maxSelectable &&
+        !this._selectedUuids.has(tt.uuid),
     }));
 
     return {
@@ -746,8 +752,14 @@ export class TalentPickerApp extends Base {
         btn.addEventListener("click", () => {
           const uuid = btn.dataset.uuid;
           if (!uuid) return;
-          if (this._selectedUuids.has(uuid)) this._selectedUuids.delete(uuid);
-          else this._selectedUuids.add(uuid);
+          if (this._selectedUuids.has(uuid)) {
+            this._selectedUuids.delete(uuid);
+          } else if (
+            this._maxSelectable === null ||
+            this._selectedUuids.size < this._maxSelectable
+          ) {
+            this._selectedUuids.add(uuid);
+          }
           rerender();
         });
       });

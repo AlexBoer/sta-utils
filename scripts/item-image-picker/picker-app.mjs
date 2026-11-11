@@ -1,5 +1,6 @@
 import { MODULE_ID } from "../core/constants.mjs";
 import { t } from "../core/i18n.mjs";
+import { getFilePickerClass } from "./source-loader.mjs";
 
 const Base = foundry.applications.api.HandlebarsApplicationMixin(
   foundry.applications.api.ApplicationV2,
@@ -39,6 +40,7 @@ export class ItemImagePickerApp extends Base {
     this._setSelectedPath = null;
     this._delegatedSearchBound = false;
     this._onDelegatedSearchEvent = null;
+    this._closed = false;
   }
 
   /**
@@ -55,6 +57,7 @@ export class ItemImagePickerApp extends Base {
   }
 
   async _applySetEntries(entries, { loading = false } = {}) {
+    if (this._closed) return;
     const root = this._getLivePickerRoot();
     const liveSearchValue = root?.querySelector('input[name="q"]')?.value;
     if (liveSearchValue) this._pendingSearchTerm = liveSearchValue;
@@ -138,6 +141,7 @@ export class ItemImagePickerApp extends Base {
         empty: t("sta-utils.itemImagePicker.empty"),
         loading: t("sta-utils.itemImagePicker.loading"),
         apply: t("sta-utils.itemImagePicker.apply"),
+        customImage: t("sta-utils.itemImagePicker.customImage"),
         selectPrompt: t("sta-utils.itemImagePicker.selectPrompt"),
         close: t("sta-utils.itemImagePicker.close"),
       },
@@ -182,8 +186,7 @@ export class ItemImagePickerApp extends Base {
     if (!root) return;
 
     const searchInputProbe = root.querySelector('input[name="q"]');
-    const cardProbe = root.querySelector(".sta-utils-item-image-picker-choice");
-    const domReady = Boolean(searchInputProbe) && Boolean(cardProbe);
+    const domReady = Boolean(searchInputProbe);
 
     if (!domReady) {
       if (attempt >= 20) {
@@ -393,7 +396,9 @@ export class ItemImagePickerApp extends Base {
     const hasPreferredPath = cards.some(
       (card) => card.dataset.path === preferredPath,
     );
-    setSelectedPath(hasPreferredPath ? preferredPath : "");
+    setSelectedPath(
+      this._selectedPath || (hasPreferredPath ? preferredPath : ""),
+    );
   }
 
   _getLivePickerRoot() {
@@ -546,6 +551,7 @@ export class ItemImagePickerApp extends Base {
   }
 
   async close(options) {
+    this._closed = true;
     if (this._delegatedSearchBound && this._onDelegatedSearchEvent) {
       globalThis.document?.removeEventListener?.(
         "input",
@@ -589,6 +595,25 @@ export class ItemImagePickerApp extends Base {
     if (action === "applyImage") {
       const path = this._selectedPath || this._getSelectedPathFromLiveDom();
       await this._onChoose(path);
+      return;
+    }
+
+    if (action === "customImage") {
+      try {
+        const FilePickerClass = getFilePickerClass();
+        if (!FilePickerClass) {
+          throw new Error("Foundry FilePicker is unavailable");
+        }
+        const picker = new FilePickerClass({
+          type: "image",
+          current: this._selectedPath || this.item?.img || "",
+          callback: (path) => this._setSelectedPathFromLiveDom(path),
+        });
+        await picker.render(true);
+      } catch (err) {
+        console.error(`${MODULE_ID} | Failed to open file picker`, err);
+        ui.notifications.error(t("sta-utils.itemImagePicker.errorFilePicker"));
+      }
       return;
     }
 

@@ -44,13 +44,26 @@ const SUPPORTED_ITEM_TYPES = new Set([
   "value",
 ]);
 
+export function supportsItemImagePicker(item) {
+  return (
+    item?.documentName === "Item" &&
+    SUPPORTED_ITEM_TYPES.has(String(item.type ?? ""))
+  );
+}
+
+export function openItemImagePicker(item) {
+  const app = new ItemImagePickerApp(item, null);
+  app.render(true);
+  void _loadEntries(app, item);
+  return app;
+}
+
 export function installItemImagePickerHook() {
   Hooks.on("renderApplicationV2", (app, html) => {
     if (!isItemImagePickerEnabled()) return;
 
     const item = app?.document;
-    if (!item || item.documentName !== "Item") return;
-    if (!SUPPORTED_ITEM_TYPES.has(String(item.type ?? ""))) return;
+    if (!supportsItemImagePicker(item)) return;
     if (!app.isEditable) return;
 
     _injectButton(html, item);
@@ -102,11 +115,7 @@ function _injectButton(root, item) {
     event.preventDefault();
     event.stopPropagation();
 
-    // Open immediately (showing a loading state) instead of waiting for
-    // folder scanning to finish, which can be slow on hosts like The Forge.
-    const app = new ItemImagePickerApp(item, null);
-    app.render(true);
-    _loadEntries(app, item);
+    openItemImagePicker(item);
   });
 
   imageField.appendChild(button);

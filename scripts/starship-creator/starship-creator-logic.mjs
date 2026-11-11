@@ -30,6 +30,21 @@ export function isSpecialRuleTalent(item) {
   return item?.flags?.["sta-utils"]?.[SPECIAL_RULE_FLAG] === true;
 }
 
+const NON_COUNTING_TALENT_TYPES = new Set([
+  "starshipspecialrule",
+  "starshipservicerecord",
+]);
+
+// Starship Special Rules (and service record talents) don't count toward the
+// ship's Scale-based talent limit.
+export function countsTowardTalentLimit(item) {
+  if (isSpecialRuleTalent(item)) return false;
+  const type = String(item?.system?.talenttype?.typeenum ?? "")
+    .toLowerCase()
+    .replace(/[^a-z]/g, "");
+  return !NON_COUNTING_TALENT_TYPES.has(type);
+}
+
 // Crew Quality table for NPC ships.
 export const CREW_QUALITIES = [
   { key: "basic", attribute: 8, department: 1 },
@@ -231,13 +246,17 @@ export function itemKey(item) {
 
 // Combines spaceframe and mission profile items. Every spaceframe item is kept
 // (minus a replaced talent); profile talents are limited to the chosen ones.
+// Additional talent IDs can be included again to reach the ship's talent quota.
 export function mergeItems({
   spaceframeItems,
   profileItems,
   chosenTalentIds,
+  additionalTalentIds = [],
+  additionalTalentItems = [],
   removedTalentId = null,
 }) {
   const chosen = new Set(chosenTalentIds);
+  const additional = new Set(additionalTalentIds);
   const merged = [];
   const seen = new Set();
   const add = (item) => {
@@ -246,15 +265,35 @@ export function mergeItems({
     seen.add(key);
     merged.push(item);
   };
+  
+  // Add all spaceframe items (except removed non-special-rule talents)
   for (const item of spaceframeItems) {
     if (item.type === "talent" && item._id === removedTalentId) {
       if (!isSpecialRuleTalent(item)) continue;
     }
     add(item);
   }
+  
+  // Add chosen profile talents
   for (const item of profileItems) {
     if (item.type === "talent" && !chosen.has(item._id)) continue;
     add(item);
   }
+  
+  // Add additional talents from spaceframe to reach talent quota
+  for (const talentId of additional) {
+    const talent = spaceframeItems.find((item) => item.type === "talent" && item._id === talentId);
+    if (talent && talent._id !== removedTalentId) {
+      merged.push(talent);
+    }
+  }
+  
+  // Add additional talents from compendiums
+  for (const talentItem of additionalTalentItems) {
+    if (talentItem && talentItem._id !== removedTalentId) {
+      merged.push(talentItem);
+    }
+  }
+  
   return merged;
 }
